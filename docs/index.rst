@@ -14,5 +14,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   NetCDF_Plot/index
+
 
 .. include:: license_description.txt
