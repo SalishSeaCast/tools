@@ -15,6 +15,7 @@ Contents:
    :maxdepth: 2
 
    NetCDF_Plot/index
+   nocscombine/index
 
 
 .. include:: license_description.txt
