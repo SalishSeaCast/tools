@@ -7,7 +7,7 @@ This is a collection of tools for working with the Salish Sea MEOPAR NEMO model,
 its results,
 and associated data.
 
-Documentation for the tools is included in the `docs/` directory and is rendered at http://salishsea-meopar-tools.readthedocs.org/.
+Documentation for the tools is included in the docs/ directory and is rendered at http://salishsea-meopar-tools.readthedocs.org/.
 
 
 License
