@@ -13,7 +13,8 @@ Documentation for the tools is included in the `docs/` directory and is rendered
 License
 =======
 
-The Salish Sea MEOPAR tools and documentation are copyright 2013 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia'.
+Unless otherwise specified,
+the Salish Sea MEOPAR tools and documentation are copyright 2013 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia'.
 
 They are licensed under the Apache License, Version 2.0.
 http://www.apache.org/licenses/LICENSE-2.0
