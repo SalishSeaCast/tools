@@ -1,0 +1,19 @@
+# Script for running multiple processor AMM12  configuration
+
+#PBS -l procs=32
+#PBS -l pmem=500mb
+#PBS -l walltime=00:15:00 
+
+module load compiler/intel/12.1
+module load library/intelmpi/4.0.3.008
+module load library/netcdf/4.1.3
+module load library/szip/2.1
+
+module list
+echo "Current working directory is `pwd`"
+cd dev_v3_4_STABLE_2012/NEMOGCM/CONFIG/MY_AMM12/EXP00
+echo "Current working directory is `pwd`"
+
+echo "Starting run at: `date`"
+mpiexec ./opa
+echo "Program opa finished with exit code $? at: `date`"
