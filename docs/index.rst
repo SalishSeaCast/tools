@@ -16,6 +16,7 @@ Contents:
 
    NetCDF_Plot/index
    nocscombine/index
+   Run_Files/index
 
 
 .. include:: license_description.txt
