@@ -16,7 +16,7 @@
 
 %NCDF_INC            -I/usr/include
 %NCDF_LIB            -L/usr/lib -lnetcdff
-%FC	             gfortran
+%FC	                 gfortran
 %FCFLAGS             -fdefault-real-8 -O3 -funroll-all-loops -fcray-pointer
 %FFLAGS              %FCFLAGS
 %LD                  gfortran
