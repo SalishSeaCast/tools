@@ -4,6 +4,10 @@
 
 The :file:`tools/Run_Files/` directory contains a collection of :kbd:`makefile` directives and job submission script files for various architectures and hosts:
 
+:file:`AA_make.gdef_jasper`: Block of global definitions for NEMO-3.1 build on :kbd:`jasper.westgrid.ca`.
+  Courtesty of Paul Myers group at the University of Alberta.
+  Add this block of definitions to :file:`modipsl/util/AA_make.ldef` before running  :file:`modipsl/modeles/UTIL/fait_AA_make`.
+
 * :file:`GYRE.pbs`: Sample TORQUE job script to run the GYRE case on a single processor on :kbd:`jasper.westgrid.ca`.
   See https://www.westgrid.ca/support/running_jobs for more information on job scripts and submission of jobs on :kbd:`westgrid.ca` systems.
 
