@@ -14,6 +14,9 @@ The :file:`tools/Run_Files/` directory contains a collection of :kbd:`makefile` 
 * :file:`arch-ifort_jasper.fcm`: :kbd:`makefile` definitions for MPI compilation with the :command:`ifort` compiler on :kbd:`jasper.westgrid.ca`.
   Courtesty of Paul Myers group at the University of Alberta.
 
+* :file:`arch-ocean.fcm`: :kbd:`makefile` definitions for single processor compilation with the :command:`gfortran` compiler on the UBC-EOAS :kbd:`ocean` machines.
+
+* :file:`arch-salish.fcm`: :kbd:`makefile` definitions for MPI compilation with the :command:`mpif90` compiler on :kbd:`salish.eos.ubc.ca`.
 * :file:`arch-ocean.fcm`: :kbd:`makefile` directives for single processor compilation with the :command:`gfortran` compiler on the UBC-EOAS :kbd:`ocean` machines.
 *********
 Run Files
