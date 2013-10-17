@@ -1,0 +1,25 @@
+#-Q- jasper  #- Global definitions for jasper.westgrid.ca using Linux Compiler Intel v8
+#-Q- jasper  LIB_MPI = MPI2
+#-Q- jasper  LIB_MPI_BIS =
+#-Q- jasper  M_K = make
+#-Q- jasper  P_C = cpp
+#-Q- jasper  P_O = -P -C -traditional $(P_P)
+#-Q- jasper  F_C = mpiifort -c -fpp
+#-Q- jasper  #-D- MD    F_D = -g
+#-Q- jasper  #-D- MN    F_D =
+#-Q- jasper  #-P- I4R4  F_P = -i4
+#-Q- jasper  #-P- I4R8  F_P = -i4 -r8
+#-Q- jasper  #-P- I8R8  F_P = -i8 -r8
+#-Q- jasper  #-P- ??    F_P = -i4 -r8
+#-Q- jasper  F_O = -O3 $(F_P) -I$(MODDIR) -I$(MODDIR)/oce -module $(MODDIR) -assume byterecl -convert big_endian -I $(NCDF_INC)
+#-Q- jasper  F_F = $(F_O) -extend_source
+#-Q- jasper  F_L = mpiifort
+#-Q- jasper  L_O =
+#-Q- jasper  A_C = ar -r
+#-Q- jasper  A_G = ar -x
+#-Q- jasper  C_C = gcc -c
+#-Q- jasper  C_O =
+#-Q- jasper  C_L = gcc
+#-Q- jasper  NCDF_INC = -I/lustre/jasper/software/netcdf/netcdf-4.1.3/include -lhdf5_hl -lhdf5 -lz -lsz
+#-Q- jasper  NCDF_LIB = -L/lustre/jasper/software/netcdf/netcdf-4.1.3/lib -lnetcdf -lnetcdff -lhdf5_hl -lhdf5 -lz -lsz
+#-Q- jasper  #-
