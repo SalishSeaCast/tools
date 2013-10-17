@@ -1,4 +1,5 @@
-# generic gfortran compiler options for linux
+# makefile directive for gfortran on UBC-EOAS ocean machines
+#
 # NCDF_INC    netcdf include file
 # NCDF_LIB    netcdf library
 # FC          Fortran compiler command
