@@ -1,4 +1,4 @@
-# makefile directive for gfortran on UBC-EOAS ocean machines
+# makefile definitions for gfortran on UBC-EOAS ocean machines
 #
 # NCDF_INC    netcdf include file
 # NCDF_LIB    netcdf library
