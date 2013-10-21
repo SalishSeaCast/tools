@@ -1,3 +1,5 @@
+.. _rebuild-nemo-tool:
+
 ************
 REBUILD_NEMO
 ************

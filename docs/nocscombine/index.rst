@@ -2,6 +2,11 @@
 NOCSCOMBINE
 ***********
 
+.. warning::
+
+    NOCSCOMBINE is old and slow.
+    Use :ref:`rebuild-nemo-tool` instead.
+
 NOCSCOMBINE is a tool to combine the per-processor NetCDF results files that are generated when NEMO is run in parallel using MPI.
 One description of its use can be found at http://www.hector.ac.uk/cse/distributedcse/reports/nemo/nemo_notes/node18.html.
 The NOCSCOMBINE code was downloaded from ftp://ftp.soc.soton.ac.uk/omfftp/NEMO/.
