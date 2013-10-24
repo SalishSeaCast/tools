@@ -14,6 +14,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   SalishSeaCmd/salishsea-cmd
    NetCDF_Plot/index
    nemo-tools/index
    Run_Files/index
