@@ -1,0 +1,124 @@
+.. Copyright 2013 Doug Latornell and The University of British Columbia
+..
+.. Licensed under the Apache License, Version 2.0 (the "License");
+.. you may not use this file except in compliance with the License.
+.. You may obtain a copy of the License at
+..
+..    http://www.apache.org/licenses/LICENSE-2.0
+..
+.. Unless required by applicable law or agreed to in writing, software
+.. distributed under the License is distributed on an "AS IS" BASIS,
+.. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. See the License for the specific language governing permissions and
+.. limitations under the License.
+
+
+.. _SalishSeaCmdProcessor:
+
+*********************************
+Salish Sea NEMO Command Processor
+*********************************
+
+The Salish Sea NEMO command processor,
+:program:`salishsea`,
+is a command line tool for doing various operations associated with the :ref:`SalishSeaNEMO` model.
+
+
+Installation
+============
+
+These instructions assume that:
+
+* You have an up to date clone of the `tools repo`_
+* You have the :ref:`AnacondaPythonDistro` installed
+* :file:`$HOME/anaconda/bin` is included in your :envvar:`PATH` environment variable
+
+.. _tools repo: https://bitbucket.org/salishsea/tools/
+
+Use :program:`pip`
+(the Python package installer)
+to install the :kbd:`SalishSeaCmd` package from the `tools repo`_ in editable mode so that :program:`salishsea` will be automatically updated as the repo evolves:
+
+.. code-block:: bash
+
+    cd tools/SalishSeaCmd
+    pip install --editable .
+
+Experienced Python developers may wish to install :program:`salishsea` in other ways:
+
+* In a Python virtual environment
+* In :file:`$HOME/.local/` via the :command:`pip install --user` option
+
+
+Available Commands
+==================
+
+The command :program:`salishsea` or :command:`salishsea --help` produces a list of the available :program:`salishsea` options and sub-commands:
+
+.. code-block:: bash
+
+    salishsea --help
+    usage: salishsea [-h] [--version] {combine} ...
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      --version   show program's version number and exit
+
+    sub-commands:
+      {combine}
+        combine   Combine results from an MPI Salish Sea NEMO run.
+
+    Use `salishsea <sub-command> --help` to get detailed help about a sub-command.
+
+For details of the arguments and options for a sub-command use
+:command:`salishsea <sub-command> --help`.
+For example:
+
+.. code-block:: bash
+
+    salishsea combine --help
+    usage: salishsea combine [-h] [--version] DESC_FILE RESULTS_DIR
+
+    Combine the per-processor results files from an MPI Salish Sea NEMO run
+    described in DESC_FILE into files in RESULTS_DIR. If RESULTS_DIR does not
+    exist it will be created.
+
+    positional arguments:
+      DESC_FILE    run description YAML file
+      RESULTS_DIR  directory to store results into
+
+    optional arguments:
+      -h, --help   show this help message and exit
+      --version    show program's version number and exit
+
+You can check what version of :program:`salishsea` you have installed with:
+
+.. code-block:: bash
+
+    salishsea --version
+
+
+Run Description File Structure
+==============================
+
+:program:`salishsea` run description files are written in YAML_.
+They contain key-value pairs that define the names and locations of files and directories that :program:`salishsea` uses to manage Salish Sea NEMO runs and their results.
+
+.. _YAML: http://pyyaml.org/wiki/PyYAMLDocumentation
+
+.. note::
+
+    The :program:`salishsea` tool is under active development and the format of the run description file is changing frequently.
+
+Example:
+
+.. literalinclude:: ../../../SS-run-sets/JPP/JPP.yaml
+   :language: yaml
+
+The :kbd:`paths` section of the run description file is a collection of directory paths that :program:`salishsea` uses to find files in other repos that it needs.
+The paths may be either absolute or relative.
+
+* The value associated with the :kbd:`NEMO-code` key is the path to the :ref:`NEMO-code-repo` clone where the :file:`rebuild-nemo` tool,
+  the NEMO executable,
+  etc. for the run are to be found.
+
