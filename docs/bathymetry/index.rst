@@ -19,7 +19,7 @@ Bathymetry Notebooks and Tools
 ******************************
 
 * `SalishSeaSubdomainBathy.ipynb`_: Documents the bathymetry used for the initial Salish Sea NEMO runs on a sub-set of the whole region domain.
-  The sub-domain bathymetry was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.
+  The :ref:`sub-domain bathymetry <SalishSeaSubdomainBathy-image>` was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.
 
 .. _SalishSeaSubdomainBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb
 
