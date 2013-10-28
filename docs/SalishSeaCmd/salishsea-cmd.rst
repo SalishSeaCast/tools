@@ -1,4 +1,5 @@
-.. Copyright 2013 Doug Latornell and The University of British Columbia
+.. Copyright 2013 The Salish Sea MEOPAR conttributors
+.. and The University of British Columbia
 ..
 .. Licensed under the Apache License, Version 2.0 (the "License");
 .. you may not use this file except in compliance with the License.
