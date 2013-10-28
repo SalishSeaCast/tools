@@ -16,6 +16,7 @@ Contents:
 
    SalishSeaCmd/salishsea-cmd
    NetCDF_Plot/index
+   bathymetry/index
    nemo-tools/index
    Run_Files/index
    nocscombine/index
