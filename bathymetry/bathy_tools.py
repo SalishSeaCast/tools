@@ -242,3 +242,78 @@ def show_region_depths(depths, centre, half_width=5):
     """
     ictr, jctr = centre
     print(depths[jctr+5:jctr-5:-1, ictr-5:ictr+5])
+
+
+def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
+    """
+    """
+    diffs_lat, lat_ij, diffs_lon, lon_ij = choose_steepest_cells(depths)
+    max_diff = np.maximum(diffs_lat[lat_ij], diffs_lon[lon_ij])
+    while max_diff > max_norm_depth_diff:
+        if diffs_lat[lat_ij] > diffs_lon[lon_ij]:
+            i, j = lat_ij
+            depths[lat_ij], depths[i+1, j] = smooth_neighbours(
+                smooth_factor, depths[lat_ij], depths[i+1, j])
+        else:
+            i, j = lon_ij
+            depths[lon_ij], depths[i, j+1] = smooth_neighbours(
+                smooth_factor, depths[lon_ij], depths[i, j+1])
+        diffs_lat, lat_ij, diffs_lon, lon_ij = choose_steepest_cells(depths)
+        max_diff = np.maximum(diffs_lat[lat_ij], diffs_lon[lon_ij])
+    return depths
+
+
+def choose_steepest_cells(depths):
+    """
+    """
+    diffs_lat = calc_norm_depth_diffs(depths, delta_lat=1, delta_lon=0)
+    lat_ij = argmax(diffs_lat)
+    diffs_lon = calc_norm_depth_diffs(depths, delta_lat=0, delta_lon=1)
+    lon_ij = argmax(diffs_lon)
+    return diffs_lat, lat_ij, diffs_lon, lon_ij
+
+
+def smooth_neighbours(gamma, depth1, depth2):
+    avg = (depth1 + depth2) / 2
+    change = gamma if depth1 < depth2 else -gamma
+    depth1 += change * avg
+    depth2 -= change * avg
+    return depth1, depth2
+
+
+def calc_norm_depth_diffs(depths, delta_lat, delta_lon):
+    """Calculate normalized depth differences between each depth
+    and the depth delta_lat and delta_lon grid points away.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :arg delta_lat: Number of grid point in the latitude direction
+                    to calculate the difference over
+    :type delta_lat: int
+
+    :arg delta_lon: Number of grid point in the longitude direction
+                    to calculate the difference over
+    :type delta_lon: int
+
+    :returns: Normalized depth difference field for the bathymetry
+    :rtype: :py:class:`netCDF4.Variable`
+    """
+    imax, jmax = depths.shape
+    offset_depths = depths[:imax-delta_lat, :jmax-delta_lon]
+    avg_depths = (depths[delta_lat:, delta_lon:] + offset_depths) / 2
+    delta_depths = depths[delta_lat:, delta_lon:] - offset_depths
+    return np.abs(delta_depths / avg_depths)
+
+
+def argmax(depths):
+    """Return the indices of the maximum value in depths.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :returns: Indices of the maximum value in depths
+    :rtype: 2-tuple
+    """
+    i, j = np.unravel_index(np.argmax(depths), depths.shape)
+    return i, j
