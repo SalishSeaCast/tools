@@ -245,7 +245,23 @@ def show_region_depths(depths, centre, half_width=5):
 
 
 def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
-    """
+    """Smooth the bathymetry by successively adjusting depths
+    that have the greatest normalized difference until all of those
+    differences are below a max_norm_depth_diff.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :arg max_norm_depth_diff: Threshold normalized depth difference to
+                              smooth to.
+    :type max_norm_depth_diff: float
+
+    :arg smooth_factor: Fraction of the average depth to change
+                        the depths by
+    :type smooth_factor: float
+
+    :returns: netcdf variable object containing the depths
+    :rtype: :py:class:`netCDF4.Variable`
     """
     diffs_lat, lat_ij, diffs_lon, lon_ij = choose_steepest_cells(depths)
     max_diff = np.maximum(diffs_lat[lat_ij], diffs_lon[lon_ij])
@@ -264,7 +280,19 @@ def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
 
 
 def choose_steepest_cells(depths):
-    """
+    """Choose the grid cells with the greatest normalized depth
+    differences in the latitude and longitude directions.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :returns: Normalized depth difference field in the latitude direction,
+              indices of the grid point with the greatest latitude
+              direction difference,
+              normalized depth difference field in the longitude direction,
+              and indices of the grid point with the greatest longitude
+              direction difference.
+    :rtype: 4-tuple
     """
     diffs_lat = calc_norm_depth_diffs(depths, delta_lat=1, delta_lon=0)
     lat_ij = argmax(diffs_lat)
@@ -273,9 +301,24 @@ def choose_steepest_cells(depths):
     return diffs_lat, lat_ij, diffs_lon, lon_ij
 
 
-def smooth_neighbours(gamma, depth1, depth2):
+def smooth_neighbours(smooth_factor, depth1, depth2):
+    """Adjust a pair of depths by smooth_factor times their average.
+
+    :arg smooth_factor: Fraction of the average depth to change
+                        the depths by
+    :type smooth_factor: float
+
+    :arg depth1: First depth to adjust
+    :type depth1: float
+
+    :arg depth2: Second depth to adjust
+    :type depth2: float
+
+    :returns: Adjusted depths
+    :rtype: 2-tuple
+    """
     avg = (depth1 + depth2) / 2
-    change = gamma if depth1 < depth2 else -gamma
+    change = smooth_factor if depth1 < depth2 else -smooth_factor
     depth1 += change * avg
     depth2 -= change * avg
     return depth1, depth2
