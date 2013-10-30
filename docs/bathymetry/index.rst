@@ -31,8 +31,18 @@ Initial Sub-domain Test Bathymentry
 
 * `SalishSeaSubdomainBathy.ipynb`_: Documents the bathymetry used for the initial Salish Sea NEMO runs on a sub-set of the whole region domain.
   The :ref:`sub-domain bathymetry <SalishSeaSubdomainBathy-image>` was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.
+  The notebook includes 2 approaches to smoothing to bathymetry to get a successful 72 hour NEMO-3.4 run with M2 tidal forcing:
+
+  * Manual smoothing based on depth adjustments at the locations where test runs failed
+  * Algorithmic smoothing applied to the entire sub-domain
 
 .. _SalishSeaSubdomainBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb
+
+* `netCDF4bathy.ipynb`_: Documents the creation of a netCDF4 bathymetry file from the algorithmic smoothed bathymetry with zlib compression enabled for all variables.
+  The resulting file is about 1/6 the size
+  (227 kb in contrast to 1.6 Mb)
+
+.. _netCDF4bathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb
 
 
 .. _bathy_tools-module:
