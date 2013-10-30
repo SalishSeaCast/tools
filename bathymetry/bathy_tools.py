@@ -27,6 +27,16 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 
+def show_global_attrs(dataset):
+    """Print the global attributes of the netCDF dataset.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
+    """
+    for attr in dataset.ncattrs():
+        print('{}: {}'.format(attr, dataset.getncattr(attr)))
+
+
 def show_dimensions(dataset):
     """Print the dimensions of the netCDF dataset.
 
