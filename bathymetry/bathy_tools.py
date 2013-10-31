@@ -352,8 +352,8 @@ def calc_norm_depth_diffs(depths, delta_lat, delta_lon):
     :returns: Normalized depth difference field for the bathymetry
     :rtype: :py:class:`netCDF4.Variable`
     """
-    imax, jmax = depths.shape
-    offset_depths = depths[:imax-delta_lat, :jmax-delta_lon]
+    jmax, imax = depths.shape
+    offset_depths = depths[:jmax-delta_lat, :imax-delta_lon]
     avg_depths = (depths[delta_lat:, delta_lon:] + offset_depths) / 2
     delta_depths = depths[delta_lat:, delta_lon:] - offset_depths
     return np.abs(delta_depths / avg_depths)

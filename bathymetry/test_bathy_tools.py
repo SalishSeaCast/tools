@@ -1,5 +1,6 @@
 """Unit tests for bathy_tools.
 """
+from __future__ import division
 """
 Copyright 2013 The Salish Sea MEOPAR contributors
 and The University of British Columbia
@@ -30,6 +31,50 @@ def depths(request):
     depths = bathy.createVariable('Bathymetry', float, ('y', 'x'))
     request.addfinalizer(bathy.close)
     return depths
+
+
+def test_smooth_neighbours_d1_lt_d2():
+    """smooth_neighbours returns expected value for depth1 < depth2
+    """
+    d1, d2 = bathy_tools.smooth_neighbours(0.2, 1, 2)
+    assert d1, d2 == (1.3, 1.7)
+
+
+def test_smooth_neighbours_d1_gt_d2():
+    """smooth_neighbours returns expected value for depth1 > depth2
+    """
+    d1, d2 = bathy_tools.smooth_neighbours(0.2, 2, 1)
+    assert d1, d2 == (1.7, 1.3)
+
+
+def test_calc_norm_depth_diffs_degenerate(depths):
+    """calc_norm_depth_diffs returns zeros for delta_lat=delta_lon=0
+    """
+    depths = np.ones((5, 3))
+    diffs = bathy_tools.calc_norm_depth_diffs(depths, 0, 0)
+    np.testing.assert_array_equal(diffs, np.zeros_like(depths))
+
+
+def test_calc_norm_depth_diffs_1_lat_step(depths):
+    """calc_norm_depth_diffs returns expected diffs for delta_lat=1
+    """
+    depths = np.ones((5, 3))
+    depths[1, 1] = 2
+    diffs = bathy_tools.calc_norm_depth_diffs(depths, 1, 0)
+    expected = np.zeros((4, 3))
+    expected[0:2, 1] = 2/3
+    np.testing.assert_array_equal(diffs, expected)
+
+
+def test_calc_norm_depth_diffs_1_lon_step(depths):
+    """calc_norm_depth_diffs returns expected diffs for delta_lon=1
+    """
+    depths = np.ones((5, 3))
+    depths[1, 1] = 2
+    diffs = bathy_tools.calc_norm_depth_diffs(depths, 0, 1)
+    expected = np.zeros((5, 2))
+    expected[1, 0:2] = 2/3
+    np.testing.assert_array_equal(diffs, expected)
 
 
 def test_argmax_single_max(depths):
