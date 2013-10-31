@@ -251,7 +251,9 @@ def show_region_depths(depths, centre, half_width=5):
     :type half_width: int
     """
     ictr, jctr = centre
-    print(depths[jctr+5:jctr-5:-1, ictr-5:ictr+5])
+    print(depths[
+        jctr+half_width:jctr-half_width:-1,
+        ictr-half_width:ictr+half_width])
 
 
 def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
