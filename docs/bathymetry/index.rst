@@ -22,6 +22,16 @@ Full Salish Sea Domain Bathymetry
 =================================
 
 * `SalishSeaBathy.ipynb`_: Documents the :ref:`full domain bathymetry <SalishSeaBathy-image>` used for the Salish Sea NEMO runs.
+  The notebook includes:
+
+  * Conversion of the bathymetry data from the 2-Oct-2013 :file:`WC3_PREP` tarball to a netCDF4 dataset with zlib compression enabled for all variables and :kbd:`least_significant_digit=1` set for the depths
+    (:kbd:`Bathymetry`) variable.
+
+  * Clipping of the depths such that depths between 0 and 4m are set to 4m and depths greater than 428m
+    (the deepest value in the Strait of Georgia)
+    are set to 428m.
+
+  * Algorithmic smoothing
 
 .. _SalishSeaBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb
 
