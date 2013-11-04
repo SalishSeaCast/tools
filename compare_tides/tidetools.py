@@ -23,12 +23,6 @@ def find_closest_model_point(lon,lat):
     
 	#search for a grid point with lon/lat within tolerance of measured location 
 	x1, y1=np.where(np.logical_and((np.logical_and(X>lon-tol1,X<lon+tol1)),np.logical_and(Y>lat-tol2,Y<lat+tol2)))
-	print('lon = '+str(lon))
-	print('lat = '+str(lat))
-	print('x1 ='+str(x1))
-	print('y1 ='+str(y1))
-	print('X = '+str(X[x1,y1]))
-	print('Y = '+str(Y[x1,y1]))
 	if np.size(x1)!=0:
 		x1 = x1[0]
         	y1 = y1[0]
