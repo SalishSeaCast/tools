@@ -107,6 +107,55 @@ You can check what version of :program:`salishsea` you have installed with:
     salishsea --version
 
 
+:kbd:`prepare` Sub-command
+--------------------------
+
+The :command:`salishsea prepare` command sets up a run directory from which to execute the Salish Sea NEMO run described in the specifed run description,
+namelist,
+and IOM server definitions files:
+
+.. code-block:: bash
+
+    salishsea prepare --help
+    usage: salishsea prepare [-h] [-q] [--version] DESC_FILE NAMELIST IO_DEFS
+
+    Set up the Salish Sea NEMO run described in DESC_FILE and print the path to
+    the run directory.
+
+    positional arguments:
+      DESC_FILE    run description YAML file
+      NAMELIST     NEMO namelist file for run
+      IO_DEFS      NEMO IOM server defs file for run
+
+    optional arguments:
+      -h, --help   show this help message and exit
+      -q, --quiet  don't show the run directory path on completion
+      --version    show program's version number and exit
+
+The path to the run directory is printed upon completion of the command.
+
+The name of the run directory created is a Universally Unique Identifier
+(UUID)
+string because the directory is intended to be ephemerally used for a single run.
+
+The run directory contains symbolic links to:
+
+* the run description file provided on the command line
+
+* the namelist file provided on the command line,
+  aliased as :file:`namelist`,
+  the file name expected by NEMO
+
+* the IOM server definitions files provided on the command line,
+  aliased to :file:`iodefs.xml`,
+  the file name expected by NEMO
+
+* the :file:`xmlio_server.def` file found in the run-set directory where the run description file resides
+
+* the :file:`nemo.exe` and :file:`server.exe` executables found in the :file:`BLD/bin/` directory of the NEMO configuration given by the :kbd:`config_name` and :kbd:`NEMO-code` keys in the run description file.
+  :command:`salishsea prepare` aborts with an error message and exit code 2 if the :file:`nemo.exe` file is not found.
+
+
 Run Description File Structure
 ==============================
 
