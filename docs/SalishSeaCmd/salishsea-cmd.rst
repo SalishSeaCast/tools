@@ -154,7 +154,27 @@ The run directory contains symbolic links to:
 
 * the :file:`nemo.exe` and :file:`server.exe` executables found in the :file:`BLD/bin/` directory of the NEMO configuration given by the :kbd:`config_name` and :kbd:`NEMO-code` keys in the run description file.
   :command:`salishsea prepare` aborts with an error message and exit code 2 if the :file:`nemo.exe` file is not found.
+  In that case the run directory is not created.
+  :command:`salishsea prepare` also check to confirm that :file:`server.exe` exists but only issues a warning if it is not found becuase that is a valid situation if you are not using :kbd:`key_iomput` in your configuration.
 
+* the coordinates and bathymetry files given in the :kbd:`grid` section of the run description file
+
+* the initial conditions,
+  open boundary conditions,
+  and rivers run-off forcing directories given in the :kbd:`forcing` section of the run description file
+
+See the :ref:`RunDescriptionFileStructure` section for details of the run description file.
+
+The :command:`salishsea prepare` command concludes by printing the path to the run directory it created.
+Example:
+
+.. code-block:: bash
+
+    salishsea prepare SalishSea.yaml namelist.1h iodef.xml
+    Created run directory ../../runs/SalishSea/38e87e0c-472d-11e3-9c8e-0025909a8461
+
+
+.. _RunDescriptionFileStructure:
 
 Run Description File Structure
 ==============================
