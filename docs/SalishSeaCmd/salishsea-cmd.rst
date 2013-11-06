@@ -59,15 +59,16 @@ The command :program:`salishsea` or :command:`salishsea --help` produces a list 
 .. code-block:: bash
 
     salishsea --help
-    usage: salishsea [-h] [--version] {combine} ...
+    usage: salishsea [-h] [--version] {combine,prepare} ...
 
     optional arguments:
-      -h, --help  show this help message and exit
-      --version   show program's version number and exit
+      -h, --help         show this help message and exit
+      --version          show program's version number and exit
 
     sub-commands:
-      {combine}
-        combine   Combine results from an MPI Salish Sea NEMO run.
+      {combine,prepare}
+        combine          Combine results from an MPI Salish Sea NEMO run.
+        prepare          Prepare a Salish Sea NEMO run
 
     Use `salishsea <sub-command> --help` to get detailed help about a sub-command.
 
@@ -78,19 +79,26 @@ For example:
 .. code-block:: bash
 
     salishsea combine --help
-    usage: salishsea combine [-h] [--version] DESC_FILE RESULTS_DIR
+    usage: salishsea combine [-h] [--keep-proc-results] [--no-compress]
+                             [--compress-restart] [--delete-restart] [--version]
+                             DESC_FILE RESULTS_DIR
 
     Combine the per-processor results files from an MPI Salish Sea NEMO run
-    described in DESC_FILE into files in RESULTS_DIR. If RESULTS_DIR does not
-    exist it will be created.
+    described in DESC_FILE into files in RESULTS_DIR and compress them using gzip.
+    Delete the per-processor files. If RESULTS_DIR does not exist it will be
+    created.
 
     positional arguments:
-      DESC_FILE    run description YAML file
-      RESULTS_DIR  directory to store results into
+      DESC_FILE            run description YAML file
+      RESULTS_DIR          directory to store results into
 
     optional arguments:
-      -h, --help   show this help message and exit
-      --version    show program's version number and exit
+      -h, --help           show this help message and exit
+      --keep-proc-results  don't delete per-processor results files
+      --no-compress        don't compress results files
+      --compress-restart   compress restart file(s)
+      --delete-restart     delete restart file(s)
+      --version            show program's version number and exit
 
 You can check what version of :program:`salishsea` you have installed with:
 
