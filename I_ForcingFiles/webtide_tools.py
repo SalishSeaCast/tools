@@ -32,8 +32,6 @@ def get_data_from_csv(tidevar, constituent, depth):
         #convert the phase and amplitude to cosine and sine format that NEMO likes
         Z1 = amp_W*numpy.cos(numpy.radians(pha_W))
         Z2 = amp_W*numpy.sin(numpy.radians(pha_W))
-	print(Z1.size)
-	print(Z2.size)
 
     #U VELOCITY
     if tidevar == 'U': 
@@ -67,8 +65,6 @@ def get_data_from_csv(tidevar, constituent, depth):
         Z2 = numpy.zeros((boundlen+10,1))
         Z1[5:boundlen+5,0] = uZ1
         Z2[5:boundlen+5,0] = uZ2
-	print(Z1.size)
-	print(Z2.size)
         
     #V VELOCITY
     if tidevar == 'V':
@@ -100,8 +96,6 @@ def get_data_from_csv(tidevar, constituent, depth):
         Z2 = numpy.zeros((boundlen+10,1))
         Z1[5:boundlen+5,0] = vZ1
         Z2[5:boundlen+5,0] = vZ2
-	print(Z1.size)
-	print(Z2.size)	
 
     return Z1, Z2, I, boundlen
 
