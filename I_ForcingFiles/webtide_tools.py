@@ -91,7 +91,7 @@ def get_data_from_csv(tidevar, constituent, a, depth):
     return Z1, Z2
 
 #Define a function that creates Netcdf files from the following information
-# - choose variable (elevation ('T'), u ('u') or v ('v'))
+# - choose variable (elevation ('T'), u ('U') or v ('V'))
 # - choose constituent ('O1', 'P1', 'Q1', 'K1', 'K2', 'N2', 'M2', 'S2')
 # - give z1 and z2 data
 # - shape of grid (a and b, where: a, b = depth.shape)
