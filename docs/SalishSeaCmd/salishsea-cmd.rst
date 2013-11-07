@@ -140,28 +140,31 @@ string because the directory is intended to be ephemerally used for a single run
 
 The run directory contains symbolic links to:
 
-* the run description file provided on the command line
+* The run description file provided on the command line
 
-* the namelist file provided on the command line,
+* The namelist file provided on the command line,
   aliased as :file:`namelist`,
   the file name expected by NEMO
 
-* the IOM server definitions files provided on the command line,
+* The IOM server definitions files provided on the command line,
   aliased to :file:`iodefs.xml`,
   the file name expected by NEMO
 
-* the :file:`xmlio_server.def` file found in the run-set directory where the run description file resides
+* The :file:`xmlio_server.def` file found in the run-set directory where the run description file resides
 
-* the :file:`nemo.exe` and :file:`server.exe` executables found in the :file:`BLD/bin/` directory of the NEMO configuration given by the :kbd:`config_name` and :kbd:`NEMO-code` keys in the run description file.
+* The :file:`nemo.exe` and :file:`server.exe` executables found in the :file:`BLD/bin/` directory of the NEMO configuration given by the :kbd:`config_name` and :kbd:`NEMO-code` keys in the run description file.
   :command:`salishsea prepare` aborts with an error message and exit code 2 if the :file:`nemo.exe` file is not found.
   In that case the run directory is not created.
   :command:`salishsea prepare` also check to confirm that :file:`server.exe` exists but only issues a warning if it is not found becuase that is a valid situation if you are not using :kbd:`key_iomput` in your configuration.
 
-* the coordinates and bathymetry files given in the :kbd:`grid` section of the run description file
+* The coordinates and bathymetry files given in the :kbd:`grid` section of the run description file
 
-* the initial conditions,
+* The initial conditions,
   open boundary conditions,
-  and rivers run-off forcing directories given in the :kbd:`forcing` section of the run description file
+  and rivers run-off forcing directories given in the :kbd:`forcing` section of the run description file.
+  The initial conditions may be specified from a restart file instead of a directory of netCDF files,
+  in which case the restart file is synlinked as :file:`restart.nc`,
+  the file name expected by NEMO.
 
 See the :ref:`RunDescriptionFileStructure` section for details of the run description file.
 
@@ -184,19 +187,34 @@ They contain key-value pairs that define the names and locations of files and di
 
 .. _YAML: http://pyyaml.org/wiki/PyYAMLDocumentation
 
-.. note::
-
-    The :program:`salishsea` tool is under active development and the format of the run description file is changing frequently.
-
 Example:
 
-.. literalinclude:: ../../../SS-run-sets/JPP/JPP.yaml
+.. literalinclude:: ../../../SS-run-sets/SalishSea/SalishSea.yaml
    :language: yaml
+
+The value associated with the :kbd:`config_name` key is the name of the NEMO configuration to use for runs.
+It is the name of a directory in :file:`NEMO-code/NEMOGCM/CONFIG/`.
 
 The :kbd:`paths` section of the run description file is a collection of directory paths that :program:`salishsea` uses to find files in other repos that it needs.
 The paths may be either absolute or relative.
 
-* The value associated with the :kbd:`NEMO-code` key is the path to the :ref:`NEMO-code-repo` clone where the :file:`rebuild-nemo` tool,
-  the NEMO executable,
+* The value associated with the :kbd:`NEMO-code` key is the path to the :ref:`NEMO-code-repo` clone where the NEMO executable,
   etc. for the run are to be found.
 
+* The :kbd:`forcing` key value is the path to the :ref:`NEMO-forcing-repo` clone where the netCDF files for the grid coordinates,
+  bathymetry,
+  initial conditions,
+  open boundary conditions,
+  etc. are found.
+
+* The :kbd:`runs directory` key gives the path to the directory where run directories will be created by the :command:`salishsea prepare` sub-command.
+
+The :kbd:`grid` section of the file contains 2 keys that provide the names of the coordinates and bathymetry files to use for the run.
+Those file are presumed to be in the :file:`grid/` directory of the :ref:`NEMO-forcing-repo` clone pointed to by the :kbd:`forcing` key in the :kbd:`paths` section.
+
+The :kbd:`forcing` section of the run description file contains 3 keys that provide the names of directories in the :ref:`NEMO-forcing-repo` where initial conditions and forcing files are found.
+Those directory names are used in the appropriate places in the namelist.
+
+The :kbd:`initial conditions` key can,
+alternatively,
+be used to give the path to and name of a restart file.
