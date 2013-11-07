@@ -20,10 +20,10 @@ Contents:
    SalishSeaCmd/salishsea-cmd
    NetCDF_Plot/index
    bathymetry/index
+   I_ForcingFiles/index
    nemo-tools/index
    Run_Files/index
    nocscombine/index
-   I_ForcingFiles/index
 
 
 .. include:: license_description.txt
