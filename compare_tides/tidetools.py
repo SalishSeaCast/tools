@@ -4,18 +4,8 @@ import os
 import netCDF4 as NC
 import numpy as np
 
-def find_closest_model_point(lon,lat):
+def find_closest_model_point(lon,lat,X,Y,bathy):
 	#find the closest model grid point to the measured data
-	os.chdir('/ocean/klesouef/meopar/nemo-forcing/grid')
-	grid = NC.Dataset('SubDom_bathy_meter_NOBCchancomp.nc','r')
-	bathy = grid.variables['Bathymetry'][:,:]
-
-	loc = "/ocean/klesouef/meopar/tools/NetCDF_Plot"
-	os.chdir(loc)
-	fT = NC.Dataset('WC3_CU60_20020102_20020104_grid_T.nc','r')
-	eta = fT.variables['sossheig'][:,:,:]
-	X = fT.variables['nav_lon'][:,:]
-	Y = fT.variables['nav_lat'][:,:]    
 
 	#tolerance for searching for grid points (approx. distances between adjacent grid points)
 	tol1 = 0.0052  #lon
