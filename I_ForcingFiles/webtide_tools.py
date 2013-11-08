@@ -157,34 +157,37 @@ def create_tide_netcdf(tidevar,constituent,depth):
         z2 = nemo.createVariable('z2','float32',('yb','xb'),zlib=True)
         z2.units = 'm'
         z2.longname = 'tidal elevation: sine'
-        z1 = Z1[:,0]
-        z2 = Z2[:,0]
+        z1[0,0:boundlen+10] = Z1[:,0]
+        z2[0,0:boundlen+10] = Z2[:,0]
+	print(Z1.size)
+	print(z1.size)
+	print(z2.size)
         #z1[0,a:] = 0.
         #z2[0,a:] = 0.   
         
-    if tidevar=='u':    
+    if tidevar=='U':    
         u1 = nemo.createVariable('u1','float32',('yb','xb'),zlib=True)
         u1.units = 'm'
         u1.longname = 'tidal x-velocity: cosine'
         u2 = nemo.createVariable('u2','float32',('yb','xb'),zlib=True)
         u2.units = 'm'
         u2.longname = 'tidal x-velocity: sine'
-        u1[0,0:a] = Z1[:,0]
-        u2[0,0:a] = Z2[:,0]
-        u1[0,a:] = 0.
-        u2[0,a:] = 0.   
+        u1[0,0:boundlen+10] = Z1[:,0]
+        u2[0,0:boundlen+10] = Z2[:,0]
+        #u1[0,a:] = 0.
+        #u2[0,a:] = 0.   
         
-    if tidevar=='v':
+    if tidevar=='V':
         v1 = nemo.createVariable('v1','float32',('yb','xb'),zlib=True)
         v1.units = 'm'
         v1.longname = 'tidal y-velocity: cosine'
         v2 = nemo.createVariable('v2','float32',('yb','xb'),zlib=True)
         v2.units = 'm'
         v2.longname = 'tidal y-velocity: sine'
-        v1[0,0:a] = Z1[:,0]
-        v2[0,0:a] = Z2[:,0]
-        v1[0,a:] = 0.
-        v2[0,a:] = 0.   
+        v1[0,0:boundlen+10] = Z1[:,0]
+        v2[0,0:boundlen+10] = Z2[:,0]
+        #v1[0,a:] = 0.
+        #v2[0,a:] = 0.   
     
     return Z1, Z2
     nemo.close()
