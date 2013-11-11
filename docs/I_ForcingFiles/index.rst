@@ -9,7 +9,9 @@ The :file:`tools/I_ForcingFiles/` directory contains:
 * :file:`LookatInitialForcingFiles.ipynb`: an IPython Notebook that opens bathymetry, coordinate and tide  files from JPP's run of CONCEPTS 110
   It then prepares a various plots.
 
-* :file:`Open Boundary.ipynb`: and IPython Notebook that characterizes the western open boundary of the large Salish Sea NEMO 3.4 domain.
+* :file:`NoSnow.ipynb`: an IPython Notebook for the creation of the :file:`atmospheric/no_snow.nc` No-snow constraint atmospheric forcing file in the :ref:`NEMO-forcing-repo`.
+
+* :file:`Open Boundary.ipynb`: an IPython Notebook that characterizes the western open boundary of the large Salish Sea NEMO 3.4 domain.
 
 * :file:`Prepare Tide Files.ipynb`: an IPython Notebook that opens JPP's tide files and prepares tide files for NEMO 3.4 in NetCDF format.  This book is for the small domain and does both western and northern boundary.
 
