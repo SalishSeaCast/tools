@@ -215,6 +215,10 @@ Those file are presumed to be in the :file:`grid/` directory of the :ref:`NEMO-f
 The :kbd:`forcing` section of the run description file contains 3 keys that provide the names of directories in the :ref:`NEMO-forcing-repo` where initial conditions and forcing files are found.
 Those directory names are used in the appropriate places in the namelist.
 
+The value associated with the :kbd:`atmospheric` key is the path to the :ref:`AtmosphericForcing` files.
+It is symlinked as :file:`NEMO-atmos/` in the run directory,
+and that directory name is used on the :kbd:`namsbc_core` namelist.
+
 The :kbd:`initial conditions` key can,
 alternatively,
 be used to give the path to and name of a restart file.
