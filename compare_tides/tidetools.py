@@ -36,3 +36,33 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
         	i=[]
         	j=[]
     	return i, j
+
+#define a function to plot the amplitude of one constituent throughout the domain
+#e.g. tidetools.plot_amp_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
+def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
+	import matplotlib.pyplot as plt
+	#range of amplitudes to plot	
+	v = np.arange(0, 1.30, 0.1)
+	plt.contourf(X,Y,amp,v,cmap='cool')
+	plt.colorbar()
+	plt.xlabel('longitude (deg)')
+	plt.ylabel('latitude (deg)')
+	plt.title(constflag+' amplitude (m) for '+titstr)
+	if savestr:
+	    plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'amp_'+titstr+'.pdf')
+
+#define a function to plot the phase of one constituent throughout the domain
+# eg. tidetools.plot_pha_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
+def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
+	import matplotlib.pyplot as plt
+	#plot modelled M2 phase 
+	v = np.arange(-125, 150,25)
+	plt.contourf(X,Y,pha,v,cmap='PRGn')
+	plt.colorbar()
+	plt.xlabel('longitude (deg)')
+	plt.ylabel('latitude (deg)')
+	plt.title(constflag+' phase (deg) for '+titstr)
+	limits = plt.axis()
+	if savestr:
+	    plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_pha_'+titstr+'.pdf')
+
