@@ -2,7 +2,12 @@
 Initial Conditions and Forcing Notebooks and Tools
 **************************************************
 
-The :file:`tools/I_ForcingFiles/` directory contains:
+The :file:`tools/I_ForcingFiles/` directory contains a collection of IPython Notebooks for creating,
+manipulating,
+and visualizing initial conditions and forcing netCDF files.
+Links to statically rendered versions of these notebooks can be found in the :ref:`tools-repo` repo :file:`I_ForcingFiles/` directory README_.
+
+.. _README: https://bitbucket.org/salishsea/tools/src/tip/I_ForcingFiles/README.md
 
 * :file:`AddRivers.ipynb`: an IPython Notebook that prepares the Rivers file for the large Salish Sea NEMO 3.4 domain.
 
@@ -20,3 +25,5 @@ The :file:`tools/I_ForcingFiles/` directory contains:
 * :file:`PrepareTS.ipynb`: an IPython Notebook to prepare initial T&S for the large domain based on a single S4-1 profile from Sept 2003.
 
 * :file:`webtide_forcing.ipynb`: an IPython Notebook to prepare tidal forcing files for the large Salish Sea NEMO 3.4 domain, western boundary.
+
+When you add a new notebook to this collection please use :command:`python make_readme.py` in the :file:`tools/I_ForcingFiles/` directory to update the :file:`README.md` and commit and push it too.
