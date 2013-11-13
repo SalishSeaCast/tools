@@ -59,16 +59,17 @@ The command :program:`salishsea` or :command:`salishsea --help` produces a list 
 .. code-block:: bash
 
     salishsea --help
-    usage: salishsea [-h] [--version] {combine,prepare} ...
+    usage: salishsea [-h] [--version] {combine,get_cgrf,prepare} ...
 
     optional arguments:
-      -h, --help         show this help message and exit
-      --version          show program's version number and exit
+      -h, --help            show this help message and exit
+      --version             show program's version number and exit
 
     sub-commands:
-      {combine,prepare}
-        combine          Combine results from an MPI Salish Sea NEMO run.
-        prepare          Prepare a Salish Sea NEMO run
+      {combine,get_cgrf,prepare}
+        combine             Combine results from an MPI Salish Sea NEMO run
+        get_cgrf            Download and symlink CGRF atmospheric forcing files
+        prepare             Prepare a Salish Sea NEMO run
 
     Use `salishsea <sub-command> --help` to get detailed help about a sub-command.
 
@@ -105,6 +106,37 @@ You can check what version of :program:`salishsea` you have installed with:
 .. code-block:: bash
 
     salishsea --version
+
+
+.. _salishsea-get_cgrf:
+
+:kbd:`get_cgrf` Sub-command
+---------------------------
+
+The :command:`salishsea get_cgrf` command downloads CGRF products atmospheric forcing files from Dalhousie rsync
+repository and symlink with the file names that NEMO expects:
+
+.. code-block:: bash
+
+    salishsea get_cgrf --help
+    usage: salishsea get_cgrf [-h] [-d DAYS] [--user USERID] [--password PASSWD]
+                              [--version]
+                              START_DATE
+
+    Download CGRF products atmospheric forcing files from Dalhousie rsync
+    repository and symlink with the file names that NEMO expects.
+
+    positional arguments:
+      START_DATE            1st date to download files for
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d DAYS, --days DAYS  Number of days to download
+      --user USERID         User id for Dalhousie CGRF rsync repository
+      --password PASSWD     Passowrd for Dalhousie CGRF rsync repository
+      --version             show program's version number and exit
+
+The command *must* be run in the :file:`/ocean/dlatorne/CGRF/` directory.
 
 
 :kbd:`prepare` Sub-command
