@@ -7,7 +7,7 @@ manipulating,
 and visualizing initial conditions and forcing netCDF files.
 Links to statically rendered versions of these notebooks can be found in the :ref:`tools-repo` repo :file:`I_ForcingFiles/` directory README_.
 
-.. _README: https://bitbucket.org/salishsea/tools/src/tip/I_ForcingFiles/README.md
+.. _README: https://bitbucket.org/salishsea/tools/src/tip/I_ForcingFiles/
 
 * :file:`AddRivers.ipynb`: an IPython Notebook that prepares the Rivers file for the large Salish Sea NEMO 3.4 domain.
 
