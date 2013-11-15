@@ -65,6 +65,14 @@ or import modules from it:
     nc_tools.check_dataset_attrs(...)
 
 
+
+:py:mod:`hg_commands` Module
+============================
+
+.. automodule:: hg_commands
+    :members:
+
+
 :py:mod:`nc_tools` Module
 =========================
 

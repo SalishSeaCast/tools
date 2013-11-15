@@ -1,5 +1,5 @@
-"""A collection of functions for exploring and managing the attributes of
-netCDF files.
+"""A library of Python functions for exploring and managing
+the attributes of netCDF files.
 """
 from __future__ import (
     absolute_import,
@@ -23,7 +23,7 @@ limitations under the License.
 """
 from datetime import datetime
 import os
-from hg_commands import hg_commands as hg
+import hg_commands as hg
 
 
 __all__ = [
