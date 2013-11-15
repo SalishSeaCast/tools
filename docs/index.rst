@@ -18,6 +18,7 @@ Contents:
    :maxdepth: 2
 
    SalishSeaCmd/salishsea-cmd
+   SalishSeaTools/salishsea-tools
    NetCDF_Plot/index
    bathymetry/index
    I_ForcingFiles/index
