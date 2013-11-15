@@ -14,7 +14,9 @@ Links to statically rendered versions of these notebooks can be found in the :re
 * :file:`LookatInitialForcingFiles.ipynb`: an IPython Notebook that opens bathymetry, coordinate and tide  files from JPP's run of CONCEPTS 110
   It then prepares a various plots.
 
-* :file:`NoSnow.ipynb`: an IPython Notebook for the creation of the :file:`atmospheric/no_snow.nc` No-snow constraint atmospheric forcing file in the :ref:`NEMO-forcing-repo`.
+* :file:`netCDF4weights-CGRF.ipynb`: an IPython Notebook to convert the values from :file:`grid/met_gem_weight.nc` from the :file:`WC3_PREP` 2-Oct-2013 tarball into a netCDF4, :kbd:`zlib=True` file with convention-compliant attributes.
+
+* :file:`NoSnow.ipynb`: an IPython Notebook for the creation of the :file:`atmospheric/no_snow.nc` :ref:`NoSnowConstraint` atmospheric forcing file in the :ref:`NEMO-forcing-repo`.
 
 * :file:`Open Boundary.ipynb`: an IPython Notebook that characterizes the western open boundary of the large Salish Sea NEMO 3.4 domain.
 
