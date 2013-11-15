@@ -41,10 +41,14 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
 #e.g. tidetools.plot_amp_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
 def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
 	import matplotlib.pyplot as plt
+	import numpy
+	#make 0 values NaNs so they plot blank
+	amp = numpy.ma.masked_equal(amp,0)
 	#range of amplitudes to plot	
 	v = np.arange(0, 1.30, 0.1)
-	plt.contourf(X,Y,amp,v,cmap='cool')
-	plt.colorbar()
+	plt.figure(figsize=(9,9))	
+    	CS = plt.contourf(X,Y,amp,v,cmap='cool',aspect=(1 / numpy.cos(numpy.median(X) * numpy.pi / 180)))
+	plt.colorbar(CS)
 	plt.xlabel('longitude (deg)')
 	plt.ylabel('latitude (deg)')
 	plt.title(constflag+' amplitude (m) for '+titstr)
@@ -55,11 +59,14 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
 # eg. tidetools.plot_pha_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
 def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
 	import matplotlib.pyplot as plt
+	import numpy
+	#make 0 values NaNs so they plot blank
+	pha = numpy.ma.masked_equal(pha,0)
 	#plot modelled M2 phase 
-	v = np.arange(-125, 150,25)
-	plt.figure()
-	plt.contourf(X,Y,pha,v,cmap='PRGn')
-	plt.colorbar()
+	v = np.arange(-125, 150,12.5)
+	plt.figure(figsize=(9,9))	
+	CS = plt.contourf(X,Y,pha,v,cmap='gist_rainbow',aspect=(1 / numpy.cos(numpy.median(X) * numpy.pi / 180)))
+	plt.colorbar(CS)
 	plt.xlabel('longitude (deg)')
 	plt.ylabel('latitude (deg)')
 	plt.title(constflag+' phase (deg) for '+titstr)
