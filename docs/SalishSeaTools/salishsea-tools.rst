@@ -48,3 +48,25 @@ Experienced Python developers may wish to install the package in other ways:
 * In a Python virtual environment
 * In :file:`$HOME/.local/` via the :command:`pip install --user` option
 
+To use the package in your IPython Notebooks or Python scripts import the package:
+
+.. code-block:: python
+
+    import salishsea-tools
+
+    salishsea-tools.bathy_tools.plot_colourmesh(...)
+
+or import modules from it:
+
+.. code-block:: python
+
+    from salishsea-tools import nc_tools
+
+    nc_tools.check_dataset_attrs(...)
+
+
+:py:mod:`nc_tools` Module
+=========================
+
+.. automodule:: nc_tools
+    :members:
