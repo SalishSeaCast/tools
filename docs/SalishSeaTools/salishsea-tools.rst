@@ -65,6 +65,12 @@ or import modules from it:
     nc_tools.check_dataset_attrs(...)
 
 
+:py:mod:`bathy_tools` Module
+============================
+
+.. automodule:: bathy_tools
+    :members:
+
 
 :py:mod:`hg_commands` Module
 ============================
