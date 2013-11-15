@@ -60,5 +60,5 @@ setup(
     classifiers=python_classifiers + other_classifiers,
     platforms=['MacOS X', 'Linux'],
     install_requires=install_requires,
-    packages=['salishsea_cmd'],
+    packages=['salishsea_tools'],
 )
