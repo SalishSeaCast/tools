@@ -1,8 +1,9 @@
 Changelog
 =========
 
-Next Release
-------------
+* ``bathy_tools`` module and documentation:
+  A library of Python functions for viewing and manipulating
+  netCDF bathymetry files.
 
 * ``hg_commands`` module and documentation:
   A library of Python functions for working with Mercurial
@@ -11,7 +12,7 @@ Next Release
   and other modules in the ``SalishSeaTools`` package.
 
 * ``nc_tools`` module and documentation:
-  A collection of functions for exploring and managing the attributes of
+  A library of Python functions for exploring and managing the attributes of
   netCDF files.
 
 * Package framework.
