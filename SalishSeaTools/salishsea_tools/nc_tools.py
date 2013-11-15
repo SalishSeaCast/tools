@@ -23,7 +23,7 @@ limitations under the License.
 """
 from datetime import datetime
 import os
-import hg_commands as hg
+from salishsea_tools import hg_commands as hg
 
 
 __all__ = [
