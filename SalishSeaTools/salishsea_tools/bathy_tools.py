@@ -25,6 +25,7 @@ from matplotlib.colors import BoundaryNorm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
+from salishsea_tools import nc_tools
 
 
 def show_global_attrs(dataset):
@@ -32,9 +33,13 @@ def show_global_attrs(dataset):
 
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
+
+    .. note::
+
+        This function is deprecated.
+        Use :py:func:`nc_tools.show_dataset_attrs` instead.
     """
-    for attr in dataset.ncattrs():
-        print('{}: {}'.format(attr, dataset.getncattr(attr)))
+    nc_tools.show_dataset_attrs(dataset)
 
 
 def show_dimensions(dataset):
@@ -42,9 +47,13 @@ def show_dimensions(dataset):
 
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
+
+    .. note::
+
+        This function is deprecated.
+        Use :py:func:`nc_tools.show_dimensions` instead.
     """
-    for dim in dataset.dimensions.itervalues():
-        print(dim)
+    nc_tools.show_dimensions(dataset)
 
 
 def show_variables(dataset):
@@ -52,8 +61,13 @@ def show_variables(dataset):
 
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
+
+    .. note::
+
+        This function is deprecated.
+        Use :py:func:`nc_tools.show_variables` instead.
     """
-    print(dataset.variables.keys())
+    nc_tools.show_variables(dataset)
 
 
 def min_mid_max(var):
