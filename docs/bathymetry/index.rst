@@ -53,12 +53,3 @@ Initial Sub-domain Test Bathymentry
   (227 kb in contrast to 1.6 Mb)
 
 .. _netCDF4bathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb
-
-
-.. _bathy_tools-module:
-
-:py:mod:`bathy_tools` Module
-============================
-
-.. automodule:: bathy_tools
-   :members:
