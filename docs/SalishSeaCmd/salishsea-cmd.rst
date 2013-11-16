@@ -33,6 +33,7 @@ These instructions assume that:
 * You have an up to date clone of the `tools repo`_
 * You have the :ref:`AnacondaPythonDistro` installed
 * :file:`$HOME/anaconda/bin` is included in your :envvar:`PATH` environment variable
+* You have installed the :ref:`SalishSeaTools` package
 
 .. _tools repo: https://bitbucket.org/salishsea/tools/
 
