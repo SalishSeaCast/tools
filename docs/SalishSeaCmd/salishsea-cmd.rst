@@ -149,15 +149,14 @@ and IOM server definitions files:
 
 .. code-block:: bash
 
-    salishsea prepare --help
-    usage: salishsea prepare [-h] [-q] [--version] DESC_FILE NAMELIST IO_DEFS
+    salishsea prepare -h
+    usage: salishsea prepare [-h] [-q] [--version] DESC_FILE IO_DEFS
 
     Set up the Salish Sea NEMO run described in DESC_FILE and print the path to
     the run directory.
 
     positional arguments:
       DESC_FILE    run description YAML file
-      NAMELIST     NEMO namelist file for run
       IO_DEFS      NEMO IOM server defs file for run
 
     optional arguments:
@@ -171,7 +170,13 @@ The name of the run directory created is a Universally Unique Identifier
 (UUID)
 string because the directory is intended to be ephemerally used for a single run.
 
-The run directory contains symbolic links to:
+The run directory contains a :file:`namelist`
+(the file name expected by NEMO)
+file that is constructed by concatenating the namelist segments listed in the run description file
+(see :ref:`RunDescriptionFileStructure`).
+That constructed namelist is concluded with empty instances of all of the namelists that NEMO requires so that default values will be used for any namelist variables not included in the namelist segments listed in the run description file.
+
+The run directory also contains symbolic links to:
 
 * The run description file provided on the command line
 
@@ -254,4 +259,15 @@ and that directory name is used on the :kbd:`namsbc_core` namelist.
 
 The :kbd:`initial conditions` key can,
 alternatively,
-be used to give the path to and name of a restart file.
+be used to give the path to and name of a restart file,
+e.g.:
+
+.. code-block:: yaml
+
+    initial conditions: ../../SalishSea/results/50s_22-25Sep/SalishSea_00019008_restart.nc
+
+which will be symlinked in the run directory as :file:`restart.nc`.
+
+The :kbd:`namelists` section of the run description file contains a list of NEMO namelist segments that will be concatenated to construct the :file:`namelist` file for the run.
+That constructed :file:`namelist` is concluded with empty instances of all of the namelists that NEMO requires so that default values will be used for any namelist variables not included in the namelist segments listed in the run description file.
+The blob of empty namelist instances is defined as a constant in the :py:mod:`salishsea_cmd.prepare_processor` module in the :py:mod:`SalishSeaCmd` package.
