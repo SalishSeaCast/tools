@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import os
 import netCDF4 as nc
 import numpy as np
 import pytest
@@ -29,7 +30,11 @@ def depths(request):
     bathy.createDimension('x', 3)
     bathy.createDimension('y', 5)
     depths = bathy.createVariable('Bathymetry', float, ('y', 'x'))
-    request.addfinalizer(bathy.close)
+
+    def teardown():
+        bathy.close()
+        os.remove('foo')
+    request.addfinalizer(teardown)
     return depths
 
 
