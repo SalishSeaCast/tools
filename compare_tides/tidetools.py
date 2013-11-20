@@ -63,7 +63,7 @@ def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
 	#make 0 values NaNs so they plot blank
 	pha = numpy.ma.masked_equal(pha,0)
 	#plot modelled M2 phase 
-	v = np.arange(-125, 150,12.5)
+	v = np.arange(-180, 202.5,22.5)
 	plt.figure(figsize=(9,9))	
 	CS = plt.contourf(X,Y,pha,v,cmap='gist_rainbow',aspect=(1 / numpy.cos(numpy.median(X) * numpy.pi / 180)))
 	plt.colorbar(CS)
