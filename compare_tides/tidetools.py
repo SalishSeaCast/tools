@@ -61,7 +61,7 @@ def get_SS_bathy_data():
 	Y = grid.variables['nav_lat'][:,:]
 	return bathy, X, Y
 
-#define a function to get the Salish Sea bathymetry and grid data
+#define a function to get the subdomain bathymetry and grid data
 def get_subdomain_bathy_data():
 	grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/SubDom_bathy_meter_NOBCchancomp.nc','r')
 	bathy = grid.variables['Bathymetry'][:,:]
