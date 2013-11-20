@@ -67,7 +67,7 @@ def test_calc_norm_depth_diffs_1_lat_step(depths):
     depths[1, 1] = 2
     diffs = bathy_tools.calc_norm_depth_diffs(depths, 1, 0)
     expected = np.zeros((4, 3))
-    expected[0:2, 1] = 2/3
+    expected[0:2, 1] = 2 / 3
     np.testing.assert_array_equal(diffs, expected)
 
 
@@ -78,7 +78,7 @@ def test_calc_norm_depth_diffs_1_lon_step(depths):
     depths[1, 1] = 2
     diffs = bathy_tools.calc_norm_depth_diffs(depths, 0, 1)
     expected = np.zeros((5, 2))
-    expected[1, 0:2] = 2/3
+    expected[1, 0:2] = 2 / 3
     np.testing.assert_array_equal(diffs, expected)
 
 
