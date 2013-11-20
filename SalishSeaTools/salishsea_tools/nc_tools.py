@@ -80,7 +80,7 @@ def show_variable_attrs(dataset, *vars):
     """
     if vars:
         for var in vars:
-            print(var)
+            print(dataset.variables[var])
     else:
         for var in dataset.variables.itervalues():
             print(var)
