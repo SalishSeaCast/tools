@@ -209,3 +209,49 @@ def test_init_dataset_attrs_no_oversrite_quiet(
         quiet=True)
     out, err = capsys.readouterr()
     assert out == ''
+
+
+@patch(
+    'salishsea_tools.nc_tools.hg.default_url',
+    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+def test_notebook_hg_url(mock_dflt_url):
+    """_notebook_hg_url returns expected URL
+    """
+    url = nc_tools._notebook_hg_url('bar.ipynb')
+    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/bar.ipynb'
+
+
+@patch('salishsea_tools.nc_tools.hg.default_url', return_value=None)
+def test_notebook_hg_url_REQUIRED(mock_dflt_url):
+    """_notebook_hg_url returns REQUIRED if bitbucket not in repo URL
+    """
+    url = nc_tools._notebook_hg_url('foo')
+    assert url == 'REQUIRED'
+
+
+@patch(
+    'salishsea_tools.nc_tools.hg.default_url',
+    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+def test_notebook_hg_url_adds_ipynb(mock_dflt_url):
+    """_notebook_hg_url adds .ipynb extension if notebook name lacks it
+    """
+    url = nc_tools._notebook_hg_url('bar')
+    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/bar.ipynb'
+
+
+@patch(
+    'salishsea_tools.nc_tools.hg.default_url',
+    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+def test_nc_file_hg_url(mock_dflt_url):
+    """_nc_file_hg_url returns expected URL
+    """
+    url = nc_tools._nc_file_hg_url('../bar/baz.nc')
+    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/baz.nc'
+
+
+@patch('salishsea_tools.nc_tools.hg.default_url', return_value=None)
+def test_nc_file_hg_url_REQUIRED(mock_dflt_url):
+    """_nc_file_hg_url returns REQUIRED if bitbucket not in repo URL
+    """
+    url = nc_tools._nc_file_hg_url('../bar/baz.nc')
+    assert url == 'REQUIRED'
