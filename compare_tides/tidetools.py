@@ -199,8 +199,6 @@ def calc_diffs_meas_mod(runname):
 	#read in the measured data from Foreman et al (1995)
 	import pandas as pd
 	meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
-
-	#the column names have spaces in them, so rename them
 	meas_wl_harm = meas_wl_harm.rename(columns={'M2 amp': 'M2_amp', 'M2 phase (deg UT)': 'M2_pha', 'K1 amp': 'K1_amp', 'K1 phase (deg UT)': 'K1_pha'})
 
 	import angles
@@ -261,6 +259,7 @@ def calc_diffs_meas_mod(runname):
 				D_M04_K1 = sqrt(0.5*(Am_K1**2+Ao_K1**2)-Am_K1*Ao_K1*cos(radians(gm_K1-go_K1)))
 				#write results to csv
 				writer.writerow([str(t+1),meas_wl_harm.Site[t],-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],  Am_M2, Ao_M2, gm_M2, go_M2, D_F95_M2, D_M04_M2, Am_K1, Ao_K1, gm_K1, go_K1, D_F95_K1, D_M04_K1])
+				#append the latest result
 				Am_M2_all.append(float(Am_M2))
 				Ao_M2_all.append(float(Ao_M2))
 				gm_M2_all.append(float(gm_M2))
@@ -279,10 +278,7 @@ def calc_diffs_meas_mod(runname):
 				writer.writerow([str(t+1),meas_wl_harm.Site[t],-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],9999,9999])
 
 	print('Results saved here: '+outfile)
-
-
-
-	return Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
+	return meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
 
 
 
