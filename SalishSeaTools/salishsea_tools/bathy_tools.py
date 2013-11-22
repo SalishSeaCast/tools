@@ -386,3 +386,42 @@ def argmax(depths):
     """
     i, j = np.unravel_index(np.argmax(depths), depths.shape)
     return i, j
+
+
+def zero_jervis_end(depths):
+    """Set the depths to zero in the area at the end of Jervis Inlet
+    where the Cascadia bathymetry source data are deficient.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :returns: netcdf variable object containing the depths
+    :rtype: :py:class:`netCDF4.Variable`
+    """
+    depths[650:651+1, 310:320] = 0.
+    depths[647:649+1, 312:320] = 0.
+    return depths
+
+
+def zero_toba_region(depths):
+    """Set the depths to zero in the Toba Inlet region where
+    the Cascadia bathymetry source data are deficient.
+
+    :arg depths: netcdf variable object containing the depths
+    :type depths: :py:class:`netCDF4.Variable`
+
+    :returns: netcdf variable object containing the depths
+    :rtype: :py:class:`netCDF4.Variable`
+    """
+    depths[746, 243:] = 0.
+    depths[747:756+1, 240:] = 0.
+    depths[757:763+1, 235:] = 0.
+    depths[763:766+1, 220:] = 0.
+    depths[766:771, 213:] = 0.
+    depths[771, 189:] = 0.
+    depths[772, 188:] = 0.
+    depths[773:774+1, 189:] = 0.
+    depths[775:784+1, 190:] = 0.
+    depths[785:788+1, 198:] = 0.
+    depths[789:791+1, 199:] = 0.
+    return depths
