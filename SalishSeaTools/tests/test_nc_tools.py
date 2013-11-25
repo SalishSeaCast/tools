@@ -255,3 +255,169 @@ def test_nc_file_hg_url_REQUIRED(mock_dflt_url):
     """
     url = nc_tools._nc_file_hg_url('../bar/baz.nc')
     assert url == 'REQUIRED'
+
+
+def test_check_dataset_attrs_reqd_dataset_attrs(capsys, dataset):
+    """check_dataset_attrs warns of missing required dataset attributes
+    """
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    reqd_attrs = (
+        'Conventions',
+        'title',
+        'institution',
+        'source',
+        'references',
+        'history',
+        'comment',
+    )
+    for line, expected in enumerate(reqd_attrs):
+        assert out.split('\n')[line] == (
+            'Missing required dataset attribute: {}'.format(expected))
+
+
+def test_check_dataset_attrs_reqd_dataset_attr_values(capsys, dataset):
+    """check_dataset_attrs warns of missing reqd dataset attr values
+    """
+    reqd_attrs = (
+        'Conventions',
+        'title',
+        'institution',
+        'source',
+        'references',
+        'history',
+    )
+    for attr in reqd_attrs:
+        dataset.setncattr(attr, '')
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    for line, attr in enumerate(reqd_attrs):
+        assert out.split('\n')[line] == (
+            'Missing value for dataset attribute: {}'.format(attr))
+
+
+def test_check_dataset_attrs_url_reqd(capsys, dataset):
+    """check_dataset_attrs warns of source or references set to REQUIRED
+    """
+    empty_reqd_attrs = (
+        'Conventions',
+        'title',
+        'institution',
+        'references',
+    )
+    for attr in empty_reqd_attrs:
+        dataset.setncattr(attr, 'foo')
+    REQUIRED_reqd_attrs = (
+        'source',
+        'references',
+    )
+    for attr in REQUIRED_reqd_attrs:
+        dataset.setncattr(attr, 'REQUIRED')
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    for line, attr in enumerate(REQUIRED_reqd_attrs):
+        assert out.split('\n')[line] == (
+            'Missing value for dataset attribute: {}'.format(attr))
+
+
+def test_check_dataset_attrs_good(capsys, dataset):
+    """check_dataset_attrs prints nothing when all reqd attts present w/ value
+    """
+    dataset_attrs = (
+        ('Conventions', 'CF-1.6'),
+        ('title', 'Test Dataset'),
+        ('institution', 'Unit Tests'),
+        ('source', 'foo'),
+        ('references', 'bar'),
+        ('history', 'was'),
+        ('comment', ''),
+    )
+    for attr, value in dataset_attrs:
+        dataset.setncattr(attr, value)
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    assert out == ''
+
+
+def test_check_dataset_attrs_reqd_var_attrs(capsys, dataset):
+    """check_dataset_attrs warns of missing required variable attributes
+    """
+    dataset_attrs = (
+        ('Conventions', 'CF-1.6'),
+        ('title', 'Test Dataset'),
+        ('institution', 'Unit Tests'),
+        ('source', 'foo'),
+        ('references', 'bar'),
+        ('history', 'was'),
+        ('comment', ''),
+    )
+    for attr, value in dataset_attrs:
+        dataset.setncattr(attr, value)
+    dataset.createDimension('x', 42)
+    dataset.createVariable('foo', float, ('x',))
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    reqd_attrs = (
+        'units',
+        'long_name',
+    )
+    for line, expected in enumerate(reqd_attrs):
+        assert out.split('\n')[line] == (
+            'Missing required variable attribute for foo: {}'.format(expected))
+
+
+def test_check_dataset_attrs_reqd_var_attr_values(capsys, dataset):
+    """check_dataset_attrs warns of missing reqd variable attr values
+    """
+    dataset_attrs = (
+        ('Conventions', 'CF-1.6'),
+        ('title', 'Test Dataset'),
+        ('institution', 'Unit Tests'),
+        ('source', 'foo'),
+        ('references', 'bar'),
+        ('history', 'was'),
+        ('comment', ''),
+    )
+    for attr, value in dataset_attrs:
+        dataset.setncattr(attr, value)
+    dataset.createDimension('x', 42)
+    foo = dataset.createVariable('foo', float, ('x',))
+    reqd_attrs = (
+        'units',
+        'long_name',
+    )
+    for attr in reqd_attrs:
+        foo.setncattr(attr, '')
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    for line, expected in enumerate(reqd_attrs):
+        assert out.split('\n')[line] == (
+            'Missing value for variable attribute for foo: {}'
+            .format(expected))
+
+
+def test_check_dataset_attrs_car_attrs_good(capsys, dataset):
+    """check_dataset_attrs prints nothing when reqd var attrs present w/ values
+    """
+    dataset_attrs = (
+        ('Conventions', 'CF-1.6'),
+        ('title', 'Test Dataset'),
+        ('institution', 'Unit Tests'),
+        ('source', 'foo'),
+        ('references', 'bar'),
+        ('history', 'was'),
+        ('comment', ''),
+    )
+    for attr, value in dataset_attrs:
+        dataset.setncattr(attr, value)
+    dataset.createDimension('x', 42)
+    foo = dataset.createVariable('foo', float, ('x',))
+    reqd_attrs = (
+        ('units', 'foo'),
+        ('long_name', 'bar'),
+    )
+    for attr, value in reqd_attrs:
+        foo.setncattr(attr, value)
+    nc_tools.check_dataset_attrs(dataset)
+    out, err = capsys.readouterr()
+    assert out == ''
