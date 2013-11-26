@@ -2,22 +2,47 @@ function [pred,wlev,anomaly,tim] = get_tidal_anomaly(csvfilename, startyear)
 
 % Take the csv file of measured water level and calculate sea surface
 % anomaly using predicted tide level from t_tide
-%
 % e.g. [pred,wlev,anomaly] = get_tidal_anomaly('wlev_timeseries.csv', 2003);
 %
 % KLS November 2013
 
 %Read in the measured water level data from Point Atkinson
-meas = csvread(csvfilename,8,1);
-wlev = meas(:,1);
+%meas = csvread(csvfilename,8,1);
+fid = fopen('wlev_timeseries.csv');
+meas = textscan(fid,'%f/%f/%f %f:%f,%f,','HeaderLines',8);
+fclose(fid);
+time = datenum(meas{1},meas{2},meas{3},meas{4},meas{5},0);
+wlev = meas{6};
 
 %Start date of measured water level record
-year = 2003;
-start_date = datenum(year,1,1,0,0,0);
-end_date = datenum(year+1,1,1,0,0,0);
+start_date = time(1);
+end_date = time(end);
 
-%Perform tidal analysis
-[tidestruc,xout] = t_tide(wlev,'start time',start_date,'latitude',49);
+%NEED TO DEAL WITH MISSING DATES
+tim = start_date:1/24:end_date;
+test = padarray(time,[(length(tim)-length(time)) 0],'post');
+
+newtime = zeros(length(tim),2);
+%counter in measured time
+counter = 1;
+%tt is counter in created time
+for tt = 1:length(tim)
+    I = time(counter) == tim(tt);
+    if I
+        newtime(tt,1) = time(counter);
+        newtime(tt,2) = wlev(counter);
+        counter = counter + 1;
+    else
+        newtime(tt,1) = tim(tt);
+        newtime(tt,2) = NaN;
+    end
+end
+
+time = newtime(:,1);
+wlev = newtime(:,2);
+
+%Perform tidal analysis to get tidestruc
+[tidestruc,~] = t_tide(wlev,'start time',start_date,'latitude',49);
 
 %Get predicted tide for same period
 tim = start_date:1/24:end_date;

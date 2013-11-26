@@ -1,10 +1,15 @@
-function [startind,endind] = find_storm_events(anomaly,tim)
+function [startind,endind,lengthstorm] = find_storm_events(anomaly,tim,anomthres,stormlength)
 
 %find storm surge events given a time vector (tim) and sea surface anomaly
+%function [startind,endind] = find_storm_events(anomaly,tim,anomthres,stormlength)
+% where 'anomaly' is the vector of sea surface anomalies at times 'tim'
+% 'anomthres' is the sea surface anomaly [m] above which storms are defined 
+% e.g. anomthres = 0.40
+% 'stormlength' is the minimum length of the storm [hrs]
+% e.g. stormlength = 6
 
 %define the threshold
-threshold = 0.20;
-I = find(anomaly >= threshold);
+I = find(anomaly >= anomthres);
 plot(tim(I),anomaly(I),'.')
 hold on
 datetick
@@ -15,13 +20,18 @@ ind = 1;
 startind = zeros(1,100);
 endind = zeros(1,100);
 
+%plot the anomaly
+figure; hold on
+plot(tim,anomaly,'.')
+
+%find consecutive anomalies over the threshold
 while jj <= length(anomaly)
     %is the anomaly over the threshold?
-    if anomaly(jj) > threshold
+    if anomaly(jj) > anomthres
         %is the next anomaly over the threshold? If so, how long is anomaly > threshold for?
         startind(ind) = jj;
         kk = jj+1;
-        while anomaly(kk) > threshold
+        while anomaly(kk) > anomthres
             kk = kk + 1;
         end
         endind(ind) = kk-1;
@@ -33,10 +43,20 @@ while jj <= length(anomaly)
         jj = jj + 1;
     end
 end
-        
-I = startind == 0;
-startind(I) = [];
-I = endind == 0;
-endind(I) = [];
+
+%remove the zeros and any storms shorter than the defined storm length
 lengthstorm = endind - startind;    %[hours]
-        
+I = lengthstorm <=stormlength;
+endind(I) = [];
+startind(I) = [];
+lengthstorm = endind-startind;
+
+%print out some information
+disp(['number of storms found = ',num2str(length(endind))])
+disp(['longest storm = ',num2str(max(lengthstorm)),' hours (',...
+    datestr(tim(startind(lengthstorm==max(lengthstorm)))),')'])
+disp(['highest anomaly in records = ',num2str(max(anomaly)),' m (',...
+    datestr(tim(anomaly==max(anomaly))),')'])
+    
+    
+    
