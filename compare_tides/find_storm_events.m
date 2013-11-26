@@ -10,9 +10,6 @@ function [startind,endind,lengthstorm] = find_storm_events(anomaly,tim,anomthres
 
 %define the threshold
 I = find(anomaly >= anomthres);
-plot(tim(I),anomaly(I),'.')
-hold on
-datetick
 
 %initialise
 jj = 1;
@@ -23,6 +20,7 @@ endind = zeros(1,100);
 %plot the anomaly
 figure; hold on
 plot(tim,anomaly,'.')
+datetick
 
 %find consecutive anomalies over the threshold
 while jj <= length(anomaly)
@@ -58,5 +56,16 @@ disp(['longest storm = ',num2str(max(lengthstorm)),' hours (',...
 disp(['highest anomaly in records = ',num2str(max(anomaly)),' m (',...
     datestr(tim(anomaly==max(anomaly))),')'])
     
-    
-    
+%output some data to a text file
+M = {datestr(tim(startind)), endind-startind};
+n = length(M{1});
+%create a new file
+filename = 'storms.txt';
+fid = fopen(filename, 'w');
+%add some headers
+fprintf(fid, 'Start date \t \t \t \t Duration (hrs) \n');
+for row=1:n
+    fprintf(fid, '%s \t', M{1,1}(row,:));
+    fprintf(fid,' %d\n', M{1,2}(:,row));
+end
+fclose(fid);
