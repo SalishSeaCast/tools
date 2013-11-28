@@ -55,7 +55,9 @@ def read_dfo_wlev_file(filename):
 	#measured times are in PTZ - first make dates aware of this, then convert dates to UTC
 	for x in np.arange(0,len(wlev_meas.time)):
 		wlev_meas.time[x] = wlev_meas.time[x].replace(tzinfo=pytz.timezone('Canada/Pacific'))
+		print(wlev_meas.time[x])
 		wlev_meas.time[x] = wlev_meas.time[x].astimezone(pytz.timezone('UTC'))
+		print(wlev_meas.time[x])
 	return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
 #define a function to plot the amplitude and phase results for the required run
