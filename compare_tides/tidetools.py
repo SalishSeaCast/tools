@@ -2,6 +2,61 @@
 
 import netCDF4 as NC
 import numpy as np
+import datetime
+import requests
+import pandas as pd
+import pytz
+from math import radians, sin, cos, asin, sqrt
+import matplotlib.pyplot as plt
+
+
+#define a function to download the DFO water level data from their website
+# e.g. get_dfo_wlev(7795,'01-JAN-2003','01-JAN-2004','wlev_timeseries.csv')
+def get_dfo_wlev(station_no,start_date,end_date,outfile):
+	#form urls and html information
+	base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
+	form_handler = 'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='+str(station_no)
+	sitedata = {
+		'start_period': start_date,
+		'end_period': end_date,
+		'resolution': 'h',
+		'time_zone': 'l',
+	}
+	data_provider = 'download-telecharger.asp?File=E:%5Ciusr_tmpfiles%5CTWL%5C'+str(station_no)+'-'+start_date+'_slev.csv&Name='+str(station_no)+'-'+start_date+'_slev.csv'
+	#go get the data from the DFO site
+	with requests.Session() as s:
+		s.post(base_url + form_handler, data=sitedata)
+		r = s.get(base_url + data_provider)
+	#write the data to a text file
+	with open(outfile, 'w') as f:
+		f.write(r.text)
+	print('Results saved here: '+outfile)
+
+#define a function for dealing with parsed time from read_csv
+def dateParserMeasured(s):
+    #convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
+    #add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    #convert to UTC
+    return aware.astimezone(pytz.timezone('UTC'))
+
+#define a function to read in the water level in the csv file downloaded from DFO website
+#dates, wlev, stat_name, stat_num, stat_lat, stat_lon = tidetools.read_dfo_wlev('wlev_timeseries.csv')
+def read_dfo_wlev_file(filename):
+	info = pd.read_csv('wlev_timeseries.csv',nrows=4,index_col=0,header=None)
+	wlev_meas = pd.read_csv('wlev_timeseries.csv',skiprows=7,parse_dates=[0],date_parser=dateParserMeasured)
+	wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
+	#allocate the variables to nice names
+	stat_name = info[1][0]
+	stat_num = info[1][1]
+	stat_lat = info[1][2]
+	stat_lon = info[1][3]
+	#measured times are in PTZ - first make dates aware of this, then convert dates to UTC
+	for x in np.arange(0,len(wlev_meas.time)):
+		wlev_meas.time[x] = wlev_meas.time[x].replace(tzinfo=pytz.timezone('Canada/Pacific'))
+		wlev_meas.time[x] = wlev_meas.time[x].astimezone(pytz.timezone('UTC'))
+	return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
 #define a function to plot the amplitude and phase results for the required run
 def plot_amp_phase_maps(runname):
@@ -279,6 +334,36 @@ def calc_diffs_meas_mod(runname):
 
 	print('Results saved here: '+outfile)
 	return meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
+
+#define a function to calculate the distance between two lat/lons
+#haversine function copied from stackoverflow:
+#http://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points
+def haversine(lon1, lat1, lon2, lat2):
+	# convert decimal degrees to radians 
+	lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+	# haversine formula 
+	dlon = lon2 - lon1 
+	dlat = lat2 - lat1 
+	a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+	c = 2 * asin(sqrt(a)) 
+	km = 6367 * c
+	print('Observation site and model grid point are '+str(round(km,3))+'km apart')
+	return km 
+
+
+#Plot the two spots on a map 
+def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
+    plt.contourf(X,Y,bathy)
+    plt.colorbar()
+    plt.title('Domain of model (depths in m)')
+    hold = True
+    plt.plot(modlon,modlat,'g.',markersize=10,label='model')
+    plt.plot(measlon,measlat,'m.',markersize=10,label='measured')
+    plt.xlim([modlon-0.1,modlon+0.1])
+    plt.ylim([modlat-0.1,modlat+0.1])
+    plt.legend(numpoints=1)
+    
+
 
 
 
