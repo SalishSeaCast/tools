@@ -140,6 +140,8 @@ repository and symlink with the file names that NEMO expects:
 The command *must* be run in the :file:`/ocean/dlatorne/CGRF/` directory.
 
 
+.. _salishsea-prepare:
+
 :kbd:`prepare` Sub-command
 --------------------------
 
