@@ -229,7 +229,7 @@ They contain key-value pairs that define the names and locations of files and di
 
 Example:
 
-.. literalinclude:: ../../../SS-run-sets/SalishSea/SalishSea.yaml
+.. literalinclude:: SalishSea.yaml.example
    :language: yaml
 
 The value associated with the :kbd:`config_name` key is the name of the NEMO configuration to use for runs.
