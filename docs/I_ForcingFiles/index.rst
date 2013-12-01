@@ -29,6 +29,8 @@ Many of these notebooks use modules from the :ref:`SalishSeaTools` package so pl
 
 * :file:`PrepareTS.ipynb`: an IPython Notebook to prepare initial T&S for the large domain based on a single S4-1 profile from Sept 2003.
 
+* :file:`TS_OBC_Softstart.ipynb`: an IPyhton Notebook to prepare OBC T&S files that start with the initial conditions and switch to the Thomson et al boundary conditions in October.
+
 * :file:`webtide_forcing.ipynb`: an IPython Notebook to prepare tidal forcing files for the large Salish Sea NEMO 3.4 domain, western boundary.
 
 When you add a new notebook to this collection please use :command:`python make_readme.py` in the :file:`tools/I_ForcingFiles/` directory to update the :file:`README.md` and commit and push it too.
