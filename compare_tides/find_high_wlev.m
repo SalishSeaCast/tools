@@ -1,15 +1,17 @@
-function [startind,endind,lengthstorm] = find_storm_events(anomaly,tim,anomthres,stormlength)
+function [startind,endind,lengthhigh] = find_high_wlev(wlev,tim,wlevthres,stormlength)
 
-%find storm surge events given a time vector (tim) and sea surface anomaly
-%function [startind,endind] = find_storm_events(anomaly,tim,anomthres,stormlength)
-% where 'anomaly' is the vector of sea surface anomalies at times 'tim'
-% 'anomthres' is the sea surface anomaly [m] above which storms are defined 
-% e.g. anomthres = 0.40
+%find high water level events given a time vector (tim) and sea surface
+%elevation
+%
+%function [startind,endind] = find_high_wlev(wlev,tim,wlevthres,stormlength)
+% where 'wlev' is the vector of sea surface elevation at times 'tim'
+% 'wlevthres' is the sea surface anomaly [m] above which eventsare defined 
+% e.g. wlevthres = 0.40
 % 'stormlength' is the minimum length of the storm [hrs]
 % e.g. stormlength = 6
 
 %define the threshold
-I = find(anomaly >= anomthres);
+I = find(wlev >= wlev);
 
 %initialise
 jj = 1;
@@ -19,23 +21,23 @@ endind = zeros(1,100);
 
 %plot the anomaly
 figure; hold on
-plot(tim,anomaly,'.')
+plot(tim,wlev,'.')
 datetick
 
 %find consecutive anomalies over the threshold
-while jj <= length(anomaly)
+while jj <= length(wlev)
     %is the anomaly over the threshold?
-    if anomaly(jj) > anomthres
+    if wlev(jj) > wlevthres
         %is the next anomaly over the threshold? If so, how long is anomaly > threshold for?
         startind(ind) = jj;
         kk = jj+1;
-        while anomaly(kk) > anomthres
+        while wlev(kk) > wlevthres
             kk = kk + 1;
         end
         endind(ind) = kk-1;
         ind = ind+1;
-        plot(tim(jj),anomaly(jj),'*m')
-        plot(tim(kk-1),anomaly(kk-1),'*g')
+        plot(tim(jj),wlev(jj),'*m')
+        plot(tim(kk-1),wlev(kk-1),'*g')
         jj = kk + 1;
     else
         jj = jj + 1;
@@ -43,16 +45,16 @@ while jj <= length(anomaly)
 end
 
 %remove the zeros and any storms shorter than the defined storm length
-lengthstorm = endind - startind;    %[hours]
-I = lengthstorm <=stormlength;
+lengthhigh = endind - startind;    %[hours]
+I = lengthhigh <=stormlength;
 endind(I) = [];
 startind(I) = [];
-lengthstorm = endind-startind;
+lengthhigh = endind-startind;
 
 %print out some information
  disp(['number of storms found = ',num2str(length(endind))])
- disp(['longest storm = ',num2str(max(lengthstorm)),' hours'])
- disp(['highest anomaly in records = ',num2str(max(anomaly)),' m (',...
+ disp(['longest storm = ',num2str(max(lengthhigh)),' hours'])
+ disp(['highest anomaly in records = ',num2str(max(wlev)),' m (',...
      datestr(tim(anomaly==max(anomaly))),')'])
      
 %output some data to a text file
