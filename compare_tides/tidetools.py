@@ -127,6 +127,9 @@ def get_subdomain_bathy_data():
 	return bathy, X, Y
 
 #define a function to find the closest model grid point to the measured data
+# e.g. x1, y1 = find_closest_model_point(-123,49.2,X,Y,bathy)
+# where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
+# x1 is i co-ordinate, y1 is j co-ordinate
 def find_closest_model_point(lon,lat,X,Y,bathy):
 	#tolerance for searching for grid points (approx. distances between adjacent grid points)
 	tol1 = 0.0052  #lon
