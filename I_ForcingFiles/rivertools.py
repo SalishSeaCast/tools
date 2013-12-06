@@ -3,12 +3,14 @@ import netCDF4 as NC
 
 #define a function to fill the river file with the rivers of one watershed
 def put_watershed_into_runoff(rivertype,watershedname,flux,runoff,run_depth):
+	#get the proportion that each river occupies in the watershed
 	pd = get_watershed_prop_dict(watershedname)
 	for key in pd:
 		river = pd[key]		
 		fill_runoff_array(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
 	return runoff, run_depth
 
+#define a function to get the proportion that each river occupies in the watershed
 def get_watershed_prop_dict(watershedname):
 	if watershedname == 'howe':	
 		#dictionary of rivers in Howe watershed		
@@ -112,7 +114,114 @@ def get_watershed_prop_dict(watershedname):
 		'Duwamish1':{'prop':0.50*WRIA9,'i':68,'j':243,'di':1,'dj':1,'depth':3},\
 		'Duwamish2':{'prop':0.50*WRIA9,'i':68,'j':246,'di':1,'dj':1,'depth':3},\
 		'CedarSammamish':{'prop':1.0*WRIA8,'i':88,'j':246,'di':1,'dj':1,'depth':3}}
-	print prop_dict
+	
+	if watershedname == 'skagit':
+		WRIA4 = 0.33
+		WRIA3 = 0.17
+		WRIA5 = 0.17
+		WRIA7 = 0.33
+
+		prop_dict = {'Skagit1':{'prop':0.5*(WRIA4*1.0+WRIA3*0.75),'i':207,'j':326,'di':1,'dj':1,'depth':3},\
+		'Skagit2':{'prop':0.5*(WRIA4*1.0+WRIA3*0.75),'i':229,'j':319,'di':1,'dj':1,'depth':3},\
+		'Samish':{'prop':WRIA3*0.20,'i':265,'j':348,'di':1,'dj':1,'depth':3},\
+		'JoeLeary':{'prop':WRIA3*0.05,'i':257,'j':339,'di':1,'dj':1,'depth':3},\
+		'Stillaguamish1':{'prop':0.7*WRIA5*1.0,'i':186,'j':316,'di':1,'dj':1,'depth':3},\
+		'Stillaguamish2':{'prop':0.1*WRIA5*1.0,'i':192,'j':315,'di':1,'dj':1,'depth':3},\
+		'Stillaguamish3':{'prop':0.2*WRIA5*1.0,'i':200,'j':318,'di':1,'dj':1,'depth':3},\
+		'SnohomishAllenQuilceda':{'prop':WRIA7*0.98,'i':143,'j':318,'di':1,'dj':1,'depth':3},\
+		'Tulalip':{'prop':WRIA7*0.01,'i':154,'j':311,'di':1,'dj':1,'depth':3},\
+		'Mission':{'prop':WRIA7*0.01,'i':152,'j':312,'di':1,'dj':1,'depth':3}}
+	
+	if watershedname == 'fraser':
+		WRIA1 = 0.02*0.80
+		Fraser = 1 - WRIA1
+
+		prop_dict = {'Dakota':{'prop':WRIA1*0.06,'i':362,'j':357,'di':1,'dj':1,'depth':3},\
+		'Terrel':{'prop':WRIA1*0.04,'i':351,'j':345,'di':1,'dj':1,'depth':3},\
+		'Nooksack':{'prop':WRIA1*0.75,'i':321,'j':347,'di':1,'dj':1,'depth':3},\
+		'Squallum':{'prop':WRIA1*0.05,'i':305,'j':365,'di':1,'dj':1,'depth':3},\
+		'Lakethingo':{'prop':WRIA1*0.06,'i':302,'j':367,'di':1,'dj':1,'depth':3},\
+		'Chuckanut':{'prop':WRIA1*0.04,'i':298,'j':361,'di':1,'dj':1,'depth':3},\
+		'Fraser1':{'prop':Fraser*0.75,'i':414,'j':334,'di':3,'dj':1,'depth':3},\
+		'Fraser2':{'prop':Fraser*0.05,'i':411,'j':324,'di':2,'dj':1,'depth':3},\
+		'Fraser3':{'prop':Fraser*0.15,'i':440,'j':321,'di':1,'dj':2,'depth':3}}
+
+	if watershedname == 'evi_n':
+		totalarea = 9709.0
+
+		prop_dict = {'Oyster':{'prop':363/totalarea,'i':705,'j':121,'di':1,'dj':1,'depth':3},\
+		'Qunisam':{'prop':1470/totalarea,'i':749,'j':123,'di':2,'dj':1,'depth':3},\
+		'Snowden':{'prop':139/totalarea,'i':770,'j':117,'di':1,'dj':1,'depth':3},\
+		'Menzies':{'prop':31/totalarea,'i':773,'j':117,'di':1,'dj':1,'depth':3},\
+		'Creek1':{'prop':23/totalarea,'i':786,'j':123,'di':1,'dj':1,'depth':3},\
+		'Creek2':{'prop':16/totalarea,'i':795,'j':126,'di':1,'dj':1,'depth':3},\
+		'Creek3':{'prop':23/totalarea,'i':798,'j':127,'di':1,'dj':1,'depth':3},\
+		'Elk':{'prop':23/totalarea,'i':807,'j':127,'di':1,'dj':1,'depth':3},\
+		'Slab':{'prop':12/totalarea,'i':813,'j':129,'di':1,'dj':1,'depth':3},\
+		'Pye':{'prop':109/totalarea,'i':826,'j':121,'di':1,'dj':1,'depth':3},\
+		'BearPoint':{'prop':12/totalarea,'i':839,'j':107,'di':1,'dj':1,'depth':3},\
+		'AmordeCosmos':{'prop':229/totalarea,'i':843,'j':96,'di':1,'dj':1,'depth':3},\
+		'Humpback':{'prop':10/totalarea,'i':844,'j':93,'di':1,'dj':1,'depth':3},\
+		'Palmer':{'prop':14/totalarea,'i':845,'j':92,'di':1,'dj':1,'depth':3},\
+		'Hkusam':{'prop':14/totalarea,'i':848,'j':87,'di':1,'dj':1,'depth':3},\
+		'CampPoint':{'prop':28/totalarea,'i':858,'j':77,'di':1,'dj':1,'depth':3},\
+		'SalmonSayward':{'prop':(1210+14)/totalarea,'i':866,'j':64,'di':1,'dj':1,'depth':3},\
+		'Kelsey':{'prop':7/totalarea,'i':878,'j':59,'di':1,'dj':1,'depth':3},\
+		'unmarked':{'prop':7/totalarea,'i':884,'j':54,'di':1,'dj':1,'depth':3},\
+		'Newcastle':{'prop':34/totalarea,'i':890,'j':47,'di':1,'dj':1,'depth':3},\
+		'Windy':{'prop':10/totalarea,'i':893,'j':42,'di':1,'dj':1,'depth':3}}
+
+	if watershedname == 'jervis':
+		#Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis watershed 
+		Jervis = 0.25
+
+		prop_dict = {'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood':{'prop':Jervis*0.60,'i':648,'j':318,'di':1,'dj':1,'depth':3},\
+		'Glacial':{'prop':Jervis*0.05,'i':647,'j':317,'di':1,'dj':1,'depth':3},\
+		'Seshal':{'prop':Jervis*0.05,'i':650,'j':317,'di':1,'dj':1,'depth':3},\
+		'Brittain':{'prop':Jervis*0.10,'i':350,'j':301,'di':1,'dj':1,'depth':3},\
+		'VancouverHigh':{'prop':Jervis*0.10,'i':626,'j':311,'di':1,'dj':1,'depth':3},\
+		'Perketts':{'prop':Jervis*0.05,'i':619,'j':307,'di':1,'dj':1,'depth':3},\
+		'Treat':{'prop':Jervis*0.05,'i':612,'j':301,'di':1,'dj':1,'depth':3},\
+		'Sechelt':{'prop':0.17,'i':604,'j':280,'di':1,'dj':1,'depth':3},\
+		'Powell':{'prop':0.32,'i':666,'j':202,'di':1,'dj':1,'depth':3},\
+		'Lois':{'prop':0.10,'i':629,'j':224,'di':1,'dj':1,'depth':3},\
+		'Haslam':{'prop':0.02,'i':632,'j':219,'di':1,'dj':1,'depth':3},\
+		'Chapman':{'prop':0.02,'i':522,'j':273,'di':1,'dj':1,'depth':3},\
+		'Lapan':{'prop':0.02,'i':619,'j':282,'di':1,'dj':1,'depth':3},\
+		'Nelson':{'prop':0.02,'i':599,'j':257,'di':1,'dj':1,'depth':3},\
+		'Wakefield':{'prop':0.02,'i':533,'j':263,'di':1,'dj':1,'depth':3},\
+		'Halfmoon':{'prop':0.02,'i':549,'j':253,'di':1,'dj':1,'depth':3},\
+		'MyersKleindaleAnderson':{'prop':0.04,'i':571,'j':248,'di':1,'dj':1,'depth':3}}
+	
+	if watershedname == 'toba':
+		prop_dict = {'Toba':{'prop':1.0,'i':746,'j':240,'di':1,'dj':3,'depth':3}}
+
+	if watershedname == 'bute':
+		prop_dict = {'Homathko':{'prop':0.58,'i':897,'j':294,'di':1,'dj':1,'depth':3},\
+		'Southgate':{'prop':0.35,'i':885,'j':296,'di':1,'dj':1,'depth':3},\
+		'Orford':{'prop':0.07,'i':831,'j':249,'di':1,'dj':1,'depth':3}}
+	
+	if watershedname == 'evi_s':
+		prop_dict = {'Cowichan':{'prop':0.22,'i':383,'j':201,'di':1,'dj':2,'depth':3},\
+		'Chemanius1':{'prop':0.5*0.13,'i':414,'j':211,'di':1,'dj':1,'depth':3},\
+		'Chemanius2':{'prop':0.5*0.13,'i':417,'j':212,'di':1,'dj':1,'depth':3},\
+		'Nanaimo1':{'prop':0.67*0.14,'i':478,'j':208,'di':1,'dj':2,'depth':3},\
+		'Nanaimo2':{'prop':0.33*0.14,'i':477,'j':210,'di':1,'dj':1,'depth':3},\
+		'NorNanaimo':{'prop':0.02,'i':491,'j':213,'di':3,'dj':1,'depth':3},\
+		'Goldstream':{'prop':0.08,'i':334,'j':185,'di':1,'dj':1,'depth':3},\
+		'Nanoose':{'prop':0.02,'i':518,'j':185,'di':1,'dj':1,'depth':3},\
+		'Englishman':{'prop':0.05,'i':541,'j':175,'di':1,'dj':1,'depth':3},\
+		'FrenchCreek':{'prop':0.01,'i':551,'j':168,'di':1,'dj':1,'depth':3},\
+		'LittleQualicum':{'prop':0.05,'i':563,'j':150,'di':1,'dj':1,'depth':3},\
+		'Qualicum':{'prop':0.02,'i':578,'j':137,'di':1,'dj':1,'depth':3},\
+		'SouthDenman':{'prop':0.05,'i':602,'j':120,'di':1,'dj':1,'depth':3},\
+		'Tsable':{'prop':0.03,'i':616,'j':120,'di':2,'dj':1,'depth':3},\
+		'Trent':{'prop':0.01,'i':648,'j':121,'di':1,'dj':1,'depth':3},\
+		'Puntledge':{'prop':0.14,'i':656,'j':119,'di':1,'dj':2,'depth':3},\
+		'BlackCreek':{'prop':0.03,'i':701,'j':123,'di':1,'dj':1,'depth':3}}
+
+	print prop_dict.keys()
+	print len(prop_dict.keys())
 	return prop_dict
 
 #define a function to get the bathymetry and size of each cell
