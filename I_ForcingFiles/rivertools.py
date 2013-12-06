@@ -19,7 +19,7 @@ def get_watershed_prop_dict(watershedname):
 		# Assume that 50% of the area of the watershed defined by Morrison et al (2011) is on south side of JdF (US side)
 		USFlux = 0.50
 		#dictionary of rivers in Juan de Fuca watershed
-		prop_dict = {'SanJuan':{'prop':0.33*CAFlux,'i':402,'j':56,'di':1,'dj':2,'depth':3},\
+		prop_dict = {'SanJuan':{'prop':0.33*CAFlux,'i':402,'j':56,'di':1,'dj':1,'depth':3},\
 		'Gordon':{'prop':0.14*CAFlux,'i':403,'j':56,'di':1,'dj':1,'depth':3},\
 		'Loss':{'prop':0.05*CAFlux,'i':375,'j':71,'di':1,'dj':1,'depth':3},\
 		'Jordan':{'prop':0.05*CAFlux,'i':348,'j':96,'di':1,'dj':1,'depth':3},\
@@ -47,6 +47,71 @@ def get_watershed_prop_dict(watershedname):
 		'Sekiu':{'prop':0.40*0.10*USFlux,'i':348,'j':31,'di':1,'dj':1,'depth':3},\
 		'Sail':{'prop':0.40*0.05*USFlux,'i':373,'j':17,'di':1,'dj':1,'depth':3}}
 
+	if watershedname == 'puget':
+		#WRIA17 10% of Puget Sound Watershed
+		WRIA17 = 0.10
+		#WRIA16 10% of Puget Sound Watershed
+		WRIA16 = 0.10
+		#WRIA15 15% of Puget Sound Watershed
+		WRIA15 = 0.15
+		#WRIA14 5% of Puget Sound Watershed
+		WRIA14 = 0.05
+		#WRIA13 3% of Puget Sound Watershed
+		WRIA13 = 0.03
+		#WRIA12 2% of Puget Sound Watershed
+		WRIA12 = 0.02
+		#WRIA11 15% of Puget Sound Watershed
+		WRIA11 = 0.15
+		#WRIA10 20% of Puget Sound Watershed
+		WRIA10 = 0.20
+		#WRIA9 10% of Puget Sound Watershed
+		WRIA9 = 0.10
+		#WRIA8 10% of Puget Sound Watershed
+		WRIA8 = 0.10
+
+		prop_dict = {'Johnson':{'prop':0.05*WRIA17,'i':207,'j':202,'di':1,'dj':1,'depth':3},\
+		'Jimmycomelately':{'prop':0.05*WRIA17,'i':199,'j':202,'di':1,'dj':1,'depth':3},\
+		'SalmonSnow':{'prop':0.25*WRIA17,'i':182,'j':219,'di':1,'dj':1,'depth':3},\
+		'Chimacum':{'prop':0.20*WRIA17,'i':185,'j':240,'di':1,'dj':1,'depth':3},\
+		'Thorndike':{'prop':0.05*WRIA17,'i':137,'j':215,'di':1,'dj':1,'depth':3},\
+		'Torboo':{'prop':0.05*WRIA17,'i':149,'j':208,'di':1,'dj':1,'depth':3},\
+		'LittleBigQuilcene':{'prop':0.35*WRIA17,'i':146,'j':199,'di':1,'dj':1,'depth':3},\
+		'Dosewalips':{'prop':0.20*WRIA16,'i':124,'j':177,'di':1,'dj':1,'depth':3},\
+		'Duckabush':{'prop':0.14*WRIA16,'i':119,'j':167,'di':1,'dj':1,'depth':3},\
+		'Fulton':{'prop':0.02*WRIA16,'i':116,'j':156,'di':1,'dj':1,'depth':3},\
+		'Waketick':{'prop':0.02*WRIA16,'i':108,'j':141,'di':1,'dj':1,'depth':3},\
+		'HammaHamma':{'prop':0.14*WRIA16,'i':107,'j':139,'di':1,'dj':1,'depth':3},\
+		'Jorsted':{'prop':0.02*WRIA16,'i':104,'j':135,'di':1,'dj':1,'depth':3},\
+		'Eagle':{'prop':0.02*WRIA16,'i':98,'j':127,'di':1,'dj':1,'depth':3},\
+		'Lilliwaup':{'prop':0.02*WRIA16,'i':95,'j':118,'di':1,'dj':1,'depth':3},\
+		'Finch':{'prop':0.02*WRIA16,'i':87,'j':108,'di':1,'dj':1,'depth':3},\
+		'Skokomish':{'prop':0.40*WRIA16,'i':75,'j':103,'di':1,'dj':1,'depth':3},\
+		'Rendsland':{'prop':0.025*WRIA15,'i':81,'j':107,'di':1,'dj':1,'depth':3},\
+		'Tahuya':{'prop':0.20*WRIA15,'i':72,'j':114,'di':1,'dj':1,'depth':3},\
+		'Mission':{'prop':0.05*WRIA15,'i':73,'j':149,'di':1,'dj':1,'depth':3},\
+		'Union':{'prop':0.10*WRIA15,'i':74,'j':153,'di':1,'dj':1,'depth':3},\
+		'Coulter':{'prop':0.05*WRIA15,'i':64,'j':153,'di':1,'dj':1,'depth':3},\
+		'Minter':{'prop':0.05*WRIA15,'i':46,'j':168,'di':1,'dj':1,'depth':3},\
+		'Butley':{'prop':0.05*WRIA15,'i':47,'j':178,'di':1,'dj':1,'depth':3},\
+		'Olalla':{'prop':0.05*WRIA15,'i':48,'j':197,'di':1,'dj':1,'depth':3},\
+		'BlackjackClearBarkerBigValley1':{'prop':0.1125*WRIA15,'i':68,'j':210,'di':1,'dj':1,'depth':3},\
+		'BlackjackClearBarkerBigValley2':{'prop':0.1125*WRIA15,'i':108,'j':232,'di':1,'dj':1,'depth':3},\
+		'BigBear':{'prop':0.05*WRIA15,'i':112,'j':189,'di':1,'dj':1,'depth':3},\
+		'Swaback':{'prop':0.025*WRIA15,'i':112,'j':185,'di':1,'dj':1,'depth':3},\
+		'Stavis':{'prop':0.025*WRIA15,'i':113,'j':174,'di':1,'dj':1,'depth':3},\
+		'Anderson':{'prop':0.05*WRIA15,'i':107,'j':150,'di':1,'dj':1,'depth':3},\
+		'Dewatta':{'prop':0.05*WRIA15,'i':94,'j':122,'di':1,'dj':1,'depth':3},\
+		'Sherwood':{'prop':0.15*WRIA14,'i':60,'j':149,'di':1,'dj':1,'depth':3},\
+		'DeerJohnsGoldboroughMillSkookumKennedySchneider':{'prop':0.375*WRIA14,'i':47,'j':130,'di':1,'dj':1,'depth':3},\
+		'DeerJohnsGoldboroughMillSkookumKennedySchneiderPerry':{'prop':0.475*WRIA14,'i':20,'j':120,'di':1,'dj':1,'depth':3},\
+		'McClaneDeschutesWoodwardWoodland':{'prop':1.0*WRIA13,'i':22,'j':121,'di':1,'dj':1,'depth':3},\
+		'Chambers':{'prop':1.0*WRIA12,'i':6,'j':162,'di':1,'dj':1,'depth':3},\
+		'NisquallyMcAllister':{'prop':1.0*WRIA11,'i':0,'j':137,'di':1,'dj':1,'depth':3},\
+		'Puyallup':{'prop':0.995*WRIA10,'i':10,'j':195,'di':1,'dj':1,'depth':3},\
+		'Hylebas':{'prop':0.005*WRIA10,'i':13,'j':199,'di':1,'dj':1,'depth':3},\
+		'Duwamish1':{'prop':0.50*WRIA9,'i':68,'j':243,'di':1,'dj':1,'depth':3},\
+		'Duwamish2':{'prop':0.50*WRIA9,'i':68,'j':246,'di':1,'dj':1,'depth':3},\
+		'CedarSammamish':{'prop':1.0*WRIA8,'i':88,'j':246,'di':1,'dj':1,'depth':3}}
 	print prop_dict
 	return prop_dict
 
