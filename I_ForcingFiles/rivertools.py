@@ -7,7 +7,10 @@ def put_watershed_into_runoff(rivertype,watershedname,flux,runoff,run_depth):
 	pd = get_watershed_prop_dict(watershedname)
 	for key in pd:
 		river = pd[key]		
-		fill_runoff_array(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
+		if rivertype == 'constant':
+			fill_runoff_array(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
+		if rivertype == 'monthly':
+			fill_runoff_array_monthly(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
 	return runoff, run_depth
 
 #define a function to get the proportion that each river occupies in the watershed
@@ -133,7 +136,7 @@ def get_watershed_prop_dict(watershedname):
 		'Mission':{'prop':WRIA7*0.01,'i':152,'j':312,'di':1,'dj':1,'depth':3}}
 	
 	if watershedname == 'fraser':
-		WRIA1 = 0.02*0.80
+		WRIA1 = 0.016
 		Fraser = 1 - WRIA1
 
 		prop_dict = {'Dakota':{'prop':WRIA1*0.06,'i':362,'j':357,'di':1,'dj':1,'depth':3},\
@@ -144,7 +147,8 @@ def get_watershed_prop_dict(watershedname):
 		'Chuckanut':{'prop':WRIA1*0.04,'i':298,'j':361,'di':1,'dj':1,'depth':3},\
 		'Fraser1':{'prop':Fraser*0.75,'i':414,'j':334,'di':3,'dj':1,'depth':3},\
 		'Fraser2':{'prop':Fraser*0.05,'i':411,'j':324,'di':2,'dj':1,'depth':3},\
-		'Fraser3':{'prop':Fraser*0.15,'i':440,'j':321,'di':1,'dj':2,'depth':3}}
+		'Fraser3':{'prop':Fraser*0.05,'i':434,'j':318,'di':2,'dj':1,'depth':3},\
+		'Fraser4':{'prop':Fraser*0.15,'i':440,'j':323,'di':1,'dj':2,'depth':3}}
 
 	if watershedname == 'evi_n':
 		totalarea = 9709.0
@@ -198,7 +202,7 @@ def get_watershed_prop_dict(watershedname):
 
 	if watershedname == 'bute':
 		prop_dict = {'Homathko':{'prop':0.58,'i':897,'j':294,'di':1,'dj':1,'depth':3},\
-		'Southgate':{'prop':0.35,'i':885,'j':296,'di':1,'dj':1,'depth':3},\
+		'Southgate':{'prop':0.35,'i':885,'j':296,'di':1,'dj':2,'depth':3},\
 		'Orford':{'prop':0.07,'i':831,'j':249,'di':1,'dj':1,'depth':3}}
 	
 	if watershedname == 'evi_s':
@@ -220,8 +224,7 @@ def get_watershed_prop_dict(watershedname):
 		'Puntledge':{'prop':0.14,'i':656,'j':119,'di':1,'dj':2,'depth':3},\
 		'BlackCreek':{'prop':0.03,'i':701,'j':123,'di':1,'dj':1,'depth':3}}
 
-	print prop_dict.keys()
-	print len(prop_dict.keys())
+	print(watershedname+' has '+str(len(prop_dict.keys()))+' rivers')
 	return prop_dict
 
 #define a function to get the bathymetry and size of each cell
@@ -240,6 +243,16 @@ def init_runoff_array():
 	run_depth = -np.ones((ymax,xmax))
 	return runoff, run_depth
 
+#define a function to initialise the runoff array for each month
+def init_runoff_array_monthly():
+	fB = NC.Dataset('../../nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+	D = fB.variables['Bathymetry'][:]
+	ymax, xmax = D.shape
+	runoff = np.zeros((12,ymax,xmax))
+	run_depth = -np.ones((12,ymax,xmax))
+	print runoff.shape
+	return runoff, run_depth
+
 #define a function to fill the runoff array
 def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
 	e1t, e2t = get_bathy_cell_size()
@@ -250,7 +263,23 @@ def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
 	run_depth[istart:istart+di,jstart:jstart+dj] = depth_of_flux
 	return runoff, run_depth
 
+#define a function to fill the runoff array
+def fill_runoff_array_monthly(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
+	e1t, e2t = get_bathy_cell_size()
+	number_cells = di*dj
+	area = number_cells*e1t[0,istart,jstart]*e2t[0,istart,jstart]
+	for month in range(1,13):	
+		w = Flux[month-1]/area * 1000.   # w is in kg/s not m/s
+		runoff[(month-1),istart:istart+di,jstart:jstart+dj] = w
+		run_depth[(month-1),istart:istart+di,jstart:jstart+dj] = depth_of_flux
+	return runoff, run_depth
+
 #define a function to check the runoff adds up to what it should
 def check_sum(runoff_orig, runoff_new, Flux):
 	e1t, e2t = get_bathy_cell_size()
 	print (np.sum(runoff_new)-runoff_orig.sum())*e1t[0,450,200]*e2t[0,450,200]/1000., Flux
+
+def check_sum_monthly(runoff_orig, runoff_new, Flux):
+	e1t, e2t = get_bathy_cell_size()
+	print (np.sum(runoff_new)/12-runoff_orig.sum()/12)*e1t[0,450,200]*e2t[0,450,200]/1000., np.mean(Flux)
+
