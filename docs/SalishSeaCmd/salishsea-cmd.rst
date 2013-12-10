@@ -60,15 +60,17 @@ The command :program:`salishsea` or :command:`salishsea --help` produces a list 
 .. code-block:: bash
 
     salishsea --help
-    usage: salishsea [-h] [--version] {combine,get_cgrf,prepare} ...
+    usage: salishsea [-h] [--version] {combine,gather,get_cgrf,prepare} ...
 
     optional arguments:
       -h, --help            show this help message and exit
       --version             show program's version number and exit
 
     sub-commands:
-      {combine,get_cgrf,prepare}
+      {combine,gather,get_cgrf,prepare}
         combine             Combine results from an MPI Salish Sea NEMO run
+        gather              Gather results from a Salish Sea NEMO run; includes
+                            combining MPI results files
         get_cgrf            Download and symlink CGRF atmospheric forcing files
         prepare             Prepare a Salish Sea NEMO run
 
@@ -107,6 +109,38 @@ You can check what version of :program:`salishsea` you have installed with:
 .. code-block:: bash
 
     salishsea --version
+
+
+.. _salishsea-gather:
+
+:kbd:`gather` Sub-command
+-------------------------
+
+The :command:`salishsea gather` command gather results from a Salish Sea NEMO run into a results directory. Its operation includes running the :command:`salishsea combine` command to combine the pre-processor MPI results files.
+
+.. code-block:: bash
+
+    salishsea gather --help
+    usage: salishsea gather [-h] [--keep-proc-results] [--no-compress]
+                            [--compress-restart] [--delete-restart] [--version]
+                            DESC_FILE RESULTS_DIR
+
+    Gather the results files from a Salish Sea NEMO run described in DESC_FILE
+    into files in RESULTS_DIR. The gathering process includes combining the per-
+    processor results files, compressing them using gzip and deleting the per-
+    processor files. If RESULTS_DIR does not exist it will be created.
+
+    positional arguments:
+      DESC_FILE            run description YAML file
+      RESULTS_DIR          directory to store results into
+
+    optional arguments:
+      -h, --help           show this help message and exit
+      --keep-proc-results  don't delete per-processor results files
+      --no-compress        don't compress results files
+      --compress-restart   compress restart file(s)
+      --delete-restart     delete restart file(s)
+      --version            show program's version number and exit
 
 
 .. _salishsea-get_cgrf:
@@ -273,3 +307,15 @@ which will be symlinked in the run directory as :file:`restart.nc`.
 The :kbd:`namelists` section of the run description file contains a list of NEMO namelist segments that will be concatenated to construct the :file:`namelist` file for the run.
 That constructed :file:`namelist` is concluded with empty instances of all of the namelists that NEMO requires so that default values will be used for any namelist variables not included in the namelist segments listed in the run description file.
 The blob of empty namelist instances is defined as a constant in the :py:mod:`salishsea_cmd.prepare_processor` module in the :py:mod:`SalishSeaCmd` package.
+
+
+.. _salishsea-api:
+
+API
+===
+
+This section documents the Salish Sea Nemo command processor Application Programming Interface (API).
+The API provides Python function interfaces to command processor sub-commands for use in other sub-command processor modules,
+and by other software.
+
+.. autofunction:: salishsea_cmd.api.combine
