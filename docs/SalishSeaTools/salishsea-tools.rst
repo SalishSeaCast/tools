@@ -65,6 +65,8 @@ or import modules from it:
     nc_tools.check_dataset_attrs(...)
 
 
+.. _salishsea_tools.bathy_tools:
+
 :py:mod:`bathy_tools` Module
 ============================
 
@@ -72,12 +74,16 @@ or import modules from it:
     :members:
 
 
+.. _salishsea_tools.hg_commands:
+
 :py:mod:`hg_commands` Module
 ============================
 
 .. automodule:: hg_commands
     :members:
 
+
+.. _salishsea_tools.nc_tools:
 
 :py:mod:`nc_tools` Module
 =========================
