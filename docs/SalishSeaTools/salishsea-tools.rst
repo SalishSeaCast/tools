@@ -68,19 +68,19 @@ or import modules from it:
 :py:mod:`bathy_tools` Module
 ============================
 
-.. automodule:: bathy_tools
+.. automodule:: salishsea_tools.bathy_tools
     :members:
 
 
 :py:mod:`hg_commands` Module
 ============================
 
-.. automodule:: hg_commands
+.. automodule:: salishsea_tools.hg_commands
     :members:
 
 
 :py:mod:`nc_tools` Module
 =========================
 
-.. automodule:: nc_tools
+.. automodule:: salishsea_tools.nc_tools
     :members:
