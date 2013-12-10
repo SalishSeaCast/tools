@@ -21,7 +21,7 @@ import os
 
 nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
-repo_dir = 'I_ForcingFiles'
+repo_dir = 'I_ForcingFiles/Tides'
 url = os.path.join(nbviewer, repo, repo_dir)
 readme = """This is a collection of IPython Notebooks for creating,
 manipulating,
