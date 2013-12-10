@@ -9,19 +9,21 @@ import pytz
 from math import radians, sin, cos, asin, sqrt
 import matplotlib.pyplot as plt
 
+#define a function to download all permanent DFO water level sites
+def get_all_perm_dfo_wlev(start_date,end_date):
+	stations = {'Point Atkinson':7795, 'Vancouver':7735, 'Patricia Bay':7277, 'Victoria Harbour':7120, 'Bamfield':8545, 'Tofino':8615, 'Winter Harbour':8735, 'Port Hardy':8408, 'Campbell River':8074, 'New Westminster':7654}
+	for ttt in stations:
+   		get_dfo_wlev(stations[ttt],start_date,end_date)
 
 #define a function to download the DFO water level data from their website
 # e.g. get_dfo_wlev(7795,'01-JAN-2003','01-JAN-2004','wlev_timeseries.csv')
-def get_dfo_wlev(station_no,start_date,end_date,outfile):
+def get_dfo_wlev(station_no,start_date,end_date):
+	#name the output file
+	outfile = 'wlev_'+str(station_no)+'_'+start_date+'_'+end_date+'.csv'
 	#form urls and html information
 	base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
 	form_handler = 'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='+str(station_no)
-	sitedata = {
-		'start_period': start_date,
-		'end_period': end_date,
-		'resolution': 'h',
-		'time_zone': 'l',
-	}
+	sitedata = {'start_period': start_date,'end_period': end_date,'resolution': 'h','time_zone': 'l'}
 	data_provider = 'download-telecharger.asp?File=E:%5Ciusr_tmpfiles%5CTWL%5C'+str(station_no)+'-'+start_date+'_slev.csv&Name='+str(station_no)+'-'+start_date+'_slev.csv'
 	#go get the data from the DFO site
 	with requests.Session() as s:
