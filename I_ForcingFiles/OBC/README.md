@@ -1,6 +1,5 @@
 This is a collection of IPython Notebooks for creating,
-manipulating,
-and visualizing initial conditions and forcing netCDF files.
+manipulating, and visualizing open boundary netCDF files.
 
 * [Open Boundary.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Open Boundary.ipynb)
 * [PrepareSimpleOBC.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/PrepareSimpleOBC.ipynb)
