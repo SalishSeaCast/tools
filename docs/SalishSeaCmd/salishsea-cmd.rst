@@ -317,5 +317,3 @@ API
 This section documents the Salish Sea Nemo command processor Application Programming Interface (API).
 The API provides Python function interfaces to command processor sub-commands for use in other sub-command processor modules,
 and by other software.
-
-.. autofunction:: salishsea_cmd.api.combine

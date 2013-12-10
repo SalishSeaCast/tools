@@ -6,7 +6,3 @@
 # and in other environments where those packages may not be installed
 
 mock
-
--e hg+ssh://hg@bitbucket.org/salishsea/tools/SalishSeaCmd#egg=SalishSeaCmd-dev
--e hg+ssh://hg@bitbucket.org/salishsea/tools/SalishSeaTools#egg=SalishSeaTools-dev
-
