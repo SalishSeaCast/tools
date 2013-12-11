@@ -2,8 +2,7 @@ This is a collection of IPython Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 * [LookAtDianeWendysFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
-* [LookatInitialForcingFiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookatInitialForcingFiles.ipynb)
-
+* [LookatInitialForcingFiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
 
 ##License
 

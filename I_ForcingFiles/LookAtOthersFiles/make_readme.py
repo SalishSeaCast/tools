@@ -23,9 +23,8 @@ nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/LookAtOthersFiles'
 url = os.path.join(nbviewer, repo, repo_dir)
-readme = """This is a collection of IPython Notebooks for creating,
-manipulating,
-and visualizing initial conditions and forcing netCDF files.
+readme = """This is a collection of IPython Notebooks for 
+visualizing initial conditions and forcing netCDF files from other groups.
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
