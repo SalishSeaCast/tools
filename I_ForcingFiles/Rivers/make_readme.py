@@ -24,8 +24,7 @@ repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/Rivers'
 url = os.path.join(nbviewer, repo, repo_dir)
 readme = """This is a collection of IPython Notebooks for creating,
-manipulating,
-and visualizing initial conditions and forcing netCDF files.
+manipulating, and visualizing netCDF files to do with Rivers.
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):

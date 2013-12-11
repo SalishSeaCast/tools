@@ -1,10 +1,9 @@
 This is a collection of IPython Notebooks for creating,
 manipulating, and visualizing atmospheric forcing netCDF files.
 
-* [netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)
 * [NoSnow.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/NoSnow.ipynb)
+* [netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)
 * [VerifyAtmosphericForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)
-
 
 ##License
 
