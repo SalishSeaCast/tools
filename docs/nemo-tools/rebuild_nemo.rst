@@ -82,9 +82,9 @@ will build the Fortran tool on :kbd:`salish`.
 .. note::
 
     :file:`NEMOGCM/TOOLS/REBUILD_NEMO/src/rebuild_nemo.f90` uses very long source code lines.
-    Most Fortran compilers require a flag to enable processing of soruce lines longer than 132 characters.
-    For :command:`ifort` that flag is :kbd:`-extend_source`, and for :command:`gfortran` it is :kbd:`-ffree-line-length-none`.
-    Those flags are included in the :file:`NEMOGCM/ARCH/arch-[ifort_jasper|salish|ocean].fcm` files in the :ref:`NEMO-code-repo`.
+    Some Fortran compilers require a flag to enable processing of source lines longer than 132 characters.
+    For :command:`gfortran` that flag is :kbd:`-ffree-line-length-none`.
+    Those flags are included in the :file:`NEMOGCM/ARCH/arch-[salish|ocean].fcm` files in the :ref:`NEMO-code-repo`.
 
 
 Use
