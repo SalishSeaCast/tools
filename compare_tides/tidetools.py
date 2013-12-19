@@ -11,6 +11,15 @@ import matplotlib.pyplot as plt
 
 #define a function to download all permanent DFO water level sites
 def get_all_perm_dfo_wlev(start_date,end_date):
+	"""
+	Get water level data for all permanent DFO water level sites for specified period.
+
+	    :arg start_date: string containing the start date e.g. '01-JAN-2010'
+	    :type start_date: :py:class:`netCDF4.Variable`
+
+	    :arg end_date: string containing the end date e.g. '31-JAN-2010'
+	    :type end_date: 2-tuple
+	"""
 	stations = {'Point Atkinson':7795, 'Vancouver':7735, 'Patricia Bay':7277, 'Victoria Harbour':7120, 'Bamfield':8545, 'Tofino':8615, 'Winter Harbour':8735, 'Port Hardy':8408, 'Campbell River':8074, 'New Westminster':7654}
 	for ttt in stations:
    		get_dfo_wlev(stations[ttt],start_date,end_date)
