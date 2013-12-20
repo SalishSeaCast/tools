@@ -15,10 +15,10 @@ def get_all_perm_dfo_wlev(start_date,end_date):
     e.g. get_all_perm_dfo_wlev('01-JAN-2010','31-JAN-2010')
 
     :arg start_date: string containing the start date e.g. '01-JAN-2010'
-    :type: str
+    :type start_date: str
 
     :arg end_date: string containing the end date e.g. '31-JAN-2010'
-    :type: str
+    :type end_date: str
 
     :returns: Saves text files with water level data at each site
     """
@@ -32,13 +32,13 @@ def get_dfo_wlev(station_no,start_date,end_date):
     e.g. get_dfo_wlev(7795,'01-JAN-2003','01-JAN-2004')
 
     :arg station_no: station number e.g. 7795
-    :type: int
+    :type station_no: int
 
     :arg start_date: string containing the start date e.g. '01-JAN-2010'
-    :type: str
+    :type start_date: str
 
     :arg end_date: string containing the end date e.g. '31-JAN-2010'
-    :type: str
+    :type end_date: str
 
     :returns: Saves text file with water level data at one station
     """
@@ -64,7 +64,7 @@ def dateParserMeasured(s):
     e.g. date_parser=dateParserMeasured
 
     :arg s: string of date and time
-    :type: str
+    :type s: str
 
     :returns: datetime object that is timezone aware
     """
@@ -81,7 +81,7 @@ def read_dfo_wlev_file(filename):
     e.g. dates, wlev, stat_name, stat_num, stat_lat, stat_lon = tidetools.read_dfo_wlev('wlev_timeseries.csv')
 
     :arg filename: string of filename to read in
-    :type: str
+    :type filename: str
 
     :returns: measured time, measured water level, station name, station number, station lat, station long
     """
@@ -107,7 +107,7 @@ def plot_amp_phase_maps(runname):
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
     
     :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
-    :type: str
+    :type runname: str
 
     :returns: plots the amplitude and phase 
     """
@@ -132,7 +132,7 @@ def get_netcdf_amp_phase_data(runname):
     e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
 
     :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
-    :type: str
+    :type runname: str
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
@@ -213,19 +213,19 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
     where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
 
     :arg lon: specified longitude 
-    :type: float
+    :type lon: float
 
     :arg lat: specified latitude
-    :type: float
+    :type lat: float
 
     :arg X: specified model longitude
-    :type: numpy array
+    :type X: numpy array
 
     :arg Y: specified model latitude
-    :type: numpy array
+    :type Y: numpy array
 
     :arg bathy: model bathymetry
-    :type: numpy array
+    :type bathy: numpy array
 
     :returns: x1, j1
     """
@@ -259,46 +259,108 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
             j=[]
     return i, j
 
-#define a function to plot the amplitude of one constituent throughout the domain
-#e.g. tidetools.plot_amp_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
 def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
-    import matplotlib.pyplot as plt
-    import numpy
+    """
+    Plot the amplitude of one constituent throughout the whole domain
+    e.g. plot_amp_map(X,Y,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
+
+    :arg X: specified model longitude
+    :type X: numpy array
+
+    :arg Y: specified model latitude
+    :type Y: numpy array
+
+    :arg amp: amplitude
+    :type amp: numpy array
+
+    :arg titstr: name of model run
+    :type titstr: str
+
+    :arg savestr: flag to save
+    :type savestr: bool
+
+    :arg constflag: name of constituent
+    :type constflag: str
+
+    :returns: plot of amplitude of constituent
+    """
     #make 0 values NaNs so they plot blank
-    amp = numpy.ma.masked_equal(amp,0)
+    amp = np.ma.masked_equal(amp,0)
     #range of amplitudes to plot    
     v = np.arange(0, 1.30, 0.1)
     plt.figure(figsize=(9,9))    
-    CS = plt.contourf(X,Y,amp,v,cmap='cool',aspect=(1 / numpy.cos(numpy.median(X) * numpy.pi / 180)))
+    CS = plt.contourf(X,Y,amp,v,cmap='cool',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
     plt.colorbar(CS)
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
     plt.title(constflag+' amplitude (m) for '+titstr)
     if savestr:
-     plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_amp_'+titstr+'.pdf')
+        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_amp_'+titstr+'.pdf')
 
-#define a function to plot the phase of one constituent throughout the domain
-# eg. tidetools.plot_pha_map(X,Y,mod_M2_amp,titstr,savestr,'M2')
 def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
-    import matplotlib.pyplot as plt
-    import numpy
+    """
+    Plot the phase of one constituent throughout the whole domain
+    e.g. plot_pha_map(X,Y,mod_M2_pha,titstr,savestr,'M2')
+
+    :arg X: specified model longitude
+    :type X: numpy array
+
+    :arg Y: specified model latitude
+    :type Y: numpy array
+
+    :arg pha: phase
+    :type pha: numpy array
+
+    :arg titstr: name of model run
+    :type titstr: str
+
+    :arg savestr: flag to save
+    :type savestr: bool
+
+    :arg constflag: name of constituent
+    :type constflag: str
+    
+    :returns: plot of phase of constituent
+    """
     #make 0 values NaNs so they plot blank
-    pha = numpy.ma.masked_equal(pha,0)
+    pha = np.ma.masked_equal(pha,0)
     #plot modelled M2 phase 
     v = np.arange(-180, 202.5,22.5)
     plt.figure(figsize=(9,9))    
-    CS = plt.contourf(X,Y,pha,v,cmap='gist_rainbow',aspect=(1 / numpy.cos(numpy.median(X) * numpy.pi / 180)))
+    CS = plt.contourf(X,Y,pha,v,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
     plt.colorbar(CS)
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
     plt.title(constflag+' phase (deg) for '+titstr)
     limits = plt.axis()
     if savestr:
-     plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_pha_'+titstr+'.pdf')
+        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_pha_'+titstr+'.pdf')
 
-#define a function to plot a scatter plot of measured vs. modelled phase and amplitude
-# e.g. plot_scatter_pha_amp(Am_K1_all,Ao_K1_all,gm_K1_all,go_K1_all,'K1','50s_30Sep-6Oct')
 def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
+    """
+    Plot scatter plot of measured vs. modelled phase and amplitude
+    plot_scatter_pha_amp(Am_K1_all,Ao_K1_all,gm_K1_all,go_K1_all,'K1','50s_30Sep-6Oct')
+    
+    :arg Am: modelled amplitude
+    :type Am: numpy array
+
+    :arg Ao: observed amplitude
+    :type Ao: numpy array
+
+    :arg gm: modelled phase
+    :type gm: str
+
+    :arg go: observed phase
+    :type go: str
+
+    :arg constflag: name of constituent
+    :type constflag: str
+
+    :arg runname: name of model run
+    :type runname: str
+    
+    :returns: plots and saves scatter plots of measured vs. modelled phase and amplitude
+    """
     import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(1,2,1,aspect='equal')
@@ -318,11 +380,28 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     plt.title(constflag)
     plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_scatter_comps_'+runname+'.pdf')
 
-#define a function to plot the differences on a map of the domain
-# e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname):
 def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
-    import matplotlib.pyplot as plt
+    """
+    Plot differences as circles of varying radius on a map of the model domain
+    e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname)
 
+    :arg D: differences calculated between measured and modelled
+    :type D: numpy array
+
+    :arg meas_wl_harm: measured water level harmonics read in from csv
+    :type meas_wl_harm: numpy array
+
+    :arg calcmethod: method for calculating differences ('F95' or 'M04')
+    :type calcmethod: str
+
+    :arg constflag: name of constituent
+    :type constflag: str
+
+    :arg runname: name of model run
+    :type runname: str
+
+    :returns: plots and saves plots of differences as circles of varying radius on a map of the model domain
+    """
     #plot the bathy underneath
     bathy, X, Y = get_SS_bathy_data()
     plt.figure(figsize=(9,9))    
@@ -354,6 +433,15 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
         plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+runname+'.pdf')
     
 def calc_diffs_meas_mod(runname):
+    """
+    Calculate differences between measured and modelled water level
+    e.g. meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod('50s_13Sep-20Sep')
+
+    :arg runname: name of model run 
+    :type runname: str
+
+    :returns: meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
+    """
     #read in the measured data from Foreman et al (1995)
     import pandas as pd
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
@@ -438,10 +526,25 @@ def calc_diffs_meas_mod(runname):
     print('Results saved here: '+outfile)
     return meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
 
-#define a function to calculate the distance between two lat/lons
-#haversine function copied from stackoverflow:
-#http://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points
 def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the distance between two points (from haversine on SO)
+    e.g. dist = haversine(-125.1,49.1,-125.12,49.5)
+
+    :arg lon1: longitude of point 1
+    :type lon1: float
+
+    :arg lat1: latitude of point 1
+    :type lat1: float
+
+    :arg lon2: longitude of point 2
+    :type lon2: float
+
+    :arg lat2: latitude of point 2
+    :type lat2: float
+
+    :returns: distance between two points in km
+    """
     # convert decimal degrees to radians 
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     # haversine formula 
@@ -453,7 +556,6 @@ def haversine(lon1, lat1, lon2, lat2):
     print('Observation site and model grid point are '+str(round(km,3))+'km apart')
     return km 
 
-#Plot the two spots on a map 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     """
     Plot two locations on a contour map of bathymetry, where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
@@ -470,7 +572,6 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
 
     :arg modlat: latitude of point 2
     :type modlat: float
-
 
     :arg X: specified model longitude
     :type: numpy array
