@@ -9,7 +9,7 @@ tide and storm surge results calculated by the Salish Sea NEMO model.
 
 ##License
 
-These notebooks are copyright 2013
+These notebooks are Copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

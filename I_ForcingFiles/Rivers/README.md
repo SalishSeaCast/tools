@@ -7,7 +7,7 @@ manipulating, and visualizing netCDF files to do with Rivers.
 
 ##License
 
-These notebooks are copyright 2013
+These notebooks are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

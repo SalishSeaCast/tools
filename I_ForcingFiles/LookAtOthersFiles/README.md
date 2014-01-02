@@ -1,4 +1,4 @@
-This is a collection of IPython Notebooks for 
+This is a collection of IPython Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 * [LookAtDianeWendysFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
@@ -6,7 +6,7 @@ visualizing initial conditions and forcing netCDF files from other groups.
 
 ##License
 
-These notebooks are copyright 2013
+These notebooks are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

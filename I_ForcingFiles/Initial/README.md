@@ -6,7 +6,7 @@ manipulating, and visualizing initial conditions netCDF files.
 
 ##License
 
-These notebooks are copyright 2013
+These notebooks are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
