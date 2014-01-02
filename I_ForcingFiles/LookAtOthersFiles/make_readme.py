@@ -1,7 +1,7 @@
 """Salish Sea NEMO IPython Notebook collection README generator
 
 
-Copyright 2013 The Salish Sea MEOPAR Contributors
+Copyright 2013-2014 The Salish Sea MEOPAR Contributors
 and The University of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/LookAtOthersFiles'
 url = os.path.join(nbviewer, repo, repo_dir)
-readme = """This is a collection of IPython Notebooks for 
+readme = """This is a collection of IPython Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 """
@@ -32,7 +32,7 @@ for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
 license = """
 ##License
 
-These notebooks are copyright 2013
+These notebooks are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
