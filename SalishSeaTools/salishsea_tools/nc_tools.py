@@ -138,9 +138,10 @@ def init_dataset_attrs(
         ('comment', comment),
     )
     for name, value in reqd_attrs:
-        if name in dataset.ncattrs() and not quiet:
-            print('Existing attribute value found, not overwriting: {}'
-                  .format(name))
+        if name in dataset.ncattrs():
+            if not quiet:
+                print('Existing attribute value found, not overwriting: {}'
+                      .format(name))
         else:
             dataset.setncattr(name, value)
     if not quiet:
