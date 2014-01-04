@@ -224,7 +224,7 @@ def test_notebook_hg_url(mock_dflt_url):
 
 
 def test_notebook_hg_url_no_notebook_name():
-    """_notebook_hg_url returns REQUIRED if notebook name is empty
+    """_notebook_hg_url returns REQUIRED if notebook name arg is empty
     """
     url = nc_tools._notebook_hg_url('')
     assert url == 'REQUIRED'
@@ -256,6 +256,13 @@ def test_nc_file_hg_url(mock_dflt_url):
     """
     url = nc_tools._nc_file_hg_url('../bar/baz.nc')
     assert url == 'https://bitbucket.org/salishsea/foo/src/tip/baz.nc'
+
+
+def test_nc_file_hg_url_no_nc_filepath():
+    """_nc_file_hg_url returns REQUIRED if nc_filepath arg is empty
+    """
+    url = nc_tools._nc_file_hg_url('')
+    assert url == 'REQUIRED'
 
 
 @patch('salishsea_tools.nc_tools.hg.default_url', return_value=None)
