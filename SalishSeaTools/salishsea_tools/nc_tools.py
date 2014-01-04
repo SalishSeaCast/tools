@@ -166,6 +166,8 @@ def _notebook_hg_url(notebook_name):
     :returns: The Bitbucket URL for notebook_name
     :rtype: str
     """
+    if not notebook_name:
+        return 'REQUIRED'
     default_url = hg.default_url()
     try:
         bitbucket, repo_path = default_url.partition('bitbucket.org')[1:]

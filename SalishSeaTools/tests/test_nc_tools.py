@@ -223,6 +223,13 @@ def test_notebook_hg_url(mock_dflt_url):
     assert url == 'https://bitbucket.org/salishsea/foo/src/tip/bar.ipynb'
 
 
+def test_notebook_hg_url_no_notebook_name():
+    """_notebook_hg_url returns REQUIRED if notebook name is empty
+    """
+    url = nc_tools._notebook_hg_url('')
+    assert url == 'REQUIRED'
+
+
 @patch('salishsea_tools.nc_tools.hg.default_url', return_value=None)
 def test_notebook_hg_url_REQUIRED(mock_dflt_url):
     """_notebook_hg_url returns REQUIRED if bitbucket not in repo URL
