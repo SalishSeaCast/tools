@@ -198,7 +198,10 @@ def _nc_file_hg_url(nc_filepath):
     :rtype: str
     """
     rel_path = ''.join(nc_filepath.rpartition('../')[:2])
-    repo_path = nc_filepath.split(rel_path)[1]
+    try:
+        repo_path = nc_filepath.split(rel_path)[1]
+    except ValueError:
+        return 'REQUIRED'
     repo, filepath = repo_path.split('/', 1)
     default_url = hg.default_url(os.path.join(rel_path, repo))
     try:
