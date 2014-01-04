@@ -112,11 +112,17 @@ def init_dataset_attrs(
     :type title: str
 
     :arg notebook_name: Name of the IPython Notebook being used to create
-                        or update the dataset
+                        or update the dataset.
+                        If empty the source attribute value will be set
+                        to REQUIRED and must therefore be handled in a
+                        subsequent operation.
     :type notebook_name: str
 
     :arg nc_filepath: Relative path and filename of the netCDF file being
                       created or updated.
+                      If empty the references attribute value will be set
+                      to REQUIRED and must therefore be handled in a
+                      subsequent operation.
     :type nc_filepath: str
 
     :arg comment: Comment(s) for the dataset
