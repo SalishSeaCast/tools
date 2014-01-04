@@ -204,11 +204,13 @@ def test_init_dataset_attrs_no_oversrite_quiet(
     """init_dataset_attrs suppresses no-overwrite notice when quiet=True
     """
     dataset.Conventions = 'CF-1.6'
+    dataset.history = 'foo'
     nc_tools.init_dataset_attrs(
         dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc',
         quiet=True)
     out, err = capsys.readouterr()
     assert out == ''
+    assert dataset.history == 'foo'
 
 
 @patch(
