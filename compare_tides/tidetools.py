@@ -117,6 +117,9 @@ def plot_amp_phase_maps(runname):
     elif runname == 'jpp72':
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
         bathy, X, Y = get_subdomain_bathy_data()        
+    elif runname == '40d':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(runname)
+        bathy, X, Y = get_SS2_bathy_data()
     else:            
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(runname)
         bathy, X, Y = get_SS_bathy_data()
@@ -125,6 +128,30 @@ def plot_amp_phase_maps(runname):
     if runname != 'concepts110' and runname != 'jpp72':
         plot_amp_map(X,Y,mod_K1_amp,runname,True,'K1')
         plot_pha_map(X,Y,mod_K1_pha,runname,True,'K1')
+
+def get_netcdf_amp_phase_data_40d(runname):
+    """
+    Calculate amplitude and phase from the results of the 40 day run of the Salish Sea model
+    e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
+
+    :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
+    :type runname: str
+
+    :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
+    """
+    harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname+'/Tidal_Harmonics_eta.nc','r')
+     #get imaginary and real components
+    mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
+    mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
+    mod_K1_eta_real = harmT.variables['K1_eta_real'][0,:,:]
+    mod_K1_eta_imag = harmT.variables['K1_eta_imag'][0,:,:]
+     #convert to amplitude and phase
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
+    return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
 
 def get_netcdf_amp_phase_data(runname):
     """
@@ -185,6 +212,19 @@ def get_SS_bathy_data():
     :returns: bathy, X, Y
     """
     grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+    bathy = grid.variables['Bathymetry'][:,:]
+    X = grid.variables['nav_lon'][:,:]
+    Y = grid.variables['nav_lat'][:,:]
+    return bathy, X, Y
+
+def get_SS2_bathy_data():
+    """
+    Get the Salish Sea 2 bathymetry and grid data
+    e.g. bathy, X, Y = get_SS2_bathy_data()
+    
+    :returns: bathy, X, Y
+    """
+    grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
     bathy = grid.variables['Bathymetry'][:,:]
     X = grid.variables['nav_lon'][:,:]
     Y = grid.variables['nav_lat'][:,:]
@@ -471,6 +511,9 @@ def calc_diffs_meas_mod(runname):
     elif runname == 'jpp72':
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
         bathy, X, Y = get_subdomain_bathy_data()
+    elif runname == '40d':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(runname)
+        bathy, X, Y = get_SS2_bathy_data()
     else:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(runname)
         bathy, X, Y = get_SS_bathy_data()
