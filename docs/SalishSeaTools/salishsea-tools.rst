@@ -90,3 +90,12 @@ or import modules from it:
 
 .. automodule:: nc_tools
     :members:
+
+
+.. _salishsea_tools.tidetools:
+
+:py:mod:`tidetools` Module
+==========================
+
+.. automodule:: tidetools
+    :members:
