@@ -52,15 +52,15 @@ To use the package in your IPython Notebooks or Python scripts import the packag
 
 .. code-block:: python
 
-    import salishsea-tools
+    import salishsea_tools
 
-    salishsea-tools.bathy_tools.plot_colourmesh(...)
+    salishsea_tools.bathy_tools.plot_colourmesh(...)
 
 or import modules from it:
 
 .. code-block:: python
 
-    from salishsea-tools import nc_tools
+    from salishsea_tools import nc_tools
 
     nc_tools.check_dataset_attrs(...)
 
