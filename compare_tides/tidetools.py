@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 
-def get_all_perm_dfo_wlev(start_date,end_date):
+def get_all_perm_dfo_wlev(start_date,end_date): 'difference' between measured and modelled (which is also plotted in this notebook).
+
     """
     Get water level data for all permanent DFO water level sites for specified period.
     e.g. get_all_perm_dfo_wlev('01-JAN-2010','31-JAN-2010')
