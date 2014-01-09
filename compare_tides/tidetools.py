@@ -8,6 +8,8 @@ import pandas as pd
 import pytz
 from math import radians, sin, cos, asin, sqrt
 import matplotlib.pyplot as plt
+import matplotlib
+
 
 def get_all_perm_dfo_wlev(start_date,end_date):
     """
@@ -302,13 +304,16 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
 def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     """
     Plot the amplitude of one constituent throughout the whole domain
-    e.g. plot_amp_map(X,Y,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
+    e.g. plot_amp_map(X,Y,bathy,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
 
     :arg X: specified model longitude
     :type X: numpy array
 
     :arg Y: specified model latitude
     :type Y: numpy array
+
+    :arg bathy: model bathymetry netcdf
+    :type bathy: netcdf dataset
 
     :arg amp: amplitude
     :type amp: numpy array
@@ -327,9 +332,18 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     #make 0 values NaNs so they plot blank
     amp = np.ma.masked_equal(amp,0)
     #range of amplitudes to plot    
-    v = np.arange(0, 1.30, 0.1)
-    plt.figure(figsize=(9,9))    
-    CS = plt.contourf(X,Y,amp,v,cmap='cool',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
+    plt.figure(figsize=(9,9))
+    #add a coastline (just use salishsea2 bathy)
+    v1 = np.arange(0, 1, 1)
+    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
+    lats = dataset.variables['nav_lat']
+    lons = dataset.variables['nav_lon']
+    depths = dataset.variables['Bathymetry']
+    plt.contour(lons,lats,depths,v1,colors='black')    
+    #add the amplitude contours
+    v2 = np.arange(0,1.30,0.10)
+    CS = plt.contourf(X,Y,amp,v2,cmap='cool',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
+    plt.contour(X,Y,amp,v2,colors='black')
     plt.colorbar(CS)
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
@@ -364,10 +378,19 @@ def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
     """
     #make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha,0)
-    #plot modelled M2 phase 
-    v = np.arange(-180, 202.5,22.5)
     plt.figure(figsize=(9,9))    
-    CS = plt.contourf(X,Y,pha,v,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
+    #add a coastline (just use salishsea2 bathy)
+    v1 = np.arange(0, 1, 1)
+    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
+    lats = dataset.variables['nav_lat']
+    lons = dataset.variables['nav_lon']
+    depths = dataset.variables['Bathymetry']
+    plt.contour(lons,lats,depths,v1,colors='black')    
+    #plot modelled M2 phase 
+    v2 = np.arange(-180, 202.5,11.25)
+    CS = plt.contourf(X,Y,pha,v2,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
+    matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+    plt.contour(X,Y,pha,v2,colors='black')
     plt.colorbar(CS)
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
