@@ -122,7 +122,7 @@ def read_dfo_wlev_file(filename):
         print(wlev_meas.time[x])
     return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
-def plot_amp_phase_maps(runname):
+def plot_amp_phase_maps(runname,loc):
     """
     Plot the amplitude and phase results for a model run
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
@@ -139,10 +139,10 @@ def plot_amp_phase_maps(runname):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
         bathy, X, Y = get_subdomain_bathy_data()
     elif runname == '40d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(runname)
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(loc)
         bathy, X, Y = get_SS2_bathy_data()
     else:
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(runname)
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
         bathy, X, Y = get_SS_bathy_data()
     plot_amp_map(X,Y,mod_M2_amp,runname,True,'M2')
     plot_pha_map(X,Y,mod_M2_pha,runname,True,'M2')
@@ -150,7 +150,7 @@ def plot_amp_phase_maps(runname):
         plot_amp_map(X,Y,mod_K1_amp,runname,True,'K1')
         plot_pha_map(X,Y,mod_K1_pha,runname,True,'K1')
 
-def get_netcdf_amp_phase_data_40d(runname):
+def get_netcdf_amp_phase_data_40d(loc):
     """
     Calculate amplitude and phase from the results of the 40 day run of the Salish Sea model
     e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
@@ -160,7 +160,7 @@ def get_netcdf_amp_phase_data_40d(runname):
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
-    harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname+'/Tidal_Harmonics_eta.nc','r')
+    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
      #get imaginary and real components
     mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
     mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
@@ -174,7 +174,7 @@ def get_netcdf_amp_phase_data_40d(runname):
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
-def get_netcdf_amp_phase_data(runname):
+def get_netcdf_amp_phase_data(loc):
     """
     Calculate amplitude and phase from the results of a particular run of the Salish Sea model
     e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
@@ -184,7 +184,7 @@ def get_netcdf_amp_phase_data(runname):
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
-    harmT = NC.Dataset('/data/dlatorne/MEOPAR/SalishSea/results/'+runname+'/Tidal_Harmonics_eta.nc','r')
+    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
      #get imaginary and real components
     mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
     mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
@@ -518,7 +518,7 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
         plt.title(constflag+' differences (Masson & Cummins) for '+runname)
         plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+runname+'.pdf')
 
-def calc_diffs_meas_mod(runname):
+def calc_diffs_meas_mod(runname,loc):
     """
     Calculate differences between measured and modelled water level
     e.g. meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod('50s_13Sep-20Sep')
@@ -558,10 +558,10 @@ def calc_diffs_meas_mod(runname):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
         bathy, X, Y = get_subdomain_bathy_data()
     elif runname == '40d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(runname)
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(loc)
         bathy, X, Y = get_SS2_bathy_data()
     else:
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(runname)
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
         bathy, X, Y = get_SS_bathy_data()
 
     with open(outfile, 'wb') as csvfile:
