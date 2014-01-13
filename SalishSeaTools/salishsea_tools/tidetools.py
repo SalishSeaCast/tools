@@ -142,6 +142,8 @@ def plot_amp_phase_maps(runname,loc,grid):
        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
     elif runname == 'jpp72':
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
+    elif runname == 'composite':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
     else:
        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
 
@@ -539,6 +541,8 @@ def calc_diffs_meas_mod(runname,loc,grid):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
     elif runname == 'jpp72':
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
+    elif runname == 'composite':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
     else:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
 
@@ -683,6 +687,7 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
 
     if len(args)>0:
         print('plotting multiple runs on one graph...')
+
         #assuming we will only be adding an additional 3 lines, define 3 colours
         colours = ['g','m','k']
         for r in range(0,len(args)/2):
@@ -703,7 +708,7 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     plt.xticks(x, statnums+1)
     plt.legend(loc='lower right')
     plt.title('Select stations in line from JdF to Gibsons')
-    plt.savefig('meas_mod_wlev_transect_'+allortransect+'_'+runname+'.pdf')
+    plt.savefig('meas_mod_wlev_'+allortransect+'.pdf')
 
 def plot_wlev_transect_map(grid):
     plt.figure(figsize=(9,9))
@@ -728,3 +733,32 @@ def plot_coastline(grid):
     lons = grid.variables['nav_lon']
     depths = grid.variables['Bathymetry']
     plt.contour(lons,lats,depths,v1,colors='black')
+
+def get_composite_harms():
+    runnames = ['50s_15-21Sep','50s_22-25Sep','50s_26-29Sep','50s_30Sep-6Oct','50s_7-13Oct']
+    runlength = np.array([7.0,4.0,4.0,7.0,7.0])
+
+    mod_M2_eta_real1 = 0.0
+    mod_M2_eta_imag1 = 0.0
+    mod_K1_eta_real1 = 0.0
+    mod_K1_eta_imag1 = 0.0
+
+    for runnum in range(0,len(runnames)):
+        harmT = NC.Dataset('/data/dlatorne/MEOPAR/SalishSea/results/'+runnames[runnum]+'/Tidal_Harmonics_eta.nc','r')
+        #get imaginary and real components
+        mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
+        mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
+        mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
+        mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
+
+    totaldays = sum(runlength)
+    mod_M2_eta_real = mod_M2_eta_real1/totaldays
+    mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
+    mod_K1_eta_real = mod_K1_eta_real1/totaldays
+    mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
+
+    return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
