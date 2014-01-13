@@ -361,7 +361,7 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     plt.contour(lons,lats,depths,v1,colors='black')
     #add the amplitude contours
     v2 = np.arange(0,1.30,0.10)
-    CS = plt.contourf(X,Y,amp,v2,cmap='cool',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
+    CS = plt.contourf(X,Y,amp,v2,aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
     CS2 = plt.contour(X,Y,amp,v2,colors='black')
     cbar = plt.colorbar(CS)
     cbar.add_lines(CS2)
@@ -408,7 +408,7 @@ def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
     depths = dataset.variables['Bathymetry']
     plt.contour(lons,lats,depths,v1,colors='black')
     #plot modelled M2 phase
-    v2 = np.arange(-180, 202.5,11.25)
+    v2 = np.arange(-180, 202.5,22.5)
     CS = plt.contourf(X,Y,pha,v2,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
     matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
     CS2 = plt.contour(X,Y,pha,v2,colors='black')
@@ -683,8 +683,87 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.ylim([modlat-0.1,modlat+0.1])
     plt.legend(numpoints=1)
 
+def plot_wlev_M2_const_transect(*args):
+    #runname1, loc1, runname2, loc2
+    if len(args)>2:
+        print('plotting multiple runs on one graph...')
 
+    plt.figure(figsize=(15,5))
+    plt.xlabel('Station number [-]')
+    plt.ylabel('M2 amplitude [m]')
 
+    statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
+    colours = ['b','g','m','k']
+    for r in range(0,len(args)/2):
+        runname = args[2*r]
+        loc = args[2*r+1]
+        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc)
+        Am_M2_all = np.array(Am_M2_all)
+        Ao_M2_all = np.array(Ao_M2_all)
+        some_model_amps = np.array([Am_M2_all[statnums]])
+        x = np.array(range(0,len(statnums)))
+        plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
 
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    some_meas_amps = np.array([Ao_M2_all[statnums]])
+    sitenames = list(meas_wl_harm.Site[statnums])
+    sitelats = np.array(meas_wl_harm.Lat[statnums])
+    plt.plot(x,some_meas_amps[0,:],'r-o',label='measured')
+    plt.xticks(x, statnums+1)
+    plt.legend(loc='lower right')
+    plt.title('Select stations in line from JdF to Gibsons')
+   # plt.savefig('meas_mod_wlev_transect_select_'+runname+'.pdf')
+
+def plot_wlev_M2_const_all(*args):
+    #runname1, loc1, runname2, loc2
+    if len(args)>2:
+        print('plotting multiple runs on one graph...')
+
+    plt.figure(figsize=(15,5))
+    plt.xlabel('Station number [-]')
+    plt.ylabel('M2 amplitude [m]')
+    
+    #there are 38 stations
+    statnums = np.arange(0,38)
+    colours = ['b','g','m','k']
+    for r in range(0,len(args)/2):
+        runname = args[2*r]
+        loc = args[2*r+1]
+        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc)
+        Am_M2_all = np.array(Am_M2_all)
+        Ao_M2_all = np.array(Ao_M2_all)
+        some_model_amps = np.array([Am_M2_all[statnums]])
+        x = np.array(range(0,len(statnums)))
+        plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
+
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    some_meas_amps = np.array([Ao_M2_all[statnums]])
+    sitenames = list(meas_wl_harm.Site[statnums])
+    sitelats = np.array(meas_wl_harm.Lat[statnums])
+    plt.plot(x,some_meas_amps[0,:],'r-o',label='measured')
+    plt.xticks(x, statnums+1)
+    plt.legend(loc='lower right')
+    plt.title('All stations')
+   # plt.savefig('meas_mod_wlev_transect_select_'+runname+'.pdf')
+
+def plot_wlev_transect_map():
+    plt.figure(figsize=(9,9))
+    #add a coastline (just use salishsea2 bathy)
+    v1 = np.arange(0, 1, 1)
+    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
+    lats = dataset.variables['nav_lat']
+    lons = dataset.variables['nav_lon']
+    depths = dataset.variables['Bathymetry']
+    plt.contour(lons,lats,depths,v1,colors='black')
+    #add the locations of the measured data points
+    statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    sitenames = list(meas_wl_harm.Site[statnums])
+    sitelats = np.array(meas_wl_harm.Lat[statnums])
+    sitelats = np.array(meas_wl_harm.Lat[statnums])
+    sitelons = np.array(-meas_wl_harm.Lon[statnums])
+    plt.plot(sitelons,sitelats,'m-o')
+    plt.title('Location of Select Stations in line from JdF to Gibsons')
+    plt.savefig('meas_mod_wlev_transect_map.pdf')
 
 
