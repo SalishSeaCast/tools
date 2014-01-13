@@ -122,7 +122,7 @@ def read_dfo_wlev_file(filename):
         print(wlev_meas.time[x])
     return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
-def plot_amp_phase_maps(runname,loc):
+def plot_amp_phase_maps(runname,loc,grid):
     """
     Plot the amplitude and phase results for a model run
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
@@ -130,48 +130,27 @@ def plot_amp_phase_maps(runname,loc):
     :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
     :type runname: str
 
+    :arg loc: location of results folder
+    :type loc: str
+
+    :arg grid: netcdf file of grid data
+    :type grid: netcdf dataset
+
     :returns: plots the amplitude and phase
     """
     if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110()
-        bathy, X, Y = get_subdomain_bathy_data()
+       mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
     elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
-        bathy, X, Y = get_subdomain_bathy_data()
-    elif runname == '40d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(loc)
-        bathy, X, Y = get_SS2_bathy_data()
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
     else:
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
-        bathy, X, Y = get_SS_bathy_data()
-    plot_amp_map(X,Y,mod_M2_amp,runname,True,'M2')
-    plot_pha_map(X,Y,mod_M2_pha,runname,True,'M2')
+       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
+
+    bathy, X, Y = get_bathy_data(grid)
+    plot_amp_map(X,Y,grid,mod_M2_amp,runname,True,'M2')
+    plot_pha_map(X,Y,grid,mod_M2_pha,runname,True,'M2')
     if runname != 'concepts110' and runname != 'jpp72':
-        plot_amp_map(X,Y,mod_K1_amp,runname,True,'K1')
-        plot_pha_map(X,Y,mod_K1_pha,runname,True,'K1')
-
-def get_netcdf_amp_phase_data_40d(loc):
-    """
-    Calculate amplitude and phase from the results of the 40 day run of the Salish Sea model
-    e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
-
-    :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
-    :type runname: str
-
-    :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
-    """
-    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
-     #get imaginary and real components
-    mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
-    mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
-    mod_K1_eta_real = harmT.variables['K1_eta_real'][0,:,:]
-    mod_K1_eta_imag = harmT.variables['K1_eta_imag'][0,:,:]
-     #convert to amplitude and phase
-    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
-    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
-    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
-    return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+        plot_amp_map(X,Y,grid,mod_K1_amp,runname,True,'K1')
+        plot_pha_map(X,Y,grid,mod_K1_pha,runname,True,'K1')
 
 
 def get_netcdf_amp_phase_data(loc):
@@ -197,14 +176,14 @@ def get_netcdf_amp_phase_data(loc):
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
-def get_netcdf_amp_phase_data_jpp72():
+def get_netcdf_amp_phase_data_jpp72(loc):
     """
     Calculate amplitude and phase from the results of the JPP72 model
     e.g. mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset('/ocean/klesouef/meopar/SS-run-sets/JPP/72h_3d_iomput/JPP_1d_20020102_20020104_grid_T.nc','r')
+    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc','r')
     #Get amplitude and phase
     mod_M2_x_elev = harmT.variables['M2_x_elev'][0,:,:] #Cj
     mod_M2_y_elev = harmT.variables['M2_y_elev'][0,:,:] #Sj
@@ -213,17 +192,32 @@ def get_netcdf_amp_phase_data_jpp72():
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_y_elev,mod_M2_x_elev))
     return mod_M2_amp, mod_M2_pha
 
-def get_netcdf_amp_phase_data_concepts110():
+def get_netcdf_amp_phase_data_concepts110(loc):
     """
     Calculate amplitude and phase from the results of the CONCEPTS110 model
     e.g. mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110()
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset('/ocean/klesouef/meopar/tools/NetCDF_Plot/WC3_Harmonics_gridT_TIDE2D.nc','r')
+    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
     mod_M2_amp = harmT.variables['M2_amp'][0,:,:]
     mod_M2_pha = harmT.variables['M2_pha'][0,:,:]
     return mod_M2_amp, mod_M2_pha
+
+def get_bathy_data(grid):
+    """
+    Get the Salish Sea bathymetry from specified grid NC.Dataset
+    e.g. bathy, X, Y = get_bathy_data(grid)
+
+    :arg grid: netcdf object of model grid
+    :type grid: netcdf dataset
+
+    :returns: bathy, X, Y
+    """
+    bathy = grid.variables['Bathymetry'][:,:]
+    X = grid.variables['nav_lon'][:,:]
+    Y = grid.variables['nav_lat'][:,:]
+    return bathy, X, Y
 
 def get_SS_bathy_data():
     """
@@ -320,10 +314,10 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
             j=[]
     return i, j
 
-def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
+def plot_amp_map(X,Y,grid,amp,titstr,savestr,constflag):
     """
     Plot the amplitude of one constituent throughout the whole domain
-    e.g. plot_amp_map(X,Y,bathy,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
+    e.g. plot_amp_map(X,Y,grid,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
 
     :arg X: specified model longitude
     :type X: numpy array
@@ -331,8 +325,8 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     :arg Y: specified model latitude
     :type Y: numpy array
 
-    :arg bathy: model bathymetry netcdf
-    :type bathy: netcdf dataset
+    :arg grid: model grid netcdf
+    :type grid: netcdf dataset
 
     :arg amp: amplitude
     :type amp: numpy array
@@ -352,13 +346,8 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     amp = np.ma.masked_equal(amp,0)
     #range of amplitudes to plot
     plt.figure(figsize=(9,9))
-    #add a coastline (just use salishsea2 bathy)
-    v1 = np.arange(0, 1, 1)
-    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
-    lats = dataset.variables['nav_lat']
-    lons = dataset.variables['nav_lon']
-    depths = dataset.variables['Bathymetry']
-    plt.contour(lons,lats,depths,v1,colors='black')
+    #add a coastline 
+    plot_coastline(grid)
     #add the amplitude contours
     v2 = np.arange(0,1.30,0.10)
     CS = plt.contourf(X,Y,amp,v2,aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
@@ -372,10 +361,10 @@ def plot_amp_map(X,Y,amp,titstr,savestr,constflag):
     if savestr:
         plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_amp_'+titstr+'.pdf')
 
-def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
+def plot_pha_map(X,Y,grid,pha,titstr,savestr,constflag):
     """
     Plot the phase of one constituent throughout the whole domain
-    e.g. plot_pha_map(X,Y,mod_M2_pha,titstr,savestr,'M2')
+    e.g. plot_pha_map(X,Y,grid,mod_M2_pha,titstr,savestr,'M2')
 
     :arg X: specified model longitude
     :type X: numpy array
@@ -400,13 +389,8 @@ def plot_pha_map(X,Y,pha,titstr,savestr,constflag):
     #make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha,0)
     plt.figure(figsize=(9,9))
-    #add a coastline (just use salishsea2 bathy)
-    v1 = np.arange(0, 1, 1)
-    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
-    lats = dataset.variables['nav_lat']
-    lons = dataset.variables['nav_lon']
-    depths = dataset.variables['Bathymetry']
-    plt.contour(lons,lats,depths,v1,colors='black')
+    #add a coastline 
+    plot_coastline(grid)
     #plot modelled M2 phase
     v2 = np.arange(-180, 202.5,22.5)
     CS = plt.contourf(X,Y,pha,v2,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
@@ -466,10 +450,10 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     plt.title(constflag)
     plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_scatter_comps_'+runname+'.pdf')
 
-def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
+def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     """
     Plot differences as circles of varying radius on a map of the model domain
-    e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname)
+    e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname,grid)
 
     :arg D: differences calculated between measured and modelled
     :type D: numpy array
@@ -489,7 +473,7 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
     :returns: plots and saves plots of differences as circles of varying radius on a map of the model domain
     """
     #plot the bathy underneath
-    bathy, X, Y = get_SS_bathy_data()
+    bathy, X, Y = get_bathy_data(grid)
     plt.figure(figsize=(9,9))
     plt.contourf(X,Y,bathy,cmap='spring')
     cbar = plt.colorbar()
@@ -518,7 +502,7 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname):
         plt.title(constflag+' differences (Masson & Cummins) for '+runname)
         plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+runname+'.pdf')
 
-def calc_diffs_meas_mod(runname,loc):
+def calc_diffs_meas_mod(runname,loc,grid):
     """
     Calculate differences between measured and modelled water level
     e.g. meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod('50s_13Sep-20Sep')
@@ -552,17 +536,14 @@ def calc_diffs_meas_mod(runname,loc):
 
     #get bathy and harmonics data
     if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110()
-        bathy, X, Y = get_subdomain_bathy_data()
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
     elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
-        bathy, X, Y = get_subdomain_bathy_data()
-    elif runname == '40d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data_40d(loc)
-        bathy, X, Y = get_SS2_bathy_data()
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
     else:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
-        bathy, X, Y = get_SS_bathy_data()
+
+    #get bathy data
+    bathy, X, Y = get_bathy_data(grid)
 
     with open(outfile, 'wb') as csvfile:
         import csv
@@ -683,26 +664,36 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.ylim([modlat-0.1,modlat+0.1])
     plt.legend(numpoints=1)
 
-def plot_wlev_M2_const_transect(*args):
+def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     #runname1, loc1, runname2, loc2
-    if len(args)>2:
-        print('plotting multiple runs on one graph...')
-
     plt.figure(figsize=(15,5))
     plt.xlabel('Station number [-]')
     plt.ylabel('M2 amplitude [m]')
+    
+    if allortransect == 'all':
+        statnums = np.arange(0,38)
+    else:
+        statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
+    meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
+    Am_M2_all = np.array(Am_M2_all)
+    Ao_M2_all = np.array(Ao_M2_all)
+    some_model_amps = np.array([Am_M2_all[statnums]])
+    x = np.array(range(0,len(statnums)))
+    plt.plot(x,some_model_amps[0,:],'b-o', label=runname+'_model')
 
-    statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
-    colours = ['b','g','m','k']
-    for r in range(0,len(args)/2):
-        runname = args[2*r]
-        loc = args[2*r+1]
-        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc)
-        Am_M2_all = np.array(Am_M2_all)
-        Ao_M2_all = np.array(Ao_M2_all)
-        some_model_amps = np.array([Am_M2_all[statnums]])
-        x = np.array(range(0,len(statnums)))
-        plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
+    if len(args)>0:
+        print('plotting multiple runs on one graph...')
+        #assuming we will only be adding an additional 3 lines, define 3 colours
+        colours = ['g','m','k']
+        for r in range(0,len(args)/2):
+            runname = args[2*r]
+            loc = args[2*r+1]
+            meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
+            Am_M2_all = np.array(Am_M2_all)
+            Ao_M2_all = np.array(Ao_M2_all)
+            some_model_amps = np.array([Am_M2_all[statnums]])
+            x = np.array(range(0,len(statnums)))
+            plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
 
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
     some_meas_amps = np.array([Ao_M2_all[statnums]])
@@ -712,58 +703,28 @@ def plot_wlev_M2_const_transect(*args):
     plt.xticks(x, statnums+1)
     plt.legend(loc='lower right')
     plt.title('Select stations in line from JdF to Gibsons')
-   # plt.savefig('meas_mod_wlev_transect_select_'+runname+'.pdf')
+    plt.savefig('meas_mod_wlev_transect_'+allortransect+'_'+runname+'.pdf')
 
-def plot_wlev_M2_const_all(*args):
-    #runname1, loc1, runname2, loc2
-    if len(args)>2:
-        print('plotting multiple runs on one graph...')
-
-    plt.figure(figsize=(15,5))
-    plt.xlabel('Station number [-]')
-    plt.ylabel('M2 amplitude [m]')
-    
-    #there are 38 stations
-    statnums = np.arange(0,38)
-    colours = ['b','g','m','k']
-    for r in range(0,len(args)/2):
-        runname = args[2*r]
-        loc = args[2*r+1]
-        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc)
-        Am_M2_all = np.array(Am_M2_all)
-        Ao_M2_all = np.array(Ao_M2_all)
-        some_model_amps = np.array([Am_M2_all[statnums]])
-        x = np.array(range(0,len(statnums)))
-        plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
-
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
-    some_meas_amps = np.array([Ao_M2_all[statnums]])
-    sitenames = list(meas_wl_harm.Site[statnums])
-    sitelats = np.array(meas_wl_harm.Lat[statnums])
-    plt.plot(x,some_meas_amps[0,:],'r-o',label='measured')
-    plt.xticks(x, statnums+1)
-    plt.legend(loc='lower right')
-    plt.title('All stations')
-   # plt.savefig('meas_mod_wlev_transect_select_'+runname+'.pdf')
-
-def plot_wlev_transect_map():
+def plot_wlev_transect_map(grid):
     plt.figure(figsize=(9,9))
-    #add a coastline (just use salishsea2 bathy)
-    v1 = np.arange(0, 1, 1)
-    dataset = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
-    lats = dataset.variables['nav_lat']
-    lons = dataset.variables['nav_lon']
-    depths = dataset.variables['Bathymetry']
-    plt.contour(lons,lats,depths,v1,colors='black')
-    #add the locations of the measured data points
+    #add a coastline 
+    plot_coastline(grid)
+    #stations to plot
     statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
+    #get the measured data
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelons = np.array(-meas_wl_harm.Lon[statnums])
+    #plot the transext line
     plt.plot(sitelons,sitelats,'m-o')
     plt.title('Location of Select Stations in line from JdF to Gibsons')
     plt.savefig('meas_mod_wlev_transect_map.pdf')
 
-
+def plot_coastline(grid):
+    v1 = np.arange(0, 1, 1)
+    lats = grid.variables['nav_lat']
+    lons = grid.variables['nav_lon']
+    depths = grid.variables['Bathymetry']
+    plt.contour(lons,lats,depths,v1,colors='black')
