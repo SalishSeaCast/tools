@@ -730,6 +730,14 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
 def plot_wlev_transect_map(grid,statnums):
     """
     Plot a map of the coastline and the transect of water level stations, which are plotted in plot_wlev_M2_const_transect
+
+    :arg grid: bathymetry file
+    :type grid: netcdf dataset
+
+    :arg statnums: station numbers to plot
+    :type statnums: numpy array
+
+    :returns: plot of water level stations and coastline
     """
 
     plt.figure(figsize=(9,9))
@@ -747,6 +755,14 @@ def plot_wlev_transect_map(grid,statnums):
     plt.savefig('meas_mod_wlev_transect_map.pdf')
 
 def plot_coastline(grid):
+    """
+    Plots a map of the coastline 
+
+    :arg grid: netcdf file of bathymetry
+    :type grid: netcdf dataset
+
+    :returns: coastline map
+    """
     v1 = np.arange(0, 1, 1)
     lats = grid.variables['nav_lat']
     lons = grid.variables['nav_lon']
@@ -754,6 +770,17 @@ def plot_coastline(grid):
     plt.contour(lons,lats,depths,v1,colors='black')
 
 def get_composite_harms():
+    """
+    Take the results of the following runs (which are all the same model setup) and combine the harmonics into one 'composite' run
+    50s_15-21Sep
+    50s_22-25Sep
+    50s_26-29Sep
+    50s_30Sep-6Oct
+    50s_7-13Oct
+    
+    :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+    """
+
     runnames = ['50s_15-21Sep','50s_22-25Sep','50s_26-29Sep','50s_30Sep-6Oct','50s_7-13Oct']
     runlength = np.array([7.0,4.0,4.0,7.0,7.0])
 
