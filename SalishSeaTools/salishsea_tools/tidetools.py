@@ -670,8 +670,8 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
 
 def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     """
-    Plot two locations on a contour map of bathymetry, where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
-    e.g. plot_meas_mod_locations(-124.0, 48.4, -124.2, 48.1,X,Y,bathy)
+    Plot water level of the modelled M2 constituent and measured M2 constituent in a transect (or just plot all stations) 
+    e.g. plot_wlev_M2_const_transect('40d','/ocean/klesouef/meopar/)
 
     :arg runname: unique name of run
     :type runname: str
@@ -685,7 +685,7 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     :arg allortransect: two possible values 'all' or 'transect' (to plot 'all' the measured points or just some in a 'transect')
     :type allortransect: str
 
-    :arg args: other runname and results location strings
+    :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure 
     :type args: str
 
     :returns: plots transect of M2 water level constituent
@@ -732,6 +732,10 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     plt.savefig('meas_mod_wlev_'+allortransect+'.pdf')
 
 def plot_wlev_transect_map(grid):
+    """
+    Plot a map of the coastline and the transect of water level stations, which are plotted in plot_wlev_M2_const_transect
+    """
+
     plt.figure(figsize=(9,9))
     #add a coastline 
     plot_coastline(grid)
