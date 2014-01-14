@@ -648,13 +648,13 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     :type modlat: float
 
     :arg X: specified model longitude
-    :type: numpy array
+    :type X: numpy array
 
     :arg Y: specified model latitude
-    :type: numpy array
+    :type Y: numpy array
 
     :arg bathy: model bathymetry
-    :type: numpy array
+    :type bathy: numpy array
 
     :returns: plots contour plot with 2 points
     """
@@ -669,6 +669,27 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.legend(numpoints=1)
 
 def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
+    """
+    Plot two locations on a contour map of bathymetry, where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
+    e.g. plot_meas_mod_locations(-124.0, 48.4, -124.2, 48.1,X,Y,bathy)
+
+    :arg runname: unique name of run
+    :type runname: str
+
+    :arg loc: location of model results
+    :type loc: str
+
+    :arg grid: netcdf dataset of model grid
+    :type grid: netcdf dataset
+
+    :arg allortransect: two possible values 'all' or 'transect' (to plot 'all' the measured points or just some in a 'transect')
+    :type allortransect: str
+
+    :arg args: other runname and results location strings
+    :type args: str
+
+    :returns: plots transect of M2 water level constituent
+    """
     #runname1, loc1, runname2, loc2
     plt.figure(figsize=(15,5))
     plt.xlabel('Station number [-]')
