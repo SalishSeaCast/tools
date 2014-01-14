@@ -514,9 +514,9 @@ def calc_diffs_meas_mod(runname,loc,grid):
 
     :returns: meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
     """
-    #read in the measured data from Foreman et al (1995)
+    #read in the measured data from Foreman et al (1995) and US sites
     import pandas as pd
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
     meas_wl_harm = meas_wl_harm.rename(columns={'M2 amp': 'M2_amp', 'M2 phase (deg UT)': 'M2_pha', 'K1 amp': 'K1_amp', 'K1 phase (deg UT)': 'K1_pha'})
 
     import angles
@@ -668,10 +668,13 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.ylim([modlat-0.1,modlat+0.1])
     plt.legend(numpoints=1)
 
-def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
+def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
     """
-    Plot water level of the modelled M2 constituent and measured M2 constituent in a transect (or just plot all stations) 
+    Plot water level of the modelled M2 constituent and measured M2 constituent in a transect at specified stations
     e.g. plot_wlev_M2_const_transect('40d','/ocean/klesouef/meopar/)
+
+    :arg statnums: array of station numbers
+    :type statnums: numpy array
 
     :arg runname: unique name of run
     :type runname: str
@@ -681,9 +684,6 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
 
     :arg grid: netcdf dataset of model grid
     :type grid: netcdf dataset
-
-    :arg allortransect: two possible values 'all' or 'transect' (to plot 'all' the measured points or just some in a 'transect')
-    :type allortransect: str
 
     :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure 
     :type args: str
@@ -695,10 +695,6 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
     plt.xlabel('Station number [-]')
     plt.ylabel('M2 amplitude [m]')
     
-    if allortransect == 'all':
-        statnums = np.arange(0,38)
-    else:
-        statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
     meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
     Am_M2_all = np.array(Am_M2_all)
     Ao_M2_all = np.array(Ao_M2_all)
@@ -721,17 +717,17 @@ def plot_wlev_M2_const_transect(runname,loc,grid,allortransect,*args):
             x = np.array(range(0,len(statnums)))
             plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
 
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
     some_meas_amps = np.array([Ao_M2_all[statnums]])
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     plt.plot(x,some_meas_amps[0,:],'r-o',label='measured')
     plt.xticks(x, statnums+1)
     plt.legend(loc='lower right')
-    plt.title('Select stations in line from JdF to Gibsons')
-    plt.savefig('meas_mod_wlev_'+allortransect+'.pdf')
+    plt.title('Line through stations '+str(statnums))
+    plt.savefig('meas_mod_wlev_transect.pdf')
 
-def plot_wlev_transect_map(grid):
+def plot_wlev_transect_map(grid,statnums):
     """
     Plot a map of the coastline and the transect of water level stations, which are plotted in plot_wlev_M2_const_transect
     """
@@ -739,17 +735,15 @@ def plot_wlev_transect_map(grid):
     plt.figure(figsize=(9,9))
     #add a coastline 
     plot_coastline(grid)
-    #stations to plot
-    statnums = np.array([37, 0, 2, 3, 5, 4, 6, 8, 11, 13, 14, 15, 19, 20, 21, 22, 24, 25, 26])
     #get the measured data
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_Foreman95.csv')
+    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelons = np.array(-meas_wl_harm.Lon[statnums])
     #plot the transext line
     plt.plot(sitelons,sitelats,'m-o')
-    plt.title('Location of Select Stations in line from JdF to Gibsons')
+    plt.title('Location of Select Stations')
     plt.savefig('meas_mod_wlev_transect_map.pdf')
 
 def plot_coastline(grid):
