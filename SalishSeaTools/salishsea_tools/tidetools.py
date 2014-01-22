@@ -144,6 +144,10 @@ def plot_amp_phase_maps(runname,loc,grid):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
     elif runname == 'composite':
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
+    elif runname == '40d,41d70d':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
+    elif runname == '40d,41d70d,71d100d_bfri5e-3':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
     else:
        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
 
@@ -543,6 +547,10 @@ def calc_diffs_meas_mod(runname,loc,grid):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
     elif runname == 'composite':
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
+    elif runname == '40d,41d70d':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
+    elif runname == '40d,41d70d,71d100d_bfri5e-3':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
     else:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
 
@@ -798,6 +806,45 @@ def get_composite_harms():
         mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
 
     totaldays = sum(runlength)
+    mod_M2_eta_real = mod_M2_eta_real1/totaldays
+    mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
+    mod_K1_eta_real = mod_K1_eta_real1/totaldays
+    mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
+
+    return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
+
+def get_composite_harms2(*args):
+    """
+    Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
+   
+    :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+    """
+    if len(args) == 2:
+        runlength = np.array([30.0,30.0])
+    if len(args) == 3:
+        runlength = np.array([30.0,30.0,30.0])
+
+    mod_M2_eta_real1 = 0.0
+    mod_M2_eta_imag1 = 0.0
+    mod_K1_eta_real1 = 0.0
+    mod_K1_eta_imag1 = 0.0
+
+    for runnum in range(0,len(args)):
+        harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+args[runnum]+'/Tidal_Harmonics_eta.nc','r')
+        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+args[runnum]+'/Tidal_Harmonics_eta.nc'
+        #get imaginary and real components
+        mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
+        mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
+        mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
+        mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
+
+    totaldays = sum(runlength)
+    print totaldays
     mod_M2_eta_real = mod_M2_eta_real1/totaldays
     mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
