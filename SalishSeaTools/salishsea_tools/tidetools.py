@@ -24,7 +24,7 @@ import datetime
 import requests
 import pandas as pd
 import pytz
-from math import radians, sin, cos, asin, sqrt
+from math import radians, sin, cos, asin, sqrt, pi, exp
 import matplotlib.pyplot as plt
 import matplotlib
 
@@ -855,3 +855,198 @@ def get_composite_harms2(*args):
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
 
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
+def get_current_harms(runname,loc):
+    """
+    Get harmonics of current at a specified lon, lat and depth
+    """
+    #u
+    harmu = NC.Dataset(loc+'/Tidal_Harmonics_U.nc','r')
+    mod_M2_u_real = harmu.variables['M2_u_real'][0,:,:]
+    mod_M2_u_imag = harmu.variables['M2_u_imag'][0,:,:]
+     #convert to amplitude and phase
+    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
+    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag,mod_M2_u_real))
+
+    #v
+    harmv = NC.Dataset(loc+'/Tidal_Harmonics_V.nc','r')
+    mod_M2_v_real = harmv.variables['M2_v_real'][0,:,:]
+    mod_M2_v_imag = harmv.variables['M2_v_imag'][0,:,:]
+     #convert to amplitude and phase
+    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
+    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag,mod_M2_v_real))
+
+    return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
+    
+def ap2ep(Au, PHIu, Av, PHIv):
+    """
+    Convert amplitude and phase to ellipse parameters. Based on MATLAB script by Zhigang Xu, available at
+    http://woodshole.er.usgs.gov/operations/sea-mat/tidal_ellipse-html/ap2ep.m
+    """
+
+    # Convert tidal amplitude and phase lag (ap-) parameters into tidal ellipse
+    # (ep-) parameters. Please refer to ep2app for its inverse function.
+    # 
+    # Usage:
+    #
+    # [SEMA,  ECC, INC, PHA]=ap2ep(Au, PHIu, Av, PHIv)
+    #
+    # where:
+    #
+    #     Au, PHIu, Av, PHIv are the amplitudes and phase lags (in degrees) of 
+    #     u- and v- tidal current components. They can be vectors or 
+    #     matrices or multidimensional arrays.
+    #     
+    #     SEMA: Semi-major axes, or the maximum speed;
+    #     ECC:  Eccentricity, the ratio of semi-minor axis over 
+    #           the semi-major axis; its negative value indicates that the ellipse
+    #           is traversed in clockwise direction.           
+    #     INC:  Inclination, the angles (in degrees) between the semi-major 
+    #           axes and u-axis.                        
+    #     PHA:  Phase angles, the time (in angles and in degrees) when the 
+    #           tidal currents reach their maximum speeds,  (i.e. 
+    #           PHA=omega*tmax).
+    #          
+    #           These four ep-parameters will have the same dimensionality 
+    #           (i.e., vectors, or matrices) as the input ap-parameters. 
+    #
+    #     w:    Optional. If it is requested, it will be output as matrices
+    #           whose rows allow for plotting ellipses and whose columns are  
+    #           for different ellipses corresponding columnwise to SEMA. For
+    #           example, plot(real(w(1,:)), imag(w(1,:))) will let you see 
+    #           the first ellipse. You may need to use squeeze function when
+    #           w is a more than two dimensional array. See example.m. 
+    #
+    # Document:   tidal_ellipse.ps
+    #   
+    # Revisions: May  2002, by Zhigang Xu,  --- adopting Foreman's northern 
+    # semi major axis convention.
+    # 
+    # For a given ellipse, its semi-major axis is undetermined by 180. If we borrow
+    # Foreman's terminology to call a semi major axis whose direction lies in a range of 
+    # [0, 180) as the northern semi-major axis and otherwise as a southern semi major 
+    # axis, one has freedom to pick up either northern or southern one as the semi major 
+    # axis without affecting anything else. Foreman (1977) resolves the ambiguity by 
+    # always taking the northern one as the semi-major axis. This revision is made to 
+    # adopt Foreman's convention. Note the definition of the phase, PHA, is still 
+    # defined as the angle between the initial current vector, but when converted into 
+    # the maximum current time, it may not give the time when the maximum current first 
+    # happens; it may give the second time that the current reaches the maximum 
+    # (obviously, the 1st and 2nd maximum current times are half tidal period apart)
+    # depending on where the initial current vector happen to be and its rotating sense.
+    #
+    # Version 2, May 2002
+
+    # Assume the input phase lags are in degrees and convert them in radians.
+    PHIu = PHIu/180*pi
+    PHIv = PHIv/180*pi
+
+    # Make complex amplitudes for u and v
+    import cmath
+    i = cmath.sqrt(-1)
+    u = Au*cmath.exp(-i*PHIu)
+    v = Av*cmath.exp(-i*PHIv)
+
+    # Calculate complex radius of anticlockwise and clockwise circles:
+    wp = (u+i*v)/2      # for anticlockwise circles
+    wm = ((u-i*v)/2).conjugate()  # for clockwise circles
+    # and their amplitudes and angles
+    Wp = abs(wp)
+    Wm = abs(wm)
+    THETAp = cmath.phase(wp)
+    THETAm = cmath.phase(wm)
+   
+    # calculate ep-parameters (ellipse parameters)
+    SEMA = Wp+Wm             # Semi  Major Axis, or maximum speed
+    SEMI = Wp-Wm               # Semin Minor Axis, or minimum speed
+    ECC = SEMI/SEMA          # Eccentricity
+
+    PHA = (THETAm-THETAp)/2   # Phase angle, the time (in angle) when the velocity reaches the maximum
+    INC = (THETAm+THETAp)/2   # Inclination, the angle between the semi major axis and x-axis (or u-axis).
+
+    # convert to degrees for output
+    PHA = PHA/pi*180
+    INC = INC/pi*180       
+    THETAp = THETAp/pi*180
+    THETAm = THETAm/pi*180
+    
+    #map the resultant angles to the range of [0, 360].
+    #PHA=mod(PHA+360, 360)
+    PHA=(PHA+360)%360
+    #INC=mod(INC+360, 360)
+    INC=(INC+360)% 360
+
+    #Mar. 2, 2002 Revision by Zhigang Xu    (REVISION_1)
+    #Change the southern major axes to northern major axes to conform the tidal 
+    #analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents 
+    #Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm) 
+    k = float(INC)/180
+    INC = INC-k*180
+    PHA = PHA+k*180
+    PHA = PHA%360
+
+    return SEMA,  ECC, INC, PHA
+
+    #Authorship Copyright:
+    #
+    #    The author retains the copyright of this program, while  you are welcome 
+    # to use and distribute it as long as you credit the author properly and respect
+    # the program name itself. Particularly, you are expected to retain the original 
+    # author's name in this original version or any of its modified version that 
+    # you might make. You are also expected not to essentially change the name of 
+    # the programs except for adding possible extension for your own version you 
+    # might create, e.g. ap2ep_xx is acceptable.  Any suggestions are welcome and 
+    # enjoy my program(s)!
+    #
+    #
+    #Author Info:
+    #_______________________________________________________________________
+    #  Zhigang Xu, Ph.D.                            
+    #  (pronounced as Tsi Gahng Hsu)
+    #  Research Scientist
+    #  Coastal Circulation                   
+    #  Bedford Institute of Oceanography     
+    #  1 Challenge Dr.
+    #  P.O. Box 1006                    Phone  (902) 426-2307 (o)       
+    #  Dartmouth, Nova Scotia           Fax    (902) 426-7827            
+    #  CANADA B2Y 4A2                   email xuz@dfo-mpo.gc.ca    
+    #_______________________________________________________________________
+    #
+    # Release Date: Nov. 2000, Revised on May. 2002 to adopt Foreman's northern semi 
+    # major axis convention.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
