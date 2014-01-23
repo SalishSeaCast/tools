@@ -122,6 +122,29 @@ def read_dfo_wlev_file(filename):
         print(wlev_meas.time[x])
     return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
+def get_amp_phase_data(runname,loc):
+    """
+    get the amplitude and phase data for a model run
+    """
+    if runname == 'concepts110':
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
+        mod_K1_amp = 0.0
+        mod_K1_pha = 0.0
+    elif runname == 'jpp72':
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
+        mod_K1_amp = 0.0
+        mod_K1_pha = 0.0
+    elif runname == 'composite':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
+    elif runname == '40d,41d70d':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
+    elif runname == '40d,41d70d,71d100d_bfri5e-3':
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
+    else:
+       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
+    
+    return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
 def plot_amp_phase_maps(runname,loc,grid):
     """
     Plot the amplitude and phase results for a model run
@@ -138,19 +161,7 @@ def plot_amp_phase_maps(runname,loc,grid):
 
     :returns: plots the amplitude and phase
     """
-    if runname == 'concepts110':
-       mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
-    elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
-    elif runname == 'composite':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
-    elif runname == '40d,41d70d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
-    elif runname == '40d,41d70d,71d100d_bfri5e-3':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
-    else:
-       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
-
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname,loc)
     bathy, X, Y = get_bathy_data(grid)
     plot_amp_map(X,Y,grid,mod_M2_amp,runname,True,'M2')
     plot_pha_map(X,Y,grid,mod_M2_pha,runname,True,'M2')
@@ -540,19 +551,8 @@ def calc_diffs_meas_mod(runname,loc,grid):
     gm_K1_all = []
     go_K1_all = []
 
-    #get bathy and harmonics data
-    if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
-    elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
-    elif runname == 'composite':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
-    elif runname == '40d,41d70d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
-    elif runname == '40d,41d70d,71d100d_bfri5e-3':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
-    else:
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
+    #get harmonics data
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname,loc)
 
     #get bathy data
     bathy, X, Y = get_bathy_data(grid)
