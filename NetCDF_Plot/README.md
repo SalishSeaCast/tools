@@ -5,6 +5,7 @@ around visualization of NEMO results.
 * [NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)
 * [compute_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compute_thalweg.ipynb)
 * [Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)
+* [TS_Restart.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/TS_Restart.ipynb)
 * [crashAnalysis.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/crashAnalysis.ipynb)
 * [stations.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/stations.ipynb)
 * [Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)
