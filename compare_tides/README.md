@@ -9,6 +9,7 @@ tide and storm surge results calculated by the Salish Sea NEMO model.
 * [find_storms.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/find_storms.ipynb)
 * [plot_foreman_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg.ipynb)
 * [comp_wlev_harm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm.ipynb)
+* [plot_current_ellipses.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_current_ellipses.ipynb)
 
 ##License
 
