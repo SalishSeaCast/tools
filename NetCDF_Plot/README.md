@@ -1,6 +1,7 @@
 The IPython Notebooks in this directory are initial experiments
 around visualization of NEMO results.
 
+* [friction_comparison.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/friction_comparison.ipynb)
 * [compareViscosity.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compareViscosity.ipynb)
 * [NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)
 * [compute_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compute_thalweg.ipynb)
