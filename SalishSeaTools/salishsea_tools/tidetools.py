@@ -127,21 +127,21 @@ def get_amp_phase_data(runname,loc):
     get the amplitude and phase data for a model run
     """
     if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc)
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc+runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
     elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc)
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc+runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
     elif runname == 'composite':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms()
-    elif runname == '40d,41d70d':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d')
-    elif runname == '40d,41d70d,71d100d_bfri5e-3':
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2()
+    elif len(runname) > 1:
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(runname,loc)
+#    elif runname == '40d,41d70d,71d100d_bfri5e-3':
+#        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
     else:
-       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc)
+       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc+runname)
     
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
@@ -180,7 +180,7 @@ def get_netcdf_amp_phase_data(loc):
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
-    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
+    harmT = NC.Dataset(loc+runname+'/Tidal_Harmonics_eta.nc','r')
      #get imaginary and real components
     mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
     mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
@@ -200,7 +200,7 @@ def get_netcdf_amp_phase_data_jpp72(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc','r')
+    harmT = NC.Dataset(loc+runname+'/JPP_1d_20020102_20020104_grid_T.nc','r')
     #Get amplitude and phase
     mod_M2_x_elev = harmT.variables['M2_x_elev'][0,:,:] #Cj
     mod_M2_y_elev = harmT.variables['M2_y_elev'][0,:,:] #Sj
@@ -216,7 +216,7 @@ def get_netcdf_amp_phase_data_concepts110(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
+    harmT = NC.Dataset(loc+runname+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
     mod_M2_amp = harmT.variables['M2_amp'][0,:,:]
     mod_M2_pha = harmT.variables['M2_pha'][0,:,:]
     return mod_M2_amp, mod_M2_pha
@@ -777,7 +777,7 @@ def plot_coastline(grid):
     depths = grid.variables['Bathymetry']
     plt.contour(lons,lats,depths,v1,colors='black')
 
-def get_composite_harms():
+def get_composite_harms2():
     """
     Take the results of the following runs (which are all the same model setup) and combine the harmonics into one 'composite' run
     50s_15-21Sep
@@ -818,7 +818,7 @@ def get_composite_harms():
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
-def get_composite_harms2(*args):
+def get_composite_harms(runname,loc):
     """
     Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
    
@@ -861,7 +861,7 @@ def get_current_harms(runname,loc):
     Get harmonics of current at a specified lon, lat and depth
     """
     #u
-    harmu = NC.Dataset(loc+'/Tidal_Harmonics_U.nc','r')
+    harmu = NC.Dataset(loc+runname+'/Tidal_Harmonics_U.nc','r')
     mod_M2_u_real = harmu.variables['M2_u_real'][0,:,:]
     mod_M2_u_imag = harmu.variables['M2_u_imag'][0,:,:]
      #convert to amplitude and phase
@@ -869,7 +869,7 @@ def get_current_harms(runname,loc):
     mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag,mod_M2_u_real))
 
     #v
-    harmv = NC.Dataset(loc+'/Tidal_Harmonics_V.nc','r')
+    harmv = NC.Dataset(loc+runname+'/Tidal_Harmonics_V.nc','r')
     mod_M2_v_real = harmv.variables['M2_v_real'][0,:,:]
     mod_M2_v_imag = harmv.variables['M2_v_imag'][0,:,:]
      #convert to amplitude and phase
