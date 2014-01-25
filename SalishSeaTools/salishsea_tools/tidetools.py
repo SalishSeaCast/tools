@@ -136,7 +136,7 @@ def get_amp_phase_data(runname,loc):
         mod_K1_pha = 0.0
     elif runname == 'composite':
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2()
-    elif len(runname) > 1:
+    elif type(runname) is not str and len(runname)>1:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(runname,loc)
 #    elif runname == '40d,41d70d,71d100d_bfri5e-3':
 #        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
@@ -163,11 +163,12 @@ def plot_amp_phase_maps(runname,loc,grid):
     """
     mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname,loc)
     bathy, X, Y = get_bathy_data(grid)
-    plot_amp_map(X,Y,grid,mod_M2_amp,runname,True,'M2')
-    plot_pha_map(X,Y,grid,mod_M2_pha,runname,True,'M2')
+    titname = ''.join(runname)
+    plot_amp_map(X,Y,grid,mod_M2_amp,titname,True,'M2')
+    plot_pha_map(X,Y,grid,mod_M2_pha,titname,True,'M2')
     if runname != 'concepts110' and runname != 'jpp72':
-        plot_amp_map(X,Y,grid,mod_K1_amp,runname,True,'K1')
-        plot_pha_map(X,Y,grid,mod_K1_pha,runname,True,'K1')
+        plot_amp_map(X,Y,grid,mod_K1_amp,titname,True,'K1')
+        plot_pha_map(X,Y,grid,mod_K1_pha,titname,True,'K1')
 
 
 def get_netcdf_amp_phase_data(loc):
@@ -180,7 +181,7 @@ def get_netcdf_amp_phase_data(loc):
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
-    harmT = NC.Dataset(loc+runname+'/Tidal_Harmonics_eta.nc','r')
+    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
      #get imaginary and real components
     mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
     mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
@@ -200,7 +201,7 @@ def get_netcdf_amp_phase_data_jpp72(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+runname+'/JPP_1d_20020102_20020104_grid_T.nc','r')
+    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc','r')
     #Get amplitude and phase
     mod_M2_x_elev = harmT.variables['M2_x_elev'][0,:,:] #Cj
     mod_M2_y_elev = harmT.variables['M2_y_elev'][0,:,:] #Sj
@@ -216,7 +217,7 @@ def get_netcdf_amp_phase_data_concepts110(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+runname+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
+    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
     mod_M2_amp = harmT.variables['M2_amp'][0,:,:]
     mod_M2_pha = harmT.variables['M2_pha'][0,:,:]
     return mod_M2_amp, mod_M2_pha
@@ -465,7 +466,7 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     plt.xlabel('Modelled phase [deg]')
     plt.ylabel('Measured phase [deg]')
     plt.title(constflag)
-    plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_scatter_comps_'+runname+'.pdf')
+    plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_scatter_comps_'+''.join(runname)+'.pdf')
 
 def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     """
@@ -511,13 +512,13 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     if calcmethod == 'F95':
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='b', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='b',s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Foreman et al) for '+runname)
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_F95_'+runname+'.pdf')
+        plt.title(constflag+' differences (Foreman et al) for '+''.join(runname))
+        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
     if calcmethod == 'M04':
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='g', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='g',s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Masson & Cummins) for '+runname)
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+runname+'.pdf')
+        plt.title(constflag+' differences (Masson & Cummins) for '+''.join(runname))
+        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
 
 def calc_diffs_meas_mod(runname,loc,grid):
     """
@@ -536,7 +537,7 @@ def calc_diffs_meas_mod(runname,loc,grid):
 
     import angles
     #make an appropriately named csv file for results
-    outfile = '/ocean/klesouef/meopar/tools/compare_tides/wlev_harm_diffs_'+runname+'.csv'
+    outfile = '/ocean/klesouef/meopar/tools/compare_tides/wlev_harm_diffs_'+''.join(runname)+'.csv'
     D_F95_M2_all = []
     D_M04_M2_all = []
     Am_M2_all = []
@@ -723,7 +724,7 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
             Ao_M2_all = np.array(Ao_M2_all)
             some_model_amps = np.array([Am_M2_all[statnums]])
             x = np.array(range(0,len(statnums)))
-            plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=runname+'_model')
+            plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
 
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
     some_meas_amps = np.array([Ao_M2_all[statnums]])
@@ -824,19 +825,20 @@ def get_composite_harms(runname,loc):
    
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
-    if len(args) == 2:
-        runlength = np.array([30.0,30.0])
-    if len(args) == 3:
-        runlength = np.array([30.0,30.0,30.0])
+    runlength = np.zeros((len(runname),1))
+    for k in range(0,len(runname)):
+        print loc, k, runname
+        runlength[k,0] = get_run_length(runname[k],loc)
+        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
 
     mod_M2_eta_real1 = 0.0
     mod_M2_eta_imag1 = 0.0
     mod_K1_eta_real1 = 0.0
     mod_K1_eta_imag1 = 0.0
 
-    for runnum in range(0,len(args)):
-        harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+args[runnum]+'/Tidal_Harmonics_eta.nc','r')
-        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+args[runnum]+'/Tidal_Harmonics_eta.nc'
+    for runnum in range(0,len(runname)):
+        harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
+        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
@@ -844,7 +846,7 @@ def get_composite_harms(runname,loc):
         mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
 
     totaldays = sum(runlength)
-    print totaldays
+    print 'total length of combined run = '+str(totaldays)+' days'
     mod_M2_eta_real = mod_M2_eta_real1/totaldays
     mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
@@ -878,6 +880,39 @@ def get_current_harms(runname,loc):
 
     return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
     
+
+
+def get_run_length(runname,loc):
+    """ 
+    Get the length of the run in days by reading in some data (in a rough way.... :S) from the namelist file
+    """
+    resfile = loc+runname+'/namelist'
+    print resfile
+    with open(resfile) as f:
+        content = f.readlines()
+    
+    for t in range(0,len(content)):
+        if content[t][3:10] == 'rn_rdt ':
+            timestep = int(content[t][19:21])
+        if content[t][4:14] == 'nit000_han':
+            start_time = int(content[t][17:23])
+            end_time = int(content[t+1][17:23])
+
+    #I am fudging this really. The line numbers in the 'namelist' file could easily change from run to run. 
+    #Check this here: 
+    if not 'timestep' in locals():
+        import sys
+        sys.exit('Uh oh! Looks like the "namelist" file has changed for run '+runname+'. You will need to open "namelist" in your results folder, and check the lines that have the timestep, start time and end time against the line matching being done in tidetools.get_run_length. Without this, I cant calculate the time period that the harmonics were calculated over :( Love python')
+
+    run_length = (end_time-start_time)*timestep/60.0/60.0/24.0 #[days]
+    
+    return run_length
+
+
+
+
+
+
 def ap2ep(Au, PHIu, Av, PHIv):
     """
     Convert amplitude and phase to ellipse parameters. Based on MATLAB script by Zhigang Xu, available at
