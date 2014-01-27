@@ -125,6 +125,14 @@ def read_dfo_wlev_file(filename):
 def get_amp_phase_data(runname,loc):
     """
     get the amplitude and phase data for a model run
+
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :type runname: str
+
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :type loc: str
+
+    :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
     if runname == 'concepts110':
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc+runname)
@@ -134,12 +142,13 @@ def get_amp_phase_data(runname,loc):
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc+runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
+    #'composite' was the first set of runs where I combined the harmonics
     elif runname == 'composite':
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2()
+    #this step combines the harmonics of any specified runs
     elif type(runname) is not str and len(runname)>1:
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(runname,loc)
-#    elif runname == '40d,41d70d,71d100d_bfri5e-3':
-#        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2('40d','41d70d','71d100d_bfri5e-3')
+    #this step just gets the harmonics for the one specified run
     else:
        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc+runname)
     
@@ -150,13 +159,13 @@ def plot_amp_phase_maps(runname,loc,grid):
     Plot the amplitude and phase results for a model run
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
 
-    :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
     :type runname: str
 
-    :arg loc: location of results folder
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
-    :arg grid: netcdf file of grid data
+    :arg grid: netcdf file of grid data e.g. grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
     :type grid: netcdf dataset
 
     :returns: plots the amplitude and phase
@@ -822,7 +831,13 @@ def get_composite_harms2():
 def get_composite_harms(runname,loc):
     """
     Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
-   
+
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :type runname: str
+
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :type loc: str
+    
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
     runlength = np.zeros((len(runname),1))
@@ -866,6 +881,14 @@ def get_composite_harms(runname,loc):
 def get_current_harms(runname,loc):
     """
     Get harmonics of current at a specified lon, lat and depth
+
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep' (doesn't deal with multiple runs)
+    :type runname: str
+
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :type loc: str
+
+    :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
     """
     #u
     harmu = NC.Dataset(loc+runname+'/Tidal_Harmonics_U.nc','r')
@@ -890,6 +913,14 @@ def get_current_harms(runname,loc):
 def get_run_length(runname,loc):
     """ 
     Get the length of the run in days by reading in some data (in a rough way.... :S) from the namelist file
+
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :type runname: str
+
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :type loc: str
+
+    :returns: length of run in days
     """
     resfile = loc+runname+'/namelist'
     print resfile
@@ -903,7 +934,7 @@ def get_run_length(runname,loc):
             start_time = int(content[t][17:23])
             end_time = int(content[t+1][17:23])
 
-    #I am fudging this really. The line numbers in the 'namelist' file could easily change from run to run. 
+    #I am fudging this really. The positions in the 'namelist' file could easily change from run to run. 
     #Check this here: 
     if not 'timestep' in locals():
         import sys
@@ -912,10 +943,6 @@ def get_run_length(runname,loc):
     run_length = (end_time-start_time)*timestep/60.0/60.0/24.0 #[days]
     
     return run_length
-
-
-
-
 
 
 def ap2ep(Au, PHIu, Av, PHIv):
