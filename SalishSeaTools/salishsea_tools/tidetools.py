@@ -841,7 +841,11 @@ def get_composite_harms(runname,loc):
         print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
+        print mod_M2_eta_real1[298,195]
+        print harmT.variables['M2_eta_real'][0,298,195]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
+        print mod_M2_eta_imag1[298,195]
+        print harmT.variables['M2_eta_imag'][0,298,195]*runlength[runnum]
         mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
         mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
 
@@ -852,6 +856,7 @@ def get_composite_harms(runname,loc):
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
     mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
     mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    print mod_M2_amp[298,195]
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
     mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
