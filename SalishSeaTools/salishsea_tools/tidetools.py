@@ -721,8 +721,6 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
     plt.plot(x,some_model_amps[0,:],'b-o', label=runname+'_model')
 
     if len(args)>0:
-        print('plotting multiple runs on one graph...')
-
         #assuming we will only be adding an additional 3 lines, define 3 colours
         colours = ['g','m','k']
         for r in range(0,len(args)/2):
@@ -842,7 +840,6 @@ def get_composite_harms(runname,loc):
     """
     runlength = np.zeros((len(runname),1))
     for k in range(0,len(runname)):
-        print loc, k, runname
         runlength[k,0] = get_run_length(runname[k],loc)
         print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
 
@@ -856,11 +853,7 @@ def get_composite_harms(runname,loc):
         print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
-        print mod_M2_eta_real1[298,195]
-        print harmT.variables['M2_eta_real'][0,298,195]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
-        print mod_M2_eta_imag1[298,195]
-        print harmT.variables['M2_eta_imag'][0,298,195]*runlength[runnum]
         mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
         mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
 
@@ -871,7 +864,6 @@ def get_composite_harms(runname,loc):
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
     mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
     mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
-    print mod_M2_amp[298,195]
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
     mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
@@ -923,7 +915,6 @@ def get_run_length(runname,loc):
     :returns: length of run in days
     """
     resfile = loc+runname+'/namelist'
-    print resfile
     with open(resfile) as f:
         content = f.readlines()
     
