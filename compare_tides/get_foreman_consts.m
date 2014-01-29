@@ -1,4 +1,4 @@
-function [m2amp,m2pha]=get_foreman_consts(long,lat,M2,num,Lat,Long)
+function [amp,pha]=get_foreman_consts(long,lat,harm,num,Lat,Long)
 
 % function [amp,phase]=get_foreman_consts(long,lat)
 %
@@ -30,10 +30,10 @@ for i=1:NN,
     disp(j)
     disp(Lat(j))
     disp(Long(j))
-    tidecon(:,:,i)=[M2.Zamp(j),M2.Zpha(j)];
+    tidecon(:,:,i)=[harm.Zamp(j),harm.Zpha(j)];
     ampavg = ampavg + tidecon(1,1,i)/D(i);
     phaavg = phaavg + tidecon(1,2,i)/D(i);
 end
 
-m2amp=ampavg/idwa;
-m2pha=phaavg/idwa;
+amp=ampavg/idwa;
+pha=phaavg/idwa;
