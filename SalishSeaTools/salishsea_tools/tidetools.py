@@ -77,7 +77,7 @@ def get_dfo_wlev(station_no,start_date,end_date):
     #write the data to a text file
     with open(outfile, 'w') as f:
         f.write(r.text)
-    print('Results saved here: '+outfile)
+#    print('Results saved here: '+outfile)
 
 def dateParserMeasured(s):
     """
@@ -615,7 +615,7 @@ def calc_diffs_meas_mod(runname,loc,grid):
                 print('No point found in current domain for station '+str(t+1)+' :(')
                 writer.writerow([str(t+1),meas_wl_harm.Site[t],-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],9999,9999])
 
-    print('Results saved here: '+outfile)
+#    print('Results saved here: '+outfile)
     return meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
 
 def haversine(lon1, lat1, lon2, lat2):
@@ -686,10 +686,10 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.ylim([modlat-0.1,modlat+0.1])
     plt.legend(numpoints=1)
 
-def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
+def plot_wlev_const_transect(statnums,runname,loc,grid,*args):
     """
-    Plot water level of the modelled M2 constituent and measured M2 constituent in a transect at specified stations
-    e.g. plot_wlev_M2_const_transect('40d','/ocean/klesouef/meopar/)
+    Plot water level of the modelled M2 and K1 constituents and measured M2 and K1 constituents in a transect at specified stations
+    e.g. plot_wlev_const_transect('40d','/ocean/klesouef/meopar/)
 
     :arg statnums: array of station numbers
     :type statnums: numpy array
@@ -706,7 +706,7 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
     :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure 
     :type args: str
 
-    :returns: plots transect of M2 water level constituent
+    :returns: plots transect of M2 and K1 water level constituent
     """
     #runname1, loc1, runname2, loc2
     fig1 = plt.figure(figsize=(15,5))
@@ -731,11 +731,11 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
     #plot the M2 model data
     ax1.plot(x,some_model_amps_M2[0,:],'b-o', label=runname+'_model')
     #plot the K1 model data
-    ax2.plot(x,some_model_amps_K1[0,:],'b-o', label=runname+'_model')
+    ax2.plot(x,some_model_amps_K1[0,:],'b--o', label=runname+'_model')
 
     if len(args)>0:
         #assuming we will only be adding an additional 3 lines, define 3 colours
-        colours = ['g','m','k']
+        colours = ['g','m','k','r','y']
         for r in range(0,len(args)/2):
             runname = args[2*r]
             loc = args[2*r+1]
@@ -748,7 +748,7 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
             some_model_amps_K1 = np.array([Am_K1_all[statnums]])
             x = np.array(range(0,len(statnums)))
             ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
-            ax2.plot(x,some_model_amps_K1[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
+            ax2.plot(x,some_model_amps_K1[0,:],'--o',color = colours[r], label=''.join(runname)+'_model')
 
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
     some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
@@ -868,7 +868,7 @@ def get_composite_harms(runname,loc):
     runlength = np.zeros((len(runname),1))
     for k in range(0,len(runname)):
         runlength[k,0] = get_run_length(runname[k],loc)
-        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
+#        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
 
     mod_M2_eta_real1 = 0.0
     mod_M2_eta_imag1 = 0.0
@@ -877,7 +877,7 @@ def get_composite_harms(runname,loc):
 
     for runnum in range(0,len(runname)):
         harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
-        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
+#        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
@@ -885,7 +885,7 @@ def get_composite_harms(runname,loc):
         mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
 
     totaldays = sum(runlength)
-    print 'total length of combined run = '+str(totaldays)+' days'
+#    print 'total length of combined run = '+str(totaldays)+' days'
     mod_M2_eta_real = mod_M2_eta_real1/totaldays
     mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
