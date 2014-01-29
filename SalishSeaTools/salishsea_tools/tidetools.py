@@ -709,16 +709,29 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
     :returns: plots transect of M2 water level constituent
     """
     #runname1, loc1, runname2, loc2
-    plt.figure(figsize=(15,5))
-    plt.xlabel('Station number [-]')
-    plt.ylabel('M2 amplitude [m]')
-    
+    fig1 = plt.figure(figsize=(15,5))
+    ax1 = fig1.add_subplot(111)
+    ax1.set_xlabel('Station number [-]')
+    ax1.set_ylabel('M2 amplitude [m]')
+    fig2 = plt.figure(figsize=(15,5))
+    ax2 = fig2.add_subplot(111)
+    ax2.set_xlabel('Station number [-]')
+    ax2.set_ylabel('K1 amplitude [m]')
+
+    #get the modelled data
     meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
     Am_M2_all = np.array(Am_M2_all)
     Ao_M2_all = np.array(Ao_M2_all)
-    some_model_amps = np.array([Am_M2_all[statnums]])
+    Am_K1_all = np.array(Am_K1_all)
+    Ao_K1_all = np.array(Ao_K1_all)
+    #just take the model values at teh statnums we want
+    some_model_amps_M2 = np.array([Am_M2_all[statnums]])
+    some_model_amps_K1 = np.array([Am_K1_all[statnums]])
     x = np.array(range(0,len(statnums)))
-    plt.plot(x,some_model_amps[0,:],'b-o', label=runname+'_model')
+    #plot the M2 model data
+    ax1.plot(x,some_model_amps_M2[0,:],'b-o', label=runname+'_model')
+    #plot the K1 model data
+    ax2.plot(x,some_model_amps_K1[0,:],'b-o', label=runname+'_model')
 
     if len(args)>0:
         #assuming we will only be adding an additional 3 lines, define 3 colours
@@ -729,19 +742,33 @@ def plot_wlev_M2_const_transect(statnums,runname,loc,grid,*args):
             meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
             Am_M2_all = np.array(Am_M2_all)
             Ao_M2_all = np.array(Ao_M2_all)
-            some_model_amps = np.array([Am_M2_all[statnums]])
+            Am_K1_all = np.array(Am_K1_all)
+            Ao_K1_all = np.array(Ao_K1_all)
+            some_model_amps_M2 = np.array([Am_M2_all[statnums]])
+            some_model_amps_K1 = np.array([Am_K1_all[statnums]])
             x = np.array(range(0,len(statnums)))
-            plt.plot(x,some_model_amps[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
+            ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
+            ax2.plot(x,some_model_amps_K1[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
 
     meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
-    some_meas_amps = np.array([Ao_M2_all[statnums]])
+    some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
+    some_meas_amps_K1 = np.array([Ao_K1_all[statnums]])
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
-    plt.plot(x,some_meas_amps[0,:],'r-o',label='measured')
-    plt.xticks(x, statnums+1)
-    plt.legend(loc='lower right')
-    plt.title('Line through stations '+str(statnums))
-    plt.savefig('meas_mod_wlev_transect.pdf')
+    #M2
+    ax1.plot(x,some_meas_amps_M2[0,:],'r-o',label='measured')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(statnums+1)
+    ax1.legend(loc='lower right')
+    ax1.set_title('Line through stations '+str(statnums))
+    fig1.savefig('meas_mod_wlev_transect_M2.pdf')
+    #K1
+    ax2.plot(x,some_meas_amps_K1[0,:],'r-o',label='measured')
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(statnums+1)
+    ax2.legend(loc='lower right')
+    ax2.set_title('Line through stations '+str(statnums))
+    fig2.savefig('meas_mod_wlev_transect_K1.pdf')
 
 def plot_wlev_transect_map(grid,statnums):
     """
