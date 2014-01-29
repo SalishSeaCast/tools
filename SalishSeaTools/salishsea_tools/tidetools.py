@@ -686,10 +686,13 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
     plt.ylim([modlat-0.1,modlat+0.1])
     plt.legend(numpoints=1)
 
-def plot_wlev_const_transect(statnums,runname,loc,grid,*args):
+def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     """
     Plot water level of the modelled M2 and K1 constituents and measured M2 and K1 constituents in a transect at specified stations
     e.g. plot_wlev_const_transect('40d','/ocean/klesouef/meopar/)
+
+    :arg savename: tag for saving the pdf pics
+    :type savename: str
 
     :arg statnums: array of station numbers
     :type statnums: numpy array
@@ -761,14 +764,14 @@ def plot_wlev_const_transect(statnums,runname,loc,grid,*args):
     ax1.set_xticklabels(statnums+1)
     ax1.legend(loc='lower right')
     ax1.set_title('Line through stations '+str(statnums))
-    fig1.savefig('meas_mod_wlev_transect_M2.pdf')
+    fig1.savefig('meas_mod_wlev_transect_M2_'+''.join(runname)+'_'+savename+'.pdf')
     #K1
-    ax2.plot(x,some_meas_amps_K1[0,:],'r-o',label='measured')
+    ax2.plot(x,some_meas_amps_K1[0,:],'r--o',label='measured')
     ax2.set_xticks(x)
     ax2.set_xticklabels(statnums+1)
     ax2.legend(loc='lower right')
     ax2.set_title('Line through stations '+str(statnums))
-    fig2.savefig('meas_mod_wlev_transect_K1.pdf')
+    fig2.savefig('meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
 
 def plot_wlev_transect_map(grid,statnums):
     """
