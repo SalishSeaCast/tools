@@ -35,5 +35,25 @@ for k = 1:length(lat)
     [m2amp(k,1),m2pha(k,1)]=get_foreman_consts(long(k,1),lat(k,1),M2,num,Lat,Long);
 end
 
-output = [m2amp m2pha];
-save foreman_m2_thalweg.txt output -ASCII
+
+% K1 tide
+fid=fopen('/ocean/rich/more/tpack/ampfdat/k1_amph_svi_r2.dat');
+A=fread(fid,Inf,'uchar');
+fclose(fid);
+Anum=sscanf(char(A),'%f');
+K1.Zamp   =Anum(	   1:12573);
+K1.Zpha   =Anum(12573  +[1:12573]);
+num = length(K1.Zamp);
+
+k1amp = zeros(length(long),1);
+k1pha = zeros(length(lat),1);
+for k = 1:length(lat)
+    disp(k)
+    [k1amp(k,1),k1pha(k,1)]=get_foreman_consts(long(k,1),lat(k,1),K1,num,Lat,Long);
+end
+
+output1 = [m2amp m2pha];
+save foreman_m2_thalweg.txt output1 -ASCII
+
+output2 = [k1amp k1pha];
+save foreman_k1_thalweg.txt output2 -ASCII
