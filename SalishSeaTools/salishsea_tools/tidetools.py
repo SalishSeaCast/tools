@@ -248,6 +248,7 @@ def get_bathy_data(grid):
 
 def get_SS_bathy_data():
     """
+    Not used any more - assumes that the user is klesouef! :)
     Get the Salish Sea bathymetry and grid data
     e.g. bathy, X, Y = get_SS_bathy_data()
 
@@ -261,6 +262,7 @@ def get_SS_bathy_data():
 
 def get_SS2_bathy_data():
     """
+    Not used any more - assumes that the user is klesouef! :)
     Get the Salish Sea 2 bathymetry and grid data
     e.g. bathy, X, Y = get_SS2_bathy_data()
 
@@ -275,6 +277,7 @@ def get_SS2_bathy_data():
 #define a function to get the subdomain bathymetry and grid data
 def get_subdomain_bathy_data():
     """
+    Not used any more - assumes that the user is klesouef! :)
     Get the subdomain bathymetry and grid data
     e.g. bathy, X, Y = get_subdomain_bathy_data()
 
@@ -386,7 +389,7 @@ def plot_amp_map(X,Y,grid,amp,titstr,savestr,constflag):
     plt.ylabel('latitude (deg)')
     plt.title(constflag+' amplitude (m) for '+titstr)
     if savestr:
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_amp_'+titstr+'.pdf')
+        plt.savefig(constflag+'_amp_'+titstr+'.pdf')
 
 def plot_pha_map(X,Y,grid,pha,titstr,savestr,constflag):
     """
@@ -431,7 +434,7 @@ def plot_pha_map(X,Y,grid,pha,titstr,savestr,constflag):
     plt.title(constflag+' phase (deg) for '+titstr)
     limits = plt.axis()
     if savestr:
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_pha_'+titstr+'.pdf')
+        plt.savefig(constflag+'_pha_'+titstr+'.pdf')
 
 def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     """
@@ -475,7 +478,7 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     plt.xlabel('Modelled phase [deg]')
     plt.ylabel('Measured phase [deg]')
     plt.title(constflag)
-    plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_scatter_comps_'+''.join(runname)+'.pdf')
+    plt.savefig(constflag+'_scatter_comps_'+''.join(runname)+'.pdf')
 
 def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     """
@@ -522,12 +525,12 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='b', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='b',s=(legendD*scalefac), marker='o')
         plt.title(constflag+' differences (Foreman et al) for '+''.join(runname))
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
+        plt.savefig(constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
     if calcmethod == 'M04':
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='g', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='g',s=(legendD*scalefac), marker='o')
         plt.title(constflag+' differences (Masson & Cummins) for '+''.join(runname))
-        plt.savefig('/ocean/klesouef/meopar/tools/compare_tides/'+constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
+        plt.savefig(constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
 
 def calc_diffs_meas_mod(runname,loc,grid):
     """
@@ -541,12 +544,12 @@ def calc_diffs_meas_mod(runname,loc,grid):
     """
     #read in the measured data from Foreman et al (1995) and US sites
     import pandas as pd
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
+    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
     meas_wl_harm = meas_wl_harm.rename(columns={'M2 amp': 'M2_amp', 'M2 phase (deg UT)': 'M2_pha', 'K1 amp': 'K1_amp', 'K1 phase (deg UT)': 'K1_pha'})
 
     import angles
     #make an appropriately named csv file for results
-    outfile = '/ocean/klesouef/meopar/tools/compare_tides/wlev_harm_diffs_'+''.join(runname)+'.csv'
+    outfile = 'wlev_harm_diffs_'+''.join(runname)+'.csv'
     D_F95_M2_all = []
     D_M04_M2_all = []
     Am_M2_all = []
@@ -753,7 +756,7 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
             ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
             ax2.plot(x,some_model_amps_K1[0,:],'--o',color = colours[r], label=''.join(runname)+'_model')
 
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
+    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
     some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
     some_meas_amps_K1 = np.array([Ao_K1_all[statnums]])
     sitenames = list(meas_wl_harm.Site[statnums])
@@ -790,7 +793,7 @@ def plot_wlev_transect_map(grid,statnums):
     #add a coastline 
     plot_coastline(grid)
     #get the measured data
-    meas_wl_harm = pd.read_csv('/ocean/klesouef/meopar/tools/compare_tides/obs_tidal_wlev_const_all.csv',sep=';')
+    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
