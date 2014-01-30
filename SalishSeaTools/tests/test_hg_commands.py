@@ -17,7 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import subprocess
+
 from mock import patch
+import pytest
+
 from salishsea_tools import hg_commands as hg
 
 
@@ -62,3 +65,28 @@ def test_heads_multiple_revs(mock_chk_out):
     """
     hg.heads('foo', revs=['bar', 'baz'])
     mock_chk_out.assert_called_once_with('hg -R foo heads bar baz'.split())
+
+
+@pytest.mark.parametrize(
+    'kwargs, expected',
+    [
+        ({'repo': None, 'rev': None, 'file': None, 'verbose': False},
+         'hg parents'.split()),
+        ({'repo': 'foo', 'rev': None, 'file': None, 'verbose': False},
+         'hg parents -R foo'.split()),
+        ({'repo': None, 'rev': 42, 'file': None, 'verbose': False},
+         ['hg', 'parents', '-r', 42]),
+        ({'repo': None, 'rev': 'd56ed390617c', 'file': None, 'verbose': False},
+         'hg parents -r d56ed390617c'.split()),
+        ({'repo': None, 'rev': None, 'file': 'foo', 'verbose': False},
+         'hg parents foo'.split()),
+        ({'repo': None, 'rev': None, 'file': None, 'verbose': True},
+         'hg parents -v'.split()),
+    ]
+)
+@patch('salishsea_tools.hg_commands.subprocess.check_output')
+def test_parents_default_args(mock_chk_out, kwargs, expected):
+    """parents uses expected command with default args
+    """
+    hg.parents(**kwargs)
+    mock_chk_out.assert_called_once_with(expected)

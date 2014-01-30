@@ -69,3 +69,51 @@ def heads(repo, revs=['.']):
     """
     cmd = ['hg', '-R', repo, 'heads'] + revs
     return subprocess.check_output(cmd)
+
+
+def parents(repo=None, rev=None, file=None, verbose=False):
+    """Return the result of the :command:`hg parents` command.
+
+    If repo is given the :command:`hg parents -R repo` command is run.
+    The repo argument must be the root directory of a Mercurial repository.
+
+    If rev is given the :command:`hg parents -r rev` command is run.
+    Only one rev may be given.
+
+    If file is given the :command:`hg parents file` command is run.
+    Only one file may be given.
+
+    If verbose is True the :command:`hg parents -v` command is run.
+
+    Keyword argument can be used cummulatively;
+    e.g. :kbd:`repo=foo, file=bar` will result in the
+    :command:`hg parents -R foo bar` command being run.
+
+    :arg repo: Repository root directory.
+    :type repo: str
+
+    :arg rev: Revision to get the parents of.
+              May be either an integer or a hash string.
+    :type ref: int or str
+
+    :arg file: File path and name to get the parents of.
+    :type file: str
+
+    :arg verbose: Control verbosity of :command:`hg` command;
+                  default to :kbd:`False` meaning to run the command
+                  without the :kbd:`-v` flag.
+    :type verbose: Boolean
+
+    :returns: Output of the command.
+    :rtype: str
+    """
+    cmd = ['hg', 'parents']
+    if repo is not None:
+        cmd.extend(['-R', repo])
+    if rev is not None:
+        cmd.extend(['-r', rev])
+    if file is not None:
+        cmd.append(file)
+    if verbose:
+        cmd.append('-v')
+    return subprocess.check_output(cmd)
