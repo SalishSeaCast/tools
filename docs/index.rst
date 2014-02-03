@@ -22,6 +22,7 @@ Contents:
    NetCDF_Plot/index
    bathymetry/index
    I_ForcingFiles/index
+   Marlin/index
    nemo-tools/index
    Run_Files/index
    nocscombine/index
