@@ -16,17 +16,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+import tempfile
 import sys
 
 import arrow
 import cliff.command
 import pysvn
 
+from salishsea_tools import hg_commands
+
 
 __all__ = [
-    'SVNIncoming',
+    'SVNIncoming', 'SVNUpdate'
     'get_working_copy_info', 'get_working_copy_rev', 'get_upstream_url',
-    'get_upstream_log',
+    'get_upstream_log', 'apply_update',
 ]
 
 
@@ -48,13 +51,8 @@ class SVNIncoming(cliff.command.Command):
         return parser
 
     def take_action(self, parsed_args):
-        tip_rev = pysvn.Revision(
-            pysvn.opt_revision_kind.number, get_working_copy_rev())
-        svn_logs = get_upstream_log(
-            revision_start=tip_rev,
-            limit=parsed_args.limit + 1,
-        )
-        for chunk in self._format(svn_logs[1:]):
+        svn_logs = get_upstream_logs(limit=parsed_args.limit)
+        for chunk in self._format(svn_logs):
             sys.stdout.write(chunk)
 
 
@@ -68,6 +66,43 @@ class SVNIncoming(cliff.command.Command):
                 .format(svn_log, timestamp.format('YYYY-MM-DD HH:mm:ss'))
             )
             yield chunk
+
+
+class SVNUpdate(cliff.command.Command):
+    """Apply SVN updates from upstream repo & commit them to Mercurial
+    one at a time.
+    """
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(SVNUpdate, self).get_parser(prog_name)
+        parser.add_argument(
+            '--to-rev',
+            type=int,
+            help='SVN revision number to update repo to',
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        end_rev = parsed_args.to_rev
+        limit = 1 if end_rev is None else 0
+        svn_logs = get_upstream_logs(limit)
+        end_rev = svn_logs[0].revision.number if end_rev is None else end_rev
+        for svn_log in svn_logs:
+            if svn_log.revision.number > end_rev:
+                break
+            apply_update(svn_log.revision.number)
+            hg_commit_msg =(
+                'Update to svn r{0.revision.number}.'
+                '\n\n'
+                '{0.message}'
+                .format(svn_log)
+            )
+            with tempfile.NamedTemporaryFile() as msg_file:
+                msg_file.write(hg_commit_msg)
+                msg_file.flush()
+                hg_commands.commit(logfile=msg_file.name)
+            self.log.info(hg_commit_msg + '\n')
 
 
 def get_working_copy_info(path='.'):
@@ -85,13 +120,24 @@ def get_upstream_url(path='.'):
     info = get_working_copy_info()
     return info.url
 
-def get_upstream_log(revision_start, revision_end=HEAD, limit=0):
+
+def get_upstream_logs(limit=0):
+    limit = limit + 1 if limit != 0 else 0
     url = get_upstream_url()
+    tip_rev = pysvn.Revision(
+        pysvn.opt_revision_kind.number, get_working_copy_rev())
     client = pysvn.Client()
     svn_logs = client.log(
         url,
-        revision_start=revision_start,
-        revision_end=revision_end,
+        revision_start=tip_rev,
+        revision_end=HEAD,
         limit=limit,
     )
-    return svn_logs
+    return svn_logs[1:]
+
+
+def apply_update(revision, path='.'):
+    client = pysvn.Client()
+    rev = pysvn.Revision(pysvn.opt_revision_kind.number, revision)
+    tip_rev = client.update(path, revision=rev)
+    return tip_rev
