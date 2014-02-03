@@ -47,6 +47,7 @@ install_requires = [
     # see requirements.txt for versions most recently used in development
     'arrow',
     'cliff',
+    # 'SalishSeaTools',
     # on Ubuntu symlink pysvn from /usr/lib/python2.7/dist-packages/pysvn
 ]
 
@@ -73,6 +74,7 @@ setup(
         # Sub-command plug-ins:
         'marlin.app': [
             'incoming = marlin.svn:SVNIncoming',
+            'update = marlin.svn:SVNUpdate',
         ],
     },
 )
