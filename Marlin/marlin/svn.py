@@ -27,9 +27,9 @@ from salishsea_tools import hg_commands
 
 
 __all__ = [
-    'SVNIncoming', 'SVNUpdate'
+    'SVNIncoming', 'SVNUpdate',
     'get_working_copy_info', 'get_working_copy_rev', 'get_upstream_url',
-    'get_upstream_log', 'apply_update',
+    'get_upstream_logs', 'apply_update',
 ]
 
 
@@ -54,7 +54,6 @@ class SVNIncoming(cliff.command.Command):
         svn_logs = get_upstream_logs(limit=parsed_args.limit)
         for chunk in self._format(svn_logs):
             sys.stdout.write(chunk)
-
 
     def _format(self, svn_logs):
         for svn_log in svn_logs:
@@ -92,7 +91,7 @@ class SVNUpdate(cliff.command.Command):
             if svn_log.revision.number > end_rev:
                 break
             apply_update(svn_log.revision.number)
-            hg_commit_msg =(
+            hg_commit_msg = (
                 'Update to svn r{0.revision.number}.'
                 '\n\n'
                 '{0.message}'
