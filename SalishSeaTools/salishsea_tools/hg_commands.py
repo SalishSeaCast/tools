@@ -24,9 +24,22 @@ import subprocess
 
 
 __all__ = [
+    'commit',
     'default_url',
     'heads',
+    'parents',
 ]
+
+
+def commit(logfile):
+    """Commit all changes in the repo with the contents of logfile
+    as the commit message.
+
+    :arg logfile: Name of the file containing the commit message.
+    :type logfile: str
+    """
+    cmd = ['hg', 'commit', '--logfile', logfile]
+    subprocess.check_call(cmd)
 
 
 def default_url(repo=None):
