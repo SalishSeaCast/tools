@@ -5,18 +5,21 @@ Installation
 Python Version
 ==============
 
-:command:`marlin` is developed and tested under Python 2.7.
+:py:obj:`Marlin` is developed and tested under Python 2.7.
 
 
 Dependencies
 ============
 
-:command:`marlin` depends on the pysvn_ library.
+:py:obj:`Marlin` depends on the pysvn_ library.
 On :kbd:`salish` pysvn_ is installed as the system-side :kbd:`python-svn` package.
-Include it in the virtualenv in which :command:`marlin` is installed by symlinking it into the virtualenv :file:`site-packages/` directory
-(see :ref:`BasicInstallation`).
+Include it in the virtualenv in which :py:obj:`Marlin` is installed by symlinking it into the virtualenv :file:`site-packages/` directory.
 
-.. _pysvn:
+:py:obj:`Marlin` also depends on the :ref:`SalishSeaTools` :ref:`salishsea_tools.hg_commands`
+
+Details of how to install both of these dependencies are included in the :ref:`BasicInstallation` section below.
+
+.. _pysvn: http://pysvn.tigris.org/
 
 
 .. _BasicInstallation:
@@ -24,27 +27,28 @@ Include it in the virtualenv in which :command:`marlin` is installed by symlinki
 Basic Installation
 ==================
 
-#. Create a :command:`marlin` virtualenv:
+#. Create a :kbd:`marlin` virtualenv:
 
    .. code-block:: bash
 
        $ cd /data/dlatorne/.virtualenvs/
        $ virturalenv marlin
 
-#. Symlink pysvn_ into the :command:`marlin` virtualenv :file:`site-packages/` directory:
+#. Symlink pysvn_ into the :kbd:`marlin` virtualenv :file:`site-packages/` directory:
 
    .. code-block:: bash
 
        $ cd /data/dlatorne/.virtualenvs/marlin/lib/python2.7/site-packages/
        $ ln -s /usr/lib/python2.7/dist-packages/pysvn
 
-#. Activate the :command:`marlin` virtualenv and install :command:`marlin` in editable mode:
+#. Activate the :kbd:`marlin` virtualenv and install the :py:obj:`SalishSeaTools` and :py:obj:`Marlin` packages in editable mode:
 
    .. code-block:: bash
 
        $ . /data/dlatorne/.virtualenvs/marlin/bin/activate
-       (marlin)$ cd /data/dlatorne/MEOPAR/tools/Marlin
-       (marlin)$ pip install -e .
+       (marlin)$ cd /data/dlatorne/MEOPAR/tools/
+       (marlin)$ pip install --no-deps -e SalishSeaTools
+       (marlin)$ pip install -e Marlin
 
 
 Source Code
