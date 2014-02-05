@@ -256,8 +256,8 @@ def create_northern_tides(Z1,Z2,tidevar,constituent):
         u2 = nemo.createVariable('u2','float32',('yb','xbT'),zlib=True)
         u2.units = 'm'
         u2.long_name = 'tidal x-velocity: sine'
-        u1[0,:] = np.array([Z1]*lengthi*r)
-        u2[0,:] = np.array([Z2]*lengthi*r)
+        u1[0,:] = np.repeat(Z1,10)
+        u2[0,:] = np.repeat(Z2,10)
         
     if tidevar=='V':
         v1 = nemo.createVariable('v1','float32',('yb','xbT'),zlib=True)
@@ -266,8 +266,8 @@ def create_northern_tides(Z1,Z2,tidevar,constituent):
         v2 = nemo.createVariable('v2','float32',('yb','xbT'),zlib=True)
         v2.units = 'm'
         v2.long_name = 'tidal y-velocity: sine'
-        v1[0,:] = np.array([Z1]*lengthi*r)
-        v2[0,:] = np.array([Z2]*lengthi*r)
+        v1[0,:] = np.repeat(Z1,10)
+        v2[0,:] = np.repeat(Z2,10)
 
     nc_tools.check_dataset_attrs(nemo)
     nemo.close()
