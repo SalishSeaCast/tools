@@ -23,8 +23,7 @@ nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'storm_surges'
 url = os.path.join(nbviewer, repo, repo_dir)
-readme = """The IPython Notebooks in this directory are initial experiments
-around visualization of NEMO results.
+readme = """The IPython Notebooks in this directory are related to preparing for storm surge simulations.
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
