@@ -21,7 +21,7 @@ import os
 
 nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
-repo_dir = 'NetCDF_Plot'
+repo_dir = 'storm_surges'
 url = os.path.join(nbviewer, repo, repo_dir)
 readme = """The IPython Notebooks in this directory are initial experiments
 around visualization of NEMO results.
