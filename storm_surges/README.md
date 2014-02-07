@@ -1,5 +1,4 @@
-The IPython Notebooks in this directory are initial experiments
-around visualization of NEMO results.
+The IPython Notebooks in this directory are related to preparing for storm surge simulations.
 
 * [SSH_Tofino.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/SSH_Tofino.ipynb)
 * [weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/weather_Nov-15-2006.ipynb)
