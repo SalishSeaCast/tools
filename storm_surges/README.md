@@ -1,8 +1,8 @@
 The IPython Notebooks in this directory are initial experiments
 around visualization of NEMO results.
 
-* [SSH_Tofino.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SSH_Tofino.ipynb)
-* [weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/weather_Nov-15-2006.ipynb)
+* [SSH_Tofino.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/SSH_Tofino.ipynb)
+* [weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/weather_Nov-15-2006.ipynb)
 
 ##License
 
