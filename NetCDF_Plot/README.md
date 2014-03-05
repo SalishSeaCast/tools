@@ -1,16 +1,13 @@
 The IPython Notebooks in this directory are initial experiments
 around visualization of NEMO results.
 
-* [friction_comparison.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/friction_comparison.ipynb)
 * [compareViscosity.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compareViscosity.ipynb)
 * [NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)
 * [compute_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compute_thalweg.ipynb)
 * [Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)
 * [mergeCompare-orginal.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/mergeCompare-orginal.ipynb)
-* [TS_Restart.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/TS_Restart.ipynb)
 * [crashAnalysis.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/crashAnalysis.ipynb)
 * [nu200_nu50.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/nu200_nu50.ipynb)
-* [stations.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/stations.ipynb)
 * [mergeCompare-noBC.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/mergeCompare-noBC.ipynb)
 * [Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)
 * [SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)
