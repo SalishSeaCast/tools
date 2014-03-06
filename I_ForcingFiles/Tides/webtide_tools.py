@@ -278,6 +278,90 @@ def create_northern_tides(Z1,Z2,tidevar,constituent):
     nc_tools.check_dataset_attrs(nemo)
     nemo.close()
 
+def create_northern_tides_contd(Z1,Z2,tidevar,constituent):
+    import netCDF4 as NC
+    import numpy as np
+    from salishsea_tools import nc_tools
+    
+    nemo = NC.Dataset('SalishSea2_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
+
+    #start and end points
+    starti = 32
+    endi = 62
+    lengthi = endi-starti
+
+    # dataset attributes
+    nc_tools.init_dataset_attrs(
+        nemo, 
+        title='Tidal Boundary Conditions for Northern Boundary', 
+        notebook_name='johnstone_tides_contd', 
+        nc_filepath='../../../NEMO-forcing/open_boundaries/north/tides/SalishSea2_North_tide_'+constituent+'_grid_'+tidevar+'.nc',
+        comment='Tidal current and amplitude data scaled based on differences between K1/M2 and North and West.') 
+
+    # dimensions (only need x and y, don't need depth or time_counter)
+    nemo.createDimension('xb', 1)
+    nemo.createDimension('yb', lengthi)
+
+    # variables
+    # nbidta, ndjdta, ndrdta
+    nbidta = nemo.createVariable('nbidta', 'int32' , ('yb','xb'))
+    nbidta.long_name = 'i grid position'
+    nbidta.units = 1
+    nbjdta = nemo.createVariable('nbjdta', 'int32' , ('yb','xb'))
+    nbjdta.long_name = 'j grid position'
+    nbjdta.units = 1
+    nbrdta = nemo.createVariable('nbrdta', 'int32' , ('yb','xb'))
+    nbrdta.long_name = 'position from boundary'
+    nbrdta.units = 1
+    print nbidta.shape
+    # add in the counter around the boundary (taken from Susan's code in Prepare Tide Files)
+    xb = nemo.createVariable('xb', 'int32', ('xb',),zlib=True)
+    xb.units = 'non dim'
+    xb.long_name = 'counter around boundary'
+    yb = nemo.createVariable('yb', 'int32', ('yb',),zlib=True)
+    yb.units = 'non dim'
+    yb.long_name = 'counter along boundary'
+    xb[0] = 897
+    yb[:] = np.arange(starti,endi)
+
+    # values
+    # nbidta, nbjdta
+    nbidta[:] = np.arange(starti,endi)
+    nbjdta[:] = 897
+    nbrdta[:] = 1
+
+    if tidevar=='T':
+        z1 = nemo.createVariable('z1','float32',('yb','xb'),zlib=True)
+        z1.units = 'm'
+        z1.long_name = 'tidal elevation: cosine'
+        z2 = nemo.createVariable('z2','float32',('yb','xb'),zlib=True)
+        z2.units = 'm'
+        z2.long_name = 'tidal elevation: sine'
+        z1[:,0] = np.array([Z1]*lengthi)
+        z2[:,0] = np.array([Z2]*lengthi)
+        
+    if tidevar=='U':    
+        u1 = nemo.createVariable('u1','float32',('yb','xb'),zlib=True)
+        u1.units = 'm'
+        u1.long_name = 'tidal x-velocity: cosine'
+        u2 = nemo.createVariable('u2','float32',('yb','xb'),zlib=True)
+        u2.units = 'm'
+        u2.long_name = 'tidal x-velocity: sine'
+        u1[0:lengthi,0] = Z1[:,0]
+        u2[0:lengthi,0] = Z2[:,0]
+
+    if tidevar=='V':
+        v1 = nemo.createVariable('v1','float32',('yb','xb'),zlib=True)
+        v1.units = 'm'
+        v1.long_name = 'tidal y-velocity: cosine'
+        v2 = nemo.createVariable('v2','float32',('yb','xb'),zlib=True)
+        v2.units = 'm'
+        v2.long_name = 'tidal y-velocity: sine'
+        v1[:] = Z1
+        v2[:] = Z2
+
+    nc_tools.check_dataset_attrs(nemo)
+    nemo.close()
 
 
 
