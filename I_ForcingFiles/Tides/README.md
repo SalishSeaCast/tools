@@ -1,9 +1,10 @@
 This is a collection of IPython Notebooks for creating,
 manipulating, and visualizing tidal forcing netCDF files.
 
-* [webtide_forcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/webtide_forcing.ipynb)
-* [johnstone_strait_tides.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/johnstone_strait_tides.ipynb)
 * [Prepare Tide Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/Prepare Tide Files.ipynb)
+* [johnstone_strait_tides.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/johnstone_strait_tides.ipynb)
+* [johnstone_tides_contd.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/johnstone_tides_contd.ipynb)
+* [webtide_forcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/webtide_forcing.ipynb)
 
 ##License
 
