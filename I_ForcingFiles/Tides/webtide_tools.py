@@ -296,7 +296,7 @@ def create_northern_tides_contd(Z1,Z2,tidevar,constituent):
         title='Tidal Boundary Conditions for Northern Boundary', 
         notebook_name='johnstone_tides_contd', 
         nc_filepath='../../../NEMO-forcing/open_boundaries/north/tides/SalishSea2_North_tide_'+constituent+'_grid_'+tidevar+'.nc',
-        comment='Tidal current and amplitude data scaled based on differences between K1/M2 and North and West.') 
+        comment='Tidal current and amplitude data scaled based on differences between K1/M2 and North observations and webtide.') 
 
     # dimensions (only need x and y, don't need depth or time_counter)
     nemo.createDimension('xb', 1)
