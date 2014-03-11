@@ -31,7 +31,7 @@ and visualizing bathymetry netCDF files.
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
-    readme += '* [{fn}]({url}/{fn})\n'.format(fn=fn, url=url)
+    readme += '* [{fn}]({url}/{fn})  \n'.format(fn=fn, url=url)
     with open(fn, 'rt') as notebook:
         contents = json.load(notebook)
     if contents['worksheets'][0]['cells'][0]['cell_type'] == 'markdown':

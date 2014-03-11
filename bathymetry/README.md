@@ -1,8 +1,8 @@
 The IPython Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
-* [BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)
-* [NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)
+* [BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
+* [NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
 
   **NEMO Grid Bathymetry**
     
@@ -14,13 +14,13 @@ and visualizing bathymetry netCDF files.
   and boundary conditions temperature and salinity values that do not  
   induce spurious transient flows at the topographic edges of the domain.
 
-* [netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)
+* [netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
 
   **Explore Changing Bathymetry Data Format**
   **netCDF4 Instead of netCDF3_CLASSI**
 
 
-* [SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)
+* [SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
 
   **Salish Sea NEMO Bathymetry**
     
@@ -28,7 +28,7 @@ and visualizing bathymetry netCDF files.
     
   The first part of the notebook explores and plots the bathymetry.
 
-* [SalishSeaSubdomainBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)
+* [SalishSeaSubdomainBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)  
 
   **Salish Sea NEMO Sub-domain Bathymetry**
     
@@ -41,8 +41,8 @@ and visualizing bathymetry netCDF files.
   The second part records the manual smoothing that was done to  
   get the JPP M2 tidal forcing case to run.
 
-* [SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)
-* [TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)
+* [SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
+* [TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
 
 ##License
 
