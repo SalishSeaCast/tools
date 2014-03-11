@@ -36,7 +36,7 @@ for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
         contents = json.load(notebook)
     if contents['worksheets'][0]['cells'][0]['cell_type'] == 'markdown':
         desc_lines = contents['worksheets'][0]['cells'][0]['source']
-        readme += '\n'
+        readme += '  \n'
         for line in desc_lines:
             if title_pattern.match(line):
                 line = title_pattern.sub('  **', line)
