@@ -39,16 +39,16 @@ for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
         readme += '    \n'
         for line in desc_lines:
             if title_pattern.match(line):
-                line = title_pattern.sub('  **', line)
+                line = title_pattern.sub('    **', line)
                 if line.endswith('\n'):
                     readme += '{line}**  \n'.format(line=line[:-1])
                 else:
                     readme += '{line}**  '.format(line=line)
                 continue
             if line.endswith('\n'):
-                readme += '  {line}  \n'.format(line=line[:-1])
+                readme += '    {line}  \n'.format(line=line[:-1])
             else:
-                readme += '  {line}  '.format(line=line)
+                readme += '    {line}  '.format(line=line)
         readme += '\n' * 2
 license = """
 ##License
