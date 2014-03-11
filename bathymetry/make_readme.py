@@ -16,19 +16,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import json
 import os
+import re
 
 
 nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'bathymetry'
 url = os.path.join(nbviewer, repo, repo_dir)
+title_pattern = re.compile('#{1,6} ?')
 readme = """The IPython Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
-    readme += '* [{fn}]({url}/{fn})\n'.format(url=url, fn=fn)
+    readme += '* [{fn}]({url}/{fn})\n'.format(fn=fn, url=url)
+    with open(fn, 'rt') as notebook:
+        contents = json.load(notebook)
+    if contents['worksheets'][0]['cells'][0]['cell_type'] == 'markdown':
+        desc_lines = contents['worksheets'][0]['cells'][0]['source']
+        readme += '\n'
+        for line in desc_lines:
+            if title_pattern.match(line):
+                line = title_pattern.sub('  **', line)
+                readme += '{line}**\n'.format(line=line[:-1])
+                continue
+            if line.endswith('\n'):
+                readme += '  {line}  \n'.format(line=line[:-1])
+            else:
+                readme += '  {line}'.format(line=line)
+        readme += '\n' * 2
 license = """
 ##License
 
