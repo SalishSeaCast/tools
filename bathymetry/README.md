@@ -3,7 +3,7 @@ and visualizing bathymetry netCDF files.
 
 * [BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
 * [NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
-
+  
   **NEMO Grid Bathymetry**
     
   This notebook describes the creation  
@@ -15,13 +15,13 @@ and visualizing bathymetry netCDF files.
   induce spurious transient flows at the topographic edges of the domain.
 
 * [netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
-
+  
   **Explore Changing Bathymetry Data Format**
   **netCDF4 Instead of netCDF3_CLASSI**
 
 
 * [SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
-
+  
   **Salish Sea NEMO Bathymetry**
     
   This notebook documents the bathymetry used for the Salish Sea NEMO runs.  
@@ -29,7 +29,7 @@ and visualizing bathymetry netCDF files.
   The first part of the notebook explores and plots the bathymetry.
 
 * [SalishSeaSubdomainBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)  
-
+  
   **Salish Sea NEMO Sub-domain Bathymetry**
     
   This notebook documents the bathymetry used for the   
