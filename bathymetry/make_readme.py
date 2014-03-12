@@ -33,14 +33,15 @@ and visualizing bathymetry netCDF files.
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
 Descriptions below the links are from the first cell of the notebooks
-(if that cell contains Markdown).
+(if that cell contains Markdown or raw text).
 
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
     readme += '* ##[{fn}]({url}/{fn})  \n    \n'.format(fn=fn, url=url)
     with open(fn, 'rt') as notebook:
         contents = json.load(notebook)
-    if contents['worksheets'][0]['cells'][0]['cell_type'] == 'markdown':
+    first_cell_type = contents['worksheets'][0]['cells'][0]['cell_type']
+    if first_cell_type in 'markdown raw'.split():
         desc_lines = contents['worksheets'][0]['cells'][0]['source']
         for line in desc_lines:
             if title_pattern.match(line):
