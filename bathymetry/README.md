@@ -1,6 +1,11 @@
 The IPython Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
+The links below are to static renderings of the notebooks via
+[nbviewer.ipython.org](http://nbviewer.ipython.org/).
+Descriptions below the links are from the first cell of the notebooks
+(if that cell contains Markdown).
+
 * ##[BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
     
 * ##[NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
