@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import datetime
 import json
 import os
 import re
@@ -57,14 +58,14 @@ for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
 license = """
 ##License
 
-These notebooks are copyright 2013-2014
+These notebooks and files are copyright 2013-{this_year}
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
 http://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
-"""
+""".format(this_year=datetime.date.today().year)
 with open('README.md', 'wt') as f:
     f.writelines(readme)
     f.writelines(license)

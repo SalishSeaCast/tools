@@ -53,7 +53,7 @@ Descriptions below the links are from the first cell of the notebooks
 
 ##License
 
-These notebooks are copyright 2013-2014
+These notebooks and files are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
