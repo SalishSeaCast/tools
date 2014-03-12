@@ -1,13 +1,27 @@
 This is a collection of IPython Notebooks for creating,
 manipulating, and visualizing netCDF files to do with Rivers.
 
-* [AddRivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/AddRivers.ipynb)
-* [Add Rivers Month and Constant.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Add Rivers Month and Constant.ipynb)
-* [Prep_Seasonal_Rivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Prep_Seasonal_Rivers.ipynb)
+The links below are to static renderings of the notebooks via
+[nbviewer.ipython.org](http://nbviewer.ipython.org/).
+Descriptions below the links are from the first cell of the notebooks
+(if that cell contains Markdown or raw text).
+
+* ##[Add Rivers Month and Constant.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Add Rivers Month and Constant.ipynb)  
+    
+* ##[AddRivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/AddRivers.ipynb)  
+    
+    *This notebook has been superceded by the notebook: 'Add Rivers Month and Constant'*  
+      
+    **Notebook to prepare Rivers Input file for the Large Salish Sea Domain**  
+      
+    *Usual Imports*  
+
+* ##[Prep_Seasonal_Rivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Prep_Seasonal_Rivers.ipynb)  
+    
 
 ##License
 
-These notebooks are copyright 2013-2014
+These notebooks and files are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

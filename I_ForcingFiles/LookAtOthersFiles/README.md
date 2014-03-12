@@ -1,12 +1,21 @@
 This is a collection of IPython Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
-* [LookAtDianeWendysFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
-* [LookatInitialForcingFiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
+The links below are to static renderings of the notebooks via
+[nbviewer.ipython.org](http://nbviewer.ipython.org/).
+Descriptions below the links are from the first cell of the notebooks
+(if that cell contains Markdown or raw text).
+
+* ##[LookAtDianeWendysFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)  
+    
+* ##[LookatInitialForcingFiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)  
+    
+    This notebook opens NetCDF input files from JPP.  
+
 
 ##License
 
-These notebooks are copyright 2013-2014
+These notebooks and files are copyright 2013-2014
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
