@@ -36,7 +36,8 @@ Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
 """
-for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
+notebooks = (fn for fn in os.listdir('./') if fn.endswith('ipynb'))
+for fn in notebooks:
     readme += '* ##[{fn}]({url}/{fn})  \n    \n'.format(fn=fn, url=url)
     with open(fn, 'rt') as notebook:
         contents = json.load(notebook)
@@ -44,17 +45,17 @@ for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
     if first_cell_type in 'markdown raw'.split():
         desc_lines = contents['worksheets'][0]['cells'][0]['source']
         for line in desc_lines:
+            suffix = ''
             if title_pattern.match(line):
-                line = title_pattern.sub('    **', line)
-                if line.endswith('\n'):
-                    readme += '{line}**  \n'.format(line=line[:-1])
-                else:
-                    readme += '{line}**  '.format(line=line)
-                continue
+                line = title_pattern.sub('**', line)
+                suffix = '**'
             if line.endswith('\n'):
-                readme += '    {line}  \n'.format(line=line[:-1])
+                readme += (
+                    '    {line}{suffix}  \n'
+                    .format(line=line[:-1], suffix=suffix))
             else:
-                readme += '    {line}  '.format(line=line)
+                readme += (
+                    '    {line}{suffix}  '.format(line=line, suffix=suffix))
         readme += '\n' * 2
 license = """
 ##License
