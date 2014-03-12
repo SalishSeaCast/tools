@@ -29,6 +29,11 @@ title_pattern = re.compile('#{1,6} ?')
 readme = """The IPython Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
+The links below are to static renderings of the notebooks via
+[nbviewer.ipython.org](http://nbviewer.ipython.org/).
+Descriptions below the links are from the first cell of the notebooks
+(if that cell contains Markdown).
+
 """
 for fn in (fn for fn in os.listdir('./') if fn.endswith('ipynb')):
     readme += '* ##[{fn}]({url}/{fn})  \n    \n'.format(fn=fn, url=url)
