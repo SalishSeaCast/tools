@@ -61,7 +61,7 @@ license = """
 ##License
 
 These notebooks and files are copyright 2013-{this_year}
-by the Salish Sea MEOPAR Project Contributors
+by the [Salish Sea MEOPAR Project Contributors](https://bitbucket.org/salishsea/docs/src/tip/CONTRIBUTORS.rst)
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
