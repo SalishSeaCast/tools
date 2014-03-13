@@ -10,9 +10,17 @@ Descriptions below the links are from the first cell of the notebooks
     
     Ipython notebook to open ADCP .mat files from VENUS and plot them  
 
+* ##[VelocityVENUS.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/Stability_analysis/VelocityVENUS.ipynb)  
+    
+    Velocity at Venus Stations: Oct 18, 2002  
+
 * ##[VenusLocations.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/Stability_analysis/VenusLocations.ipynb)  
     
     Notebook to plot positions of the two VENUS ADCP Stations  
+
+* ##[VerticalVelocity.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/Stability_analysis/VerticalVelocity.ipynb)  
+    
+    Notebook to plot vertical velocity and calculate maximum vertical velocity  
 
 
 ##License
