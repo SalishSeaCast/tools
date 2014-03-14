@@ -19,6 +19,12 @@ Descriptions below the links are from the first cell of the notebooks
       
     These simulations were run with nu=50 and  initial T+S from Oct 25 restart  
 
+* ##[spinups.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/spinups.ipynb)  
+    
+    A notebook for determining how long it takes for velocities to spinup after initializing with a restart files. This is useful for determing storm surge simulation start dates.   
+      
+    Note this probably depends on viscosity. This simulations use nu =50.  
+
 * ##[weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/weather_Nov-15-2006.ipynb)  
     
     This notebook plots the weather at Point Atkinson on Nov. 15, 2006 from the Environment Canada website.   
