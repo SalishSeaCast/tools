@@ -214,8 +214,8 @@ def create_northern_tides(Z1,Z2,tidevar,constituent):
         comment='Tidal current and amplitude data from Thomson & Huggett 1980') 
 
     # dimensions (only need x and y, don't need depth or time_counter)
-    nemo.createDimension('xb', 1)
-    nemo.createDimension('yb', lengthi)
+    nemo.createDimension('xb', lengthi)
+    nemo.createDimension('yb', 1)
 
     # variables
     # nbidta, ndjdta, ndrdta
@@ -299,8 +299,8 @@ def create_northern_tides_contd(Z1,Z2,tidevar,constituent):
         comment='Tidal current and amplitude data scaled based on differences between K1/M2 and North observations and webtide.') 
 
     # dimensions (only need x and y, don't need depth or time_counter)
-    nemo.createDimension('xb', 1)
-    nemo.createDimension('yb', lengthi)
+    nemo.createDimension('xb', lengthi)
+    nemo.createDimension('yb', 1)
 
     # variables
     # nbidta, ndjdta, ndrdta
