@@ -1,5 +1,12 @@
-The IPython Notebooks in this directory are initial experiments
-around visualization of NEMO results.
+The IPython Notebooks in this directory provide discussion,
+examples, and best practices for plotting various kinds of model results
+from netCDF files. There are code examples in the notebooks and also
+examples of the use of functions from the
+[`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
+package.
+
+Also included are notebooks from initial experiments around visualization
+of NEMO results.
 
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
@@ -10,34 +17,21 @@ Descriptions below the links are from the first cell of the notebooks
     
     A script to compare runs with different viscosities.  
 
-* ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)  
-    
-    A script to examine currents. It includes a function for unstaggering the u/v data.  
-
 * ##[compute_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compute_thalweg.ipynb)  
     
-* ##[Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)  
-    
-    Notebook to plot surface salinity and vertical cross-sections  
-
 * ##[crashAnalysis.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/crashAnalysis.ipynb)  
     
     A code to look at the data from the crashed run. What is going wrong!  
     Looks at currents, bathymetry, and sea surface height around the crashed time step.   
 
-* ##[nu200_nu50.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/nu200_nu50.ipynb)  
+* ##[Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)  
     
-    This notebook runs a comparison between the $\nu=200$ and $\nu=50$ simulations by Doug.   
+    **Exploring netCDF Files**  
       
-    The focus is on currents and tracers.   
+    This notebook provides discussion,  
+    examples,  
+    and best practices for working with netCDF files in Python.  
 
-* ##[Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)  
-    
-    Notebook that opens the NetCDF files created by NEMO and creates a movie.  
-
-
-* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
-    
 * ##[GYRE_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/GYRE_openNC_plot.ipynb)  
     
     This notebook opens NetCDF files from a test run of NEMO 3.4 in the GYRE configuration.  It then prepares a contour plot of temperature and a quiver plot of velocity.  
@@ -45,6 +39,27 @@ Descriptions below the links are from the first cell of the notebooks
 * ##[mergeCompare.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/mergeCompare.ipynb)  
     
     Comparing merge-tests on Salish and Japser. A week long run to see how the differences evolve.   
+
+* ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)  
+    
+    A script to examine currents. It includes a function for unstaggering the u/v data.  
+
+* ##[nu200_nu50.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/nu200_nu50.ipynb)  
+    
+    This notebook runs a comparison between the $\nu=200$ and $\nu=50$ simulations by Doug.   
+      
+    The focus is on currents and tracers.   
+
+* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
+    
+* ##[Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)  
+    
+    Notebook that opens the NetCDF files created by NEMO and creates a movie.  
+
+
+* ##[Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)  
+    
+    Notebook to plot surface salinity and vertical cross-sections  
 
 * ##[WCSD_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/WCSD_openNC_plot.ipynb)  
     

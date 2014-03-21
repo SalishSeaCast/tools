@@ -27,8 +27,15 @@ repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'NetCDF_Plot'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
-readme = """The IPython Notebooks in this directory are initial experiments
-around visualization of NEMO results.
+readme = """The IPython Notebooks in this directory provide discussion,
+examples, and best practices for plotting various kinds of model results
+from netCDF files. There are code examples in the notebooks and also
+examples of the use of functions from the
+[`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
+package.
+
+Also included are notebooks from initial experiments around visualization
+of NEMO results.
 
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
