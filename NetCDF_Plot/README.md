@@ -28,13 +28,11 @@ Descriptions below the links are from the first cell of the notebooks
     
     **Exploring netCDF Files**  
       
-    This notebook provides discussion,  
-    examples,  
-    and best practices for working with netCDF files in Python.  
+    This notebook provides discussion, examples, and best practices for working with netCDF files in Python.  
     Topics include:  
       
     * The [`netcdf4-python`](http://http://unidata.github.io/netcdf4-python/) library  
-    * The [salishsea_tools.nc_tools](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module  
+    * The [`salishsea_tools.nc_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module  
     * Reading netCDF files into Python data structures  
     * Exploring netCDF dataset dimensions, variables, and attributes  
     * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays  
@@ -56,6 +54,22 @@ Descriptions below the links are from the first cell of the notebooks
     This notebook runs a comparison between the $\nu=200$ and $\nu=50$ simulations by Doug.   
       
     The focus is on currents and tracers.   
+
+* ##[Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)  
+    
+    **Potting Bathymetry Colour Meshes**  
+      
+    This notebook contains discussion, examples, and best practices for plotting bathymetry data as colour meshes. It also serves as a basic introduction setting up horizontal slice visualizations of any model result quantities.  
+    Topics include:  
+      
+    * The [matplotlib](http://matplotlib.org/) library and its `pyplot` and `pylab` interfaces  
+    * The [`salishsea_tools.viz_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-viz_tools) code module  
+    * Making plots appear below the code cells that create them in IPython Notebooks  
+    * Figure and Axes objects  
+    * Plotting bathymetry depth data as 2-D pseudocolour mesh plots  
+    * Controlling the size and aspect ratio of plots,  
+    in particular setting the aspect ratio to match the Salish Sea NEMO model lateral grid  
+    * Using difference colour maps for colour mesh plots and adding colour bar scales to them  
 
 * ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
     
