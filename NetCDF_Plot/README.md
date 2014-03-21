@@ -31,6 +31,13 @@ Descriptions below the links are from the first cell of the notebooks
     This notebook provides discussion,  
     examples,  
     and best practices for working with netCDF files in Python.  
+    Topics include:  
+      
+    * The [`netcdf4-python`](http://http://unidata.github.io/netcdf4-python/) library  
+    * The [salishsea_tools.nc_tools](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module  
+    * Reading netCDF files into Python data structures  
+    * Exploring netCDF dataset dimensions, variables, and attributes  
+    * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays  
 
 * ##[GYRE_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/GYRE_openNC_plot.ipynb)  
     
