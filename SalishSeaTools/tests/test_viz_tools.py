@@ -19,6 +19,7 @@ from __future__ import division
 
 from mock import Mock
 
+import numpy as np
 import pytest
 
 
@@ -30,11 +31,30 @@ def viz_tools_module():
 
 def test_set_aspect_defaults(viz_tools_module):
     axes = Mock()
-    viz_tools_module.set_aspect(axes)
+    aspect = viz_tools_module.set_aspect(axes)
     axes.set_aspect.assert_called_once_with(5/4.4, adjustable='box-forced')
+    assert aspect == 5/4.4
 
 
 def test_set_aspect_args(viz_tools_module):
     axes = Mock()
-    viz_tools_module.set_aspect(axes, 3/2, 'foo')
+    aspect = viz_tools_module.set_aspect(axes, 3/2, adjustable='foo')
     axes.set_aspect.assert_called_once_with(3/2, adjustable='foo')
+    assert aspect == 3/2
+
+
+def test_set_aspect_map_lats(viz_tools_module):
+    axes = Mock()
+    lats = np.array([42.0])
+    lats_aspect = 1 / np.cos(42 * np.pi / 180)
+    aspect = viz_tools_module.set_aspect(axes, coords='map', lats=lats)
+    axes.set_aspect.assert_called_once_with(
+        lats_aspect, adjustable='box-forced')
+    assert aspect == lats_aspect
+
+
+def test_set_aspect_map_explicit(viz_tools_module):
+    axes = Mock()
+    aspect = viz_tools_module.set_aspect(axes, 2/3, coords='map')
+    axes.set_aspect.assert_called_once_with(2/3, adjustable='box-forced')
+    assert aspect == 2/3
