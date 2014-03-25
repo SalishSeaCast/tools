@@ -33,6 +33,12 @@ from netCDF files. There are code examples in the notebooks and also
 examples of the use of functions from the
 [`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
 package.
+If you are new to the Salish Sea MEOPAR project or to IPython Notebook,
+netCDF, and Matplotlib you should read the introductory notebooks
+in the following order:
+
+* [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)
+* [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)
 
 Also included are notebooks from initial experiments around visualization
 of NEMO results.
