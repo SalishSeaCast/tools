@@ -24,7 +24,7 @@ import numpy as np
 import datetime
 
 
-def convert_date(times, start):
+def convert_date_seconds(times, start):
     """
     This function converts model output time in seconds to datetime objects.
     
@@ -33,6 +33,9 @@ def convert_date(times, start):
     
     :arg start: string containing the start date of the simulation in format '01-Nov-2006'
     :type start: str
+
+    :arg diff: string indicating the time step in the times data E.g. months, seconds, days
+    :type diff: str
         
     :returns: array of datetime objects representing the time of model outputs.
     """
@@ -45,6 +48,77 @@ def convert_date(times, start):
         arr_times.append(arr_new.datetime)
 
     return arr_times
+
+def convert_date_hours(times, start):
+    """
+    This function converts model output time in seconds to datetime objects.
+    
+    :arg times: array of seconds since the start date of a simulation. From time_counter in model output.
+    :type times: int
+    
+    :arg start: string containing the start date of the simulation in format '01-Nov-2006'
+    :type start: str
+
+    :arg diff: string indicating the time step in the times data E.g. months, seconds, days
+    :type diff: str
+        
+    :returns: array of datetime objects representing the time of model outputs.
+    """
+    import arrow
+
+    arr_times=[]
+    for ii in range(0,len(times)):
+        arr_start =arrow.Arrow.strptime(start,'%d-%b-%Y')
+        arr_new=arr_start.replace(hours=times[ii])
+        arr_times.append(arr_new.datetime)
+
+    return arr_times
+
+def get_CGRF_weather(start,end,grid):
+    """ 
+    Returns the CGRF weather between the dates start and end at the grid point defined in grid. 
+
+    :arg start: string containing the start date of the CGRF collection in format '01-Nov-2006'
+    :type start: str
+
+    :arg start: string containing the end date of the CGRF collection in format '01-Nov-2006'
+    :type start: str
+
+    :arg grid: array of the CGRF grid coordinates for the point of interest eg. [244,245]
+    :arg type: arr of ints
+
+    :returns: windspeed, pressure and time array from CGRF data for the times indicated
+    """
+    u10=[]; v10=[]; pres=[]; time=[];
+    import arrow
+    st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
+    
+    CGRF_path = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
+    
+    for r in arrow.Arrow.range('day', st_ar, end_ar):
+        #u
+        strU='u10_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+        fU=NC.Dataset(CGRF_path+strU)
+        var=fU.variables['u_wind'][:,grid[0],grid[1]]; u10.extend(var[:])
+        
+        #time
+        tim=fU.variables['time_counter']; time.extend(tim[:] + (r.day-st_ar.day)*24)
+        times =convert_date_hours(time,start)
+        
+        #v
+        strV='v10_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+        fV=NC.Dataset(CGRF_path+strV)
+        var=fV.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])
+        
+        #pressure
+        strP='slp_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+        fP=NC.Dataset(CGRF_path+strP)
+        var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
+        
+        u10s=np.array(u10); v10s=np.array(v10); press=np.array(pres)
+        windspeed=np.sqrt(u10s**2+v10s**2)
+    return windspeed, press, times
 
 def combine_data(data_list):
     """
