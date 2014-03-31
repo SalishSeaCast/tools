@@ -23,6 +23,10 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook examines the storm surge simulations when tidal forcing at Johnstone Strait is included.  
 
+* ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
+    
+    This notebook examines the storm surge for Dec 15, 2006.  
+
 * ##[spinups.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/spinups.ipynb)  
     
     A notebook for determining how long it takes for velocities to spinup after initializing with a restart files. This is useful for determing storm surge simulation start dates.   
