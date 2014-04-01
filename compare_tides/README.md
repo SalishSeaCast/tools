@@ -11,6 +11,8 @@ Descriptions below the links are from the first cell of the notebooks
     Compare harmonics from currents between measured and modelled. Measured harmonics are taken from Table 3 of Foreman et al (1995)  
 
 
+* ##[comp_wlev_harm-wNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm-wNorth.ipynb)  
+    
 * ##[comp_wlev_harm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm.ipynb)  
     
 * ##[comp_wlev_harm_compositerun.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm_compositerun.ipynb)  
@@ -35,6 +37,11 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ##[plot_current_ellipses.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_current_ellipses.ipynb)  
     
+* ##[plot_foreman_thalweg-withNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg-withNorth.ipynb)  
+    
+    For results including the Northern Boundary,  
+    plot the Foreman et al (1995) model results against our model results, along a thalweg (the thalweg is defined and plotted by Nancy in computer_thalweg.ipynb)  
+
 * ##[plot_foreman_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg.ipynb)  
     
     Plot the Foreman et al (1995) model results against our model results, along a thalweg (the thalweg is defined and plotted by Nancy in computer_thalweg.ipynb)  
