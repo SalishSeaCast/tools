@@ -156,17 +156,19 @@ def get_netcdf_amp_phase_data_40d(runname):
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
-def get_netcdf_amp_phase_data(runname):
+def get_netcdf_amp_phase_data(runname,resultsloc):
     """
     Calculate amplitude and phase from the results of a particular run of the Salish Sea model
     e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
 
     :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
     :type runname: str
+    :arg resultsloc: directory of results files
+    :type resultsloc: str
 
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
     """
-    harmT = NC.Dataset('/data/dlatorne/MEOPAR/SalishSea/results/'+runname+'/Tidal_Harmonics_eta.nc','r')
+    harmT = NC.Dataset(resultsloc+runname+'/Tidal_Harmonics_eta.nc','r')
      #get imaginary and real components
     mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
     mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
