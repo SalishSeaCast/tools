@@ -465,8 +465,8 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     plt.figure()
     plt.subplot(1,2,1,aspect='equal')
     plt.plot(Am,Ao,'.')
-    plt.plot([0,1],[0,1],'r')
-    plt.axis([0,1,0,1])
+    plt.plot([0,1.2],[0,1.2],'r')
+    plt.axis([0,1.2,0,1.2])
     plt.xlabel('Modelled amplitude [m]')
     plt.ylabel('Measured amplitude [m]')
     plt.title(constflag)
@@ -882,8 +882,8 @@ def get_composite_harms(runname,loc):
     mod_K1_eta_imag1 = 0.0
 
     for runnum in range(0,len(runname)):
-        harmT = NC.Dataset('/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
-#        print '/ocean/dlatorne/MEOPAR/SalishSea/results/'+runname[runnum]+'/Tidal_Harmonics_eta.nc'
+        harmT = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
+        print loc+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
