@@ -117,7 +117,8 @@ def test_show_variable_attrs(capsys, dataset):
         "float64 foo(x)\n"
         "    units: m\n"
         "unlimited dimensions: \n"
-        "current shape = (42,)\n\n"
+        "current shape = (42,)\n"
+        "filling on, default _FillValue of 9.96920996839e+36 used\n\n"
     )
 
 
@@ -129,7 +130,7 @@ def test_show_variable_attrs_order(capsys, dataset):
     dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variable_attrs(dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[6] == 'float64 bar(x)'
+    assert out.split('\n')[7] == 'float64 bar(x)'
 
 
 def test_show_variable_attrs_spec_var(capsys, dataset):
@@ -146,7 +147,8 @@ def test_show_variable_attrs_spec_var(capsys, dataset):
         "float64 foo(x)\n"
         "    units: m\n"
         "unlimited dimensions: \n"
-        "current shape = (42,)\n\n"
+        "current shape = (42,)\n"
+        "filling on, default _FillValue of 9.96920996839e+36 used\n\n"
     )
 
 
@@ -158,7 +160,7 @@ def test_show_variable_attrs_spec_var_order(capsys, dataset):
     dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variable_attrs(dataset, 'foo', 'bar')
     out, err = capsys.readouterr()
-    assert out.split('\n')[6] == 'float64 bar(x)'
+    assert out.split('\n')[7] == 'float64 bar(x)'
 
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
