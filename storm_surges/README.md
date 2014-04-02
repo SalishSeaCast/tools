@@ -17,15 +17,27 @@ Descriptions below the links are from the first cell of the notebooks
       
     4. Weather only but no pressure. No SSH forcing. Just winds. (nopressure) (crashed)  
       
+    5. No stratifictation but accidentally left rivers on. Also used nu=20. (no_strat) (crashed)  
+      
     These simulations were run with nu=50 and  initial T+S from Oct 25 restart  
+
+* ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
+    
+    This notebook examines the storm surge for Dec 15, 2006.  
 
 * ##[northForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/northForcing.ipynb)  
     
     This notebook examines the storm surge simulations when tidal forcing at Johnstone Strait is included.  
 
-* ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
+* ##[SandHeadsWinds.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/SandHeadsWinds.ipynb)  
     
-    This notebook examines the storm surge for Dec 15, 2006.  
+    **Sand Heads Winds**  
+      
+    This notebook demonstrates how to read the file of historical wind data  
+    from the Sand Heads weather station that is maintained in the SOG-forcing  
+    repo into a data structure of NumPy arrays.  
+      
+    The code is based on code in the `bloomcast.wind` module in the [SoG-bloomcast project](https://bitbucket.org/douglatornell/sog-bloomcast).  
 
 * ##[spinups.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/spinups.ipynb)  
     
