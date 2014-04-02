@@ -10,7 +10,9 @@ Descriptions below the links are from the first cell of the notebooks
     
     Make tidal boundary conditions for the Northern boundary in Johnstone Strait. Use data from Webtide and from Thomson & Huggett (1980) to make netcdf input files.  
       
-    Edited by Nancy in March, 2013. Modified measured grid rotation ($129^\circ$ instead of $-51^\circ$) and error in S2 elevation calculation.  
+    Edited by Nancy in March, 2014. Modified measured grid rotation ($129^\circ$ instead of $-51^\circ$) and error in S2 elevation calculation.  
+      
+    Edited by Susan in April, 2014.  Modified grid rotation to rotate versus across grid rather than up grid.  Corrects phases of currents.  
 
 * ##[johnstone_tides_contd.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Tides/johnstone_tides_contd.ipynb)  
     
