@@ -17,16 +17,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import datetime
+from math import radians, sin, cos, asin, sqrt, pi, exp
 
+import matplotlib
+import matplotlib.pyplot as plt
 import netCDF4 as NC
 import numpy as np
-import datetime
-import requests
 import pandas as pd
 import pytz
-from math import radians, sin, cos, asin, sqrt, pi, exp
-import matplotlib.pyplot as plt
-import matplotlib
+import requests
+
+from . import viz_tools
 
 
 def get_all_perm_dfo_wlev(start_date,end_date):
@@ -151,33 +153,40 @@ def get_amp_phase_data(runname,loc):
     #this step just gets the harmonics for the one specified run
     else:
        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc+runname)
-    
+
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
-def plot_amp_phase_maps(runname,loc,grid):
+
+def plot_amp_phase_maps(runname, loc, grid):
     """
     Plot the amplitude and phase results for a model run
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :arg runname: name of the model run to process;
+                  e.g. runname = '50s_15Sep-21Sep',
+                  or if you'd like the harmonics of more than one run
+                  to be combined into one picture, give a list of names;
+                   e.g. '40d','41d50d','51d60d'
     :type runname: str
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg loc: location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
-    :arg grid: netcdf file of grid data e.g. grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
+    :arg grid: netcdf file of grid data
     :type grid: netcdf dataset
 
     :returns: plots the amplitude and phase
     """
-    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname,loc)
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(
+        runname, loc)
     bathy, X, Y = get_bathy_data(grid)
     titname = ''.join(runname)
-    plot_amp_map(X,Y,grid,mod_M2_amp,titname,True,'M2')
-    plot_pha_map(X,Y,grid,mod_M2_pha,titname,True,'M2')
+    plot_amp_map(X, Y, grid, mod_M2_amp, titname, True, 'M2')
+    plot_pha_map(X, Y, grid, mod_M2_pha, titname, True, 'M2')
     if runname != 'concepts110' and runname != 'jpp72':
-        plot_amp_map(X,Y,grid,mod_K1_amp,titname,True,'K1')
-        plot_pha_map(X,Y,grid,mod_K1_pha,titname,True,'K1')
+        plot_amp_map(X, Y, grid, mod_K1_amp, titname, True, 'K1')
+        plot_pha_map(X, Y, grid, mod_K1_pha, titname, True, 'K1')
 
 
 def get_netcdf_amp_phase_data(loc):
@@ -344,7 +353,8 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
             j=[]
     return i, j
 
-def plot_amp_map(X,Y,grid,amp,titstr,savestr,constflag):
+
+def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     """
     Plot the amplitude of one constituent throughout the whole domain
     e.g. plot_amp_map(X,Y,grid,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
@@ -373,25 +383,33 @@ def plot_amp_map(X,Y,grid,amp,titstr,savestr,constflag):
     :returns: plot of amplitude of constituent
     """
     #make 0 values NaNs so they plot blank
-    amp = np.ma.masked_equal(amp,0)
+    amp = np.ma.masked_equal(amp, 0)
     #range of amplitudes to plot
-    plt.figure(figsize=(9,9))
-    #add a coastline 
+    plt.subplots(1, 1, figsize=(9, 9))
+    ax = plt.gca()
+    viz_tools.set_aspect(ax, coords='map', lats=Y)
+    # Plot the coastline and amplitude contours
     plot_coastline(grid)
-    #add the amplitude contours
-    v2 = np.arange(0,1.30,0.10)
-    CS = plt.contourf(X,Y,amp,v2,aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
-    CS2 = plt.contour(X,Y,amp,v2,colors='black')
+    v2 = np.arange(0, 1.30, 0.10)
+    CS = plt.contourf(X, Y, amp, v2)
+    CS2 = plt.contour(X, Y, amp, v2, colors='black')
+    # Add a colour bar
     cbar = plt.colorbar(CS)
     cbar.add_lines(CS2)
-    cbar.ax.set_ylabel('amplitude [m]')
+    cbar.set_label('amplitude [m]')
+    # Set axes labels and title
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
-    plt.title(constflag+' amplitude (m) for '+titstr)
+    plt.title(
+        '{constflag} amplitude (m) for {titstr}'
+        .format(constflag=constflag, titstr=titstr))
     if savestr:
-        plt.savefig(constflag+'_amp_'+titstr+'.pdf')
+        plt.savefig(
+            '{constflag}_amp_{titstr}.pdf'
+            .format(constflag=constflag, titstr=titstr))
 
-def plot_pha_map(X,Y,grid,pha,titstr,savestr,constflag):
+
+def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
     """
     Plot the phase of one constituent throughout the whole domain
     e.g. plot_pha_map(X,Y,grid,mod_M2_pha,titstr,savestr,'M2')
@@ -417,24 +435,30 @@ def plot_pha_map(X,Y,grid,pha,titstr,savestr,constflag):
     :returns: plot of phase of constituent
     """
     #make 0 values NaNs so they plot blank
-    pha = np.ma.masked_equal(pha,0)
-    plt.figure(figsize=(9,9))
-    #add a coastline 
+    pha = np.ma.masked_equal(pha, 0)
+    plt.figure(figsize=(9, 9))
+    ax = plt.gca()
+    viz_tools.set_aspect(ax, coords='map', lats=Y)
+    # Plot the coastline and the phase contours
     plot_coastline(grid)
-    #plot modelled M2 phase
-    v2 = np.arange(-180, 202.5,22.5)
-    CS = plt.contourf(X,Y,pha,v2,cmap='gist_rainbow',aspect=(1 / np.cos(np.median(X) * np.pi / 180)))
-    matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
-    CS2 = plt.contour(X,Y,pha,v2,colors='black')
+    v2 = np.arange(-180, 202.5, 22.5)
+    CS = plt.contourf(X, Y, pha, v2, cmap='gist_rainbow')
+    CS2 = plt.contour(X, Y, pha, v2, colors='black', linestyles='solid')
+    # Add a colour bar
     cbar = plt.colorbar(CS)
     cbar.add_lines(CS2)
-    cbar.ax.set_ylabel('phase [deg]')
+    cbar.set_label('phase [deg]')
+    # Set axes labels and title
     plt.xlabel('longitude (deg)')
     plt.ylabel('latitude (deg)')
-    plt.title(constflag+' phase (deg) for '+titstr)
-    limits = plt.axis()
+    plt.title(
+        '{constflag} phase (deg) for {titstr}'
+        .format(constflag=constflag, titstr=titstr))
     if savestr:
-        plt.savefig(constflag+'_pha_'+titstr+'.pdf')
+        plt.savefig(
+            '{constflag}_pha_{titstr}.pdf'
+            .format(constflag=constflag, titstr=titstr))
+
 
 def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
     """
@@ -709,7 +733,7 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     :arg grid: netcdf dataset of model grid
     :type grid: netcdf dataset
 
-    :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure 
+    :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure
     :type args: str
 
     :returns: plots transect of M2 and K1 water level constituent
@@ -790,7 +814,7 @@ def plot_wlev_transect_map(grid,statnums):
     """
 
     plt.figure(figsize=(9,9))
-    #add a coastline 
+    #add a coastline
     plot_coastline(grid)
     #get the measured data
     meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
@@ -805,7 +829,7 @@ def plot_wlev_transect_map(grid,statnums):
 
 def plot_coastline(grid):
     """
-    Plots a map of the coastline 
+    Plots a map of the coastline
 
     :arg grid: netcdf file of bathymetry
     :type grid: netcdf dataset
@@ -826,7 +850,7 @@ def get_composite_harms2():
     50s_26-29Sep
     50s_30Sep-6Oct
     50s_7-13Oct
-    
+
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
 
@@ -868,7 +892,7 @@ def get_composite_harms(runname,loc):
 
     :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
-    
+
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
     runlength = np.zeros((len(runname),1))
@@ -932,11 +956,11 @@ def get_current_harms(runname,loc):
     mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag,mod_M2_v_real))
 
     return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
-    
+
 
 
 def get_run_length(runname,loc):
-    """ 
+    """
     Get the length of the run in days by reading in some data (in a rough way.... :S) from the namelist file
 
     :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
@@ -950,7 +974,7 @@ def get_run_length(runname,loc):
     resfile = loc+runname+'/namelist'
     with open(resfile) as f:
         content = f.readlines()
-    
+
     for t in range(0,len(content)):
         if content[t][3:10] == 'rn_rdt ':
             timestep = int(content[t][19:21])
@@ -958,14 +982,14 @@ def get_run_length(runname,loc):
             start_time = int(content[t][17:23])
             end_time = int(content[t+1][17:23])
 
-    #I am fudging this really. The positions in the 'namelist' file could easily change from run to run. 
-    #Check this here: 
+    #I am fudging this really. The positions in the 'namelist' file could easily change from run to run.
+    #Check this here:
     if not 'timestep' in locals():
         import sys
         sys.exit('Uh oh! Looks like the "namelist" file has changed for run '+runname+'. You will need to open "namelist" in your results folder, and check the lines that have the timestep, start time and end time against the line matching being done in tidetools.get_run_length. Without this, I cant calculate the time period that the harmonics were calculated over :( Love python')
 
     run_length = (end_time-start_time)*timestep/60.0/60.0/24.0 #[days]
-    
+
     return run_length
 
 
@@ -977,52 +1001,52 @@ def ap2ep(Au, PHIu, Av, PHIv):
 
     # Convert tidal amplitude and phase lag (ap-) parameters into tidal ellipse
     # (ep-) parameters. Please refer to ep2app for its inverse function.
-    # 
+    #
     # Usage:
     #
     # [SEMA,  ECC, INC, PHA]=ap2ep(Au, PHIu, Av, PHIv)
     #
     # where:
     #
-    #     Au, PHIu, Av, PHIv are the amplitudes and phase lags (in degrees) of 
-    #     u- and v- tidal current components. They can be vectors or 
+    #     Au, PHIu, Av, PHIv are the amplitudes and phase lags (in degrees) of
+    #     u- and v- tidal current components. They can be vectors or
     #     matrices or multidimensional arrays.
-    #     
+    #
     #     SEMA: Semi-major axes, or the maximum speed;
-    #     ECC:  Eccentricity, the ratio of semi-minor axis over 
+    #     ECC:  Eccentricity, the ratio of semi-minor axis over
     #           the semi-major axis; its negative value indicates that the ellipse
-    #           is traversed in clockwise direction.           
-    #     INC:  Inclination, the angles (in degrees) between the semi-major 
-    #           axes and u-axis.                        
-    #     PHA:  Phase angles, the time (in angles and in degrees) when the 
-    #           tidal currents reach their maximum speeds,  (i.e. 
+    #           is traversed in clockwise direction.
+    #     INC:  Inclination, the angles (in degrees) between the semi-major
+    #           axes and u-axis.
+    #     PHA:  Phase angles, the time (in angles and in degrees) when the
+    #           tidal currents reach their maximum speeds,  (i.e.
     #           PHA=omega*tmax).
-    #          
-    #           These four ep-parameters will have the same dimensionality 
-    #           (i.e., vectors, or matrices) as the input ap-parameters. 
+    #
+    #           These four ep-parameters will have the same dimensionality
+    #           (i.e., vectors, or matrices) as the input ap-parameters.
     #
     #     w:    Optional. If it is requested, it will be output as matrices
-    #           whose rows allow for plotting ellipses and whose columns are  
+    #           whose rows allow for plotting ellipses and whose columns are
     #           for different ellipses corresponding columnwise to SEMA. For
-    #           example, plot(real(w(1,:)), imag(w(1,:))) will let you see 
+    #           example, plot(real(w(1,:)), imag(w(1,:))) will let you see
     #           the first ellipse. You may need to use squeeze function when
-    #           w is a more than two dimensional array. See example.m. 
+    #           w is a more than two dimensional array. See example.m.
     #
     # Document:   tidal_ellipse.ps
-    #   
-    # Revisions: May  2002, by Zhigang Xu,  --- adopting Foreman's northern 
+    #
+    # Revisions: May  2002, by Zhigang Xu,  --- adopting Foreman's northern
     # semi major axis convention.
-    # 
+    #
     # For a given ellipse, its semi-major axis is undetermined by 180. If we borrow
-    # Foreman's terminology to call a semi major axis whose direction lies in a range of 
-    # [0, 180) as the northern semi-major axis and otherwise as a southern semi major 
-    # axis, one has freedom to pick up either northern or southern one as the semi major 
-    # axis without affecting anything else. Foreman (1977) resolves the ambiguity by 
-    # always taking the northern one as the semi-major axis. This revision is made to 
-    # adopt Foreman's convention. Note the definition of the phase, PHA, is still 
-    # defined as the angle between the initial current vector, but when converted into 
-    # the maximum current time, it may not give the time when the maximum current first 
-    # happens; it may give the second time that the current reaches the maximum 
+    # Foreman's terminology to call a semi major axis whose direction lies in a range of
+    # [0, 180) as the northern semi-major axis and otherwise as a southern semi major
+    # axis, one has freedom to pick up either northern or southern one as the semi major
+    # axis without affecting anything else. Foreman (1977) resolves the ambiguity by
+    # always taking the northern one as the semi-major axis. This revision is made to
+    # adopt Foreman's convention. Note the definition of the phase, PHA, is still
+    # defined as the angle between the initial current vector, but when converted into
+    # the maximum current time, it may not give the time when the maximum current first
+    # happens; it may give the second time that the current reaches the maximum
     # (obviously, the 1st and 2nd maximum current times are half tidal period apart)
     # depending on where the initial current vector happen to be and its rotating sense.
     #
@@ -1046,7 +1070,7 @@ def ap2ep(Au, PHIu, Av, PHIv):
     Wm = abs(wm)
     THETAp = cmath.phase(wp)
     THETAm = cmath.phase(wm)
-   
+
     # calculate ep-parameters (ellipse parameters)
     SEMA = Wp+Wm             # Semi  Major Axis, or maximum speed
     SEMI = Wp-Wm               # Semin Minor Axis, or minimum speed
@@ -1057,10 +1081,10 @@ def ap2ep(Au, PHIu, Av, PHIv):
 
     # convert to degrees for output
     PHA = PHA/pi*180
-    INC = INC/pi*180       
+    INC = INC/pi*180
     THETAp = THETAp/pi*180
     THETAm = THETAm/pi*180
-    
+
     #map the resultant angles to the range of [0, 360].
     #PHA=mod(PHA+360, 360)
     PHA=(PHA+360)%360
@@ -1068,9 +1092,9 @@ def ap2ep(Au, PHIu, Av, PHIv):
     INC=(INC+360)% 360
 
     #Mar. 2, 2002 Revision by Zhigang Xu    (REVISION_1)
-    #Change the southern major axes to northern major axes to conform the tidal 
-    #analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents 
-    #Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm) 
+    #Change the southern major axes to northern major axes to conform the tidal
+    #analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents
+    #Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm)
     k = float(INC)/180
     INC = INC-k*180
     PHA = PHA+k*180
@@ -1080,64 +1104,28 @@ def ap2ep(Au, PHIu, Av, PHIv):
 
     #Authorship Copyright:
     #
-    #    The author retains the copyright of this program, while  you are welcome 
+    #    The author retains the copyright of this program, while  you are welcome
     # to use and distribute it as long as you credit the author properly and respect
-    # the program name itself. Particularly, you are expected to retain the original 
-    # author's name in this original version or any of its modified version that 
-    # you might make. You are also expected not to essentially change the name of 
-    # the programs except for adding possible extension for your own version you 
-    # might create, e.g. ap2ep_xx is acceptable.  Any suggestions are welcome and 
+    # the program name itself. Particularly, you are expected to retain the original
+    # author's name in this original version or any of its modified version that
+    # you might make. You are also expected not to essentially change the name of
+    # the programs except for adding possible extension for your own version you
+    # might create, e.g. ap2ep_xx is acceptable.  Any suggestions are welcome and
     # enjoy my program(s)!
     #
     #
     #Author Info:
     #_______________________________________________________________________
-    #  Zhigang Xu, Ph.D.                            
+    #  Zhigang Xu, Ph.D.
     #  (pronounced as Tsi Gahng Hsu)
     #  Research Scientist
-    #  Coastal Circulation                   
-    #  Bedford Institute of Oceanography     
+    #  Coastal Circulation
+    #  Bedford Institute of Oceanography
     #  1 Challenge Dr.
-    #  P.O. Box 1006                    Phone  (902) 426-2307 (o)       
-    #  Dartmouth, Nova Scotia           Fax    (902) 426-7827            
-    #  CANADA B2Y 4A2                   email xuz@dfo-mpo.gc.ca    
+    #  P.O. Box 1006                    Phone  (902) 426-2307 (o)
+    #  Dartmouth, Nova Scotia           Fax    (902) 426-7827
+    #  CANADA B2Y 4A2                   email xuz@dfo-mpo.gc.ca
     #_______________________________________________________________________
     #
-    # Release Date: Nov. 2000, Revised on May. 2002 to adopt Foreman's northern semi 
+    # Release Date: Nov. 2000, Revised on May. 2002 to adopt Foreman's northern semi
     # major axis convention.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
