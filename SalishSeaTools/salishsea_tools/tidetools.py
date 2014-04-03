@@ -384,26 +384,25 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     #make 0 values NaNs so they plot blank
     amp = np.ma.masked_equal(amp, 0)
     #range of amplitudes to plot
-    plt.subplots(1, 1, figsize=(9, 9))
-    ax = plt.gca()
+    fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and amplitude contours
     viz_tools.plot_coastline(ax, grid, coords='map')
     v2 = np.arange(0, 1.30, 0.10)
-    CS = plt.contourf(X, Y, amp, v2)
-    CS2 = plt.contour(X, Y, amp, v2, colors='black')
+    CS = ax.contourf(X, Y, amp, v2)
+    CS2 = ax.contour(X, Y, amp, v2, colors='black')
     # Add a colour bar
-    cbar = plt.colorbar(CS)
+    cbar = fig.colorbar(CS)
     cbar.add_lines(CS2)
     cbar.set_label('amplitude [m]')
     # Set axes labels and title
-    plt.xlabel('longitude (deg)')
-    plt.ylabel('latitude (deg)')
-    plt.title(
+    ax.set_label('longitude (deg)')
+    ax.set_label('latitude (deg)')
+    ax.set_title(
         '{constflag} amplitude (m) for {titstr}'
         .format(constflag=constflag, titstr=titstr))
     if savestr:
-        plt.savefig(
+        fig.savefig(
             '{constflag}_amp_{titstr}.pdf'
             .format(constflag=constflag, titstr=titstr))
 
@@ -435,26 +434,25 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
     """
     #make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha, 0)
-    plt.figure(figsize=(9, 9))
-    ax = plt.gca()
+    fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and the phase contours
     viz_tools.plot_coastline(ax, grid, coords='map')
     v2 = np.arange(-180, 202.5, 22.5)
-    CS = plt.contourf(X, Y, pha, v2, cmap='gist_rainbow')
-    CS2 = plt.contour(X, Y, pha, v2, colors='black', linestyles='solid')
+    CS = ax.contourf(X, Y, pha, v2, cmap='gist_rainbow')
+    CS2 = ax.contour(X, Y, pha, v2, colors='black', linestyles='solid')
     # Add a colour bar
-    cbar = plt.colorbar(CS)
+    cbar = fig.colorbar(CS)
     cbar.add_lines(CS2)
     cbar.set_label('phase [deg]')
     # Set axes labels and title
-    plt.xlabel('longitude (deg)')
-    plt.ylabel('latitude (deg)')
-    plt.title(
+    ax.set_label('longitude (deg)')
+    ax.set_label('latitude (deg)')
+    ax.set_title(
         '{constflag} phase (deg) for {titstr}'
         .format(constflag=constflag, titstr=titstr))
     if savestr:
-        plt.savefig(
+        fig.savefig(
             '{constflag}_pha_{titstr}.pdf'
             .format(constflag=constflag, titstr=titstr))
 
