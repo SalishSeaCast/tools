@@ -1,21 +1,20 @@
-"""A collection of tools for dealing with tidal results for the Salish Sea Model
-"""
+# Copyright 2013-2014 The Salish Sea MEOPAR contributors
+# and The University of British Columbia
 
-"""
-Copyright 2013-2014 The Salish Sea MEOPAR contributors
-and The University of British Columbia
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+#    http://www.apache.org/licenses/LICENSE-2.0
 
-   http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+"""A collection of tools for dealing with tidal results from the
+Salish Sea NEMO model
 """
 import datetime
 from math import radians, sin, cos, asin, sqrt, pi, exp
@@ -389,7 +388,7 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     ax = plt.gca()
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and amplitude contours
-    plot_coastline(grid)
+    viz_tools.plot_coastline(ax, grid, coords='map')
     v2 = np.arange(0, 1.30, 0.10)
     CS = plt.contourf(X, Y, amp, v2)
     CS2 = plt.contour(X, Y, amp, v2, colors='black')
@@ -440,7 +439,7 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
     ax = plt.gca()
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and the phase contours
-    plot_coastline(grid)
+    viz_tools.plot_coastline(ax, grid, coords='map')
     v2 = np.arange(-180, 202.5, 22.5)
     CS = plt.contourf(X, Y, pha, v2, cmap='gist_rainbow')
     CS2 = plt.contour(X, Y, pha, v2, colors='black', linestyles='solid')
@@ -800,9 +799,11 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     ax2.set_title('Line through stations '+str(statnums))
     fig2.savefig('meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
 
-def plot_wlev_transect_map(grid,statnums):
+
+def plot_wlev_transect_map(grid, statnums):
     """
-    Plot a map of the coastline and the transect of water level stations, which are plotted in plot_wlev_M2_const_transect
+    Plot a map of the coastline and the transect of water level stations,
+    which are plotted in plot_wlev_M2_const_transect
 
     :arg grid: bathymetry file
     :type grid: netcdf dataset
@@ -812,35 +813,36 @@ def plot_wlev_transect_map(grid,statnums):
 
     :returns: plot of water level stations and coastline
     """
-
-    plt.figure(figsize=(9,9))
+    plt.figure(figsize=(9, 9))
+    ax = plt.gca()
     #add a coastline
-    plot_coastline(grid)
+    viz_tools.plot_coastline(ax, grid, coords='map')
     #get the measured data
-    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
+    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv', sep=';')
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelons = np.array(-meas_wl_harm.Lon[statnums])
     #plot the transext line
-    plt.plot(sitelons,sitelats,'m-o')
+    plt.plot(sitelons, sitelats, 'm-o')
     plt.title('Location of Select Stations')
     plt.savefig('meas_mod_wlev_transect_map.pdf')
+
 
 def plot_coastline(grid):
     """
     Plots a map of the coastline
+
+    **DEPRECATED:** Use :py:func:`salishsea_tools.viz_tools.plot_coastline`
+    instead.
 
     :arg grid: netcdf file of bathymetry
     :type grid: netcdf dataset
 
     :returns: coastline map
     """
-    v1 = np.arange(0, 1, 1)
-    lats = grid.variables['nav_lat']
-    lons = grid.variables['nav_lon']
-    depths = grid.variables['Bathymetry']
-    plt.contour(lons,lats,depths,v1,colors='black')
+    viz_tools.plot_coastline(plt.gc(), grid, coords='map', color='black')
+
 
 def get_composite_harms2():
     """
