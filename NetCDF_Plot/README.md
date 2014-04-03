@@ -10,7 +10,7 @@ in the following order:
 
 * [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)
 * [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)
-* [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Surface and Depth Slices)
+* [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Surface and Depth Slices.ipynb)
 
 Also included are notebooks from initial experiments around visualization
 of NEMO results.
@@ -92,6 +92,8 @@ Descriptions below the links are from the first cell of the notebooks
     * Reading tracer variable values from NEMO `*grid_T.nc` results files  
     * Plotting sea surface height fields at selected times  
     * Approximate land areas masks for tracer field plots  
+    * Using slices to zoom in on domain regions  
+    * Plotting contour bands and lines  
     * Plotting temperature fields at selected depths  
     * Plotting salinity fields with a logarithmic colour scale  
 
