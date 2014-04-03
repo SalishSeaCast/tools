@@ -17,13 +17,8 @@ Descriptions below the links are from the first cell of the notebooks
       
     4. Weather only but no pressure. No SSH forcing. Just winds. (nopressure) (crashed)  
       
-    5. No stratifictation but accidentally left rivers on. Also used nu=20. (no_strat) (crashed)  
       
     These simulations were run with nu=50 and  initial T+S from Oct 25 restart  
-
-* ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
-    
-    This notebook examines the storm surge for Dec 15, 2006.  
 
 * ##[northForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/northForcing.ipynb)  
     
@@ -39,6 +34,10 @@ Descriptions below the links are from the first cell of the notebooks
       
     The code is based on code in the `bloomcast.wind` module in the [SoG-bloomcast project](https://bitbucket.org/douglatornell/sog-bloomcast).  
 
+* ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
+    
+    This notebook examines the storm surge for Dec 15, 2006.  
+
 * ##[spinups.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/spinups.ipynb)  
     
     A notebook for determining how long it takes for velocities to spinup after initializing with a restart files. This is useful for determing storm surge simulation start dates.   
@@ -50,6 +49,10 @@ Descriptions below the links are from the first cell of the notebooks
     This notebook plots the weather at Point Atkinson on Nov. 15, 2006 from the Environment Canada website.   
       
     Additionally, we will look at the weather at YVR and Sandheads since it will be easy to compare with CGRF.   
+
+* ##[Tofino and Port Hardy Comparison.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Tofino and Port Hardy Comparison.ipynb)  
+    
+    This notebook compares the hourly sea surface height anomaly at Tofino and Port Hardy. We do not have a surge prediction tool at Port Hardy so this comparison will guide our decisions regarding the northern boundary condition on sea surface height.   
 
 
 ##License
