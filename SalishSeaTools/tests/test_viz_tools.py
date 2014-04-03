@@ -17,7 +17,10 @@
 """
 from __future__ import division
 
-from mock import Mock
+from mock import (
+    Mock,
+    patch,
+)
 
 import numpy as np
 import pytest
@@ -27,6 +30,55 @@ import pytest
 def viz_tools_module():
     from salishsea_tools import viz_tools
     return viz_tools
+
+
+@patch('salishsea_tools.viz_tools.nc.Dataset')
+def test_plot_coastline_defaults_bathy_file(m_dataset, viz_tools_module):
+    axes = Mock()
+    viz_tools_module.plot_coastline(axes, 'bathyfile')
+    m_dataset.assert_called_once_with('bathyfile')
+    m_dataset.close.assert_called_once()
+
+
+@patch('salishsea_tools.viz_tools.nc.Dataset')
+def test_plot_coastline_defaults_bathy_netCDF_obj(m_dataset, viz_tools_module):
+    axes, bathy = Mock(), Mock()
+    bathy.variables = {'Bathymetry': Mock()}
+    viz_tools_module.plot_coastline(axes, bathy)
+    assert not m_dataset.called
+    assert not m_dataset.close.called
+
+
+def test_plot_coastline_defaults(viz_tools_module):
+    axes, bathy = Mock(), Mock()
+    bathy.variables = {'Bathymetry': Mock()}
+    contour_lines = viz_tools_module.plot_coastline(axes, bathy)
+    axes.contour.assert_called_once_with(
+        bathy.variables['Bathymetry'], [0], colors='black')
+    assert contour_lines == axes.contour()
+
+
+def test_plot_coastline_color_arg(viz_tools_module):
+    axes, bathy = Mock(), Mock()
+    bathy.variables = {'Bathymetry': Mock()}
+    contour_lines = viz_tools_module.plot_coastline(axes, bathy, color='red')
+    axes.contour.assert_called_once_with(
+        bathy.variables['Bathymetry'], [0], colors='red')
+    assert contour_lines == axes.contour()
+
+
+def test_plot_coastline_map_coords(viz_tools_module):
+    axes, bathy = Mock(), Mock()
+    bathy.variables = {
+        'Bathymetry': Mock(),
+        'nav_lat': Mock(),
+        'nav_lon': Mock(),
+    }
+    contour_lines = viz_tools_module.plot_coastline(axes, bathy, coords='map')
+    axes.contour.assert_called_once_with(
+        bathy.variables['nav_lon'], bathy.variables['nav_lat'],
+        bathy.variables['Bathymetry'], [0], colors='black')
+    assert contour_lines == axes.contour()
 
 
 def test_set_aspect_defaults(viz_tools_module):
