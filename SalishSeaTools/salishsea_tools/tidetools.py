@@ -27,7 +27,7 @@ import pandas as pd
 import pytz
 import requests
 
-from . import viz_tools
+from salishsea_tools import viz_tools
 
 
 def get_all_perm_dfo_wlev(start_date,end_date):
@@ -165,7 +165,7 @@ def plot_amp_phase_maps(runname, loc, grid):
                   e.g. runname = '50s_15Sep-21Sep',
                   or if you'd like the harmonics of more than one run
                   to be combined into one picture, give a list of names;
-                   e.g. '40d','41d50d','51d60d'
+                  e.g. '40d','41d50d','51d60d'
     :type runname: str
 
     :arg loc: location of results folder;
