@@ -831,8 +831,10 @@ def plot_coastline(grid):
     """
     Plots a map of the coastline
 
-    **DEPRECATED:** Use :py:func:`salishsea_tools.viz_tools.plot_coastline`
-    instead.
+    .. note::
+
+        This function is deprecated.
+        Use :py:func:`viz_tools.plot_coastline` instead.
 
     :arg grid: netcdf file of bathymetry
     :type grid: netcdf dataset
