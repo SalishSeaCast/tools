@@ -31,13 +31,13 @@ from salishsea_tools import nc_tools
 def show_global_attrs(dataset):
     """Print the global attributes of the netCDF dataset.
 
-    :arg dataset: netcdf dataset object
-    :type dataset: :py:class:`netCDF4.Dataset`
-
     .. note::
 
         This function is deprecated.
         Use :py:func:`nc_tools.show_dataset_attrs` instead.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
     """
     nc_tools.show_dataset_attrs(dataset)
 
@@ -45,13 +45,13 @@ def show_global_attrs(dataset):
 def show_dimensions(dataset):
     """Print the dimensions of the netCDF dataset.
 
-    :arg dataset: netcdf dataset object
-    :type dataset: :py:class:`netCDF4.Dataset`
-
     .. note::
 
         This function is deprecated.
         Use :py:func:`nc_tools.show_dimensions` instead.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
     """
     nc_tools.show_dimensions(dataset)
 
@@ -59,13 +59,13 @@ def show_dimensions(dataset):
 def show_variables(dataset):
     """Print the variable names in the netCDF dataset as a list.
 
-    :arg dataset: netcdf dataset object
-    :type dataset: :py:class:`netCDF4.Dataset`
-
     .. note::
 
         This function is deprecated.
         Use :py:func:`nc_tools.show_variables` instead.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
     """
     nc_tools.show_variables(dataset)
 
