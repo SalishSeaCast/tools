@@ -17,26 +17,12 @@
 """
 from __future__ import division
 
-import os
-
 from mock import (
     Mock,
     patch,
 )
-import netCDF4 as nc
 import numpy as np
 import pytest
-
-
-@pytest.fixture()
-def nc_dataset(request, array):
-    dataset = nc.Dataset('foo', 'w')
-
-    def teardown():
-        dataset.close()
-        os.remove('foo')
-    request.addfinalizer(teardown)
-    return dataset
 
 
 @pytest.fixture()

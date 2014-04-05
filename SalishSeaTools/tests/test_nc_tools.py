@@ -17,100 +17,87 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import os
 from mock import patch
-import netCDF4 as nc
-import pytest
+
 from salishsea_tools import nc_tools
 
 
-@pytest.fixture()
-def dataset(request):
-    dataset = nc.Dataset('foo', 'w')
-
-    def teardown():
-        dataset.close()
-        os.remove('foo')
-    request.addfinalizer(teardown)
-    return dataset
-
-
-def test_show_dataset_attrs_file_format(capsys, dataset):
+def test_show_dataset_attrs_file_format(capsys, nc_dataset):
     """show_dataset_attrs prints file_format attr
     """
-    nc_tools.show_dataset_attrs(dataset)
+    nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[0] == 'file format: NETCDF4'
 
 
-def test_show_dataset_attrs_1_attr(capsys, dataset):
+def test_show_dataset_attrs_1_attr(capsys, nc_dataset):
     """show_dataset_attrs prints attr name and value
     """
-    dataset.Conventions = 'CF-1.6'
-    nc_tools.show_dataset_attrs(dataset)
+    nc_dataset.Conventions = 'CF-1.6'
+    nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[1] == 'Conventions: CF-1.6'
 
 
-def test_show_dataset_attrs_order(capsys, dataset):
+def test_show_dataset_attrs_order(capsys, nc_dataset):
     """show_dataset_attrs prints attr names & values in order they were set
     """
-    dataset.Conventions = 'CF-1.6'
-    dataset.title = 'Test Dataset'
-    nc_tools.show_dataset_attrs(dataset)
+    nc_dataset.Conventions = 'CF-1.6'
+    nc_dataset.title = 'Test Dataset'
+    nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[2] == 'title: Test Dataset'
 
 
-def test_show_dimensions(capsys, dataset):
+def test_show_dimensions(capsys, nc_dataset):
     """show_dimensions prints dimension string representation
     """
-    dataset.createDimension('foo', 42)
-    nc_tools.show_dimensions(dataset)
+    nc_dataset.createDimension('foo', 42)
+    nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[0] == (
         "<type 'netCDF4.Dimension'>: name = 'foo', size = 42")
 
 
-def test_show_dimensions_order(capsys, dataset):
+def test_show_dimensions_order(capsys, nc_dataset):
     """show_dimensions prints dimension in order they were defined
     """
-    dataset.createDimension('foo', 42)
-    dataset.createDimension('bar', 24)
-    nc_tools.show_dimensions(dataset)
+    nc_dataset.createDimension('foo', 42)
+    nc_dataset.createDimension('bar', 24)
+    nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[2] == (
         "<type 'netCDF4.Dimension'>: name = 'bar', size = 24")
 
 
-def test_show_variables(capsys, dataset):
+def test_show_variables(capsys, nc_dataset):
     """show_variables prints list of variable names
     """
-    dataset.createDimension('x', 42)
-    dataset.createVariable('foo', float, ('x',))
-    nc_tools.show_variables(dataset)
+    nc_dataset.createDimension('x', 42)
+    nc_dataset.createVariable('foo', float, ('x',))
+    nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[0] == "['foo']"
 
 
-def test_show_variables_order(capsys, dataset):
+def test_show_variables_order(capsys, nc_dataset):
     """show_variables prints list of variable names in order they were defined
     """
-    dataset.createDimension('x', 42)
-    dataset.createVariable('foo', float, ('x',))
-    dataset.createVariable('bar', float, ('x',))
-    nc_tools.show_variables(dataset)
+    nc_dataset.createDimension('x', 42)
+    nc_dataset.createVariable('foo', float, ('x',))
+    nc_dataset.createVariable('bar', float, ('x',))
+    nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[0] == "['foo', 'bar']"
 
 
-def test_show_variable_attrs(capsys, dataset):
+def test_show_variable_attrs(capsys, nc_dataset):
     """show_variable_attrs prints variable string representation
     """
-    dataset.createDimension('x', 42)
-    foo = dataset.createVariable('foo', float, ('x',))
+    nc_dataset.createDimension('x', 42)
+    foo = nc_dataset.createVariable('foo', float, ('x',))
     foo.units = 'm'
-    nc_tools.show_variable_attrs(dataset)
+    nc_tools.show_variable_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out == (
         "<type 'netCDF4.Variable'>\n"
@@ -122,25 +109,25 @@ def test_show_variable_attrs(capsys, dataset):
     )
 
 
-def test_show_variable_attrs_order(capsys, dataset):
+def test_show_variable_attrs_order(capsys, nc_dataset):
     """show_variable_attrs prints variables in order they were defined
     """
-    dataset.createDimension('x', 42)
-    dataset.createVariable('foo', float, ('x',))
-    dataset.createVariable('bar', float, ('x',))
-    nc_tools.show_variable_attrs(dataset)
+    nc_dataset.createDimension('x', 42)
+    nc_dataset.createVariable('foo', float, ('x',))
+    nc_dataset.createVariable('bar', float, ('x',))
+    nc_tools.show_variable_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out.split('\n')[7] == 'float64 bar(x)'
 
 
-def test_show_variable_attrs_spec_var(capsys, dataset):
+def test_show_variable_attrs_spec_var(capsys, nc_dataset):
     """show_variable_attrs prints string repr of specified variable
     """
-    dataset.createDimension('x', 42)
-    foo = dataset.createVariable('foo', float, ('x',))
+    nc_dataset.createDimension('x', 42)
+    foo = nc_dataset.createVariable('foo', float, ('x',))
     foo.units = 'm'
-    dataset.createVariable('bar', float, ('x',))
-    nc_tools.show_variable_attrs(dataset, 'foo')
+    nc_dataset.createVariable('bar', float, ('x',))
+    nc_tools.show_variable_attrs(nc_dataset, 'foo')
     out, err = capsys.readouterr()
     assert out == (
         "<type 'netCDF4.Variable'>\n"
@@ -152,34 +139,34 @@ def test_show_variable_attrs_spec_var(capsys, dataset):
     )
 
 
-def test_show_variable_attrs_spec_var_order(capsys, dataset):
+def test_show_variable_attrs_spec_var_order(capsys, nc_dataset):
     """show_variable_attrs prints specified vars in order they were defined
     """
-    dataset.createDimension('x', 42)
-    dataset.createVariable('foo', float, ('x',))
-    dataset.createVariable('bar', float, ('x',))
-    nc_tools.show_variable_attrs(dataset, 'foo', 'bar')
+    nc_dataset.createDimension('x', 42)
+    nc_dataset.createVariable('foo', float, ('x',))
+    nc_dataset.createVariable('bar', float, ('x',))
+    nc_tools.show_variable_attrs(nc_dataset, 'foo', 'bar')
     out, err = capsys.readouterr()
     assert out.split('\n')[7] == 'float64 bar(x)'
 
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
 @patch('salishsea_tools.nc_tools._nc_file_hg_url')
-def test_init_dataset_attrs(mock_nhu, mock_nfhu, dataset):
+def test_init_dataset_attrs(mock_nhu, mock_nfhu, nc_dataset):
     """init_dataset_attrs initializes dataset global attrs
     """
     nc_tools.init_dataset_attrs(
-        dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc')
-    assert dataset.Conventions == 'CF-1.6'
+        nc_dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc')
+    assert nc_dataset.Conventions == 'CF-1.6'
 
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
 @patch('salishsea_tools.nc_tools._nc_file_hg_url')
-def test_init_dataset_attrs_quiet(mock_nhu, mock_nfhu, capsys, dataset):
+def test_init_dataset_attrs_quiet(mock_nhu, mock_nfhu, capsys, nc_dataset):
     """init_dataset_attrs prints no output when quiet=True
     """
     nc_tools.init_dataset_attrs(
-        dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc',
+        nc_dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc',
         quiet=True)
     out, err = capsys.readouterr()
     assert out == ''
@@ -187,12 +174,14 @@ def test_init_dataset_attrs_quiet(mock_nhu, mock_nfhu, capsys, dataset):
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
 @patch('salishsea_tools.nc_tools._nc_file_hg_url')
-def test_init_dataset_attrs_no_oversrite(mock_nhu, mock_nfhu, capsys, dataset):
+def test_init_dataset_attrs_no_oversrite(
+    mock_nhu, mock_nfhu, capsys, nc_dataset,
+):
     """init_dataset_attrs does not overwrite existing attrs
     """
-    dataset.Conventions = 'CF-1.6'
+    nc_dataset.Conventions = 'CF-1.6'
     nc_tools.init_dataset_attrs(
-        dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc')
+        nc_dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc')
     out, err = capsys.readouterr()
     assert out.split('\n')[0] == (
         'Existing attribute value found, not overwriting: Conventions')
@@ -201,18 +190,18 @@ def test_init_dataset_attrs_no_oversrite(mock_nhu, mock_nfhu, capsys, dataset):
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
 @patch('salishsea_tools.nc_tools._nc_file_hg_url')
 def test_init_dataset_attrs_no_oversrite_quiet(
-    mock_nhu, mock_nfhu, capsys, dataset,
+    mock_nhu, mock_nfhu, capsys, nc_dataset,
 ):
     """init_dataset_attrs suppresses no-overwrite notice when quiet=True
     """
-    dataset.Conventions = 'CF-1.6'
-    dataset.history = 'foo'
+    nc_dataset.Conventions = 'CF-1.6'
+    nc_dataset.history = 'foo'
     nc_tools.init_dataset_attrs(
-        dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc',
+        nc_dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc',
         quiet=True)
     out, err = capsys.readouterr()
     assert out == ''
-    assert dataset.history == 'foo'
+    assert nc_dataset.history == 'foo'
 
 
 @patch(
@@ -275,10 +264,10 @@ def test_nc_file_hg_url_REQUIRED(mock_dflt_url):
     assert url == 'REQUIRED'
 
 
-def test_check_dataset_attrs_reqd_dataset_attrs(capsys, dataset):
+def test_check_dataset_attrs_reqd_dataset_attrs(capsys, nc_dataset):
     """check_dataset_attrs warns of missing required dataset attributes
     """
-    nc_tools.check_dataset_attrs(dataset)
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     reqd_attrs = (
         'Conventions',
@@ -294,7 +283,7 @@ def test_check_dataset_attrs_reqd_dataset_attrs(capsys, dataset):
             'Missing required dataset attribute: {}'.format(expected))
 
 
-def test_check_dataset_attrs_reqd_dataset_attr_values(capsys, dataset):
+def test_check_dataset_attrs_reqd_dataset_attr_values(capsys, nc_dataset):
     """check_dataset_attrs warns of missing reqd dataset attr values
     """
     reqd_attrs = (
@@ -306,15 +295,15 @@ def test_check_dataset_attrs_reqd_dataset_attr_values(capsys, dataset):
         'history',
     )
     for attr in reqd_attrs:
-        dataset.setncattr(attr, '')
-    nc_tools.check_dataset_attrs(dataset)
+        nc_dataset.setncattr(attr, '')
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, attr in enumerate(reqd_attrs):
         assert out.split('\n')[line] == (
             'Missing value for dataset attribute: {}'.format(attr))
 
 
-def test_check_dataset_attrs_url_reqd(capsys, dataset):
+def test_check_dataset_attrs_url_reqd(capsys, nc_dataset):
     """check_dataset_attrs warns of source or references set to REQUIRED
     """
     empty_reqd_attrs = (
@@ -324,21 +313,21 @@ def test_check_dataset_attrs_url_reqd(capsys, dataset):
         'references',
     )
     for attr in empty_reqd_attrs:
-        dataset.setncattr(attr, 'foo')
+        nc_dataset.setncattr(attr, 'foo')
     REQUIRED_reqd_attrs = (
         'source',
         'references',
     )
     for attr in REQUIRED_reqd_attrs:
-        dataset.setncattr(attr, 'REQUIRED')
-    nc_tools.check_dataset_attrs(dataset)
+        nc_dataset.setncattr(attr, 'REQUIRED')
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, attr in enumerate(REQUIRED_reqd_attrs):
         assert out.split('\n')[line] == (
             'Missing value for dataset attribute: {}'.format(attr))
 
 
-def test_check_dataset_attrs_good(capsys, dataset):
+def test_check_dataset_attrs_good(capsys, nc_dataset):
     """check_dataset_attrs prints nothing when all reqd attts present w/ value
     """
     dataset_attrs = (
@@ -351,13 +340,13 @@ def test_check_dataset_attrs_good(capsys, dataset):
         ('comment', ''),
     )
     for attr, value in dataset_attrs:
-        dataset.setncattr(attr, value)
-    nc_tools.check_dataset_attrs(dataset)
+        nc_dataset.setncattr(attr, value)
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out == ''
 
 
-def test_check_dataset_attrs_reqd_var_attrs(capsys, dataset):
+def test_check_dataset_attrs_reqd_var_attrs(capsys, nc_dataset):
     """check_dataset_attrs warns of missing required variable attributes
     """
     dataset_attrs = (
@@ -370,10 +359,10 @@ def test_check_dataset_attrs_reqd_var_attrs(capsys, dataset):
         ('comment', ''),
     )
     for attr, value in dataset_attrs:
-        dataset.setncattr(attr, value)
-    dataset.createDimension('x', 42)
-    dataset.createVariable('foo', float, ('x',))
-    nc_tools.check_dataset_attrs(dataset)
+        nc_dataset.setncattr(attr, value)
+    nc_dataset.createDimension('x', 42)
+    nc_dataset.createVariable('foo', float, ('x',))
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     reqd_attrs = (
         'units',
@@ -384,7 +373,7 @@ def test_check_dataset_attrs_reqd_var_attrs(capsys, dataset):
             'Missing required variable attribute for foo: {}'.format(expected))
 
 
-def test_check_dataset_attrs_reqd_var_attr_values(capsys, dataset):
+def test_check_dataset_attrs_reqd_var_attr_values(capsys, nc_dataset):
     """check_dataset_attrs warns of missing reqd variable attr values
     """
     dataset_attrs = (
@@ -397,16 +386,16 @@ def test_check_dataset_attrs_reqd_var_attr_values(capsys, dataset):
         ('comment', ''),
     )
     for attr, value in dataset_attrs:
-        dataset.setncattr(attr, value)
-    dataset.createDimension('x', 42)
-    foo = dataset.createVariable('foo', float, ('x',))
+        nc_dataset.setncattr(attr, value)
+    nc_dataset.createDimension('x', 42)
+    foo = nc_dataset.createVariable('foo', float, ('x',))
     reqd_attrs = (
         'units',
         'long_name',
     )
     for attr in reqd_attrs:
         foo.setncattr(attr, '')
-    nc_tools.check_dataset_attrs(dataset)
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, expected in enumerate(reqd_attrs):
         assert out.split('\n')[line] == (
@@ -414,7 +403,7 @@ def test_check_dataset_attrs_reqd_var_attr_values(capsys, dataset):
             .format(expected))
 
 
-def test_check_dataset_attrs_car_attrs_good(capsys, dataset):
+def test_check_dataset_attrs_car_attrs_good(capsys, nc_dataset):
     """check_dataset_attrs prints nothing when reqd var attrs present w/ values
     """
     dataset_attrs = (
@@ -427,15 +416,15 @@ def test_check_dataset_attrs_car_attrs_good(capsys, dataset):
         ('comment', ''),
     )
     for attr, value in dataset_attrs:
-        dataset.setncattr(attr, value)
-    dataset.createDimension('x', 42)
-    foo = dataset.createVariable('foo', float, ('x',))
+        nc_dataset.setncattr(attr, value)
+    nc_dataset.createDimension('x', 42)
+    foo = nc_dataset.createVariable('foo', float, ('x',))
     reqd_attrs = (
         ('units', 'foo'),
         ('long_name', 'bar'),
     )
     for attr, value in reqd_attrs:
         foo.setncattr(attr, value)
-    nc_tools.check_dataset_attrs(dataset)
+    nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out == ''
