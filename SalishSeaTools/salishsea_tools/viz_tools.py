@@ -22,7 +22,19 @@ import netCDF4 as nc
 import numpy as np
 
 
-__all__ = ['plot_coastline', 'set_aspect']
+__all__ = ['calc_abs_max', 'plot_coastline', 'set_aspect']
+
+
+def calc_abs_max(array):
+    """Return the maximum absolute value in the array.
+
+    :arg array: Array to find the maximum absolute value of.
+    :type array: :py:class:`numpy.ndarray` or :pay:class:`netCDF4.Dataset`
+
+    :returns: Maximum absolute value
+    :rtype: :py:class:`numpy.float32`
+    """
+    return np.absolute(array.flatten()[np.absolute(array).argmax()])
 
 
 def plot_coastline(axes, bathymetry, coords='grid', color='black'):
