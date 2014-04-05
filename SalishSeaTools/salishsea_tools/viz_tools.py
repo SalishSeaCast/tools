@@ -29,7 +29,7 @@ def calc_abs_max(array):
     """Return the maximum absolute value in the array.
 
     :arg array: Array to find the maximum absolute value of.
-    :type array: :py:class:`numpy.ndarray` or :pay:class:`netCDF4.Dataset`
+    :type array: :py:class:`numpy.ndarray` or :py:class:`netCDF4.Dataset`
 
     :returns: Maximum absolute value
     :rtype: :py:class:`numpy.float32`
