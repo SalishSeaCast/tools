@@ -86,7 +86,7 @@ Descriptions below the links are from the first cell of the notebooks
     
     **Plotting Tracers on Surface and Depth Slices**  
       
-    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Bathymetry%20Colour%20Meshes.ipynb) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.  
+    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Bathymetry%20Colour%20Meshes) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.  
     Topics include:  
       
     * Reading tracer variable values from NEMO `*grid_T.nc` results files  
@@ -95,7 +95,9 @@ Descriptions below the links are from the first cell of the notebooks
     * Using slices to zoom in on domain regions  
     * Plotting contour bands and lines  
     * Plotting temperature fields at selected depths  
-    * Plotting salinity fields with a logarithmic colour scale  
+    * Adding contour lines to colour mesh plots  
+    * Anomaly plots  
+    * Plotting salinity fields with various colour scales  
 
 * ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
     
