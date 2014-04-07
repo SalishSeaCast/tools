@@ -58,7 +58,8 @@ anomaly = wlev - pred';
 figure;
 subplot(2,1,1)
 plot(tim,wlev,'b',tim,pred,'m')
-title('Predicted tides (xtide) and measuared water levels at Tofino')
+tit_str = ['Predicted tides (xtide) and measuared water levels at ' location]
+title(tit_str)
 legend('measured','predicted','Location','Best')
 xlabel('time (PST)')
 ylabel('water level elevation (m CD)')
