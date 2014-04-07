@@ -196,9 +196,6 @@ def group_generator(tokens):
                 current_assignment = []
             if current_group and current_group_name:
                 yield (current_group_name, current_group)
-            else:
-                msg = "Invalid group found."
-                raise ValueError(msg)
             current_group = {}
             current_group_name = None
             continue
