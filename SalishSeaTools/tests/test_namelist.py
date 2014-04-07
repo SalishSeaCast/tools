@@ -55,6 +55,22 @@ class NameListTestCase(unittest.TestCase):
                 "string": "test",
             }]})
 
+    def test_empty_string(self):
+        """
+        Test simple namelist group with empty string value.
+        """
+        group = (
+            "&group\n"
+            '    string1 = ""\n'
+            "    string2 = ''\n"
+            "/")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict,
+            {"group": [{
+                "string1": "",
+                "string2": "",
+            }]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.
