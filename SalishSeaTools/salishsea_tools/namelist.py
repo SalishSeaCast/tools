@@ -92,7 +92,9 @@ def auto_token(value):
     """
     value = value.strip()
     if value.startswith("&"):
-        return GroupStartToken(value[1:])
+        return (
+            GroupEndToken() if value[1:] == 'end'
+            else GroupStartToken(value[1:]))
     elif value.lower() == ".true.":
         return BooleanToken(True)
     elif value.lower() == ".false.":
