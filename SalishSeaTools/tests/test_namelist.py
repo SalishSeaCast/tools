@@ -95,6 +95,20 @@ class NameListTestCase(unittest.TestCase):
         namelist_dict = namelist2dict(StringIO(group))
         self.assertEqual(namelist_dict, {})
 
+    def test_heterogeneous_list(self):
+        """
+        Test list of heterogeneous values.
+        """
+        group = (
+            "&group\n"
+            "    foo = 0.75, 700, 'test', .TRUE.\n"
+            "/")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict,
+            {"group": [{
+                "foo": [0.75, 700, "test", True]
+            }]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.

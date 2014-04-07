@@ -221,10 +221,6 @@ def parse_assignment(assignment,  group):
         msg = "Assignment must contain an AssignmentToken."
         raise ValueError(msg)
     values = assignment[2:]
-    value_types = set([type(_i) for _i in values])
-    if len(value_types) != 1:
-        msg = "All values for one assignment must have the same type."
-        raise ValueError(msg)
     values = [_i.value for _i in values]
     if len(values) == 1:
         values = values[0]
