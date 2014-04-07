@@ -86,6 +86,11 @@ class ComplexNumberToken(Token):
         self.value = complex(real, imag)
 
 
+class ArrayIndexToken(Token):
+    def __init__(self, value):
+        self.value = int(value)
+
+
 def auto_token(value):
     """
     Instantiates the correct token type based on the passed value string.
@@ -118,6 +123,7 @@ def tokenizer(file_object):
         line = line.strip()
         if not line:
             continue
+        in_name = True
         in_string = False
         in_complex_number = False
         current_token = []
@@ -134,18 +140,25 @@ def tokenizer(file_object):
             elif in_string is True:
                 current_token.append(letter)
 
-            # Handle complex numbers.
+            # Handle array indices and complex numbers.
             elif letter == "(":
                 if current_token:
                     yield auto_token("".join(current_token))
                     current_token = []
-                in_complex_number = True
+                if not in_name:
+                    in_complex_number = True
             elif letter == ")":
-                # Parse the complex number.
-                real, imag = map(float, "".join(current_token).split(","))
-                yield ComplexNumberToken(real, imag)
-                current_token = []
-                in_complex_number = False
+                if in_name:
+                    # Finished array element index
+                    yield ArrayIndexToken("".join(current_token))
+                    current_token = []
+                    in_name = False
+                else:
+                    # Parse the complex number.
+                    real, imag = map(float, "".join(current_token).split(","))
+                    yield ComplexNumberToken(real, imag)
+                    current_token = []
+                    in_complex_number = False
             elif in_complex_number is True:
                 current_token.append(letter)
 
@@ -164,6 +177,7 @@ def tokenizer(file_object):
                 if current_token:
                     yield auto_token("".join(current_token))
                     current_token = []
+                in_name = False
                 yield AssignmentToken()
             elif letter == "/":
                 if current_token:
@@ -217,14 +231,36 @@ def parse_assignment(assignment,  group):
     if not isinstance(assignment[0], NameToken):
         msg = "Assignment must start with a name."
         raise ValueError(msg)
-    if not isinstance(assignment[1], AssignmentToken):
+    if isinstance(assignment[1], AssignmentToken):
+        values = assignment[2:]
+        array_assignment = False
+    elif all((
+        isinstance(assignment[1], ArrayIndexToken),
+        isinstance(assignment[2], AssignmentToken),
+
+    )):
+        array_index = assignment[1].value - 1
+        values = assignment[3:]
+        array_assignment = True
+    else:
         msg = "Assignment must contain an AssignmentToken."
         raise ValueError(msg)
-    values = assignment[2:]
     values = [_i.value for _i in values]
     if len(values) == 1:
         values = values[0]
-    group[assignment[0].value] = values
+    if not array_assignment:
+        group[assignment[0].value] = values
+    else:
+        try:
+            group[assignment[0].value].insert(array_index, values)
+        except KeyError:
+            if array_index != 0:
+                msg = "Array element assignments must start at element 1"
+                raise IndexError(msg)
+            group[assignment[0].value] = [values]
+        except IndexError:
+            msg = 'Array elements must be asigned in order'
+            raise IndexError(msg)
 
 
 def namelist2dict(file_or_file_object):
