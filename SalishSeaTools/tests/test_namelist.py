@@ -71,6 +71,20 @@ class NameListTestCase(unittest.TestCase):
                 "string2": "",
             }]})
 
+    def test_group_ends_w_amp_end(self):
+        """
+        Test simple namelist group with &end as end token.
+        """
+        group = (
+            "&group\n"
+            "    float = 0.75\n"
+            "&end")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict,
+            {"group": [{
+                "float": 0.75,
+            }]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.
