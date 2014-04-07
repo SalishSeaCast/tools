@@ -41,6 +41,20 @@ class NameListTestCase(unittest.TestCase):
                 "false": False
             }]})
 
+    def test_double_quote_string(self):
+        """
+        Test simple namelist group with string value enclosed in double quotes.
+        """
+        group = (
+            "&group\n"
+            '    string = "test"\n'
+            "/")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict,
+            {"group": [{
+                "string": "test",
+            }]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.

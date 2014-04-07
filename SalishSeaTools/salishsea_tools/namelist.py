@@ -26,7 +26,7 @@ Works with Python 2.7 and has not further dependencies.
     GNU Lesser General Public License, Version 3
     (http://www.gnu.org/copyleft/lesser.html)
 """
-QUOTE_CHARS = ["'"]
+QUOTE_CHARS = ["'", '"']
 
 
 class Token(object):
