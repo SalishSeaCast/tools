@@ -85,6 +85,16 @@ class NameListTestCase(unittest.TestCase):
                 "float": 0.75,
             }]})
 
+    def test_ignore_empty_group(self):
+        """
+         Ignore empty namelist group.
+        """
+        group = (
+            "&group\n"
+            "&end")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict, {})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.
