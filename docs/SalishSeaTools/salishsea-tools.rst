@@ -83,6 +83,14 @@ or import modules from it:
     :members:
 
 
+.. _salishsea_tools.namelist:
+
+:py:mod:`namelist` Module
+=========================
+
+.. automodule:: namelist
+    :members: namelist2dict
+
 .. _salishsea_tools.nc_tools:
 
 :py:mod:`nc_tools` Module
