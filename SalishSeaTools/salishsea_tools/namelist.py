@@ -123,10 +123,9 @@ def tokenizer(file_object):
             # Handle strings.
             if letter in QUOTE_CHARS:
                 if in_string is True:
+                    yield StringToken("".join(current_token))
+                    current_token = []
                     in_string = False
-                    if current_token:
-                        yield StringToken("".join(current_token))
-                        current_token = []
                 else:
                     in_string = True
                 continue
