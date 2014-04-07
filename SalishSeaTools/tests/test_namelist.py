@@ -109,6 +109,21 @@ class NameListTestCase(unittest.TestCase):
                 "foo": [0.75, 700, "test", True]
             }]})
 
+    def test_array_element_assignment(self):
+        """
+        Test simple namelist group with assignment to array element.
+        """
+        group = (
+            "&group\n"
+            "    float(1) = 0.75\n"
+            "    float(2) = 0.85\n"
+            "&end")
+        namelist_dict = namelist2dict(StringIO(group))
+        self.assertEqual(namelist_dict,
+            {"group": [{
+                "float": [0.75, 0.85],
+            }]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.
