@@ -20,6 +20,10 @@ Descriptions below the links are from the first cell of the notebooks
       
     These simulations were run with nu=50 and  initial T+S from Oct 25 restart  
 
+* ##[Preparing for Delta.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Preparing for Delta.ipynb)  
+    
+    This notebook looks for a grid point close to Delta so that we can start including that community in our output.   
+
 * ##[northForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/northForcing.ipynb)  
     
     This notebook examines the storm surge simulations when tidal forcing at Johnstone Strait is included.  
@@ -43,6 +47,12 @@ Descriptions below the links are from the first cell of the notebooks
     A notebook for determining how long it takes for velocities to spinup after initializing with a restart files. This is useful for determing storm surge simulation start dates.   
       
     Note this probably depends on viscosity. This simulations use nu =50.  
+
+* ##[FindWindEvents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/FindWindEvents.ipynb)  
+    
+    This notebook looks for large wind events in Sandheads historical wind data. We are looking for a wind storm that did not result in a surge. We would like to ensure that the model does not make a surge if one did not actually occur.   
+      
+    This codes uses a combination of Doug's class for reading Sandheads data and Kate's methodology for finding ssh anamolies.  
 
 * ##[weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/weather_Nov-15-2006.ipynb)  
     
