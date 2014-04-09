@@ -124,6 +124,28 @@ class NameListTestCase(unittest.TestCase):
                 "float": [0.75, 0.85],
             }]})
 
+    def test_same_name_groups_append_to_group_list(self):
+        """
+        Values from groups with the same name are appended.
+        """
+        groups = (
+            "&group\n"
+            "    float = 0.75\n"
+            "&end\n"
+            "&group\n"
+            "    float = 0.85\n"
+            "&end\n")
+        namelist_dict = namelist2dict(StringIO(groups))
+        self.assertEqual(namelist_dict,
+            {"group": [
+                {
+                    "float": 0.75,
+                },
+                {
+                    "float": 0.85,
+                },
+            ]})
+
     def test_complex_single_line_group(self):
         """
         Tests a rather complex single line group.
