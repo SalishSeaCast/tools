@@ -28,6 +28,10 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook examines the storm surge simulations when tidal forcing at Johnstone Strait is included.  
 
+* ##[New Tides and December Storm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/New Tides and December Storm.ipynb)  
+    
+    This notebook will examine the effect of the corrected Northern tides on the December 2006 storm surge.  
+
 * ##[SandHeadsWinds.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/SandHeadsWinds.ipynb)  
     
     **Sand Heads Winds**  
@@ -38,9 +42,17 @@ Descriptions below the links are from the first cell of the notebooks
       
     The code is based on code in the `bloomcast.wind` module in the [SoG-bloomcast project](https://bitbucket.org/douglatornell/sog-bloomcast).  
 
+* ##[Effect of Stratification.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Effect of Stratification.ipynb)  
+    
+    This notebook examines the effect of stratificaiton on storm surge elevations using the Dec.15, 2006 storm as a case study.  
+
 * ##[dec2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/dec2006.ipynb)  
     
     This notebook examines the storm surge for Dec 15, 2006.  
+
+* ##[Testing Port Hardy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Testing Port Hardy.ipynb)  
+    
+    This notebook examines the sea surface height forcing from Port Hardy to ensure it is performing as expected.  
 
 * ##[spinups.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/spinups.ipynb)  
     
