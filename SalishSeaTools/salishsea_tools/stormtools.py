@@ -22,7 +22,7 @@ limitations under the License.
 import netCDF4 as NC
 import numpy as np
 import datetime
-
+import pytz
 
 def convert_date_seconds(times, start):
     """
@@ -198,3 +198,28 @@ def get_variables(fU,fV,fT,timestamp,depth):
     mu=T==0; T = np.ma.array(T,mask=mu)
     
     return U, V, E, S, T
+
+
+def dateParserMeasured1(s):
+    """
+    date Parser for format %Y/%m/%d %H:%M
+    """
+    import pytz
+    #convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
+    #add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    #convert to UTC
+    return aware.astimezone(tzinfo=pytz.timezone('UTC'))
+
+def dateParserMeasured2(s):
+    """
+    date Parser for format %d-%b-%Y %H:%M:%S
+    """
+    import pytz
+    #convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%d-%b-%Y %H:%M:%S ")
+    #add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    #convert to UTC
+    return aware.astimezone(tzinfo=pytz.timezone('UTC'))
