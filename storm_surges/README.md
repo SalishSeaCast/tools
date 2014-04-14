@@ -28,6 +28,10 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook examines the storm surge simulations when tidal forcing at Johnstone Strait is included.  
 
+* ##[Testing modifications to Northern code.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Testing modifications to Northern code.ipynb)  
+    
+    This notebook determines whether modifications to nbjdta in bdyini.F90 will make a difference in the Port Hardy forcing. All of these used jpjnob=896.   
+
 * ##[New Tides and December Storm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/New Tides and December Storm.ipynb)  
     
     This notebook will examine the effect of the corrected Northern tides on the December 2006 storm surge.  
