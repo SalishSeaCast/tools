@@ -6,6 +6,13 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
+    
+    **Initial Check of GEM Products Forcing Data**  
+      
+    This notebook is about initial checks and exploration of the 2.5 km grid GEM products  
+    atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.  
+
 * ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
     
     **Convert Atmospheric Forcing Weights to netCDF4**  
