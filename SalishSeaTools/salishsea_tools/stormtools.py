@@ -51,9 +51,9 @@ def convert_date_seconds(times, start):
 
 def convert_date_hours(times, start):
     """
-    This function converts model output time in seconds to datetime objects.
+    This function converts model output time in hours to datetime objects.
     
-    :arg times: array of seconds since the start date of a simulation. From time_counter in model output.
+    :arg times: array of hours since the start date of a simulation. From time_counter in model output.
     :type times: int
     
     :arg start: string containing the start date of the simulation in format '01-Nov-2006'
@@ -199,27 +199,104 @@ def get_variables(fU,fV,fT,timestamp,depth):
     
     return U, V, E, S, T
 
+def get_EC_observations(station, start_day, end_day):
+    """
+    Gather Environment Canada weather observations for the station and dates indicated. The dates should span one month because of how EC data is collected.
+    
+    :arg station: string with station name (no spaces). e.g. 'PointAtkinson'
+    :type station: str
 
-def dateParserMeasured1(s):
-    """
-    date Parser for format %Y/%m/%d %H:%M
-    """
-    import pytz
-    #convert the string to a datetime object
-    unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
-    #add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
-    #convert to UTC
-    return aware.astimezone(tzinfo=pytz.timezone('UTC'))
+    :arg start_day: string contating the start date in the format '01-Dec-2006'.
+    :type start_day: str
 
-def dateParserMeasured2(s):
+    :arg end_day: string contating the end date in the format '01-Dec-2006'.
+    :type end_day: str
+
+    :return wind_speed, pressure: wind speed and pressure data from observations. Note that pressure data is not always available.
+
     """
-    date Parser for format %d-%b-%Y %H:%M:%S
+    import arrow 
+    import cStringIO
+    import requests
+    from xml.etree import cElementTree as ElementTree
+    
+    station_ids = {
+        'Sandheads': 6831,
+        'YVR': 889,
+        'PointAtkinson': 844,
+        'Victoria': 10944,
+        'CampbellRiver': 145,
+        'PatriciaBay': 11007
+    }
+
+    st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
+
+    wind_spd, pressure = [], []
+    url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
+    query = {
+        'timeframe': 1,
+        'stationID': station_ids[station],
+        'format': 'xml',
+        'Year': st_ar.year,
+        'Month': st_ar.month,
+        'Day': 1,
+    }
+    response = requests.get(url, params=query)
+    tree = ElementTree.parse(cStringIO.StringIO(response.content))
+    root = tree.getroot()
+    raw_data = root.findall('stationdata')
+    for record in raw_data:
+        day = int(record.get('day'))
+        hour = int(record.get('hour'))
+        selectors = (
+            (day == st_ar.day - 1 and hour >= 16)
+            or
+            (day >= st_ar.day and day < end_ar.day)
+            or
+            (day == end_ar.day and hour < 16)
+        )
+        if selectors:
+            try:
+                wind_spd.append(float(record.find('windspd').text))
+            except TypeError:
+                wind_spd.append(0)
+            if station == 'YVR':
+                try:
+                    pressure.append(float(record.find('stnpress').text) )
+                except ValueError:
+                    pressure.append(0)
+    wind_spd= np.array(wind_spd) * 1000 / 3600
+    pressure = np.array(pressure)
+    
+    return wind_spd, pressure
+
+def get_SSH_forcing(boundary, date):
     """
-    import pytz
-    #convert the string to a datetime object
-    unaware = datetime.datetime.strptime(s, "%d-%b-%Y %H:%M:%S ")
-    #add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
-    #convert to UTC
-    return aware.astimezone(tzinfo=pytz.timezone('UTC'))
+    A function that returns the ssh forcing for the month of the date and boundary indicated.
+
+    :arg boundary: A string naming the boundary. e.g 'north' or 'west'
+    :type boundary: str
+
+    :arg date: A string indicating the date of interest. e.g. '01-Dec-2006'. The day needs to be the first day of the month.
+    :type date: str
+
+    :returns ssh_forc, time_ssh: arrays of the ssh forcing values and corresponding times
+
+    """
+    import arrow
+    date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
+    year = date_arr.year
+    month = date_arr.month
+    if boundary == 'north':
+	filen='sshNorth'
+    else:
+	filen ='ssh'
+    ssh_path = '/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/' +boundary +'/ssh/' + filen +'_y' + str(year) +'m' +str(month)+ '.nc'
+    fS = NC.Dataset(ssh_path);
+    ssh_forc=fS.variables['sossheig'];
+    tss= fS.variables['time_counter'][:];
+    l = tss.shape[0]; t=np.linspace(0,l-1,l) #time array
+    time_ssh=convert_date_hours(t,date);
+
+    return ssh_forc, time_ssh
