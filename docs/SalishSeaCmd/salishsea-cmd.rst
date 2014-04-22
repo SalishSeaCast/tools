@@ -52,6 +52,25 @@ Experienced Python developers may wish to install :program:`salishsea` in other 
 * In :file:`$HOME/.local/` via the :command:`pip install --user` option
 
 
+:kbd:`<TAB>` Completion
+-----------------------
+
+The :program:`salishsea` command line interface includes a sub-command that enables it to hook into the :program:`bash` :kbd:`<TAB>` completion machinery.
+(:kbd:`<TAB>` completion or `command-line completion`_ is a shell feature whereby partially typed commands are filled out by the shell when the user presses the :kbd:`<TAB>` key.)
+The :command:`salishsea complete` command prints a blob of :program:`bash` code that does the job,
+so,
+capturing that code in a file and then executing it with the :command:`source` command will enable completion for :program:`salishsea` in your current shell session.
+You can do that with the compound command:
+
+.. code-block:: bash
+
+    salishsea complete > foo.sh && source foo.sh && rm -f foo.sh
+
+Including that line in your :file:`~/.bashrc` file will ensure that completion for :program:`salishsea` is available in every shell you launch.
+
+.. _command-line completion: http://en.wikipedia.org/wiki/Command-line_completion
+
+
 Available Commands
 ==================
 
