@@ -61,7 +61,8 @@ def default_url(repo=None):
         cmd.extend(['-R', repo])
     cmd.extend(['paths', 'default'])
     try:
-        return subprocess.check_output(cmd).strip()
+        return subprocess.check_output(
+            cmd, universal_newlines=True).strip()
     except subprocess.CalledProcessError:
         return None
 
@@ -81,7 +82,7 @@ def heads(repo, revs=['.']):
     :rtype: str
     """
     cmd = ['hg', '-R', repo, 'heads'] + revs
-    return subprocess.check_output(cmd)
+    return subprocess.check_output(cmd, universal_newlines=True)
 
 
 def parents(repo=None, rev=None, file=None, verbose=False):
@@ -129,4 +130,4 @@ def parents(repo=None, rev=None, file=None, verbose=False):
         cmd.append(file)
     if verbose:
         cmd.append('-v')
-    return subprocess.check_output(cmd)
+    return subprocess.check_output(cmd, universal_newlines=True)
