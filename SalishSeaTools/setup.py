@@ -22,7 +22,7 @@ import __version__
 
 python_classifiers = [
     'Programming Language :: Python :: {0}'.format(py_version)
-    for py_version in ['2', '2.7', '3', '3.2', '3.3']]
+    for py_version in ['2', '2.7', '3', '3.2', '3.3', '3.4']]
 other_classifiers = [
     'Development Status :: ' + __version__.dev_status,
     'License :: OSI Approved :: Apache Software License',
@@ -42,8 +42,11 @@ with open('CHANGELOG.rst', 'rt') as f:
     long_description += '\n\n' + f.read()
 install_requires = [
     # see requirements.txt for versions most recently used in development
+    'arrow',
     'matplotlib',
+    'netCDF4',
     'numpy',
+    'pandas',
 ]
 
 setup(
@@ -51,7 +54,7 @@ setup(
     version=__version__.number + __version__.release,
     description='Salish Sea Tools Package',
     long_description=long_description,
-    author='Doug Latornell',
+    author='Doug Latornell and the Salish Sea MEOPAR Project Contributors',
     author_email='djl@douglatornell.ca',
     url=(
         'http://salishsea-meopar-tools.readthedocs.org/SalishSeaTools/'
