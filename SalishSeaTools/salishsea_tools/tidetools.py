@@ -964,16 +964,11 @@ def get_run_length(runname, loc):
     """
     Get the length of the run in days from the namelist file
 
-    :arg runname: name of the model run to process;
-                  e.g. runname = '50s_15Sep-21Sep',
-                  or if you'd like the harmonics of more than one run
-                  to be combined into one picture,
-                  give a list of names;
-                  ; e.g. '40d','41d50d','51d60d'
+    :arg runname: name of the model run to process; e.g. '50s_15Sep-21Sep'
     :type runname: str
 
     :arg loc: location of results folder;
-              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+              e.g. '/ocean/dlatorne/MEOPAR/SalishSea/results'
     :type loc: str
 
     :returns: length of run in days
