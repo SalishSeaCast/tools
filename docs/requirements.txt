@@ -7,3 +7,6 @@
 
 mock
 sphinxcontrib-programoutput
+
+-e SalishSeaCmd
+
