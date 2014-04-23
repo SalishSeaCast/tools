@@ -18,6 +18,7 @@ Salish Sea NEMO model
 """
 import datetime
 from math import radians, sin, cos, asin, sqrt, pi, exp
+import os
 
 import matplotlib
 import matplotlib.pyplot as plt
