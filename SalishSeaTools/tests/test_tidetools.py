@@ -99,4 +99,4 @@ def test_get_run_length(tidetools_module):
         '''.split('\n')
     with patch('salishsea_tools.tidetools.namelist.open', m_open, create=True):
         run_length = tidetools_module.get_run_length('foo', 'bar')
-    np.testing.assert_almost_equal(run_length, (12096 - 8641) * 50 / 3600 / 24)
+    np.testing.assert_almost_equal(run_length, 2)
