@@ -960,38 +960,48 @@ def get_current_harms(runname,loc):
     return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
 
 
-
-def get_run_length(runname,loc):
+def get_run_length(runname, loc):
     """
-    Get the length of the run in days by reading in some data (in a rough way.... :S) from the namelist file
+    Get the length of the run in days from the namelist file
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :arg runname: name of the model run to process;
+                  e.g. runname = '50s_15Sep-21Sep',
+                  or if you'd like the harmonics of more than one run
+                  to be combined into one picture,
+                  give a list of names;
+                  ; e.g. '40d','41d50d','51d60d'
     :type runname: str
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg loc: location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
     :returns: length of run in days
     """
-    resfile = loc+runname+'/namelist'
+    resfile = os.path.join(loc, runname, 'namelist')
     with open(resfile) as f:
         content = f.readlines()
-
-    for t in range(0,len(content)):
+    for t in range(0, len(content)):
         if content[t][3:10] == 'rn_rdt ':
             timestep = int(content[t][19:21])
         if content[t][4:14] == 'nit000_han':
             start_time = int(content[t][17:23])
             end_time = int(content[t+1][17:23])
-
-    #I am fudging this really. The positions in the 'namelist' file could easily change from run to run.
-    #Check this here:
-    if not 'timestep' in locals():
+    # I am fudging this really.
+    # The positions in the 'namelist' file could easily change from run to run.
+    # Check this here:
+    if 'timestep' not in locals():
         import sys
-        sys.exit('Uh oh! Looks like the "namelist" file has changed for run '+runname+'. You will need to open "namelist" in your results folder, and check the lines that have the timestep, start time and end time against the line matching being done in tidetools.get_run_length. Without this, I cant calculate the time period that the harmonics were calculated over :( Love python')
-
-    run_length = (end_time-start_time)*timestep/60.0/60.0/24.0 #[days]
-
+        sys.exit(
+            'Uh oh! Looks like the "namelist" file has changed for run '
+            + runname
+            + '. You will need to open "namelist" in your results folder, '
+            'and check the lines that have the timestep, '
+            'start time and end time against the line matching being done '
+            'in tidetools.get_run_length. '
+            'Without this, I cant calculate the time period that the '
+            'harmonics were calculated over :( Love python')
+    run_length = (end_time - start_time) * timestep / 60.0 / 60.0 / 24.0  # [days]
     return run_length
 
 
