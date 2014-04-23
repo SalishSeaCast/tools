@@ -33,7 +33,7 @@ def tidetools_module():
 
 def test_get_run_length(tidetools_module):
     m_open = mock_open()
-    m_open().readlines.return_value = '''
+    m_open().__iter__.return_value = '''
 !! Run timing control
 !!
 !! *Note*: The time step is set in the &namdom namelist in the namelist.domain
@@ -97,6 +97,6 @@ def test_get_run_length(tidetools_module):
    rn_rdth     =  300.     !  depth variation of tracer time step  (used if nn_acc=1)
 &end
         '''.split('\n')
-    with patch('salishsea_tools.tidetools.open', m_open, create=True):
+    with patch('salishsea_tools.tidetools.namelist.open', m_open, create=True):
         run_length = tidetools_module.get_run_length('foo', 'bar')
     np.testing.assert_almost_equal(run_length, (12096 - 8641) * 50 / 3600 / 24)

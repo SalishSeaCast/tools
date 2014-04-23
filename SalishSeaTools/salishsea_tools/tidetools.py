@@ -28,7 +28,10 @@ import pandas as pd
 import pytz
 import requests
 
-from salishsea_tools import viz_tools
+from salishsea_tools import (
+    namelist,
+    viz_tools,
+)
 
 
 def get_all_perm_dfo_wlev(start_date,end_date):
@@ -975,28 +978,32 @@ def get_run_length(runname, loc):
     :returns: length of run in days
     """
     resfile = os.path.join(loc, runname, 'namelist')
-    with open(resfile) as f:
-        content = f.readlines()
-    for t in range(0, len(content)):
-        if content[t][3:10] == 'rn_rdt ':
-            timestep = int(content[t][19:21])
-        if content[t][4:14] == 'nit000_han':
-            start_time = int(content[t][17:23])
-            end_time = int(content[t+1][17:23])
-    # I am fudging this really.
-    # The positions in the 'namelist' file could easily change from run to run.
-    # Check this here:
-    if 'timestep' not in locals():
-        import sys
-        sys.exit(
-            'Uh oh! Looks like the "namelist" file has changed for run '
-            + runname
-            + '. You will need to open "namelist" in your results folder, '
-            'and check the lines that have the timestep, '
-            'start time and end time against the line matching being done '
-            'in tidetools.get_run_length. '
-            'Without this, I cant calculate the time period that the '
-            'harmonics were calculated over :( Love python')
+    nl = namelist.namelist2dict(resfile)
+    timestep = nl['namdom'][0]['rn_rdt']
+    start_time = nl['nam_diaharm'][0]['nit000_han']
+    end_time = nl['nam_diaharm'][0]['nitend_han']
+    # with open(resfile) as f:
+    #     content = f.readlines()
+    # for t in range(0, len(content)):
+    #     if content[t][3:10] == 'rn_rdt ':
+    #         timestep = int(content[t][19:21])
+    #     if content[t][4:14] == 'nit000_han':
+    #         start_time = int(content[t][17:23])
+    #         end_time = int(content[t+1][17:23])
+    # # I am fudging this really.
+    # # The positions in the 'namelist' file could easily change from run to run.
+    # # Check this here:
+    # if 'timestep' not in locals():
+    #     import sys
+    #     sys.exit(
+    #         'Uh oh! Looks like the "namelist" file has changed for run '
+    #         + runname
+    #         + '. You will need to open "namelist" in your results folder, '
+    #         'and check the lines that have the timestep, '
+    #         'start time and end time against the line matching being done '
+    #         'in tidetools.get_run_length. '
+    #         'Without this, I cant calculate the time period that the '
+    #         'harmonics were calculated over :( Love python')
     run_length = (end_time - start_time) * timestep / 60.0 / 60.0 / 24.0  # [days]
     return run_length
 
