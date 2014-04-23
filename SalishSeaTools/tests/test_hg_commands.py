@@ -39,7 +39,8 @@ def test_default_url_with_repo(mock_chk_out):
     """
     mock_chk_out.return_value = 'foo'
     hg.default_url('bar')
-    mock_chk_out.assert_called_once_with('hg -R bar paths default'.split())
+    mock_chk_out.assert_called_once_with(
+        'hg -R bar paths default'.split(), universal_newlines=True)
 
 
 @patch('salishsea_tools.hg_commands.subprocess.check_output')
@@ -56,7 +57,8 @@ def test_heads_tip_rev(mock_chk_out):
     """heads uses expected command with default revs list
     """
     hg.heads('foo')
-    mock_chk_out.assert_called_once_with('hg -R foo heads .'.split())
+    mock_chk_out.assert_called_once_with(
+        'hg -R foo heads .'.split(), universal_newlines=True)
 
 
 @patch('salishsea_tools.hg_commands.subprocess.check_output')
@@ -64,7 +66,8 @@ def test_heads_multiple_revs(mock_chk_out):
     """heads uses expected command with multiple revs
     """
     hg.heads('foo', revs=['bar', 'baz'])
-    mock_chk_out.assert_called_once_with('hg -R foo heads bar baz'.split())
+    mock_chk_out.assert_called_once_with(
+        'hg -R foo heads bar baz'.split(), universal_newlines=True)
 
 
 @pytest.mark.parametrize(
@@ -89,4 +92,4 @@ def test_parents_default_args(mock_chk_out, kwargs, expected):
     """parents uses expected command with default args
     """
     hg.parents(**kwargs)
-    mock_chk_out.assert_called_once_with(expected)
+    mock_chk_out.assert_called_once_with(expected, universal_newlines=True)
