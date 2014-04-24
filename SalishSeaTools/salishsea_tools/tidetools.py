@@ -906,7 +906,7 @@ def get_composite_harms(runname,loc):
     runlength = np.zeros((len(runname),1))
     for k in range(0,len(runname)):
         runlength[k,0] = get_run_length(runname[k],loc)
-#        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
+        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
 
     mod_M2_eta_real1 = 0.0
     mod_M2_eta_imag1 = 0.0
@@ -934,6 +934,73 @@ def get_composite_harms(runname,loc):
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
 
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
+def get_composite_harms_uv(runname,loc):
+    """
+    Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
+
+    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :type runname: str
+
+    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :type loc: str
+
+    :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, 
+              mod_K1_u_amp, mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha
+    """
+    runlength = np.zeros((len(runname),1))
+    for k in range(0,len(runname)):
+        runlength[k,0] = get_run_length(runname[k],loc)
+
+    mod_M2_u_real1 = 0.0
+    mod_M2_u_imag1 = 0.0
+    mod_M2_v_real1 = 0.0
+    mod_M2_v_imag1 = 0.0
+    mod_K1_u_real1 = 0.0
+    mod_K1_u_imag1 = 0.0
+    mod_K1_v_real1 = 0.0
+    mod_K1_v_imag1 = 0.0
+
+    for runnum in range(0,len(runname)):
+        harmU = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_U.nc','r')
+        print loc+runname[runnum]+'/Tidal_Harmonics_U.nc'
+        #get imaginary and real components
+        mod_M2_u_real1 = mod_M2_u_real1 + harmU.variables['M2_u_real'][0,:,:]*runlength[runnum]
+        print mod_M2_u_real1[895,43]
+        mod_M2_u_imag1 = mod_M2_u_imag1 + harmU.variables['M2_u_imag'][0,:,:]*runlength[runnum]
+        mod_K1_u_real1 = mod_K1_u_real1 + harmU.variables['K1_u_real'][0,:,:]*runlength[runnum]
+        mod_K1_u_imag1 = mod_K1_u_imag1 + harmU.variables['K1_u_imag'][0,:,:]*runlength[runnum]
+
+    for runnum in range(0,len(runname)):
+        harmV = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_V.nc','r')
+        print loc+runname[runnum]+'/Tidal_Harmonics_V.nc'
+        #get imaginary and real components
+        mod_M2_v_real1 = mod_M2_v_real1 + harmV.variables['M2_v_real'][0,:,:]*runlength[runnum]
+        mod_M2_v_imag1 = mod_M2_v_imag1 + harmV.variables['M2_v_imag'][0,:,:]*runlength[runnum]
+        mod_K1_v_real1 = mod_K1_v_real1 + harmV.variables['K1_v_real'][0,:,:]*runlength[runnum]
+        mod_K1_v_imag1 = mod_K1_v_imag1 + harmV.variables['K1_v_imag'][0,:,:]*runlength[runnum]
+
+    totaldays = sum(runlength)
+    mod_M2_u_real = mod_M2_u_real1/totaldays
+    mod_M2_u_imag = mod_M2_u_imag1/totaldays
+    mod_K1_u_real = mod_K1_u_real1/totaldays
+    mod_K1_u_imag = mod_K1_u_imag1/totaldays
+    mod_M2_v_real = mod_M2_v_real1/totaldays
+    mod_M2_v_imag = mod_M2_v_imag1/totaldays
+    mod_K1_v_real = mod_K1_v_real1/totaldays
+    mod_K1_v_imag = mod_K1_v_imag1/totaldays
+
+    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
+    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag,mod_M2_u_real))
+    mod_K1_u_amp = np.sqrt(mod_K1_u_real**2+mod_K1_u_imag**2)
+    mod_K1_u_pha = -np.degrees(np.arctan2(mod_K1_u_imag,mod_K1_u_real))
+    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
+    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag,mod_M2_v_real))
+    mod_K1_v_amp = np.sqrt(mod_K1_v_real**2+mod_K1_v_imag**2)
+    mod_K1_v_pha = -np.degrees(np.arctan2(mod_K1_v_imag,mod_K1_v_real))
+
+    return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, mod_K1_u_amp, mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha
+
 
 def get_current_harms(runname,loc):
     """
