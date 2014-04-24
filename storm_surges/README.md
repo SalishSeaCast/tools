@@ -66,6 +66,13 @@ Descriptions below the links are from the first cell of the notebooks
       
     This codes uses a combination of Doug's class for reading Sandheads data and Kate's methodology for finding ssh anamolies.  
 
+* ##[feb2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/feb2006.ipynb)  
+    
+    This notebook analyses a Feb 2006 storm surge. Cases:  
+      
+    1. all_forcing - all tidal forcing and ssh forcing and meteorolgical forcing  
+    2. tidesonly - no meteorological forcing and no ssh forcing. Only tidal forcing.  
+
 * ##[weather_Nov-15-2006.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/weather_Nov-15-2006.ipynb)  
     
     This notebook plots the weather at Point Atkinson on Nov. 15, 2006 from the Environment Canada website.   
