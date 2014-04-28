@@ -144,3 +144,11 @@ class TestSetAspect(object):
         aspect = viz_tools_module.set_aspect(axes, 2/3, coords='map')
         axes.set_aspect.assert_called_once_with(2/3, adjustable='box-forced')
         assert aspect == 2/3
+
+
+def test_unstagger(viz_tools_module):
+    ugrid = np.array([1, 2, 3] * 3).reshape(3, 3)
+    vgrid = np.array([[4] * 3, [5] * 3, [6] * 3])
+    u, v = viz_tools_module.unstagger(ugrid, vgrid)
+    np.testing.assert_almost_equal(u, np.array([1.5, 2.5] * 2).reshape(2, 2))
+    np.testing.assert_almost_equal(v, np.array([[4.5] * 2, [5.5] * 2]))
