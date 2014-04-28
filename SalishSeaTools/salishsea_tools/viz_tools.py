@@ -64,7 +64,7 @@ def plot_coastline(axes, bathymetry, coords='grid', color='black'):
     :returns: Contour line set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    if isinstance(bathymetry, str):
+    if not hasattr(bathymetry, 'variables'):
         bathy = nc.Dataset(bathymetry)
     else:
         bathy = bathymetry
@@ -75,9 +75,53 @@ def plot_coastline(axes, bathymetry, coords='grid', color='black'):
         contour_lines = axes.contour(lons, lats, depths, [0], colors=color)
     else:
         contour_lines = axes.contour(depths, [0], colors=color)
-    if isinstance(bathymetry, str):
+    if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_lines
+
+
+def plot_land_mask(axes, bathymetry, coords='grid', color='black'):
+    """Plot land areas from bathymetry as solid colour ploygons on the axes.
+
+    The bathymetry data may be specified either as a file path/name,
+    or as a :py:class:`netCDF4.Dataset` instance.
+    If a file path/name is given it is opened and read into a
+    :py:class:`netCDF4.Dataset` so,
+    if this function is being called in a loop,
+    it is best to provide it with a bathymetry dataset to avoid
+    the overhead of repeated file reads.
+
+    :arg axes: Axes instance to plot the land mask ploygons on.
+    :type axes: :py:class:`matplotlib.axes.Axes`
+
+    :arg bathymetry:
+    :type bathymetry:
+
+    :arg coords: Type of plot coordinates to set the aspect ratio for;
+                 either :kbd:`grid` (the default) or :kbd:`map`.
+    :type coords: str
+
+    :arg color: Matplotlib colour argument
+    :type color: str, float, rgb or rgba tuple
+
+    :returns: Contour ploygon set
+    :rtype: :py:class:`matplotlib.contour.QuadContourSet`
+    """
+    if not hasattr(bathymetry, 'variables'):
+        bathy = nc.Dataset(bathymetry)
+    else:
+        bathy = bathymetry
+    depths = bathy.variables['Bathymetry']
+    if coords == 'map':
+        lats = bathy.variables['nav_lat']
+        lons = bathy.variables['nav_lon']
+        contour_fills = axes.contourf(
+            lons, lats, depths, [-0.01, 0.01], colors=color)
+    else:
+        contour_fills = axes.contourf(depths, [-0.01, 0.01], colors=color)
+    if not hasattr(bathymetry, 'variables'):
+        bathy.close()
+    return contour_fills
 
 
 def set_aspect(

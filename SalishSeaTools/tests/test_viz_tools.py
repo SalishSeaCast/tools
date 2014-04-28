@@ -117,6 +117,59 @@ class TestPlotCoastline(object):
 
 
 @pytest.mark.usefixtures('viz_tools_module')
+class TestPlotLandMask(object):
+    @patch('salishsea_tools.viz_tools.nc.Dataset')
+    def test_plot_land_mask_defaults_bathy_file(
+        self, m_dataset, viz_tools_module,
+    ):
+        axes = Mock()
+        viz_tools_module.plot_land_mask(axes, 'bathyfile')
+        m_dataset.assert_called_once_with('bathyfile')
+        m_dataset.close.assert_called_once()
+
+    @patch('salishsea_tools.viz_tools.nc.Dataset')
+    def test_plot_land_mask_defaults_bathy_netCDF_obj(
+        self, m_dataset, viz_tools_module,
+    ):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        viz_tools_module.plot_land_mask(axes, bathy)
+        assert not m_dataset.called
+        assert not m_dataset.close.called
+
+    def test_plot_land_mask_defaults(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_fills = viz_tools_module.plot_land_mask(axes, bathy)
+        axes.contourf.assert_called_once_with(
+            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_color_arg(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, color='red')
+        axes.contourf.assert_called_once_with(
+            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='red')
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_map_coords(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {
+            'Bathymetry': Mock(),
+            'nav_lat': Mock(),
+            'nav_lon': Mock(),
+        }
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, coords='map')
+        axes.contourf.assert_called_once_with(
+            bathy.variables['nav_lon'], bathy.variables['nav_lat'],
+            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
+        assert contour_fills == axes.contourf()
+
+
+@pytest.mark.usefixtures('viz_tools_module')
 class TestSetAspect(object):
     def test_set_aspect_defaults(self, viz_tools_module):
         axes = Mock()
