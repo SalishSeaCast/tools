@@ -130,3 +130,23 @@ def set_aspect(
         aspect = 1 / np.cos(np.median(lats) * np.pi / 180)
     axes.set_aspect(aspect, adjustable=adjustable)
     return aspect
+
+
+def unstagger(ugrid, vgrid):
+    """Interpolate u and v component values to values at grid cell centres.
+
+    The shapes are the returned arrays are 1 less than those of
+    the input arrays in the y and x dimensions.
+
+    :arg ugrid: u velocity component values with axes (..., y, x)
+    :type ugrid: :py:class:`numpy.ndarray`
+
+    :arg vgrid: v velocity component values with axes (..., y, x)
+    :type vgrid: :py:class:`numpy.ndarray`
+
+    :returns u, v: u and v component values at grid cell centres
+    :rtype: 2-tuple of :py:class:`numpy.ndarray`
+    """
+    u = np.add(ugrid[..., :-1], ugrid[..., 1:]) / 2
+    v = np.add(vgrid[..., :-1, :], vgrid[..., 1:, :]) / 2
+    return u[..., 1:, :], v[..., 1:]
