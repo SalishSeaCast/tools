@@ -36,14 +36,6 @@ Descriptions below the links are from the first cell of the notebooks
     * Exploring netCDF dataset dimensions, variables, and attributes  
     * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays  
 
-* ##[GYRE_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/GYRE_openNC_plot.ipynb)  
-    
-    This notebook opens NetCDF files from a test run of NEMO 3.4 in the GYRE configuration.  It then prepares a contour plot of temperature and a quiver plot of velocity.  
-
-* ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)  
-    
-    A script to examine currents. It includes a function for unstaggering the u/v data.  
-
 * ##[Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)  
     
     **Plotting Bathymetry Colour Meshes**  
@@ -92,22 +84,6 @@ Descriptions below the links are from the first cell of the notebooks
     * Plotting colour meshes of velocity components  
     * "Un-staggering" velocity component values for vector plots  
     * Quiver plots of velocity vectors  
-
-* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
-    
-* ##[Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)  
-    
-    Notebook that opens the NetCDF files created by NEMO and creates a movie.  
-
-
-* ##[Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)  
-    
-    Notebook to plot surface salinity and vertical cross-sections  
-
-* ##[WCSD_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/WCSD_openNC_plot.ipynb)  
-    
-    Notebook that opens the NetCDF(3) files created by BIO CONCEPTS 110 WCSD and plots them.  
-    Velocity plots are totally dominated by high velocities in the islands. Most useful is the flickery movie of the seasurface height.  
 
 
 ##License
