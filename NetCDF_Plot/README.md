@@ -11,6 +11,7 @@ in the following order:
 * [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)
 * [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)
 * [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Surface and Depth Slices.ipynb)
+* [Plotting Velocity Fields on Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Depth Slices.ipynb)
 
 Also included are notebooks from initial experiments around visualization
 of NEMO results.
@@ -20,17 +21,8 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[compareViscosity.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compareViscosity.ipynb)  
-    
-    A script to compare runs with different viscosities.  
-
 * ##[compute_thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/compute_thalweg.ipynb)  
     
-* ##[crashAnalysis.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/crashAnalysis.ipynb)  
-    
-    A code to look at the data from the crashed run. What is going wrong!  
-    Looks at currents, bathymetry, and sea surface height around the crashed time step.   
-
 * ##[Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)  
     
     **Exploring netCDF Files**  
@@ -48,19 +40,9 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook opens NetCDF files from a test run of NEMO 3.4 in the GYRE configuration.  It then prepares a contour plot of temperature and a quiver plot of velocity.  
 
-* ##[mergeCompare.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/mergeCompare.ipynb)  
-    
-    Comparing merge-tests on Salish and Japser. A week long run to see how the differences evolve.   
-
 * ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)  
     
     A script to examine currents. It includes a function for unstaggering the u/v data.  
-
-* ##[nu200_nu50.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/nu200_nu50.ipynb)  
-    
-    This notebook runs a comparison between the $\nu=200$ and $\nu=50$ simulations by Doug.   
-      
-    The focus is on currents and tracers.   
 
 * ##[Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)  
     
@@ -98,6 +80,18 @@ Descriptions below the links are from the first cell of the notebooks
     * Adding contour lines to colour mesh plots  
     * Anomaly plots  
     * Plotting salinity fields with various colour scales  
+
+* ##[Plotting Velocity Fields on Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Depth Slices.ipynb)  
+    
+    **Plotting Velocity Fields on Depth Slices**  
+      
+    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Tracers%20on%20Surface%20and%20Depth%20Slices.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.  
+    Topics include:  
+      
+    * Reading velocity component values from NEMO `*grid_[UVW].nc` results files  
+    * Plotting colour meshes of velocity components  
+    * "Un-staggering" velocity component values for vector plots  
+    * Quiver plots of velocity vectors  
 
 * ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
     
