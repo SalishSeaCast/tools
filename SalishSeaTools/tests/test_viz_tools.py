@@ -140,19 +140,25 @@ class TestPlotLandMask(object):
     def test_plot_land_mask_defaults(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
-        contour_fills = viz_tools_module.plot_land_mask(axes, bathy)
+        viz_tools_module.plot_coastline = Mock()
+        fills, lines = viz_tools_module.plot_land_mask(axes, bathy)
         axes.contourf.assert_called_once_with(
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
-        assert contour_fills == axes.contourf()
+        viz_tools_module.plot_coastline.assert_called_once_with(
+            axes, bathy, coords='grid', color='black')
+        assert fills, lines == (axes.contourf(), axes.contour())
 
-    def test_plot_land_mask_color_arg(self, viz_tools_module):
+    def test_plot_land_mask_color_args(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
-        contour_fills = viz_tools_module.plot_land_mask(
-            axes, bathy, color='red')
+        viz_tools_module.plot_coastline = Mock()
+        fills, lines = viz_tools_module.plot_land_mask(
+            axes, bathy, fill_color='red', edge_color='blue')
         axes.contourf.assert_called_once_with(
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='red')
-        assert contour_fills == axes.contourf()
+        viz_tools_module.plot_coastline.assert_called_once_with(
+            axes, bathy, coords='grid', color='blue')
+        assert fills, lines == (axes.contourf(), axes.contour())
 
     def test_plot_land_mask_map_coords(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
@@ -161,12 +167,15 @@ class TestPlotLandMask(object):
             'nav_lat': Mock(),
             'nav_lon': Mock(),
         }
-        contour_fills = viz_tools_module.plot_land_mask(
+        viz_tools_module.plot_coastline = Mock()
+        fills, lines = viz_tools_module.plot_land_mask(
             axes, bathy, coords='map')
         axes.contourf.assert_called_once_with(
             bathy.variables['nav_lon'], bathy.variables['nav_lat'],
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
-        assert contour_fills == axes.contourf()
+        viz_tools_module.plot_coastline.assert_called_once_with(
+            axes, bathy, coords='map', color='black')
+        assert fills, lines == (axes.contourf(), axes.contour())
 
 
 @pytest.mark.usefixtures('viz_tools_module')
