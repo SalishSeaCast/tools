@@ -13,9 +13,6 @@ in the following order:
 * [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Surface and Depth Slices.ipynb)
 * [Plotting Velocity Fields on Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Depth Slices.ipynb)
 
-Also included are notebooks from initial experiments around visualization
-of NEMO results.
-
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
 Descriptions below the links are from the first cell of the notebooks
