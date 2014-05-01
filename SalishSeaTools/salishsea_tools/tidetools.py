@@ -551,12 +551,12 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     if calcmethod == 'F95':
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='b', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='b',s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Foreman et al) for '+''.join(runname))
+        plt.title(constflag+' differences (Foreman et al) ')
         plt.savefig(constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
     if calcmethod == 'M04':
         plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='g', s=area, marker='o')
         plt.scatter(-124.5,47.9,c='g',s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Masson & Cummins) for '+''.join(runname))
+        plt.title(constflag+' differences (Masson & Cummins)')
         plt.savefig(constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
 
 def calc_diffs_meas_mod(runname,loc,grid):
