@@ -20,6 +20,8 @@ Descriptions below the links are from the first cell of the notebooks
       
     These simulations were run with nu=50 and  initial T+S from Oct 25 restart  
 
+* ##[nov2009.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/nov2009.ipynb)  
+    
 * ##[Preparing for Delta.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Preparing for Delta.ipynb)  
     
     This notebook looks for a grid point close to Delta so that we can start including that community in our output.   
@@ -41,6 +43,16 @@ Descriptions below the links are from the first cell of the notebooks
     repo into a data structure of NumPy arrays.  
       
     The code is based on code in the `bloomcast.wind` module in the [SoG-bloomcast project](https://bitbucket.org/douglatornell/sog-bloomcast).  
+
+* ##[bottom_friction.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/bottom_friction.ipynb)  
+    
+    This notebook will examine the storm surges under different bottom friction parametrizations.   
+      
+    Cases:  
+      
+    1. control - bfrib2 = 5e-3, bfeb2 = 2.5e-3  
+    2. noeb - bfrib2 = 5e-3, bfeb2 = 0  
+    3. bfrib3e3 - bfrib2 = 3e-3, bfeb2=0  
 
 * ##[Effect of Stratification.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/storm_surges/Effect of Stratification.ipynb)  
     
