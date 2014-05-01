@@ -218,8 +218,9 @@ def get_EC_observations(station, start_day, end_day):
     import arrow 
     import cStringIO
     import requests
-    from xml.etree import cElementTree as ElementTree
-    
+    from pytz import timezone as tz
+    from xml.etree import cElementTree as ElementTree  
+
     station_ids = {
         'Sandheads': 6831,
         'YVR': 889,
@@ -232,7 +233,7 @@ def get_EC_observations(station, start_day, end_day):
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
 
-    wind_spd, pressure = [], []
+    wind_spd= []
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -246,9 +247,13 @@ def get_EC_observations(station, start_day, end_day):
     tree = ElementTree.parse(cStringIO.StringIO(response.content))
     root = tree.getroot()
     raw_data = root.findall('stationdata')
+    times = []
     for record in raw_data:
         day = int(record.get('day'))
         hour = int(record.get('hour'))
+        year = int(record.get('year'))
+        month = int(record.get('month'))
+        t = arrow.Arrow(year, month,day,hour,tzinfo=tz('US/Pacific'))
         selectors = (
             (day == st_ar.day - 1 and hour >= 16)
             or
@@ -259,17 +264,15 @@ def get_EC_observations(station, start_day, end_day):
         if selectors:
             try:
                 wind_spd.append(float(record.find('windspd').text))
+                t.to('utc')
+                times.append(t.datetime)
             except TypeError:
                 wind_spd.append(0)
-            if station == 'YVR':
-                try:
-                    pressure.append(float(record.find('stnpress').text) )
-                except ValueError:
-                    pressure.append(0)
+                t.to('utc')
+                times.append(t.datetime)
     wind_spd= np.array(wind_spd) * 1000 / 3600
-    pressure = np.array(pressure)
     
-    return wind_spd, pressure
+    return wind_spd, times
 
 def get_SSH_forcing(boundary, date):
     """
