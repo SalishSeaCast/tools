@@ -394,7 +394,7 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and amplitude contours
     viz_tools.plot_coastline(ax, grid, coords='map')
-    v2 = np.arange(0, 1.30, 0.10)
+    v2 = np.arange(0, 1.80, 0.10)
     CS = ax.contourf(X, Y, amp, v2)
     CS2 = ax.contour(X, Y, amp, v2, colors='black')
     # Add a colour bar
@@ -750,42 +750,70 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     ax2 = fig2.add_subplot(111)
     ax2.set_xlabel('Station number [-]')
     ax2.set_ylabel('K1 amplitude [m]')
+    fig3 = plt.figure(figsize=(15,5))
+    ax3 = fig3.add_subplot(111)
+    ax3.set_xlabel('Station number[-]')
+    ax3.set_ylabel('M2 phase [degrees]')
+    fig4 = plt.figure(figsize=(15,5))
+    ax4 = fig4.add_subplot(111)
+    ax4.set_xlabel('Station number[-]')
+    ax4.set_ylabel('K1 phase [degrees]')
+    
+    
 
     #get the modelled data
     meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
     Am_M2_all = np.array(Am_M2_all)
     Ao_M2_all = np.array(Ao_M2_all)
+    gm_M2_all = np.array(gm_M2_all)
+    go_M2_all = np.array(go_M2_all)
     Am_K1_all = np.array(Am_K1_all)
     Ao_K1_all = np.array(Ao_K1_all)
-    #just take the model values at teh statnums we want
+    gm_K1_all = np.array(gm_K1_all)
+    go_K1_all = np.array(go_K1_all)
+    #just take the model values at the statnums we want
     some_model_amps_M2 = np.array([Am_M2_all[statnums]])
     some_model_amps_K1 = np.array([Am_K1_all[statnums]])
+    some_model_phas_M2 = np.array([gm_M2_all[statnums]])
+    some_model_phas_K1 = np.array([gm_K1_all[statnums]])
     x = np.array(range(0,len(statnums)))
     #plot the M2 model data
-    ax1.plot(x,some_model_amps_M2[0,:],'b-o', label=runname+'_model')
+    ax1.plot(x,some_model_amps_M2[0,:],'b-o', label='single model')
     #plot the K1 model data
-    ax2.plot(x,some_model_amps_K1[0,:],'b--o', label=runname+'_model')
+    ax2.plot(x,some_model_amps_K1[0,:],'b--o', label='single model')
+    ax3.plot(x,some_model_phas_M2[0,:],'b-o', label='single model')
+    ax4.plot(x,some_model_phas_K1[0,:],'b--o', label='single model')
 
     if len(args)>0:
         #assuming we will only be adding an additional 3 lines, define 3 colours
         colours = ['g','m','k','r','y']
-        for r in range(0,len(args)/2):
+        for r in range(0,int(len(args)/2)):
             runname = args[2*r]
             loc = args[2*r+1]
             meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
             Am_M2_all = np.array(Am_M2_all)
             Ao_M2_all = np.array(Ao_M2_all)
+            gm_M2_all = np.array(gm_M2_all)
+            go_M2_all = np.array(go_M2_all)
             Am_K1_all = np.array(Am_K1_all)
             Ao_K1_all = np.array(Ao_K1_all)
+            gm_K1_all = np.array(gm_K1_all)
+            go_K1_all = np.array(go_K1_all)
             some_model_amps_M2 = np.array([Am_M2_all[statnums]])
             some_model_amps_K1 = np.array([Am_K1_all[statnums]])
+            some_model_phas_M2 = np.array([gm_M2_all[statnums]])
+            some_model_phas_K1 = np.array([gm_K1_all[statnums]])
             x = np.array(range(0,len(statnums)))
-            ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label=''.join(runname)+'_model')
-            ax2.plot(x,some_model_amps_K1[0,:],'--o',color = colours[r], label=''.join(runname)+'_model')
+            ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label='model')
+            ax2.plot(x,some_model_amps_K1[0,:],'--o',color = colours[r], label='model')
+            ax3.plot(x,some_model_phas_M2[0,:],'-o',color = colours[r], label='model')
+            ax4.plot(x,some_model_phas_K1[0,:],'--o',color = colours[r], label='model')
 
     meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
     some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
     some_meas_amps_K1 = np.array([Ao_K1_all[statnums]])
+    some_meas_phas_M2 = np.array([go_M2_all[statnums]])
+    some_meas_phas_K1 = np.array([go_K1_all[statnums]])
     sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     #M2
@@ -802,6 +830,20 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     ax2.legend(loc='lower right')
     ax2.set_title('Line through stations '+str(statnums))
     fig2.savefig('meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
+    #M2
+    ax3.plot(x,some_meas_phas_M2[0,:],'r-o',label='measured')
+    ax3.set_xticks(x)
+    ax3.set_xticklabels(statnums+1)
+    ax3.legend(loc='lower right')
+    ax3.set_title('Line through stations '+str(statnums))
+    fig3.savefig('meas_mod_wlev_transect_M2_phas'+''.join(runname)+'_'+savename+'.pdf')
+    #K1
+    ax4.plot(x,some_meas_phas_K1[0,:],'r--o',label='measured')
+    ax4.set_xticks(x)
+    ax4.set_xticklabels(statnums+1)
+    ax4.legend(loc='lower right')
+    ax4.set_title('Line through stations '+str(statnums))
+    fig2.savefig('meas_mod_wlev_transect_K1_phas'+''.join(runname)+'_'+savename+'.pdf')
 
 
 def plot_wlev_transect_map(grid, statnums):
@@ -906,7 +948,7 @@ def get_composite_harms(runname,loc):
     runlength = np.zeros((len(runname),1))
     for k in range(0,len(runname)):
         runlength[k,0] = get_run_length(runname[k],loc)
-        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
+#        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
 
     mod_M2_eta_real1 = 0.0
     mod_M2_eta_imag1 = 0.0
