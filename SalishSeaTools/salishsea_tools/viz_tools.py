@@ -80,13 +80,7 @@ def plot_coastline(axes, bathymetry, coords='grid', color='black'):
     return contour_lines
 
 
-def plot_land_mask(
-    axes,
-    bathymetry,
-    coords='grid',
-    fill_color='black',
-    edge_color='black',
-):
+def plot_land_mask(axes, bathymetry, coords='grid', color='black'):
     """Plot land areas from bathymetry as solid colour ploygons on the axes.
 
     The bathymetry data may be specified either as a file path/name,
@@ -107,12 +101,8 @@ def plot_land_mask(
                  either :kbd:`grid` (the default) or :kbd:`map`.
     :type coords: str
 
-    :arg fill_color: Matplotlib colour to use for the land mask polygons
-    :type fill_color: str, float, rgb or rgba tuple
-
-    :arg edge_color: Matplotlib colour to use for the coastline contour
-                     lines on the polygon edges
-    :type edge_color: str, float, rgb or rgba tuple
+    :arg color: Matplotlib colour argument
+    :type color: str, float, rgb or rgba tuple
 
     :returns: Contour ploygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
@@ -126,17 +116,12 @@ def plot_land_mask(
         lats = bathy.variables['nav_lat']
         lons = bathy.variables['nav_lon']
         contour_fills = axes.contourf(
-            lons, lats, depths, [-0.01, 0.01], colors=fill_color)
-        contour_lines = plot_coastline(
-            axes, bathy, coords='map', color=edge_color)
+            lons, lats, depths, [-0.01, 0.01], colors=color)
     else:
-        contour_fills = axes.contourf(
-            depths, [-0.01, 0.01], colors=fill_color)
-        contour_lines = plot_coastline(
-            axes, bathy, coords='grid', color=edge_color)
+        contour_fills = axes.contourf(depths, [-0.01, 0.01], colors=color)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
-    return contour_fills, contour_lines
+    return contour_fills
 
 
 def set_aspect(
