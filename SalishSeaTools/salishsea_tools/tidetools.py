@@ -405,8 +405,8 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     ax.set_label('longitude (deg)')
     ax.set_label('latitude (deg)')
     ax.set_title(
-        '{constflag} amplitude (m) for {titstr}'
-        .format(constflag=constflag, titstr=titstr))
+        '{constflag} amplitude (m) for model'
+        .format(constflag=constflag))
     if savestr:
         fig.savefig(
             '{constflag}_amp_{titstr}.pdf'
@@ -455,8 +455,8 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
     ax.set_label('longitude (deg)')
     ax.set_label('latitude (deg)')
     ax.set_title(
-        '{constflag} phase (deg) for {titstr}'
-        .format(constflag=constflag, titstr=titstr))
+        '{constflag} phase (deg) for model'
+        .format(constflag=constflag))
     if savestr:
         fig.savefig(
             '{constflag}_pha_{titstr}.pdf'
@@ -758,9 +758,7 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     ax4 = fig4.add_subplot(111)
     ax4.set_xlabel('Station number[-]')
     ax4.set_ylabel('K1 phase [degrees]')
-    
-    
-
+        
     #get the modelled data
     meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
     Am_M2_all = np.array(Am_M2_all)
@@ -957,7 +955,7 @@ def get_composite_harms(runname,loc):
 
     for runnum in range(0,len(runname)):
         harmT = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
-        print loc+runname[runnum]+'/Tidal_Harmonics_eta.nc'
+#        print loc+runname[runnum]+'/Tidal_Harmonics_eta.nc'
         #get imaginary and real components
         mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
         mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
@@ -1005,17 +1003,16 @@ def get_composite_harms_uv(runname,loc):
 
     for runnum in range(0,len(runname)):
         harmU = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_U.nc','r')
-        print loc+runname[runnum]+'/Tidal_Harmonics_U.nc'
+#        print loc+runname[runnum]+'/Tidal_Harmonics_U.nc'
         #get imaginary and real components
         mod_M2_u_real1 = mod_M2_u_real1 + harmU.variables['M2_u_real'][0,:,:]*runlength[runnum]
-        print mod_M2_u_real1[895,43]
         mod_M2_u_imag1 = mod_M2_u_imag1 + harmU.variables['M2_u_imag'][0,:,:]*runlength[runnum]
         mod_K1_u_real1 = mod_K1_u_real1 + harmU.variables['K1_u_real'][0,:,:]*runlength[runnum]
         mod_K1_u_imag1 = mod_K1_u_imag1 + harmU.variables['K1_u_imag'][0,:,:]*runlength[runnum]
 
     for runnum in range(0,len(runname)):
         harmV = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_V.nc','r')
-        print loc+runname[runnum]+'/Tidal_Harmonics_V.nc'
+#        print loc+runname[runnum]+'/Tidal_Harmonics_V.nc'
         #get imaginary and real components
         mod_M2_v_real1 = mod_M2_v_real1 + harmV.variables['M2_v_real'][0,:,:]*runlength[runnum]
         mod_M2_v_imag1 = mod_M2_v_imag1 + harmV.variables['M2_v_imag'][0,:,:]*runlength[runnum]
