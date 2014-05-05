@@ -92,15 +92,6 @@ class TestPlotCoastline(object):
             bathy.variables['Bathymetry'], [0], colors='black')
         assert contour_lines == axes.contour()
 
-    def test_plot_coastline_color_arg(self, viz_tools_module):
-        axes, bathy = Mock(), Mock()
-        bathy.variables = {'Bathymetry': Mock()}
-        contour_lines = viz_tools_module.plot_coastline(
-            axes, bathy, color='red')
-        axes.contour.assert_called_once_with(
-            bathy.variables['Bathymetry'], [0], colors='red')
-        assert contour_lines == axes.contour()
-
     def test_plot_coastline_map_coords(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {
@@ -113,6 +104,24 @@ class TestPlotCoastline(object):
         axes.contour.assert_called_once_with(
             bathy.variables['nav_lon'], bathy.variables['nav_lat'],
             bathy.variables['Bathymetry'], [0], colors='black')
+        assert contour_lines == axes.contour()
+
+    def test_plot_coastline_depth(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_lines = viz_tools_module.plot_coastline(
+            axes, bathy, isobath=42.42)
+        axes.contour.assert_called_once_with(
+            bathy.variables['Bathymetry'], [42.42], colors='black')
+        assert contour_lines == axes.contour()
+
+    def test_plot_coastline_color_arg(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_lines = viz_tools_module.plot_coastline(
+            axes, bathy, color='red')
+        axes.contour.assert_called_once_with(
+            bathy.variables['Bathymetry'], [0], colors='red')
         assert contour_lines == axes.contour()
 
 
@@ -145,15 +154,6 @@ class TestPlotLandMask(object):
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
         assert contour_fills == axes.contourf()
 
-    def test_plot_land_mask_color_arg(self, viz_tools_module):
-        axes, bathy = Mock(), Mock()
-        bathy.variables = {'Bathymetry': Mock()}
-        contour_fills = viz_tools_module.plot_land_mask(
-            axes, bathy, color='red')
-        axes.contourf.assert_called_once_with(
-            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='red')
-        assert contour_fills == axes.contourf()
-
     def test_plot_land_mask_map_coords(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {
@@ -166,6 +166,26 @@ class TestPlotLandMask(object):
         axes.contourf.assert_called_once_with(
             bathy.variables['nav_lon'], bathy.variables['nav_lat'],
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_depth(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, isobath=42.42)
+        args, kwargs = axes.contourf.call_args
+        assert args[0] == bathy.variables['Bathymetry']
+        np.testing.assert_almost_equal(args[1], [-0.01, 42.43])
+        assert kwargs == {'colors': 'black'}
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_color_arg(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, color='red')
+        axes.contourf.assert_called_once_with(
+            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='red')
         assert contour_fills == axes.contourf()
 
 

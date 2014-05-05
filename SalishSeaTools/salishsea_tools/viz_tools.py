@@ -37,7 +37,13 @@ def calc_abs_max(array):
     return np.absolute(array.flatten()[np.absolute(array).argmax()])
 
 
-def plot_coastline(axes, bathymetry, coords='grid', color='black'):
+def plot_coastline(
+    axes,
+    bathymetry,
+    coords='grid',
+    isobath=0,
+    color='black',
+):
     """Plot the coastline contour line from bathymetry on the axes.
 
     The bathymetry data may be specified either as a file path/name,
@@ -51,12 +57,16 @@ def plot_coastline(axes, bathymetry, coords='grid', color='black'):
     :arg axes: Axes instance to plot the coastline contour line on.
     :type axes: :py:class:`matplotlib.axes.Axes`
 
-    :arg bathymetry:
-    :type bathymetry:
+    :arg bathymetry: File path/name of a netCDF bathymetry data file
+                     or a dataset object containing the bathymetry data.
+    :type bathymetry: str or :py:class:`netCDF4.Dataset`
 
     :arg coords: Type of plot coordinates to set the aspect ratio for;
                  either :kbd:`grid` (the default) or :kbd:`map`.
     :type coords: str
+
+    :arg isobath: Depth to plot the contour at; defaults to 0.
+    :type isobath: float
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
@@ -72,15 +82,22 @@ def plot_coastline(axes, bathymetry, coords='grid', color='black'):
     if coords == 'map':
         lats = bathy.variables['nav_lat']
         lons = bathy.variables['nav_lon']
-        contour_lines = axes.contour(lons, lats, depths, [0], colors=color)
+        contour_lines = axes.contour(
+            lons, lats, depths, [isobath], colors=color)
     else:
-        contour_lines = axes.contour(depths, [0], colors=color)
+        contour_lines = axes.contour(depths, [isobath], colors=color)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_lines
 
 
-def plot_land_mask(axes, bathymetry, coords='grid', color='black'):
+def plot_land_mask(
+    axes,
+    bathymetry,
+    coords='grid',
+    isobath=0,
+    color='black',
+):
     """Plot land areas from bathymetry as solid colour ploygons on the axes.
 
     The bathymetry data may be specified either as a file path/name,
@@ -94,12 +111,16 @@ def plot_land_mask(axes, bathymetry, coords='grid', color='black'):
     :arg axes: Axes instance to plot the land mask ploygons on.
     :type axes: :py:class:`matplotlib.axes.Axes`
 
-    :arg bathymetry:
-    :type bathymetry:
+    :arg bathymetry: File path/name of a netCDF bathymetry data file
+                     or a dataset object containing the bathymetry data.
+    :type bathymetry: str or :py:class:`netCDF4.Dataset`
 
     :arg coords: Type of plot coordinates to set the aspect ratio for;
                  either :kbd:`grid` (the default) or :kbd:`map`.
     :type coords: str
+
+    :arg isobath: Depth to plot the land mask at; defaults to 0.
+    :type isobath: float
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
@@ -112,13 +133,14 @@ def plot_land_mask(axes, bathymetry, coords='grid', color='black'):
     else:
         bathy = bathymetry
     depths = bathy.variables['Bathymetry']
+    contour_interval = [-0.01, isobath + 0.01]
     if coords == 'map':
         lats = bathy.variables['nav_lat']
         lons = bathy.variables['nav_lon']
         contour_fills = axes.contourf(
-            lons, lats, depths, [-0.01, 0.01], colors=color)
+            lons, lats, depths, contour_interval, colors=color)
     else:
-        contour_fills = axes.contourf(depths, [-0.01, 0.01], colors=color)
+        contour_fills = axes.contourf(depths, contour_interval, colors=color)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_fills
