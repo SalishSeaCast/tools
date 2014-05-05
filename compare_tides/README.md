@@ -39,8 +39,14 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ##[Single Tide 2 days.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/Single Tide 2 days.ipynb)  
     
+    Study Tides, over short periods, one Constituent at a Time  
+
 * ##[comp_wlev_harm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm.ipynb)  
     
+* ##[Multi-tides w Fit.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/Multi-tides w Fit.ipynb)  
+    
+    Study Tides: Multi-constituents : Fit to Tide Frequencies  
+
 * ##[plot_foreman_thalweg-withNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg-withNorth.ipynb)  
     
     For results including the Northern Boundary,  
