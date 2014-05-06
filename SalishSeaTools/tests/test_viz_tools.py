@@ -17,10 +17,14 @@
 """
 from __future__ import division
 
+from collections import defaultdict
+
 from mock import (
+    MagicMock,
     Mock,
     patch,
 )
+import netCDF4 as nc
 import numpy as np
 import pytest
 
@@ -106,13 +110,57 @@ class TestPlotCoastline(object):
             bathy.variables['Bathymetry'], [0], colors='black')
         assert contour_lines == axes.contour()
 
-    def test_plot_coastline_depth(self, viz_tools_module):
+    def test_plot_coastline_isobath(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
         contour_lines = viz_tools_module.plot_coastline(
             axes, bathy, isobath=42.42)
         axes.contour.assert_called_once_with(
             bathy.variables['Bathymetry'], [42.42], colors='black')
+        assert contour_lines == axes.contour()
+
+    def test_plot_coastline_no_xslice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        with pytest.raises(ValueError):
+            viz_tools_module.plot_coastline(
+                axes, bathy, yslice=np.arange(200, 320))
+
+    def test_plot_coastline_no_yslice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        with pytest.raises(ValueError):
+            viz_tools_module.plot_coastline(
+                axes, bathy, xslice=np.arange(250, 370))
+
+    def test_plot_coastline_grid_coords_slice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': MagicMock(spec=nc.Variable)}
+        xslice = np.arange(250, 370)
+        yslice = np.arange(200, 320)
+        contour_lines = viz_tools_module.plot_coastline(
+            axes, bathy, xslice=xslice, yslice=yslice)
+        axes.contour.assert_called_once_with(
+            xslice, yslice, bathy.variables['Bathymetry'][yslice, xslice].data,
+            [0], colors='black')
+        assert contour_lines == axes.contour()
+
+    def test_plot_coastline_map_coords_slice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {
+            'Bathymetry': MagicMock(spec=nc.Variable),
+            'nav_lon': MagicMock(spec=nc.Variable),
+            'nav_lat': MagicMock(spec=nc.Variable),
+        }
+        xslice = np.arange(250, 370)
+        yslice = np.arange(200, 320)
+        contour_lines = viz_tools_module.plot_coastline(
+            axes, bathy, coords='map', xslice=xslice, yslice=yslice)
+        axes.contour.assert_called_once_with(
+            bathy.variables['nav_lon'][yslice, xslice],
+            bathy.variables['nav_lat'][yslice, xslice],
+            bathy.variables['Bathymetry'][yslice, xslice].data,
+            [0], colors='black')
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_color_arg(self, viz_tools_module):
@@ -168,7 +216,7 @@ class TestPlotLandMask(object):
             bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
         assert contour_fills == axes.contourf()
 
-    def test_plot_land_mask_depth(self, viz_tools_module):
+    def test_plot_land_mask_isobath(self, viz_tools_module):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
         contour_fills = viz_tools_module.plot_land_mask(
@@ -177,6 +225,50 @@ class TestPlotLandMask(object):
         assert args[0] == bathy.variables['Bathymetry']
         np.testing.assert_almost_equal(args[1], [-0.01, 42.43])
         assert kwargs == {'colors': 'black'}
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_no_xslice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        with pytest.raises(ValueError):
+            viz_tools_module.plot_land_mask(
+                axes, bathy, yslice=np.arange(200, 320))
+
+    def test_plot_land_mask_no_yslice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': Mock()}
+        with pytest.raises(ValueError):
+            viz_tools_module.plot_land_mask(
+                axes, bathy, xslice=np.arange(250, 370))
+
+    def test_plot_land_mask_grid_coords_slice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {'Bathymetry': MagicMock(spec=nc.Variable)}
+        xslice = np.arange(250, 370)
+        yslice = np.arange(200, 320)
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, xslice=xslice, yslice=yslice)
+        axes.contourf.assert_called_once_with(
+            xslice, yslice, bathy.variables['Bathymetry'][yslice, xslice].data,
+            [-0.01, 0.01], colors='black')
+        assert contour_fills == axes.contourf()
+
+    def test_plot_land_mask_map_coords_slice(self, viz_tools_module):
+        axes, bathy = Mock(), Mock()
+        bathy.variables = {
+            'Bathymetry': MagicMock(spec=nc.Variable),
+            'nav_lon': MagicMock(spec=nc.Variable),
+            'nav_lat': MagicMock(spec=nc.Variable),
+        }
+        xslice = np.arange(250, 370)
+        yslice = np.arange(200, 320)
+        contour_fills = viz_tools_module.plot_land_mask(
+            axes, bathy, coords='map', xslice=xslice, yslice=yslice)
+        axes.contourf.assert_called_once_with(
+            bathy.variables['nav_lon'][yslice, xslice],
+            bathy.variables['nav_lat'][yslice, xslice],
+            bathy.variables['Bathymetry'][yslice, xslice].data,
+            [-0.01, 0.01], colors='black')
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_color_arg(self, viz_tools_module):
