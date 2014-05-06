@@ -42,6 +42,8 @@ def plot_coastline(
     bathymetry,
     coords='grid',
     isobath=0,
+    xslice=None,
+    yslice=None,
     color='black',
 ):
     """Plot the coastline contour line from bathymetry on the axes.
@@ -68,12 +70,31 @@ def plot_coastline(
     :arg isobath: Depth to plot the contour at; defaults to 0.
     :type isobath: float
 
+    :arg xslice: X dimension slice to defined the region for which the
+                 contour is to be calculated;
+                 defaults to :kbd:`None` which means the whole domain.
+                 If an xslice is given,
+                 a yslice value is also required.
+    :type xslice: :py:class:`numpy.ndarray`
+
+    :arg yslice: Y dimension slice to defined the region for which the
+                 contour is to be calculated;
+                 defaults to :kbd:`None` which means the whole domain.
+                 If a yslice is given,
+                 an xslice value is also required.
+    :type yslice: :py:class:`numpy.ndarray`
+
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
 
     :returns: Contour line set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
+    if any((
+        xslice is None and yslice is not None,
+        xslice is not None and yslice is None,
+    )):
+        raise ValueError('Both xslice and yslice must be specified')
     if not hasattr(bathymetry, 'variables'):
         bathy = nc.Dataset(bathymetry)
     else:
@@ -82,10 +103,20 @@ def plot_coastline(
     if coords == 'map':
         lats = bathy.variables['nav_lat']
         lons = bathy.variables['nav_lon']
-        contour_lines = axes.contour(
-            lons, lats, depths, [isobath], colors=color)
+        if xslice is None and yslice is None:
+            contour_lines = axes.contour(
+                lons, lats, depths, [isobath], colors=color)
+        else:
+            contour_lines = axes.contour(
+                lons[yslice, xslice], lats[yslice, xslice],
+                depths[yslice, xslice].data, [isobath], colors=color)
     else:
-        contour_lines = axes.contour(depths, [isobath], colors=color)
+        if xslice is None and yslice is None:
+            contour_lines = axes.contour(depths, [isobath], colors=color)
+        else:
+            contour_lines = axes.contour(
+                xslice, yslice, depths[yslice, xslice].data,
+                [isobath], colors=color)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_lines
@@ -96,6 +127,8 @@ def plot_land_mask(
     bathymetry,
     coords='grid',
     isobath=0,
+    xslice=None,
+    yslice=None,
     color='black',
 ):
     """Plot land areas from bathymetry as solid colour ploygons on the axes.
@@ -122,12 +155,31 @@ def plot_land_mask(
     :arg isobath: Depth to plot the land mask at; defaults to 0.
     :type isobath: float
 
+    :arg xslice: X dimension slice to defined the region for which the
+                 land mask is to be calculated;
+                 defaults to :kbd:`None` which means the whole domain.
+                 If an xslice is given,
+                 a yslice value is also required.
+    :type xslice: :py:class:`numpy.ndarray`
+
+    :arg yslice: Y dimension slice to defined the region for which the
+                 land maks is to be calculated;
+                 defaults to :kbd:`None` which means the whole domain.
+                 If a yslice is given,
+                 an xslice value is also required.
+    :type yslice: :py:class:`numpy.ndarray`
+
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
 
     :returns: Contour ploygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
+    if any((
+        xslice is None and yslice is not None,
+        xslice is not None and yslice is None,
+    )):
+        raise ValueError('Both xslice and yslice must be specified')
     if not hasattr(bathymetry, 'variables'):
         bathy = nc.Dataset(bathymetry)
     else:
@@ -137,10 +189,21 @@ def plot_land_mask(
     if coords == 'map':
         lats = bathy.variables['nav_lat']
         lons = bathy.variables['nav_lon']
-        contour_fills = axes.contourf(
-            lons, lats, depths, contour_interval, colors=color)
+        if xslice is None and yslice is None:
+            contour_fills = axes.contourf(
+                lons, lats, depths, contour_interval, colors=color)
+        else:
+            contour_fills = axes.contourf(
+                lons[yslice, xslice], lats[yslice, xslice],
+                depths[yslice, xslice].data, contour_interval, colors=color)
     else:
-        contour_fills = axes.contourf(depths, contour_interval, colors=color)
+        if xslice is None and yslice is None:
+            contour_fills = axes.contourf(
+                depths, contour_interval, colors=color)
+        else:
+            contour_fills = axes.contourf(
+                xslice, yslice, depths[yslice, xslice].data,
+                contour_interval, colors=color)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_fills
