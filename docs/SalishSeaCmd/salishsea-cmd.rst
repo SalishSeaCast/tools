@@ -76,7 +76,7 @@ Available Commands
 
 The command :command:`salishsea --help` produces a list of the available :program:`salishsea` options and sub-commands:
 
-.. program-output:: salishsea --help
+.. program-output:: echo $PATH; which salishsea
 
 For details of the arguments and options for a sub-command use
 :command:`salishsea help <sub-command>`.
