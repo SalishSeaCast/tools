@@ -6,6 +6,16 @@ def get_data_from_csv(tidevar, constituent, depth):
     import numpy
 
     theta = radians(29) #rotation of the grid = 29 degrees
+
+    #correction factors: taken from those used at the Northern boundary as a first guess
+    corr_M2 = 1.2240 #correction factor for the M2 
+    corr_K1 = 1.1624 #correction factor for K1
+
+    corr=1
+    if constituent == 'M2':
+        corr=corr_M2
+    elif constituent == "K1":
+        corr=corr_K1
     
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
@@ -47,8 +57,9 @@ def get_data_from_csv(tidevar, constituent, depth):
         #Convert amplitudes from north/south u/v into grid co-ordinates
         
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
-        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
+        # With flux correction applied to U/V from webtide
+        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
+        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
         uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
@@ -78,8 +89,9 @@ def get_data_from_csv(tidevar, constituent, depth):
 	print(boundlen) 
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
-        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
+        # With flux correction applied to U/V from webtide
+        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
+        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
         uphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
