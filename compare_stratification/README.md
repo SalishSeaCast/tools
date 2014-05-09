@@ -6,7 +6,7 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[STRATOGEM_profiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/STRATOGEM_profiles.ipynb)  
+* ##[STRATOGEM_profiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_stratification/STRATOGEM_profiles.ipynb)  
     
     Notebook to compare our spin-up to STRATOGEM profiles  
 

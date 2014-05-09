@@ -20,9 +20,13 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[CompareTwo.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/CompareTwo.ipynb)  
+* ##[Untitled0.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Susan/Untitled0.ipynb)  
     
-* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
+* ##[CompareTwo.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Susan/CompareTwo.ipynb)  
+    
+    Susan's workhorse notebook for looking at a variety of fields at two different times.  
+
+* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Susan/SusansViewerWQuiver.ipynb)  
     
 
 ##License
