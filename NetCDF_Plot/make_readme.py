@@ -39,8 +39,8 @@ in the following order:
 
 * [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)
 * [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)
-* [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Surface and Depth Slices.ipynb)
-* [Plotting Velocity Fields on Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Depth Slices.ipynb)
+* [Plotting Tracers on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Horizontal Planes.ipynb)
+* [Plotting Velocity Fields on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Horizontal Planes.ipynb)
 
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
