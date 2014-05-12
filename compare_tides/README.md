@@ -16,6 +16,12 @@ Descriptions below the links are from the first cell of the notebooks
     
     Study Tides: Multi-constituents : Fit to Tide Frequencies  
 
+* ##[Western Flux Inceased M2K1.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/Western Flux Inceased M2K1.ipynb)  
+    
+    A run with the flux increased by 25% in M2/K1 tidal currents. Check to see if this gives a better match with tidal amplitudes/phases.  
+      
+    Compare with Nancy's previous M2K1 run. This had flux corrections at the northe, but not at the west.   
+
 * ##[plot_foreman_thalweg-withNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg-withNorth.ipynb)  
     
     For results including the Northern Boundary,  
