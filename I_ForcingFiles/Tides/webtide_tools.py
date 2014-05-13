@@ -12,10 +12,10 @@ def get_data_from_csv(tidevar, constituent, depth):
     corr_K1 = 1.1624 #correction factor for K1
 
     corr=1
-    if constituent == 'M2':
-        corr=corr_M2
-    elif constituent == "K1":
-        corr=corr_K1
+    #if constituent == 'M2':
+    #    corr=corr_M2
+    #elif constituent == "K1":
+    #    corr=corr_K1
     
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
