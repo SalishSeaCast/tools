@@ -24,7 +24,7 @@ import re
 
 nbviewer = 'http://nbviewer.ipython.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
-repo_dir = 'NetCDF_Plot'
+repo_dir = 'analysis_tools'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
 readme = """The IPython Notebooks in this directory provide discussion,
@@ -37,10 +37,10 @@ If you are new to the Salish Sea MEOPAR project or to IPython Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
 in the following order:
 
-* [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Exploring netCDF Files.ipynb)
-* [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Bathymetry Colour Meshes.ipynb)
-* [Plotting Tracers on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Tracers on Horizontal Planes.ipynb)
-* [Plotting Velocity Fields on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting Velocity Fields on Horizontal Planes.ipynb)
+* [Exploring netCDF Files.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Exploring netCDF Files.ipynb)
+* [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
+* [Plotting Tracers on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
+* [Plotting Velocity Fields on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
 
 The links below are to static renderings of the notebooks via
 [nbviewer.ipython.org](http://nbviewer.ipython.org/).
