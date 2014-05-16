@@ -8,6 +8,19 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ##[comp_wlev_harm.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm.ipynb)  
     
+* ##[Tidal Variations.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/Tidal Variations.ipynb)  
+    
+    This notebook looks at the effect of changing different parameters on the tides.  
+      
+    Runs:   
+    1. tide_flux_M2K1 - M2/K1 only over 5 days. No modifications to western tides. Northern tides flux decreased.  
+    2. tide_flux_west - M2/K1 only with flux increased by 25% at west.   
+    3. tide_bottom - bottom friction reduced to 3e-3 (from 5e-3). Note: I suspect we can reduce further, perhaps to 2e-3?  
+      
+    Measured amplitude/phase from Foreman's Discovery Islands and 2004 paper are included.  
+      
+    Uses the same curve fitting technique that Susan wrote.   
+
 * ##[comp_wlev_harm_compositerun.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm_compositerun.ipynb)  
     
 * ##[comp_wlev_harm-wNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/comp_wlev_harm-wNorth.ipynb)  
@@ -20,7 +33,11 @@ Descriptions below the links are from the first cell of the notebooks
     
     A run with the flux increased by 25% in M2/K1 tidal currents. Check to see if this gives a better match with tidal amplitudes/phases.  
       
-    Compare with Nancy's previous M2K1 run. This had flux corrections at the northe, but not at the west.   
+    Compare with Nancy's previous M2K1 run. This had flux corrections at the north, but not at the west.   
+      
+    Measured amplitude/phase from Foreman's Discovery Islands and 2004 paper are included.  
+      
+    Uses the same curve fitting technique that Susan wrote.   
 
 * ##[plot_foreman_thalweg-withNorth.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/compare_tides/plot_foreman_thalweg-withNorth.ipynb)  
     
