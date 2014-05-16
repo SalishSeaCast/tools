@@ -9,26 +9,26 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[GYRE_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/GYRE_openNC_plot.ipynb)  
+* ##[GYRE_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/GYRE_openNC_plot.ipynb)  
     
     This notebook opens NetCDF files from a test run of NEMO 3.4 in the GYRE configuration.  It then prepares a contour plot of temperature and a quiver plot of velocity.  
 
-* ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/NancysCurrents.ipynb)  
+* ##[NancysCurrents.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/NancysCurrents.ipynb)  
     
     A script to examine currents. It includes a function for unstaggering the u/v data.  
 
-* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/SusansViewerWQuiver.ipynb)  
+* ##[SusansViewerWQuiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/SusansViewerWQuiver.ipynb)  
     
-* ##[Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Tidal Movie.ipynb)  
+* ##[Tidal Movie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/Tidal Movie.ipynb)  
     
     Notebook that opens the NetCDF files created by NEMO and creates a movie.  
 
 
-* ##[Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Vertical Tracer Cross-sections.ipynb)  
+* ##[Vertical Tracer Cross-sections.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/Vertical Tracer Cross-sections.ipynb)  
     
     Notebook to plot surface salinity and vertical cross-sections  
 
-* ##[WCSD_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/WCSD_openNC_plot.ipynb)  
+* ##[WCSD_openNC_plot.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/old_notebooks/WCSD_openNC_plot.ipynb)  
     
     Notebook that opens the NetCDF(3) files created by BIO CONCEPTS 110 WCSD and plots them.  
     Velocity plots are totally dominated by high velocities in the islands. Most useful is the flickery movie of the seasurface height.  
