@@ -19,7 +19,6 @@ Contents:
 
    SalishSeaCmd/salishsea-cmd
    SalishSeaTools/salishsea-tools
-   NetCDF_Plot/index
    bathymetry/index
    I_ForcingFiles/index
    Marlin/index
