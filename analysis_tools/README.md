@@ -57,7 +57,7 @@ Descriptions below the links are from the first cell of the notebooks
     
     **Plotting Tracers on Horizontal Planes (Depth Slices)**  
       
-    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Bathymetry%20Colour%20Meshes) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.  
+    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.  
     Topics include:  
       
     * Reading tracer variable values from NEMO `*grid_T.nc` results files  
@@ -74,7 +74,7 @@ Descriptions below the links are from the first cell of the notebooks
     
     **Plotting Velocity Fields on Horizontal Planes (Depth Slices)**  
       
-    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/NetCDF_Plot/Plotting%20Tracers%20on%20Surface%20and%20Depth%20Slices.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.  
+    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Tracers%20on%20Surface%20and%20Depth%20Slices.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.  
     Topics include:  
       
     * Reading velocity component values from NEMO `*grid_[UVW].nc` results files  
