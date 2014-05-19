@@ -10,12 +10,11 @@ def get_data_from_csv(tidevar, constituent, depth):
     #correction factors: taken from those used at the Northern boundary as a first guess
     corr_M2 = 1.2240 #correction factor for the M2 
     corr_K1 = 1.1624 #correction factor for K1
+    pha_K1 = 5 #K1 phase correction in degrees. 
 
-    corr=1
-    #if constituent == 'M2':
-    #    corr=corr_M2
-    #elif constituent == "K1":
-    #    corr=corr_K1
+    corr_pha = 0
+    if constituent == "K1":
+        corr_pha=pha_K1
     
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
@@ -37,7 +36,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         #allocate the M2 phase and amplitude from Webtide to the boundary cells
         #(CHECK: Are these allocated in the right order?)
         amp_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].amp
-        pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha
+        pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha - corr_pha
         
         #convert the phase and amplitude to cosine and sine format that NEMO likes
         Z1 = amp_W*numpy.cos(numpy.radians(pha_W))
@@ -57,14 +56,21 @@ def get_data_from_csv(tidevar, constituent, depth):
         #Convert amplitudes from north/south u/v into grid co-ordinates
         
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        # With flux correction applied to U/V from webtide
-        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
-        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
+        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
+        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
         uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
         uZ1 = ua_ugrid*numpy.cos(theta)*numpy.cos(uphi_ugrid) - va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
         uZ2 = ua_ugrid*numpy.cos(theta)*numpy.sin(uphi_ugrid) + va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
+
+        # adjustments for phase correction
+        amp = np.sqrt(uZ1[:]**2 + uZ2[:]**2);
+        pha=[]
+        for i in range(0,len(amp)):
+            pha.append(math.atan2(uZ2[i],uZ1[i])-pha_corr)
+        uZ1 = amp*numpy.cos(pha)
+        uZ2 = amp*numpy.sin(pha)
         
         #find the boundary
         I = numpy.where(depth!=0)
@@ -89,14 +95,21 @@ def get_data_from_csv(tidevar, constituent, depth):
 	print(boundlen) 
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        # With flux correction applied to U/V from webtide
-        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
-        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
+        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
+        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
         uphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
         vZ1 = -ua_vgrid*numpy.sin(theta)*numpy.cos(uphi_vgrid) - va_vgrid*numpy.cos(theta)*numpy.sin(vphi_vgrid)
         vZ2 = -ua_vgrid*numpy.sin(theta)*numpy.sin(uphi_vgrid) + va_vgrid*numpy.cos(theta)*numpy.cos(vphi_vgrid)
+
+        # adjustments for phase correction
+        amp = np.sqrt(vZ1[:]**2 + vZ2[:]**2);
+        pha=[]
+        for i in range(0,len(amp)):
+            pha.append(math.atan2(vZ2[i],vZ1[i])-pha_corr)
+        vZ1 = amp*numpy.cos(pha)
+        vZ2 = amp*numpy.sin(pha)
         
         #find the boundary
         I = numpy.where(depth!=0)
