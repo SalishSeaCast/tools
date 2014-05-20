@@ -4,12 +4,11 @@ def get_data_from_csv(tidevar, constituent, depth):
     import pandas as pd
     from math import radians
     import numpy
+    import math
 
     theta = radians(29) #rotation of the grid = 29 degrees
 
-    #correction factors: taken from those used at the Northern boundary as a first guess
-    corr_M2 = 1.2240 #correction factor for the M2 
-    corr_K1 = 1.1624 #correction factor for K1
+    #correction factors
     pha_K1 = 5 #K1 phase correction in degrees. 
 
     corr_pha = 0
@@ -65,10 +64,10 @@ def get_data_from_csv(tidevar, constituent, depth):
         uZ2 = ua_ugrid*numpy.cos(theta)*numpy.sin(uphi_ugrid) + va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
 
         # adjustments for phase correction
-        amp = np.sqrt(uZ1[:]**2 + uZ2[:]**2);
+        amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(uZ2[i],uZ1[i])-pha_corr)
+            pha.append(math.atan2(uZ2[i],uZ1[i])-corr_pha)
         uZ1 = amp*numpy.cos(pha)
         uZ2 = amp*numpy.sin(pha)
         
@@ -104,10 +103,10 @@ def get_data_from_csv(tidevar, constituent, depth):
         vZ2 = -ua_vgrid*numpy.sin(theta)*numpy.sin(uphi_vgrid) + va_vgrid*numpy.cos(theta)*numpy.cos(vphi_vgrid)
 
         # adjustments for phase correction
-        amp = np.sqrt(vZ1[:]**2 + vZ2[:]**2);
+        amp = numpy.sqrt(vZ1[:]**2 + vZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(vZ2[i],vZ1[i])-pha_corr)
+            pha.append(math.atan2(vZ2[i],vZ1[i])-corr_pha)
         vZ1 = amp*numpy.cos(pha)
         vZ2 = amp*numpy.sin(pha)
         
@@ -139,7 +138,7 @@ def create_tide_netcdf(tidevar,constituent,depth,number):
     Z1, Z2, I, boundlen = get_data_from_csv(tidevar,constituent,depth)
         
     nemo = NC.Dataset('SalishSea'+number+'_corr_west_tide_'+constituent+'_grid_'+tidevar+'.nc','w')
-    nemo.description = 'Tide data from WebTide'
+    nemo.description = 'Tide data from WebTide - K1 phase shifted'
     
     # give the netcdf some dimensions
     nemo.createDimension('xb', boundlen+10)
