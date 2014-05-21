@@ -13,7 +13,7 @@ def get_data_from_csv(tidevar, constituent, depth):
 
     corr_pha = 0
     if constituent == "K1":
-        corr_pha=pha_K1
+       corr_pha=pha_K1
     
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
@@ -67,7 +67,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(uZ2[i],uZ1[i])-corr_pha)
+            pha.append(math.atan2(uZ2[i],uZ1[i])-numpy.radians(corr_pha))
         uZ1 = amp*numpy.cos(pha)
         uZ2 = amp*numpy.sin(pha)
         
@@ -106,7 +106,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         amp = numpy.sqrt(vZ1[:]**2 + vZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(vZ2[i],vZ1[i])-corr_pha)
+            pha.append(math.atan2(vZ2[i],vZ1[i])-numpy.radians(corr_pha))
         vZ1 = amp*numpy.cos(pha)
         vZ2 = amp*numpy.sin(pha)
         
