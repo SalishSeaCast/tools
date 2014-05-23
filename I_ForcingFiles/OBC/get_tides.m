@@ -1,4 +1,4 @@
-function [pred,wlev,anomaly,tim, tideharm] = get_tides(csvfilename, location)
+function [pred,wlev,anomaly,tim] = get_tides(csvfilename, location)
 
 % Take the csv file of measured water level and calculate sea surface
 % anomaly using predicted tide level from t_xtide
@@ -15,6 +15,7 @@ function [pred,wlev,anomaly,tim, tideharm] = get_tides(csvfilename, location)
 %Read in the measured water level data the location
 fid = fopen(csvfilename);
 meas = textscan(fid,'%f/%f/%f %f:%f,%f,','HeaderLines',8);
+lat = csvread(csvfilename,2,1,[2,1,2,1]);
 fclose(fid);
 
 %Calculate dates from columns of data
@@ -45,11 +46,17 @@ wlev = newmeas(:,2);
 
 clear time newmeas meas
 
-% use t_xtide to get the predictions
-[tidestruc] = t_xtide(location,tim,'format','full','units','meters');
-tideharm=t_xtide(location,'format','info','units','meters');
+%Use t_tide to determine harmonic constituents. Needs to be at least one
+%year time series (366 days)
+[tidestruc,~] = t_tide(wlev,'start time',start_date(1,1),'latitude',lat);
     
-pred = tidestruc.yout;
+%Get predicted tide for same period
+pred = t_predic(tim,tidestruc,'latitude',lat);
+
+%%% Determine latitude somehow from file
+
+%Add mean to the predicted water levels. 
+pred = pred +nanmean(wlev);
 
 %Calculate sea level anomaly
 anomaly = wlev - pred';
@@ -58,7 +65,7 @@ anomaly = wlev - pred';
 figure;
 subplot(2,1,1)
 plot(tim,wlev,'b',tim,pred,'m')
-tit_str = ['Predicted tides (xtide) and measuared water levels at ' location]
+tit_str = ['Predicted tides (t tide) and measuared water levels at ' location];
 title(tit_str)
 legend('measured','predicted','Location','Best')
 xlabel('time (PST)')
@@ -70,25 +77,29 @@ xlabel('time (PST)'); ylim([-1,1]);
 ylabel('water level anomaly (meas-pred) (m)')
 datetick('x','mm/yyyy')
 
-
+%Edit this part to save harmonics somehow.
 %save the data - frist harmonics
-freqs = tideharm.freq; a = tideharm.A; kappa=tideharm.kappa;
+freqs = tidestruc.freq; a = tidestruc.tidecon(:,1); kappa=tidestruc.tidecon(:,3);
+name=tidestruc.name; amp_err = tidestruc.tidecon(:,2); pha_err = tidestruc.tidecon(:,4);
 n=length(kappa);
-filename = [location  '_xtide_harms.csv'];
+filename = [location  '_ttide_harms.csv'];
 fid = fopen(filename, 'w');
 %add some headers
-fprintf(fid, 'Constiuent \t Amplitude (m) \t Phase  \n');
+fprintf(fid, 'Constituent \t frequency \t  Amplitude (m) \t amp_err \t Phase (PST) \t pha_err \n');
 for row=1:n
-    fprintf(fid, '%s \t', freqs(row,:));
+    fprintf(fid, '%s \t', name(row,:));
+    fprintf(fid, '%f \t', freqs(row));
     fprintf(fid,' %f\t', a(row));
-    fprintf(fid,' %f\n', kappa(row));
+    fprintf(fid,' %f\t', amp_err(row));
+    fprintf(fid,' %f\t', kappa(row));
+    fprintf(fid,' %f\n', pha_err(row));
 end
-fclose(fid)
+fclose(fid);
 
 %second save predictions
 M = datestr(tim);
 n = length(tim);
-filename = [location  '_xtide_prediction_' datestr(start_date) '_' datestr(end_date) '.csv'];
+filename = [location  '_ttide_prediction_' datestr(start_date) '_' datestr(end_date) '.csv'];
 fid = fopen(filename, 'w');
 %add some headers
 fprintf(fid, 'Time_Local \t wlev_pred \n');
@@ -96,4 +107,4 @@ for row=1:n
     fprintf(fid, '%s \t', M(row,:));
     fprintf(fid,' %f\n', pred(row));
 end
-fclose(fid)
+fclose(fid);
