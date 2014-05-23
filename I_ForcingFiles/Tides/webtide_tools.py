@@ -10,14 +10,17 @@ def get_data_from_csv(tidevar, constituent, depth):
 
     #correction factors
     pha_K1 = 5 #K1 phase correction in degrees.
-    amp_K1 = 0.85 #K1 amp correction factor 
+    amp_K1 = 1/1.15 #K1 amp correction factor
+    pha_M2 = 9 #M2 phase correction in degrees 
 
     corr_pha = 0
     corr_amp=1
     if constituent == "K1":
        corr_pha=pha_K1
        corr_amp=amp_K1
-    
+    if constituent == "M2":
+       corr_pha = pha_M2
+       
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
         webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Elevation Constituents T.csv',\
