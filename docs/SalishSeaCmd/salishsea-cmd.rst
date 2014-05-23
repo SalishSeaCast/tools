@@ -344,3 +344,5 @@ The API provides Python function interfaces to command processor sub-commands fo
 and by other software.
 
 .. autofunction:: api.combine
+
+.. autofunction:: api.prepare
