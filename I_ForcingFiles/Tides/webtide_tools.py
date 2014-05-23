@@ -9,11 +9,14 @@ def get_data_from_csv(tidevar, constituent, depth):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 5 #K1 phase correction in degrees. 
+    pha_K1 = 5 #K1 phase correction in degrees.
+    amp_K1 = 0.85 #K1 amp correction factor 
 
     corr_pha = 0
+    corr_amp=1
     if constituent == "K1":
        corr_pha=pha_K1
+       corr_amp=amp_K1
     
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
@@ -34,7 +37,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         
         #allocate the M2 phase and amplitude from Webtide to the boundary cells
         #(CHECK: Are these allocated in the right order?)
-        amp_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].amp
+        amp_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].amp*corr_amp
         pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha - corr_pha
         
         #convert the phase and amplitude to cosine and sine format that NEMO likes
@@ -68,8 +71,8 @@ def get_data_from_csv(tidevar, constituent, depth):
         pha=[]
         for i in range(0,len(amp)):
             pha.append(math.atan2(uZ2[i],uZ1[i])-numpy.radians(corr_pha))
-        uZ1 = amp*numpy.cos(pha)
-        uZ2 = amp*numpy.sin(pha)
+        uZ1 = amp*numpy.cos(pha)*corr_amp
+        uZ2 = amp*numpy.sin(pha)*corr_amp
         
         #find the boundary
         I = numpy.where(depth!=0)
@@ -107,8 +110,8 @@ def get_data_from_csv(tidevar, constituent, depth):
         pha=[]
         for i in range(0,len(amp)):
             pha.append(math.atan2(vZ2[i],vZ1[i])-numpy.radians(corr_pha))
-        vZ1 = amp*numpy.cos(pha)
-        vZ2 = amp*numpy.sin(pha)
+        vZ1 = amp*numpy.cos(pha)*corr_amp
+        vZ2 = amp*numpy.sin(pha)*corr_amp
         
         #find the boundary
         I = numpy.where(depth!=0)
