@@ -19,10 +19,9 @@ Salish Sea NEMO model
 from __future__ import division
 
 import datetime
-from math import radians, sin, cos, asin, sqrt, pi, exp
+from math import radians, sin, cos, asin, sqrt, pi
 import os
 
-import matplotlib
 import matplotlib.pyplot as plt
 import netCDF4 as NC
 import numpy as np
