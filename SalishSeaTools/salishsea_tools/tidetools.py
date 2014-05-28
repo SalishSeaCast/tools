@@ -18,10 +18,14 @@ Salish Sea NEMO model
 """
 from __future__ import division
 
+import cmath
+import csv
 import datetime
 from math import radians, sin, cos, asin, sqrt, pi
 import os
 
+
+import angles
 import matplotlib.pyplot as plt
 import netCDF4 as NC
 import numpy as np
@@ -487,7 +491,6 @@ def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
 
     :returns: plots and saves scatter plots of measured vs. modelled phase and amplitude
     """
-    import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(1,2,1,aspect='equal')
     plt.plot(Am,Ao,'.')
@@ -569,11 +572,9 @@ def calc_diffs_meas_mod(runname,loc,grid):
     :returns: meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
     """
     #read in the measured data from Foreman et al (1995) and US sites
-    import pandas as pd
     meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
     meas_wl_harm = meas_wl_harm.rename(columns={'M2 amp': 'M2_amp', 'M2 phase (deg UT)': 'M2_pha', 'K1 amp': 'K1_amp', 'K1 phase (deg UT)': 'K1_pha'})
 
-    import angles
     #make an appropriately named csv file for results
     outfile = 'wlev_harm_diffs_'+''.join(runname)+'.csv'
     D_F95_M2_all = []
@@ -597,10 +598,6 @@ def calc_diffs_meas_mod(runname,loc,grid):
     bathy, X, Y = get_bathy_data(grid)
 
     with open(outfile, 'wb') as csvfile:
-        import csv
-        import numpy as np
-        from math import radians, cos, sin, asin, sqrt, pi
-
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(['Station Number','Station Name','Longitude','Latitude','Modelled M2 amp','Observed M2 amp',\
         'Modelled M2 phase','Observed M2 phase','M2 Difference Foreman','M2 Difference Masson',\
@@ -1157,7 +1154,6 @@ def ap2ep(Au, PHIu, Av, PHIv):
     PHIv = PHIv/180*pi
 
     # Make complex amplitudes for u and v
-    import cmath
     i = cmath.sqrt(-1)
     u = Au*cmath.exp(-i*PHIu)
     v = Av*cmath.exp(-i*PHIv)
