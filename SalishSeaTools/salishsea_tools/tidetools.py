@@ -758,7 +758,7 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     ax4 = fig4.add_subplot(111)
     ax4.set_xlabel('Station number[-]')
     ax4.set_ylabel('K1 phase [degrees]')
-        
+
     #get the modelled data
     meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
     Am_M2_all = np.array(Am_M2_all)
@@ -985,7 +985,7 @@ def get_composite_harms_uv(runname,loc):
     :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
-    :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, 
+    :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha,
               mod_K1_u_amp, mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha
     """
     runlength = np.zeros((len(runname),1))
