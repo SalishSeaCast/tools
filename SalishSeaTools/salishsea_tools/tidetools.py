@@ -132,36 +132,45 @@ def read_dfo_wlev_file(filename):
         print(wlev_meas.time[x])
     return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
 
-def get_amp_phase_data(runname,loc):
-    """
-    get the amplitude and phase data for a model run
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
-    :type runname: str
+def get_amp_phase_data(runname, loc):
+    """Get the amplitude and phase data for one or more model runs.
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg runname: Name of the model run to process;
+                  e.g. runname = '50s_15Sep-21Sep',
+                  or if you'd like the harmonics of more than one run
+                  to be combined into one picture,
+                  give a tuple of names;
+                  e.g. ('40d', '41d50d', '51d60d').
+    :type runname: str or tuple
+
+    :arg loc: Location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
     if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc+runname)
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(
+            loc + runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
     elif runname == 'jpp72':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc+runname)
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc + runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
-    #'composite' was the first set of runs where I combined the harmonics
     elif runname == 'composite':
+        # 'composite' was the first set of runs where the harmonics were
+        # combined manually
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2()
-    #this step combines the harmonics of any specified runs
-    elif type(runname) is not str and len(runname)>1:
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(runname,loc)
-    #this step just gets the harmonics for the one specified run
+    elif type(runname) is not str and len(runname) > 1:
+        # Combine the harmonics from a set of runs
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(
+            runname, loc)
     else:
-       mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(loc+runname)
-
+        # Get the harmonics for a specific run
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = \
+            get_netcdf_amp_phase_data(loc + runname)
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
@@ -927,49 +936,49 @@ def get_composite_harms2():
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
-def get_composite_harms(runname,loc):
-    """
-    Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
+def get_composite_harms(runnames, loc):
+    """Combine the harmonics from the specified runs into a 'composite' run.
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
-    :type runname: str
+    The runs to be 'composed' must all have the same model setup.
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg runnames: Names of the model runs to process;
+                   e.g. ('40d', '41d50d', '51d60d').
+    :type runnames: tuple
+
+    :arg loc: Location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
-    runlength = np.zeros((len(runname),1))
-    for k in range(0,len(runname)):
-        runlength[k,0] = get_run_length(runname[k],loc)
-#        print 'length of run '+str(k)+' = '+str(runlength[k,0])+' days'
-
-    mod_M2_eta_real1 = 0.0
-    mod_M2_eta_imag1 = 0.0
-    mod_K1_eta_real1 = 0.0
-    mod_K1_eta_imag1 = 0.0
-
-    for runnum in range(0,len(runname)):
-        harmT = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_eta.nc','r')
-#        print loc+runname[runnum]+'/Tidal_Harmonics_eta.nc'
-        #get imaginary and real components
-        mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
-        mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
-        mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
-        mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
-
-    totaldays = sum(runlength)
-#    print 'total length of combined run = '+str(totaldays)+' days'
-    mod_M2_eta_real = mod_M2_eta_real1/totaldays
-    mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
-    mod_K1_eta_real = mod_K1_eta_real1/totaldays
-    mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
-    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
-    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
-    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
-
+    mod_M2_eta_real1, mod_M2_eta_imag1 = 0, 0
+    mod_K1_eta_real1, mod_K1_eta_imag1 = 0, 0
+    runlength = np.zeros((len(runnames), 1))
+    for k in range(len(runnames)):
+        runlength[k, 0] = get_run_length(runnames[k], loc)
+    for runnum in range(len(runnames)):
+        filename = os.path.join(
+            loc, runnames[runnum], 'Tidal_Harmonics_eta.nc')
+        harmT = NC.Dataset(filename)
+        mod_M2_eta_real1 += (
+            harmT.variables['M2_eta_real'][0, ...] * runlength[runnum])
+        mod_M2_eta_imag1 += (
+            harmT.variables['M2_eta_imag'][0, ...] * runlength[runnum])
+        mod_K1_eta_real1 += (
+            harmT.variables['K1_eta_real'][0, ...] * runlength[runnum])
+        mod_K1_eta_imag1 += (
+            harmT.variables['K1_eta_imag'][0, ...] * runlength[runnum])
+    totaldays = runlength.sum()
+    mod_M2_eta_real = mod_M2_eta_real1 / totaldays
+    mod_M2_eta_imag = mod_M2_eta_imag1 / totaldays
+    mod_K1_eta_real = mod_K1_eta_real1 / totaldays
+    mod_K1_eta_imag = mod_K1_eta_imag1 / totaldays
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2 + mod_M2_eta_imag**2)
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2 + mod_K1_eta_imag**2)
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+
 
 def get_composite_harms_uv(runname,loc):
     """
