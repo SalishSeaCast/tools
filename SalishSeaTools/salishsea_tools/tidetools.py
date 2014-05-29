@@ -950,33 +950,33 @@ def get_composite_harms(runnames, loc):
     :type loc: str
 
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
+    :rtypes: 4-tuple of numpy.ndarray instances
     """
-    mod_M2_eta_real1, mod_M2_eta_imag1 = 0, 0
-    mod_K1_eta_real1, mod_K1_eta_imag1 = 0, 0
-    runlength = np.zeros((len(runnames), 1))
-    for k in range(len(runnames)):
-        runlength[k, 0] = get_run_length(runnames[k], loc)
-    for runnum in range(len(runnames)):
-        filename = os.path.join(
-            loc, runnames[runnum], 'Tidal_Harmonics_eta.nc')
+    results = {}
+    vars = 'M2_eta_real M2_eta_imag K1_eta_real K1_eta_imag'.split()
+    runlengths = {
+        runname: get_run_length(runname, loc) for runname in runnames}
+    for k, runname in enumerate(runnames):
+        filename = os.path.join(loc, runnames[k], 'Tidal_Harmonics_eta.nc')
         harmT = NC.Dataset(filename)
-        mod_M2_eta_real1 += (
-            harmT.variables['M2_eta_real'][0, ...] * runlength[runnum])
-        mod_M2_eta_imag1 += (
-            harmT.variables['M2_eta_imag'][0, ...] * runlength[runnum])
-        mod_K1_eta_real1 += (
-            harmT.variables['K1_eta_real'][0, ...] * runlength[runnum])
-        mod_K1_eta_imag1 += (
-            harmT.variables['K1_eta_imag'][0, ...] * runlength[runnum])
-    totaldays = runlength.sum()
-    mod_M2_eta_real = mod_M2_eta_real1 / totaldays
-    mod_M2_eta_imag = mod_M2_eta_imag1 / totaldays
-    mod_K1_eta_real = mod_K1_eta_real1 / totaldays
-    mod_K1_eta_imag = mod_K1_eta_imag1 / totaldays
-    mod_M2_amp = np.sqrt(mod_M2_eta_real**2 + mod_M2_eta_imag**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
-    mod_K1_amp = np.sqrt(mod_K1_eta_real**2 + mod_K1_eta_imag**2)
-    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
+        for var in vars:
+            try:
+                results[var] += (
+                    harmT.variables[var][0, ...] * runlengths[runname])
+            except KeyError:
+                results[var] = (
+                    harmT.variables[var][0, ...] * runlengths[runname])
+    totaldays = sum(runlengths.itervalues())
+    for var in vars:
+        results[var] /= totaldays
+    mod_M2_amp = np.sqrt(
+        results['M2_eta_real']**2 + results['M2_eta_imag']**2)
+    mod_M2_pha = -np.degrees(
+        np.arctan2(results['M2_eta_imag'], results['M2_eta_real']))
+    mod_K1_amp = np.sqrt(
+        results['K1_eta_real']**2 + results['K1_eta_imag']**2)
+    mod_K1_pha = -np.degrees(
+        np.arctan2(results['K1_eta_imag'], results['K1_eta_real']))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
