@@ -98,7 +98,17 @@ def get_CGRF_weather(start,end,grid):
     
     for r in arrow.Arrow.range('day', st_ar, end_ar):
         #u
-        strU='u10_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+	m=r.month;
+	if m<10:
+	  mstr='0' + str(m)
+	else:
+	  mstr=str(m)
+	d=r.day;
+	if d<10:
+	  dstr='0' + str(d)
+	else:
+	  dstr=str(d)
+        strU='u10_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
         fU=NC.Dataset(CGRF_path+strU)
         var=fU.variables['u_wind'][:,grid[0],grid[1]]; u10.extend(var[:])
         
@@ -107,12 +117,12 @@ def get_CGRF_weather(start,end,grid):
         times =convert_date_hours(time,start)
         
         #v
-        strV='v10_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+        strV='v10_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
         fV=NC.Dataset(CGRF_path+strV)
         var=fV.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])
         
         #pressure
-        strP='slp_y' + str(r.year) +'m' +str(r.month) + 'd'+str(r.day) +'.nc'
+        strP='slp_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
         fP=NC.Dataset(CGRF_path+strP)
         var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
         
