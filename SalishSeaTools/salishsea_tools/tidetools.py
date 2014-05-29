@@ -475,8 +475,8 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
             .format(constflag=constflag, titstr=titstr))
 
 
-def plot_scatter_pha_amp(Am, Ao, gm, go, constflag, runname):
-    """Plot scatter plot of measured vs. modelled phase and amplitude
+def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
+    """Plot scatter plot of observed vs. modelled phase and amplitude
 
     :arg Am: Modelled amplitude.
     :type Am: Numpy array
@@ -485,37 +485,47 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constflag, runname):
     :type Ao: NumPy array
 
     :arg gm: Modelled phase.
-    :type gm: str
+    :type gm: NumPy array
 
     :arg go: Observed phase.
-    :type go: list
+    :type go: NumPy array
 
-    :arg constflag: Name of constituent.
-    :type constflag: str
+    :arg constituent_name: Name of tidal constituent. Used as subplot title.
+    :type constituent_name: str
 
-    :arg runname: Name of model run.
-    :type runname: str
+    :arg figsize: Figure size, (width, height).
+    :type figsize: 2-tuple
 
-    :returns: plots and saves scatter plots of measured vs. modelled
-              phase and amplitude
+    :returns: Figure containing plots of observed vs. modelled
+              amplitude and phase of the tidal constituent.
+    :rtype: Matplotlib figure
     """
-    plt.figure()
-    plt.subplot(1, 2, 1, aspect='equal')
-    plt.plot(Am, Ao, '.')
-    plt.plot([0, 1.2], [0, 1.2], 'r')
-    plt.axis([0, 1.2, 0, 1.2])
-    plt.xlabel('Modelled amplitude [m]')
-    plt.ylabel('Measured amplitude [m]')
-    plt.title(constflag)
-
-    plt.subplot(1, 2, 2, aspect='equal')
-    plt.plot(gm, go, '.')
-    plt.plot([0, 360], [0, 360], 'r')
-    plt.axis([0, 360, 0, 360])
-    plt.xlabel('Modelled phase [deg]')
-    plt.ylabel('Measured phase [deg]')
-    plt.title(constflag)
-    plt.savefig(constflag+'_scatter_comps_'+''.join(runname)+'.pdf')
+    fig, (ax_amp, ax_pha) = plt.subplots(1, 2, figsize=figsize)
+    ax_amp.set_aspect('equal')
+    ax_amp.scatter(Ao, Am, color='blue', edgecolors='blue')
+    min_value, max_value = ax_amp.set_xlim(0, 1.2)
+    ax_amp.set_ylim(min_value, max_value)
+    # Equality line
+    ax_amp.plot([min_value, max_value], [min_value, max_value], color='red')
+    ax_amp.set_xlabel('Observed Amplitude [m]')
+    ax_amp.set_ylabel('Modelled Amplitude [m]')
+    ax_amp.set_title(
+        '{constituent} Amplitude'.format(constituent=constituent_name))
+    # Phase plot
+    ax_pha.set_aspect('equal')
+    ax_pha.scatter(go, gm, color='blue', edgecolors='blue')
+    min_value, max_value = ax_pha.set_xlim(0, 360)
+    ax_pha.set_ylim(min_value, max_value)
+    # Equality line
+    ax_pha.plot([min_value, max_value], [min_value, max_value], color='red')
+    ticks = range(0, 420, 60)
+    ax_pha.set_xticks(ticks)
+    ax_pha.set_yticks(ticks)
+    ax_pha.set_xlabel('Observed Phase [deg]')
+    ax_pha.set_ylabel('Modelled Phase [deg]')
+    ax_pha.set_title(
+        '{constituent} Phase'.format(constituent=constituent_name))
+    return fig
 
 
 def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
