@@ -450,7 +450,7 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
 
     :returns: plot of phase of constituent
     """
-    #make 0 values NaNs so they plot blank
+    # make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha, 0)
     fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     viz_tools.set_aspect(ax, coords='map', lats=Y)
@@ -475,48 +475,48 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
             .format(constflag=constflag, titstr=titstr))
 
 
-def plot_scatter_pha_amp(Am,Ao,gm,go,constflag,runname):
-    """
-    Plot scatter plot of measured vs. modelled phase and amplitude
-    plot_scatter_pha_amp(Am_K1_all,Ao_K1_all,gm_K1_all,go_K1_all,'K1','50s_30Sep-6Oct')
+def plot_scatter_pha_amp(Am, Ao, gm, go, constflag, runname):
+    """Plot scatter plot of measured vs. modelled phase and amplitude
 
-    :arg Am: modelled amplitude
-    :type Am: numpy array
+    :arg Am: Modelled amplitude.
+    :type Am: Numpy array
 
-    :arg Ao: observed amplitude
-    :type Ao: numpy array
+    :arg Ao: Observed amplitude.
+    :type Ao: NumPy array
 
-    :arg gm: modelled phase
+    :arg gm: Modelled phase.
     :type gm: str
 
-    :arg go: observed phase
-    :type go: str
+    :arg go: Observed phase.
+    :type go: list
 
-    :arg constflag: name of constituent
+    :arg constflag: Name of constituent.
     :type constflag: str
 
-    :arg runname: name of model run
+    :arg runname: Name of model run.
     :type runname: str
 
-    :returns: plots and saves scatter plots of measured vs. modelled phase and amplitude
+    :returns: plots and saves scatter plots of measured vs. modelled
+              phase and amplitude
     """
     plt.figure()
-    plt.subplot(1,2,1,aspect='equal')
-    plt.plot(Am,Ao,'.')
-    plt.plot([0,1.2],[0,1.2],'r')
-    plt.axis([0,1.2,0,1.2])
+    plt.subplot(1, 2, 1, aspect='equal')
+    plt.plot(Am, Ao, '.')
+    plt.plot([0, 1.2], [0, 1.2], 'r')
+    plt.axis([0, 1.2, 0, 1.2])
     plt.xlabel('Modelled amplitude [m]')
     plt.ylabel('Measured amplitude [m]')
     plt.title(constflag)
 
-    plt.subplot(1,2,2,aspect='equal')
-    plt.plot(gm,go,'.')
-    plt.plot([0,360],[0,360],'r')
-    plt.axis([0,360,0,360])
+    plt.subplot(1, 2, 2, aspect='equal')
+    plt.plot(gm, go, '.')
+    plt.plot([0, 360], [0, 360], 'r')
+    plt.axis([0, 360, 0, 360])
     plt.xlabel('Modelled phase [deg]')
     plt.ylabel('Measured phase [deg]')
     plt.title(constflag)
     plt.savefig(constflag+'_scatter_comps_'+''.join(runname)+'.pdf')
+
 
 def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     """
