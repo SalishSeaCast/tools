@@ -422,7 +422,7 @@ def find_closest_model_point(lon, lat, X, Y, bathy):
     return i, j
 
 
-def plot_amp_map(X, Y, grid, amp, constituent_name):
+def plot_amp_map(X, Y, grid, amp, constituent_name, figsize=(9, 9)):
     """Plot the amplitude of one constituent throughout the whole domain.
 
     :arg X: specified model longitude
@@ -440,6 +440,9 @@ def plot_amp_map(X, Y, grid, amp, constituent_name):
     :arg constituent_name: Name of tidal constituent. Used as subplot title.
     :type constituent_name: str
 
+    :arg figsize: Figure size, (width, height).
+    :type figsize: 2-tuple
+
     :returns: Figure containing plots of observed vs. modelled
               amplitude and phase of the tidal constituent.
     :rtype: Matplotlib figure
@@ -447,7 +450,7 @@ def plot_amp_map(X, Y, grid, amp, constituent_name):
     # Make 0 values NaNs so they plot blank
     amp = np.ma.masked_equal(amp, 0)
     # Range of amplitudes to plot
-    fig, ax = plt.subplots(1, 1, figsize=(9, 9))
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and amplitude contours
     viz_tools.plot_coastline(ax, grid, coords='map')
@@ -467,7 +470,7 @@ def plot_amp_map(X, Y, grid, amp, constituent_name):
     return fig
 
 
-def plot_pha_map(X, Y, grid, pha, constituent_name):
+def plot_pha_map(X, Y, grid, pha, constituent_name, figsize=(9, 9)):
     """Plot the phase of one constituent throughout the whole domain.
 
     :arg X: specified model longitude
@@ -482,13 +485,16 @@ def plot_pha_map(X, Y, grid, pha, constituent_name):
     :arg constituent_name: Name of tidal constituent. Used as subplot title.
     :type constituent_name: str
 
+    :arg figsize: Figure size, (width, height).
+    :type figsize: 2-tuple
+
     :returns: Figure containing plots of observed vs. modelled
               amplitude and phase of the tidal constituent.
     :rtype: Matplotlib figure
     """
     # Make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha, 0)
-    fig, ax = plt.subplots(1, 1, figsize=(9, 9))
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and the phase contours
     viz_tools.plot_coastline(ax, grid, coords='map')
