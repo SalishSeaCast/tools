@@ -39,98 +39,123 @@ from salishsea_tools import (
 )
 
 
-def get_all_perm_dfo_wlev(start_date,end_date):
+def get_all_perm_dfo_wlev(start_date, end_date):
+    """Get water level data for all permanent DFO water level sites
+    for specified period.
 
-    """
-    Get water level data for all permanent DFO water level sites for specified period.
-    e.g. get_all_perm_dfo_wlev('01-JAN-2010','31-JAN-2010')
-
-    :arg start_date: string containing the start date e.g. '01-JAN-2010'
+    :arg start_date: Start date; e.g. '01-JAN-2010'.
     :type start_date: str
 
-    :arg end_date: string containing the end date e.g. '31-JAN-2010'
+    :arg end_date: End date; e.g. '31-JAN-2010'
     :type end_date: str
 
     :returns: Saves text files with water level data at each site
     """
-    stations = {'Point Atkinson':7795, 'Vancouver':7735, 'Patricia Bay':7277, 'Victoria Harbour':7120, 'Bamfield':8545, 'Tofino':8615, 'Winter Harbour':8735, 'Port Hardy':8408, 'Campbell River':8074, 'New Westminster':7654}
+    stations = {
+        'Point Atkinson': 7795,
+        'Vancouver': 7735,
+        'Patricia Bay': 7277,
+        'Victoria Harbour': 7120,
+        'Bamfield': 8545,
+        'Tofino': 8615,
+        'Winter Harbour': 8735,
+        'Port Hardy': 8408,
+        'Campbell River': 8074,
+        'New Westminster': 7654,
+    }
     for ttt in stations:
-           get_dfo_wlev(stations[ttt],start_date,end_date)
+        get_dfo_wlev(stations[ttt], start_date, end_date)
 
-def get_dfo_wlev(station_no,start_date,end_date):
-    """
-    Download water level data from DFO site for one DFO station for specified period.
-    e.g. get_dfo_wlev(7795,'01-JAN-2003','01-JAN-2004')
 
-    :arg station_no: station number e.g. 7795
+def get_dfo_wlev(station_no, start_date, end_date):
+    """Download water level data from DFO site for one DFO station
+    for specified period.
+
+    :arg station_no: Station number e.g. 7795.
     :type station_no: int
 
-    :arg start_date: string containing the start date e.g. '01-JAN-2010'
+    :arg start_date: Start date; e.g. '01-JAN-2010'.
     :type start_date: str
 
-    :arg end_date: string containing the end date e.g. '31-JAN-2010'
+    :arg end_date: End date; e.g. '31-JAN-2010'
     :type end_date: str
 
     :returns: Saves text file with water level data at one station
     """
-    #name the output file
+    # Name the output file
     outfile = 'wlev_'+str(station_no)+'_'+start_date+'_'+end_date+'.csv'
-    #form urls and html information
+    # Form urls and html information
     base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
-    form_handler = 'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='+str(station_no)
-    sitedata = {'start_period': start_date,'end_period': end_date,'resolution': 'h','time_zone': 'l'}
-    data_provider = 'download-telecharger.asp?File=E:%5Ciusr_tmpfiles%5CTWL%5C'+str(station_no)+'-'+start_date+'_slev.csv&Name='+str(station_no)+'-'+start_date+'_slev.csv'
-    #go get the data from the DFO site
+    form_handler = (
+        'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='
+        + str(station_no))
+    sitedata = {
+        'start_period': start_date,
+        'end_period': end_date,
+        'resolution': 'h',
+        'time_zone': 'l',
+    }
+    data_provider = (
+        'download-telecharger.asp'
+        '?File=E:%5Ciusr_tmpfiles%5CTWL%5C'
+        + str(station_no) + '-'+start_date + '_slev.csv'
+        '&Name=' + str(station_no) + '-'+start_date+'_slev.csv')
+    # Go get the data from the DFO site
     with requests.Session() as s:
         s.post(base_url + form_handler, data=sitedata)
         r = s.get(base_url + data_provider)
-    #write the data to a text file
+    # Write the data to a text file
     with open(outfile, 'w') as f:
         f.write(r.text)
-#    print('Results saved here: '+outfile)
+
 
 def dateParserMeasured(s):
-    """
-    Function to make datetime object aware of time zone
-    e.g. date_parser=dateParserMeasured
+    """Function to make datetime object aware of time zone
+    e.g. date_parser=dateParserMeasured('2014/05/31 11:42')
 
     :arg s: string of date and time
     :type s: str
 
     :returns: datetime object that is timezone aware
     """
-    #convert the string to a datetime object
+    # Convert the string to a datetime object
     unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
-    #add in the local time zone (Canada/Pacific)
+    # Add in the local time zone (Canada/Pacific)
     aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
-    #convert to UTC
+    # Convert to UTC
     return aware.astimezone(pytz.timezone('UTC'))
 
-def read_dfo_wlev_file(filename):
-    """
-    Read in the data in the csv file downloaded from DFO website
-    e.g. dates, wlev, stat_name, stat_num, stat_lat, stat_lon = tidetools.read_dfo_wlev('wlev_timeseries.csv')
 
-    :arg filename: string of filename to read in
+def read_dfo_wlev_file(filename):
+    """Read in the data in the csv file downloaded from DFO website
+
+    :arg filename: Filename to read.
     :type filename: str
 
-    :returns: measured time, measured water level, station name, station number, station lat, station long
+    :returns: measured time, measured water level, station name,
+              station number, station lat, station long
     """
-    info = pd.read_csv(filename,nrows=4,index_col=0,header=None)
-    wlev_meas = pd.read_csv(filename,skiprows=7,parse_dates=[0],date_parser=dateParserMeasured)
-    wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
-    #allocate the variables to nice names
+    info = pd.read_csv(filename, nrows=4, index_col=0, header=None)
+    wlev_meas = pd.read_csv(
+        filename, skiprows=7, parse_dates=[0], date_parser=dateParserMeasured)
+    wlev_meas = wlev_meas.rename(
+        columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
+    # Allocate the variables to nice names
     stat_name = info[1][0]
     stat_num = info[1][1]
     stat_lat = info[1][2]
     stat_lon = info[1][3]
-    #measured times are in PTZ - first make dates aware of this, then convert dates to UTC
-    for x in np.arange(0,len(wlev_meas.time)):
-        wlev_meas.time[x] = wlev_meas.time[x].replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    # Measured times are in PTZ - first make dates aware of this,
+    # then convert dates to UTC
+    for x in np.arange(0, len(wlev_meas.time)):
+        wlev_meas.time[x] = wlev_meas.time[x].replace(
+            tzinfo=pytz.timezone('Canada/Pacific'))
         print(wlev_meas.time[x])
         wlev_meas.time[x] = wlev_meas.time[x].astimezone(pytz.timezone('UTC'))
         print(wlev_meas.time[x])
-    return wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon
+    return (
+        wlev_meas.time, wlev_meas.slev,
+        stat_name, stat_num, stat_lat, stat_lon)
 
 
 def get_amp_phase_data(runname, loc):
@@ -175,8 +200,7 @@ def get_amp_phase_data(runname, loc):
 
 
 def plot_amp_phase_maps(runname, loc, grid):
-    """
-    Plot the amplitude and phase results for a model run
+    """Plot the amplitude and phase results for a model run
     e.g. plot_amp_phase_maps('50s_15Sep-21Sep')
 
     :arg runname: name of the model run to process;
@@ -207,59 +231,59 @@ def plot_amp_phase_maps(runname, loc, grid):
 
 
 def get_netcdf_amp_phase_data(loc):
-    """
-    Calculate amplitude and phase from the results of a particular run of the Salish Sea model
-    e.g. mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data('50s_15Sep-21Sep')
+    """Calculate amplitude and phase from the results of a
+    particular run of the Salish Sea model
 
     :arg runname: name of the model run to process e.g. '50s_15Sep-21Sep'
     :type runname: str
 
-    :returns: model M2 amplitude, model K1 amplitude, model M2 phase, model K1 phase
+    :returns: model M2 amplitude, model K1 amplitude, model M2 phase,
+              model K1 phase
     """
-    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc','r')
-     #get imaginary and real components
-    mod_M2_eta_real = harmT.variables['M2_eta_real'][0,:,:]
-    mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0,:,:]
-    mod_K1_eta_real = harmT.variables['K1_eta_real'][0,:,:]
-    mod_K1_eta_imag = harmT.variables['K1_eta_imag'][0,:,:]
-     #convert to amplitude and phase
+    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc', 'r')
+    # Get imaginary and real components
+    mod_M2_eta_real = harmT.variables['M2_eta_real'][0, :, :]
+    mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0, :, :]
+    mod_K1_eta_real = harmT.variables['K1_eta_real'][0, :, :]
+    mod_K1_eta_imag = harmT.variables['K1_eta_imag'][0, :, :]
+    # Convert to amplitude and phase
     mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
     mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
-    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
+
 def get_netcdf_amp_phase_data_jpp72(loc):
-    """
-    Calculate amplitude and phase from the results of the JPP72 model
+    """Calculate amplitude and phase from the results of the JPP72 model
     e.g. mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72()
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc','r')
-    #Get amplitude and phase
-    mod_M2_x_elev = harmT.variables['M2_x_elev'][0,:,:] #Cj
-    mod_M2_y_elev = harmT.variables['M2_y_elev'][0,:,:] #Sj
-    #see section 11.6 of NEMO manual (p223/367)
+    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc', 'r')
+    # Get amplitude and phase
+    mod_M2_x_elev = harmT.variables['M2_x_elev'][0, :, :]  # Cj
+    mod_M2_y_elev = harmT.variables['M2_y_elev'][0, :, :]  # Sj
+    # See section 11.6 of NEMO manual (p223/367)
     mod_M2_amp = np.sqrt(mod_M2_x_elev**2+mod_M2_y_elev**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_y_elev,mod_M2_x_elev))
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_y_elev, mod_M2_x_elev))
     return mod_M2_amp, mod_M2_pha
 
+
 def get_netcdf_amp_phase_data_concepts110(loc):
-    """
-    Calculate amplitude and phase from the results of the CONCEPTS110 model
+    """Calculate amplitude and phase from the results of the CONCEPTS110 model
     e.g. mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110()
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc','r')
-    mod_M2_amp = harmT.variables['M2_amp'][0,:,:]
-    mod_M2_pha = harmT.variables['M2_pha'][0,:,:]
+    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc', 'r')
+    mod_M2_amp = harmT.variables['M2_amp'][0, :, :]
+    mod_M2_pha = harmT.variables['M2_pha'][0, :, :]
     return mod_M2_amp, mod_M2_pha
 
+
 def get_bathy_data(grid):
-    """
-    Get the Salish Sea bathymetry from specified grid NC.Dataset
+    """Get the Salish Sea bathymetry from specified grid NC.Dataset
     e.g. bathy, X, Y = get_bathy_data(grid)
 
     :arg grid: netcdf object of model grid
@@ -267,61 +291,68 @@ def get_bathy_data(grid):
 
     :returns: bathy, X, Y
     """
-    bathy = grid.variables['Bathymetry'][:,:]
-    X = grid.variables['nav_lon'][:,:]
-    Y = grid.variables['nav_lat'][:,:]
+    bathy = grid.variables['Bathymetry'][:, :]
+    X = grid.variables['nav_lon'][:, :]
+    Y = grid.variables['nav_lat'][:, :]
     return bathy, X, Y
 
+
 def get_SS_bathy_data():
-    """
-    Not used any more - assumes that the user is klesouef! :)
+    """Not used any more - assumes that the user is klesouef! :)
     Get the Salish Sea bathymetry and grid data
     e.g. bathy, X, Y = get_SS_bathy_data()
 
     :returns: bathy, X, Y
     """
-    grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
-    bathy = grid.variables['Bathymetry'][:,:]
-    X = grid.variables['nav_lon'][:,:]
-    Y = grid.variables['nav_lat'][:,:]
+    grid = NC.Dataset(
+        '/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea.nc',
+        'r')
+    bathy = grid.variables['Bathymetry'][:, :]
+    X = grid.variables['nav_lon'][:, :]
+    Y = grid.variables['nav_lat'][:, :]
     return bathy, X, Y
 
+
 def get_SS2_bathy_data():
-    """
-    Not used any more - assumes that the user is klesouef! :)
+    """Not used any more - assumes that the user is klesouef! :)
     Get the Salish Sea 2 bathymetry and grid data
     e.g. bathy, X, Y = get_SS2_bathy_data()
 
     :returns: bathy, X, Y
     """
-    grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc','r')
-    bathy = grid.variables['Bathymetry'][:,:]
-    X = grid.variables['nav_lon'][:,:]
-    Y = grid.variables['nav_lat'][:,:]
+    grid = NC.Dataset(
+        '/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc',
+        'r')
+    bathy = grid.variables['Bathymetry'][:, :]
+    X = grid.variables['nav_lon'][:, :]
+    Y = grid.variables['nav_lat'][:, :]
     return bathy, X, Y
 
-#define a function to get the subdomain bathymetry and grid data
+
+# Define a function to get the subdomain bathymetry and grid data
 def get_subdomain_bathy_data():
-    """
-    Not used any more - assumes that the user is klesouef! :)
+    """Not used any more - assumes that the user is klesouef! :)
     Get the subdomain bathymetry and grid data
     e.g. bathy, X, Y = get_subdomain_bathy_data()
 
     :returns: bathy, X, Y
     """
-    grid = NC.Dataset('/ocean/klesouef/meopar/nemo-forcing/grid/SubDom_bathy_meter_NOBCchancomp.nc','r')
-    bathy = grid.variables['Bathymetry'][:,:]
-    X = grid.variables['nav_lon'][:,:]
-    Y = grid.variables['nav_lat'][:,:]
+    grid = NC.Dataset(
+        '/ocean/klesouef/meopar/nemo-forcing/grid/SubDom_bathy_meter_NOBCchancomp.nc',
+        'r')
+    bathy = grid.variables['Bathymetry'][:, :]
+    X = grid.variables['nav_lon'][:, :]
+    Y = grid.variables['nav_lat'][:, :]
     return bathy, X, Y
 
-def find_closest_model_point(lon,lat,X,Y,bathy):
-    """
-    Gives the grid co-ordinates of the closest non-land model point to a specified lon/lat.
+
+def find_closest_model_point(lon, lat, X, Y, bathy):
+    """Returns the grid co-ordinates of the closest non-land model point
+    to a specified lon/lat.
 
     e.g. x1, j1 = find_closest_model_point(-125.5,49.2,X,Y,bathy)
-
-    where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
+    where bathy, X and Y are returned from get_SS_bathy_data()
+    or get_subdomain_bathy_data()
 
     :arg lon: specified longitude
     :type lon: float
@@ -340,40 +371,46 @@ def find_closest_model_point(lon,lat,X,Y,bathy):
 
     :returns: x1, j1
     """
-    #tolerance for searching for grid points (approx. distances between adjacent grid points)
-    tol1 = 0.0052  #lon
-    tol2 = 0.00189 #lat
+    # Tolerance for searching for grid points
+    # (approx. distances between adjacent grid points)
+    tol1 = 0.0052   # lon
+    tol2 = 0.00189  # lat
 
-    #search for a grid point with lon/lat within tolerance of measured location
-    x1, y1=np.where(np.logical_and((np.logical_and(X>lon-tol1,X<lon+tol1)),np.logical_and(Y>lat-tol2,Y<lat+tol2)))
-    if np.size(x1)!=0:
+    # Search for a grid point with lon/lat within tolerance of
+    # measured location
+    x1, y1 = np.where(
+        np.logical_and(
+            (np.logical_and(X > lon-tol1, X < lon+tol1)),
+            (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
+    if np.size(x1) != 0:
         x1 = x1[0]
         y1 = y1[0]
-        #What if more than one point is returned from this search? Just take the first one...
-
-        #if x1,y1 is masked, search 3x3 grid around. If all those points are masked, search 4x4 grid around etc
-        for ii in np.arange(1,100):
-            if bathy.mask[x1,y1]==True:
-                for i in np.arange(x1-ii,x1+ii+1):
-                    for j in np.arange(y1-ii,y1+ii+1):
-                        if bathy.mask[i,j] == False:
+        # What if more than one point is returned from this search?
+        # Just take the first one...
+        #
+        # If x1,y1 is masked, search 3x3 grid around.
+        # If all those points are masked, search 4x4 grid around, etc.
+        for ii in np.arange(1, 100):
+            if bathy.mask[x1, y1]:
+                for i in np.arange(x1-ii, x1+ii+1):
+                    for j in np.arange(y1-ii, y1+ii+1):
+                        if not bathy.mask[i, j]:
                             break
-                    if bathy.mask[i,j] == False:
+                    if not bathy.mask[i, j]:
                         break
-                if bathy.mask[i,j] == False:
+                if not bathy.mask[i, j]:
                     break
             else:
                 i = x1
                 j = y1
     else:
-            i=[]
-            j=[]
+            i = []
+            j = []
     return i, j
 
 
 def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
-    """
-    Plot the amplitude of one constituent throughout the whole domain
+    """Plot the amplitude of one constituent throughout the whole domain
     e.g. plot_amp_map(X,Y,grid,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
 
     :arg X: specified model longitude
@@ -399,9 +436,9 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
 
     :returns: plot of amplitude of constituent
     """
-    #make 0 values NaNs so they plot blank
+    # Make 0 values NaNs so they plot blank
     amp = np.ma.masked_equal(amp, 0)
-    #range of amplitudes to plot
+    # Range of amplitudes to plot
     fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     viz_tools.set_aspect(ax, coords='map', lats=Y)
     # Plot the coastline and amplitude contours
@@ -426,8 +463,7 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
 
 
 def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
-    """
-    Plot the phase of one constituent throughout the whole domain
+    """Plot the phase of one constituent throughout the whole domain
     e.g. plot_pha_map(X,Y,grid,mod_M2_pha,titstr,savestr,'M2')
 
     :arg X: specified model longitude
@@ -450,7 +486,7 @@ def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
 
     :returns: plot of phase of constituent
     """
-    # make 0 values NaNs so they plot blank
+    # Make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha, 0)
     fig, ax = plt.subplots(1, 1, figsize=(9, 9))
     viz_tools.set_aspect(ax, coords='map', lats=Y)
@@ -528,9 +564,10 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
     return fig
 
 
-def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
-    """
-    Plot differences as circles of varying radius on a map of the model domain
+def plot_diffs_on_domain(
+    D, meas_wl_harm, calcmethod, constflag, runname, grid,
+):
+    """Plot differences as circles of varying radius on a map of the model domain
     e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname,grid)
 
     :arg D: differences calculated between measured and modelled
@@ -548,53 +585,71 @@ def plot_diffs_on_domain(D,meas_wl_harm,calcmethod,constflag,runname,grid):
     :arg runname: name of model run
     :type runname: str
 
-    :returns: plots and saves plots of differences as circles of varying radius on a map of the model domain
+    :returns: plots and saves plots of differences as circles of
+    varying radius on a map of the model domain
     """
-    #plot the bathy underneath
+    # Plot the bathy underneath
     bathy, X, Y = get_bathy_data(grid)
-    plt.figure(figsize=(9,9))
-    plt.contourf(X,Y,bathy,cmap='spring')
+    plt.figure(figsize=(9, 9))
+    plt.contourf(X, Y, bathy, cmap='spring')
     cbar = plt.colorbar()
     cbar.set_label('depth [m]')
     scalefac = 100
 
-    #plot the differences as dots of varying radii
-    legendD = 0.1 #[m]
-    #multiply the differences by something big to see the results on a map (D is in [m])
+    # Plot the differences as dots of varying radii
+    legendD = 0.1  # [m]
+    # Multiply the differences by something big to see the results
+    # on a map (D is in [m])
     area = np.array(D)*scalefac
-    plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='b', s=area, marker='o')
-    plt.scatter(-124.5,47.9,c='b',s=(legendD*scalefac), marker='o')
-    plt.text(-124.4,47.9,'D='+(str(legendD*100))+'cm')
+    plt.scatter(
+        np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
+        c='b', s=area, marker='o')
+    plt.scatter(-124.5, 47.9, c='b', s=(legendD*scalefac), marker='o')
+    plt.text(-124.4, 47.9, 'D='+(str(legendD*100))+'cm')
     plt.xlabel('Longitude (deg)')
     plt.ylabel('Latitude (deg)')
 
-    #plot colours and add labels depending on calculation method
+    # Plot colours and add labels depending on calculation method
     if calcmethod == 'F95':
-        plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='b', s=area, marker='o')
-        plt.scatter(-124.5,47.9,c='b',s=(legendD*scalefac), marker='o')
+        plt.scatter(
+            np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
+            c='b', s=area, marker='o')
+        plt.scatter(-124.5, 47.9, c='b', s=(legendD*scalefac), marker='o')
         plt.title(constflag+' differences (Foreman et al) ')
         plt.savefig(constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
     if calcmethod == 'M04':
-        plt.scatter(np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat, c='g', s=area, marker='o')
-        plt.scatter(-124.5,47.9,c='g',s=(legendD*scalefac), marker='o')
+        plt.scatter(
+            np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
+            c='g', s=area, marker='o')
+        plt.scatter(-124.5, 47.9, c='g', s=(legendD*scalefac), marker='o')
         plt.title(constflag+' differences (Masson & Cummins)')
         plt.savefig(constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
 
-def calc_diffs_meas_mod(runname,loc,grid):
-    """
-    Calculate differences between measured and modelled water level
-    e.g. meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod('50s_13Sep-20Sep')
+
+def calc_diffs_meas_mod(runname, loc, grid):
+    """Calculate differences between measured and modelled water level
+    e.g. (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
+          D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all,
+          go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(
+            '50s_13Sep-20Sep')
 
     :arg runname: name of model run
     :type runname: str
 
-    :returns: meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
+    :returns: meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
+              D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all,
+              go_K1_all, D_F95_K1_all, D_M04_K1_all
     """
-    #read in the measured data from Foreman et al (1995) and US sites
-    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
-    meas_wl_harm = meas_wl_harm.rename(columns={'M2 amp': 'M2_amp', 'M2 phase (deg UT)': 'M2_pha', 'K1 amp': 'K1_amp', 'K1 phase (deg UT)': 'K1_pha'})
-
-    #make an appropriately named csv file for results
+    # Read in the measured data from Foreman et al (1995) and US sites
+    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv', sep=';')
+    meas_wl_harm = meas_wl_harm.rename(
+        columns={
+            'M2 amp': 'M2_amp',
+            'M2 phase (deg UT)': 'M2_pha',
+            'K1 amp': 'K1_amp',
+            'K1 phase (deg UT)': 'K1_pha',
+        })
+    # Make an appropriately named csv file for results
     outfile = 'wlev_harm_diffs_'+''.join(runname)+'.csv'
     D_F95_M2_all = []
     D_M04_M2_all = []
@@ -609,40 +664,60 @@ def calc_diffs_meas_mod(runname,loc,grid):
     Ao_K1_all = []
     gm_K1_all = []
     go_K1_all = []
-
-    #get harmonics data
-    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname,loc)
-
-    #get bathy data
+    # Get harmonics data
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(
+        runname, loc)
+    # Get bathy data
     bathy, X, Y = get_bathy_data(grid)
-
     with open(outfile, 'wb') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['Station Number','Station Name','Longitude','Latitude','Modelled M2 amp','Observed M2 amp',\
-        'Modelled M2 phase','Observed M2 phase','M2 Difference Foreman','M2 Difference Masson',\
-        'Modelled K1 amp','Observed K1 amp','Modelled K1 phase','Observed K1 phase',\
-        'K1 Difference Foreman','K1 Difference Masson'])
-        for t in np.arange(0,len(meas_wl_harm.Lat)):
-            x1, y1 = find_closest_model_point(-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],X,Y,bathy)
+        writer.writerow([
+            'Station Number', 'Station Name', 'Longitude', 'Latitude',
+            'Modelled M2 amp', 'Observed M2 amp',
+            'Modelled M2 phase', 'Observed M2 phase',
+            'M2 Difference Foreman', 'M2 Difference Masson',
+            'Modelled K1 amp', 'Observed K1 amp',
+            'Modelled K1 phase', 'Observed K1 phase',
+            'K1 Difference Foreman', 'K1 Difference Masson',
+        ])
+        for t in np.arange(0, len(meas_wl_harm.Lat)):
+            x1, y1 = find_closest_model_point(
+                -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t], X, Y, bathy)
             if x1:
-                #observed constituents
-                Ao_M2 = meas_wl_harm.M2_amp[t]/100 #[m]
-                go_M2 = meas_wl_harm.M2_pha[t]  #[degrees UTC]
-                Ao_K1 = meas_wl_harm.K1_amp[t]/100 #[m]
-                go_K1 = meas_wl_harm.K1_pha[t]  #[degrees UTC]
-                #modelled constituents
-                Am_M2 = mod_M2_amp[x1,y1] #[m]
-                gm_M2 = angles.normalize(mod_M2_pha[x1,y1],0,360) #[degrees ????]
-                Am_K1 = mod_K1_amp[x1,y1] #[m]
-                gm_K1 = angles.normalize(mod_K1_pha[x1,y1],0,360) #[degrees ????]
-                #calculate differences two ways
-                D_F95_M2 = sqrt((Ao_M2*np.cos(radians(go_M2))-Am_M2*np.cos(radians(gm_M2)))**2 + (Ao_M2*np.sin(radians(go_M2))-Am_M2*np.sin(radians(gm_M2)))**2)
-                D_M04_M2 = sqrt(0.5*(Am_M2**2+Ao_M2**2)-Am_M2*Ao_M2*cos(radians(gm_M2-go_M2)))
-                D_F95_K1 = sqrt((Ao_K1*np.cos(radians(go_K1))-Am_K1*np.cos(radians(gm_K1)))**2 + (Ao_K1*np.sin(radians(go_K1))-Am_K1*np.sin(radians(gm_K1)))**2)
-                D_M04_K1 = sqrt(0.5*(Am_K1**2+Ao_K1**2)-Am_K1*Ao_K1*cos(radians(gm_K1-go_K1)))
-                #write results to csv
-                writer.writerow([str(t+1),meas_wl_harm.Site[t],-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],  Am_M2, Ao_M2, gm_M2, go_M2, D_F95_M2, D_M04_M2, Am_K1, Ao_K1, gm_K1, go_K1, D_F95_K1, D_M04_K1])
-                #append the latest result
+                # Observed constituents
+                Ao_M2 = meas_wl_harm.M2_amp[t]/100  # [m]
+                go_M2 = meas_wl_harm.M2_pha[t]   # [degrees UTC]
+                Ao_K1 = meas_wl_harm.K1_amp[t]/100  # [m]
+                go_K1 = meas_wl_harm.K1_pha[t]   # [degrees UTC]
+                # Modelled constituents
+                Am_M2 = mod_M2_amp[x1, y1]  # [m]
+                gm_M2 = angles.normalize(mod_M2_pha[x1, y1], 0, 360)  # [degrees ????]
+                Am_K1 = mod_K1_amp[x1, y1]  # [m]
+                gm_K1 = angles.normalize(mod_K1_pha[x1, y1], 0, 360)  # [degrees ????]
+                # Calculate differences two ways
+                D_F95_M2 = sqrt(
+                    (Ao_M2*np.cos(radians(go_M2))
+                     - Am_M2*np.cos(radians(gm_M2)))**2
+                    + (Ao_M2*np.sin(radians(go_M2))
+                       - Am_M2*np.sin(radians(gm_M2)))**2)
+                D_M04_M2 = sqrt(
+                    0.5 * (Am_M2**2 + Ao_M2**2)
+                    - Am_M2*Ao_M2*cos(radians(gm_M2-go_M2)))
+                D_F95_K1 = sqrt(
+                    (Ao_K1*np.cos(radians(go_K1))
+                     - Am_K1*np.cos(radians(gm_K1)))**2
+                    + (Ao_K1*np.sin(radians(go_K1))
+                       - Am_K1*np.sin(radians(gm_K1)))**2)
+                D_M04_K1 = sqrt(
+                    0.5 * (Am_K1**2 + Ao_K1**2)
+                    - Am_K1*Ao_K1*cos(radians(gm_K1-go_K1)))
+                # Write results to csv
+                writer.writerow([
+                    str(t+1), meas_wl_harm.Site[t],
+                    -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
+                    Am_M2, Ao_M2, gm_M2, go_M2, D_F95_M2, D_M04_M2,
+                    Am_K1, Ao_K1, gm_K1, go_K1, D_F95_K1, D_M04_K1])
+                # Append the latest result
                 Am_M2_all.append(float(Am_M2))
                 Ao_M2_all.append(float(Ao_M2))
                 gm_M2_all.append(float(gm_M2))
@@ -656,17 +731,24 @@ def calc_diffs_meas_mod(runname,loc,grid):
                 D_F95_K1_all.append(float(D_F95_K1))
                 D_M04_K1_all.append(float(D_M04_K1))
             else:
-                #if no point found, fill difference fields with 9999
-                print('No point found in current domain for station '+str(t+1)+' :(')
-                writer.writerow([str(t+1),meas_wl_harm.Site[t],-meas_wl_harm.Lon[t],meas_wl_harm.Lat[t],9999,9999])
+                # If no point found, fill difference fields with 9999
+                print(
+                    'No point found in current domain for station '
+                    + str(t+1)+' :(')
+                writer.writerow([
+                    str(t+1), meas_wl_harm.Site[t],
+                    -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
+                    9999, 9999])
+    return (
+        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
+        D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all,
+        gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all,
+    )
 
-#    print('Results saved here: '+outfile)
-    return meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all
 
 def haversine(lon1, lat1, lon2, lat2):
-    """
-    Calculate the distance between two points (from haversine on SO)
-    e.g. dist = haversine(-125.1,49.1,-125.12,49.5)
+    """Calculate the distance between two points (from haversine on SO)
+    e.g. dist = haversine(-125.1, 49.1, -125.12, 49.5)
 
     :arg lon1: longitude of point 1
     :type lon1: float
@@ -690,12 +772,16 @@ def haversine(lon1, lat1, lon2, lat2):
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
     c = 2 * asin(sqrt(a))
     km = 6367 * c
-    print('Observation site and model grid point are '+str(round(km,3))+'km apart')
+    print(
+        'Observation site and model grid point are '
+        + str(round(km, 3))+'km apart')
     return km
 
-def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
-    """
-    Plot two locations on a contour map of bathymetry, where bathy, X and Y are returned from get_SS_bathy_data() or get_subdomain_bathy_data()
+
+def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
+    """Plot two locations on a contour map of bathymetry,
+    where bathy, X and Y are returned from get_SS_bathy_data()
+    or get_subdomain_bathy_data()
     e.g. plot_meas_mod_locations(-124.0, 48.4, -124.2, 48.1,X,Y,bathy)
 
     :arg measlon: longitude of point 1
@@ -721,19 +807,19 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat,X,Y,bathy):
 
     :returns: plots contour plot with 2 points
     """
-    plt.contourf(X,Y,bathy)
+    plt.contourf(X, Y, bathy)
     plt.colorbar()
     plt.title('Domain of model (depths in m)')
-    hold = True
-    plt.plot(modlon,modlat,'g.',markersize=10,label='model')
-    plt.plot(measlon,measlat,'m.',markersize=10,label='measured')
-    plt.xlim([modlon-0.1,modlon+0.1])
-    plt.ylim([modlat-0.1,modlat+0.1])
+    plt.plot(modlon, modlat, 'g.', markersize=10, label='model')
+    plt.plot(measlon, measlat, 'm.', markersize=10, label='measured')
+    plt.xlim([modlon-0.1, modlon+0.1])
+    plt.ylim([modlat-0.1, modlat+0.1])
     plt.legend(numpoints=1)
 
-def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
-    """
-    Plot water level of the modelled M2 and K1 constituents and measured M2 and K1 constituents in a transect at specified stations
+
+def plot_wlev_const_transect(savename, statnums, runname, loc, grid, *args):
+    """Plot water level of the modelled M2 and K1 constituents
+    and measured M2 and K1 constituents in a transect at specified stations
     e.g. plot_wlev_const_transect('40d','/ocean/klesouef/meopar/)
 
     :arg savename: tag for saving the pdf pics
@@ -751,31 +837,35 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     :arg grid: netcdf dataset of model grid
     :type grid: netcdf dataset
 
-    :arg args: other runname and results location strings, in case you want to plot more than set of model results on the same figure
+    :arg args: other runname and results location strings,
+               in case you want to plot more than set of model results
+               on the same figure
     :type args: str
 
     :returns: plots transect of M2 and K1 water level constituent
     """
-    #runname1, loc1, runname2, loc2
-    fig1 = plt.figure(figsize=(15,5))
+    # runname1, loc1, runname2, loc2
+    fig1 = plt.figure(figsize=(15, 5))
     ax1 = fig1.add_subplot(111)
     ax1.set_xlabel('Station number [-]')
     ax1.set_ylabel('M2 amplitude [m]')
-    fig2 = plt.figure(figsize=(15,5))
+    fig2 = plt.figure(figsize=(15, 5))
     ax2 = fig2.add_subplot(111)
     ax2.set_xlabel('Station number [-]')
     ax2.set_ylabel('K1 amplitude [m]')
-    fig3 = plt.figure(figsize=(15,5))
+    fig3 = plt.figure(figsize=(15, 5))
     ax3 = fig3.add_subplot(111)
     ax3.set_xlabel('Station number[-]')
     ax3.set_ylabel('M2 phase [degrees]')
-    fig4 = plt.figure(figsize=(15,5))
+    fig4 = plt.figure(figsize=(15, 5))
     ax4 = fig4.add_subplot(111)
     ax4.set_xlabel('Station number[-]')
     ax4.set_ylabel('K1 phase [degrees]')
 
-    #get the modelled data
-    meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
+    # Get the modelled data
+    (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all,
+     D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all,
+     D_M04_K1_all) = calc_diffs_meas_mod(runname, loc, grid)
     Am_M2_all = np.array(Am_M2_all)
     Ao_M2_all = np.array(Ao_M2_all)
     gm_M2_all = np.array(gm_M2_all)
@@ -784,26 +874,30 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
     Ao_K1_all = np.array(Ao_K1_all)
     gm_K1_all = np.array(gm_K1_all)
     go_K1_all = np.array(go_K1_all)
-    #just take the model values at the statnums we want
+    # Just take the model values at the statnums we want
     some_model_amps_M2 = np.array([Am_M2_all[statnums]])
     some_model_amps_K1 = np.array([Am_K1_all[statnums]])
     some_model_phas_M2 = np.array([gm_M2_all[statnums]])
     some_model_phas_K1 = np.array([gm_K1_all[statnums]])
-    x = np.array(range(0,len(statnums)))
-    #plot the M2 model data
-    ax1.plot(x,some_model_amps_M2[0,:],'b-o', label='single model')
-    #plot the K1 model data
-    ax2.plot(x,some_model_amps_K1[0,:],'b--o', label='single model')
-    ax3.plot(x,some_model_phas_M2[0,:],'b-o', label='single model')
-    ax4.plot(x,some_model_phas_K1[0,:],'b--o', label='single model')
+    x = np.array(range(0, len(statnums)))
+    # Plot the M2 model data
+    ax1.plot(x, some_model_amps_M2[0, :], 'b-o', label='single model')
+    # Plot the K1 model data
+    ax2.plot(x, some_model_amps_K1[0, :], 'b--o', label='single model')
+    ax3.plot(x, some_model_phas_M2[0, :], 'b-o', label='single model')
+    ax4.plot(x, some_model_phas_K1[0, :], 'b--o', label='single model')
 
-    if len(args)>0:
-        #assuming we will only be adding an additional 3 lines, define 3 colours
-        colours = ['g','m','k','r','y']
-        for r in range(0,int(len(args)/2)):
+    if len(args) > 0:
+        # Assuming we will only be adding an additional 3 lines,
+        # define 3 colours
+        colours = ['g', 'm', 'k', 'r', 'y']
+        for r in range(0, int(len(args)/2)):
             runname = args[2*r]
             loc = args[2*r+1]
-            meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(runname,loc,grid)
+            (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
+             D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all,
+             go_K1_all, D_F95_K1_all, D_M04_K1_all) = calc_diffs_meas_mod(
+                runname, loc, grid)
             Am_M2_all = np.array(Am_M2_all)
             Ao_M2_all = np.array(Ao_M2_all)
             gm_M2_all = np.array(gm_M2_all)
@@ -816,52 +910,59 @@ def plot_wlev_const_transect(savename,statnums,runname,loc,grid,*args):
             some_model_amps_K1 = np.array([Am_K1_all[statnums]])
             some_model_phas_M2 = np.array([gm_M2_all[statnums]])
             some_model_phas_K1 = np.array([gm_K1_all[statnums]])
-            x = np.array(range(0,len(statnums)))
-            ax1.plot(x,some_model_amps_M2[0,:],'-o',color = colours[r], label='model')
-            ax2.plot(x,some_model_amps_K1[0,:],'--o',color = colours[r], label='model')
-            ax3.plot(x,some_model_phas_M2[0,:],'-o',color = colours[r], label='model')
-            ax4.plot(x,some_model_phas_K1[0,:],'--o',color = colours[r], label='model')
-
-    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv',sep=';')
+            x = np.array(range(0, len(statnums)))
+            ax1.plot(
+                x, some_model_amps_M2[0, :],
+                '-o', color=colours[r], label='model')
+            ax2.plot(
+                x, some_model_amps_K1[0, :],
+                '--o', color=colours[r], label='model')
+            ax3.plot(
+                x, some_model_phas_M2[0, :],
+                '-o', color=colours[r], label='model')
+            ax4.plot(
+                x, some_model_phas_K1[0, :],
+                '--o', color=colours[r], label='model')
     some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
     some_meas_amps_K1 = np.array([Ao_K1_all[statnums]])
     some_meas_phas_M2 = np.array([go_M2_all[statnums]])
     some_meas_phas_K1 = np.array([go_K1_all[statnums]])
-    sitenames = list(meas_wl_harm.Site[statnums])
-    sitelats = np.array(meas_wl_harm.Lat[statnums])
-    #M2
-    ax1.plot(x,some_meas_amps_M2[0,:],'r-o',label='measured')
+    # M2
+    ax1.plot(x, some_meas_amps_M2[0, :], 'r-o', label='measured')
     ax1.set_xticks(x)
     ax1.set_xticklabels(statnums+1)
     ax1.legend(loc='lower right')
     ax1.set_title('Line through stations '+str(statnums))
-    fig1.savefig('meas_mod_wlev_transect_M2_'+''.join(runname)+'_'+savename+'.pdf')
-    #K1
-    ax2.plot(x,some_meas_amps_K1[0,:],'r--o',label='measured')
+    fig1.savefig(
+        'meas_mod_wlev_transect_M2_'+''.join(runname)+'_'+savename+'.pdf')
+    # K1
+    ax2.plot(x, some_meas_amps_K1[0, :], 'r--o', label='measured')
     ax2.set_xticks(x)
     ax2.set_xticklabels(statnums+1)
     ax2.legend(loc='lower right')
     ax2.set_title('Line through stations '+str(statnums))
-    fig2.savefig('meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
-    #M2
-    ax3.plot(x,some_meas_phas_M2[0,:],'r-o',label='measured')
+    fig2.savefig(
+        'meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
+    # M2
+    ax3.plot(x, some_meas_phas_M2[0, :], 'r-o', label='measured')
     ax3.set_xticks(x)
     ax3.set_xticklabels(statnums+1)
     ax3.legend(loc='lower right')
     ax3.set_title('Line through stations '+str(statnums))
-    fig3.savefig('meas_mod_wlev_transect_M2_phas'+''.join(runname)+'_'+savename+'.pdf')
-    #K1
-    ax4.plot(x,some_meas_phas_K1[0,:],'r--o',label='measured')
+    fig3.savefig(
+        'meas_mod_wlev_transect_M2_phas'+''.join(runname)+'_'+savename+'.pdf')
+    # K1
+    ax4.plot(x, some_meas_phas_K1[0, :], 'r--o', label='measured')
     ax4.set_xticks(x)
     ax4.set_xticklabels(statnums+1)
     ax4.legend(loc='lower right')
     ax4.set_title('Line through stations '+str(statnums))
-    fig2.savefig('meas_mod_wlev_transect_K1_phas'+''.join(runname)+'_'+savename+'.pdf')
+    fig2.savefig(
+        'meas_mod_wlev_transect_K1_phas'+''.join(runname)+'_'+savename+'.pdf')
 
 
 def plot_wlev_transect_map(grid, statnums):
-    """
-    Plot a map of the coastline and the transect of water level stations,
+    """Plot a map of the coastline and the transect of water level stations,
     which are plotted in plot_wlev_M2_const_transect
 
     :arg grid: bathymetry file
@@ -874,23 +975,21 @@ def plot_wlev_transect_map(grid, statnums):
     """
     plt.figure(figsize=(9, 9))
     ax = plt.gca()
-    #add a coastline
+    # Add a coastline
     viz_tools.plot_coastline(ax, grid, coords='map')
-    #get the measured data
+    # Get the measured data
     meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv', sep=';')
-    sitenames = list(meas_wl_harm.Site[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelats = np.array(meas_wl_harm.Lat[statnums])
     sitelons = np.array(-meas_wl_harm.Lon[statnums])
-    #plot the transext line
+    # Plot the transext line
     plt.plot(sitelons, sitelats, 'm-o')
     plt.title('Location of Select Stations')
     plt.savefig('meas_mod_wlev_transect_map.pdf')
 
 
 def plot_coastline(grid):
-    """
-    Plots a map of the coastline
+    """Plots a map of the coastline.
 
     .. note::
 
@@ -906,8 +1005,10 @@ def plot_coastline(grid):
 
 
 def get_composite_harms2():
-    """
-    Take the results of the following runs (which are all the same model setup) and combine the harmonics into one 'composite' run
+    """Take the results of the following runs
+    (which are all the same model setup)
+    and combine the harmonics into one 'composite' run.
+
     50s_15-21Sep
     50s_22-25Sep
     50s_26-29Sep
@@ -917,32 +1018,38 @@ def get_composite_harms2():
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
 
-    runnames = ['50s_15-21Sep','50s_22-25Sep','50s_26-29Sep','50s_30Sep-6Oct','50s_7-13Oct']
-    runlength = np.array([7.0,4.0,4.0,7.0,7.0])
+    runnames = [
+        '50s_15-21Sep', '50s_22-25Sep', '50s_26-29Sep', '50s_30Sep-6Oct',
+        '50s_7-13Oct']
+    runlength = np.array([7.0, 4.0, 4.0, 7.0, 7.0])
 
     mod_M2_eta_real1 = 0.0
     mod_M2_eta_imag1 = 0.0
     mod_K1_eta_real1 = 0.0
     mod_K1_eta_imag1 = 0.0
 
-    for runnum in range(0,len(runnames)):
-        harmT = NC.Dataset('/data/dlatorne/MEOPAR/SalishSea/results/'+runnames[runnum]+'/Tidal_Harmonics_eta.nc','r')
-        #get imaginary and real components
-        mod_M2_eta_real1 = mod_M2_eta_real1 + harmT.variables['M2_eta_real'][0,:,:]*runlength[runnum]
-        mod_M2_eta_imag1 = mod_M2_eta_imag1 + harmT.variables['M2_eta_imag'][0,:,:]*runlength[runnum]
-        mod_K1_eta_real1 = mod_K1_eta_real1 + harmT.variables['K1_eta_real'][0,:,:]*runlength[runnum]
-        mod_K1_eta_imag1 = mod_K1_eta_imag1 + harmT.variables['K1_eta_imag'][0,:,:]*runlength[runnum]
-
+    for runnum in range(0, len(runnames)):
+        harmT = NC.Dataset(
+            '/data/dlatorne/MEOPAR/SalishSea/results/'
+            + runnames[runnum]+'/Tidal_Harmonics_eta.nc', 'r')
+        # Get imaginary and real components
+        mod_M2_eta_real1 += (
+            harmT.variables['M2_eta_real'][0, :, :]*runlength[runnum])
+        mod_M2_eta_imag1 += (
+            harmT.variables['M2_eta_imag'][0, :, :]*runlength[runnum])
+        mod_K1_eta_real1 += (
+            harmT.variables['K1_eta_real'][0, :, :]*runlength[runnum])
+        mod_K1_eta_imag1 += (
+            harmT.variables['K1_eta_imag'][0, :, :]*runlength[runnum])
     totaldays = sum(runlength)
     mod_M2_eta_real = mod_M2_eta_real1/totaldays
     mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
     mod_K1_eta_real = mod_K1_eta_real1/totaldays
     mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
     mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
-    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag,mod_M2_eta_real))
+    mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
     mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
-    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag,mod_K1_eta_real))
-
+    mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
@@ -990,22 +1097,28 @@ def get_composite_harms(runnames, loc):
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
-def get_composite_harms_uv(runname,loc):
-    """
-    Take the results of the specified runs (which must all have the same model setup) and combine the harmonics into one 'composite' run
+def get_composite_harms_uv(runname, loc):
+    """Take the results of the specified runs
+    (which must all have the same model setup)
+    and combine the harmonics into one 'composite' run.
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep', or if you'd like the harmonics of more than one run to be combined into one picture, give a list of names e.g. '40d','41d50d','51d60d'
+    :arg runname: name of the model run to process;
+                  e.g. runname = '50s_15Sep-21Sep',
+                  or if you'd like the harmonics of more than one run
+                  to be combined into one picture,
+                  give a list of names e.g. '40d','41d50d','51d60d'
     :type runname: str
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg loc: location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
     :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha,
               mod_K1_u_amp, mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha
     """
-    runlength = np.zeros((len(runname),1))
-    for k in range(0,len(runname)):
-        runlength[k,0] = get_run_length(runname[k],loc)
+    runlength = np.zeros((len(runname), 1))
+    for k in range(0, len(runname)):
+        runlength[k, 0] = get_run_length(runname[k], loc)
 
     mod_M2_u_real1 = 0.0
     mod_M2_u_imag1 = 0.0
@@ -1016,23 +1129,29 @@ def get_composite_harms_uv(runname,loc):
     mod_K1_v_real1 = 0.0
     mod_K1_v_imag1 = 0.0
 
-    for runnum in range(0,len(runname)):
-        harmU = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_U.nc','r')
-#        print loc+runname[runnum]+'/Tidal_Harmonics_U.nc'
-        #get imaginary and real components
-        mod_M2_u_real1 = mod_M2_u_real1 + harmU.variables['M2_u_real'][0,:,:]*runlength[runnum]
-        mod_M2_u_imag1 = mod_M2_u_imag1 + harmU.variables['M2_u_imag'][0,:,:]*runlength[runnum]
-        mod_K1_u_real1 = mod_K1_u_real1 + harmU.variables['K1_u_real'][0,:,:]*runlength[runnum]
-        mod_K1_u_imag1 = mod_K1_u_imag1 + harmU.variables['K1_u_imag'][0,:,:]*runlength[runnum]
+    for runnum in range(0, len(runname)):
+        harmU = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_U.nc', 'r')
+        # Get imaginary and real components
+        mod_M2_u_real1 += (
+            harmU.variables['M2_u_real'][0, :, :]*runlength[runnum])
+        mod_M2_u_imag1 += (
+            harmU.variables['M2_u_imag'][0, :, :]*runlength[runnum])
+        mod_K1_u_real1 += (
+            harmU.variables['K1_u_real'][0, :, :]*runlength[runnum])
+        mod_K1_u_imag1 += (
+            harmU.variables['K1_u_imag'][0, :, :]*runlength[runnum])
 
-    for runnum in range(0,len(runname)):
-        harmV = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_V.nc','r')
-#        print loc+runname[runnum]+'/Tidal_Harmonics_V.nc'
-        #get imaginary and real components
-        mod_M2_v_real1 = mod_M2_v_real1 + harmV.variables['M2_v_real'][0,:,:]*runlength[runnum]
-        mod_M2_v_imag1 = mod_M2_v_imag1 + harmV.variables['M2_v_imag'][0,:,:]*runlength[runnum]
-        mod_K1_v_real1 = mod_K1_v_real1 + harmV.variables['K1_v_real'][0,:,:]*runlength[runnum]
-        mod_K1_v_imag1 = mod_K1_v_imag1 + harmV.variables['K1_v_imag'][0,:,:]*runlength[runnum]
+    for runnum in range(0, len(runname)):
+        harmV = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_V.nc', 'r')
+        # Get imaginary and real components
+        mod_M2_v_real1 += (
+            harmV.variables['M2_v_real'][0, :, :]*runlength[runnum])
+        mod_M2_v_imag1 += (
+            harmV.variables['M2_v_imag'][0, :, :]*runlength[runnum])
+        mod_K1_v_real1 += (
+            harmV.variables['K1_v_real'][0, :, :]*runlength[runnum])
+        mod_K1_v_imag1 += (
+            harmV.variables['K1_v_imag'][0, :, :]*runlength[runnum])
 
     totaldays = sum(runlength)
     mod_M2_u_real = mod_M2_u_real1/totaldays
@@ -1045,51 +1164,53 @@ def get_composite_harms_uv(runname,loc):
     mod_K1_v_imag = mod_K1_v_imag1/totaldays
 
     mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
-    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag,mod_M2_u_real))
+    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag, mod_M2_u_real))
     mod_K1_u_amp = np.sqrt(mod_K1_u_real**2+mod_K1_u_imag**2)
-    mod_K1_u_pha = -np.degrees(np.arctan2(mod_K1_u_imag,mod_K1_u_real))
+    mod_K1_u_pha = -np.degrees(np.arctan2(mod_K1_u_imag, mod_K1_u_real))
     mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
-    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag,mod_M2_v_real))
+    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag, mod_M2_v_real))
     mod_K1_v_amp = np.sqrt(mod_K1_v_real**2+mod_K1_v_imag**2)
-    mod_K1_v_pha = -np.degrees(np.arctan2(mod_K1_v_imag,mod_K1_v_real))
+    mod_K1_v_pha = -np.degrees(np.arctan2(mod_K1_v_imag, mod_K1_v_real))
 
-    return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, mod_K1_u_amp, mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha
+    return (
+        mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, mod_K1_u_amp,
+        mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha,
+    )
 
 
-def get_current_harms(runname,loc):
-    """
-    Get harmonics of current at a specified lon, lat and depth
+def get_current_harms(runname, loc):
+    """Get harmonics of current at a specified lon, lat and depth.
 
-    :arg runname: name of the model run to process e.g. runname = '50s_15Sep-21Sep' (doesn't deal with multiple runs)
+    :arg runname: name of the model run to process;
+                  e.g. runname = '50s_15Sep-21Sep'
+                 (doesn't deal with multiple runs)
     :type runname: str
 
-    :arg loc: location of results folder e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
+    :arg loc: location of results folder;
+              e.g. /ocean/dlatorne/MEOPAR/SalishSea/results
     :type loc: str
 
     :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
     """
-    #u
-    harmu = NC.Dataset(loc+runname+'/Tidal_Harmonics_U.nc','r')
-    mod_M2_u_real = harmu.variables['M2_u_real'][0,:,:]
-    mod_M2_u_imag = harmu.variables['M2_u_imag'][0,:,:]
-     #convert to amplitude and phase
+    # u
+    harmu = NC.Dataset(loc+runname+'/Tidal_Harmonics_U.nc', 'r')
+    mod_M2_u_real = harmu.variables['M2_u_real'][0, :, :]
+    mod_M2_u_imag = harmu.variables['M2_u_imag'][0, :, :]
+    # Convert to amplitude and phase
     mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
-    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag,mod_M2_u_real))
-
-    #v
-    harmv = NC.Dataset(loc+runname+'/Tidal_Harmonics_V.nc','r')
-    mod_M2_v_real = harmv.variables['M2_v_real'][0,:,:]
-    mod_M2_v_imag = harmv.variables['M2_v_imag'][0,:,:]
-     #convert to amplitude and phase
+    mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag, mod_M2_u_real))
+    # v
+    harmv = NC.Dataset(loc+runname+'/Tidal_Harmonics_V.nc', 'r')
+    mod_M2_v_real = harmv.variables['M2_v_real'][0, :, :]
+    mod_M2_v_imag = harmv.variables['M2_v_imag'][0, :, :]
+    # Convert to amplitude and phase
     mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
-    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag,mod_M2_v_real))
-
+    mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag, mod_M2_v_real))
     return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
 
 
 def get_run_length(runname, loc):
-    """
-    Get the length of the run in days from the namelist file
+    """Get the length of the run in days from the namelist file
 
     :arg runname: name of the model run to process; e.g. '50s_15Sep-21Sep'
     :type runname: str
@@ -1110,8 +1231,9 @@ def get_run_length(runname, loc):
 
 
 def ap2ep(Au, PHIu, Av, PHIv):
-    """
-    Convert amplitude and phase to ellipse parameters. Based on MATLAB script by Zhigang Xu, available at
+    """Convert amplitude and phase to ellipse parameters.
+
+    Based on MATLAB script by Zhigang Xu, available at
     http://woodshole.er.usgs.gov/operations/sea-mat/tidal_ellipse-html/ap2ep.m
     """
 
@@ -1190,9 +1312,10 @@ def ap2ep(Au, PHIu, Av, PHIv):
     SEMA = Wp+Wm             # Semi  Major Axis, or maximum speed
     SEMI = Wp-Wm               # Semin Minor Axis, or minimum speed
     ECC = SEMI/SEMA          # Eccentricity
-
-    PHA = (THETAm-THETAp)/2   # Phase angle, the time (in angle) when the velocity reaches the maximum
-    INC = (THETAm+THETAp)/2   # Inclination, the angle between the semi major axis and x-axis (or u-axis).
+    # Phase angle, the time (in angle) when the velocity reaches the maximum
+    PHA = (THETAm-THETAp)/2
+    # Inclination, the angle between the semi major axis and x-axis (or u-axis)
+    INC = (THETAm+THETAp)/2
 
     # convert to degrees for output
     PHA = PHA/pi*180
@@ -1200,24 +1323,23 @@ def ap2ep(Au, PHIu, Av, PHIv):
     THETAp = THETAp/pi*180
     THETAm = THETAm/pi*180
 
-    #map the resultant angles to the range of [0, 360].
-    #PHA=mod(PHA+360, 360)
-    PHA=(PHA+360)%360
-    #INC=mod(INC+360, 360)
-    INC=(INC+360)% 360
+    # Map the resultant angles to the range of [0, 360].
+    # PHA=mod(PHA+360, 360)
+    PHA = (PHA+360) % 360
+    # INC=mod(INC+360, 360)
+    INC = (INC+360) % 360
 
-    #Mar. 2, 2002 Revision by Zhigang Xu    (REVISION_1)
-    #Change the southern major axes to northern major axes to conform the tidal
-    #analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents
-    #Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm)
+    # Mar. 2, 2002 Revision by Zhigang Xu    (REVISION_1)
+    # Change the southern major axes to northern major axes to conform the tidal
+    # analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents
+    # Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm)
     k = float(INC)/180
     INC = INC-k*180
     PHA = PHA+k*180
-    PHA = PHA%360
-
+    PHA = PHA % 360
     return SEMA,  ECC, INC, PHA
 
-    #Authorship Copyright:
+    # Authorship Copyright:
     #
     #    The author retains the copyright of this program, while  you are welcome
     # to use and distribute it as long as you credit the author properly and respect
@@ -1229,8 +1351,8 @@ def ap2ep(Au, PHIu, Av, PHIv):
     # enjoy my program(s)!
     #
     #
-    #Author Info:
-    #_______________________________________________________________________
+    # Author Info:
+    # _______________________________________________________________________
     #  Zhigang Xu, Ph.D.
     #  (pronounced as Tsi Gahng Hsu)
     #  Research Scientist
@@ -1240,7 +1362,8 @@ def ap2ep(Au, PHIu, Av, PHIv):
     #  P.O. Box 1006                    Phone  (902) 426-2307 (o)
     #  Dartmouth, Nova Scotia           Fax    (902) 426-7827
     #  CANADA B2Y 4A2                   email xuz@dfo-mpo.gc.ca
-    #_______________________________________________________________________
+    # _______________________________________________________________________
     #
-    # Release Date: Nov. 2000, Revised on May. 2002 to adopt Foreman's northern semi
-    # major axis convention.
+    # Release Date: Nov. 2000,
+    # Revised on May. 2002 to adopt Foreman's northern semi-major axis
+    # convention.
