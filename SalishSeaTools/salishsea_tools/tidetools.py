@@ -422,9 +422,8 @@ def find_closest_model_point(lon, lat, X, Y, bathy):
     return i, j
 
 
-def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
-    """Plot the amplitude of one constituent throughout the whole domain
-    e.g. plot_amp_map(X,Y,grid,mod_M2_amp,'50s_12Sep-19Sep',savestr,'M2')
+def plot_amp_map(X, Y, grid, amp, constituent_name):
+    """Plot the amplitude of one constituent throughout the whole domain.
 
     :arg X: specified model longitude
     :type X: numpy array
@@ -438,16 +437,12 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     :arg amp: amplitude
     :type amp: numpy array
 
-    :arg titstr: name of model run
-    :type titstr: str
+    :arg constituent_name: Name of tidal constituent. Used as subplot title.
+    :type constituent_name: str
 
-    :arg savestr: flag to save
-    :type savestr: bool
-
-    :arg constflag: name of constituent
-    :type constflag: str
-
-    :returns: plot of amplitude of constituent
+    :returns: Figure containing plots of observed vs. modelled
+              amplitude and phase of the tidal constituent.
+    :rtype: Matplotlib figure
     """
     # Make 0 values NaNs so they plot blank
     amp = np.ma.masked_equal(amp, 0)
@@ -467,12 +462,9 @@ def plot_amp_map(X, Y, grid, amp, titstr, savestr, constflag):
     ax.set_label('longitude (deg)')
     ax.set_label('latitude (deg)')
     ax.set_title(
-        '{constflag} amplitude (m) for model'
-        .format(constflag=constflag))
-    if savestr:
-        fig.savefig(
-            '{constflag}_amp_{titstr}.pdf'
-            .format(constflag=constflag, titstr=titstr))
+        '{constituent} amplitude (m) for model'
+        .format(constituent=constituent_name))
+    return fig
 
 
 def plot_pha_map(X, Y, grid, pha, titstr, savestr, constflag):
