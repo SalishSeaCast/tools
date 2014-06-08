@@ -298,9 +298,14 @@ def get_bathy_data(grid):
 
 
 def get_SS_bathy_data():
-    """Not used any more - assumes that the user is klesouef! :)
-    Get the Salish Sea bathymetry and grid data
+    """Get the Salish Sea bathymetry and grid data
     e.g. bathy, X, Y = get_SS_bathy_data()
+
+    .. note::
+
+        This function is deprecated due to hard-coding of
+        :file:`/ocean/klesouef/` path.
+        Use :py:func:`tidetools.get_SS_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
@@ -314,9 +319,14 @@ def get_SS_bathy_data():
 
 
 def get_SS2_bathy_data():
-    """Not used any more - assumes that the user is klesouef! :)
-    Get the Salish Sea 2 bathymetry and grid data
+    """Get the Salish Sea 2 bathymetry and grid data
     e.g. bathy, X, Y = get_SS2_bathy_data()
+
+    .. note::
+
+        This function is deprecated due to hard-coding of
+        :file:`/ocean/klesouef/` path.
+        Use :py:func:`tidetools.get_SS_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
@@ -329,11 +339,15 @@ def get_SS2_bathy_data():
     return bathy, X, Y
 
 
-# Define a function to get the subdomain bathymetry and grid data
 def get_subdomain_bathy_data():
-    """Not used any more - assumes that the user is klesouef! :)
-    Get the subdomain bathymetry and grid data
+    """Get the subdomain bathymetry and grid data
     e.g. bathy, X, Y = get_subdomain_bathy_data()
+
+    .. note::
+
+        This function is deprecated due to hard-coding of
+        :file:`/ocean/klesouef/` path.
+        Use :py:func:`tidetools.get_SS_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
@@ -351,8 +365,7 @@ def find_closest_model_point(lon, lat, X, Y, bathy):
     to a specified lon/lat.
 
     e.g. x1, j1 = find_closest_model_point(-125.5,49.2,X,Y,bathy)
-    where bathy, X and Y are returned from get_SS_bathy_data()
-    or get_subdomain_bathy_data()
+    where bathy, X and Y are returned from get_SS_bathy_data().
 
     :arg lon: specified longitude
     :type lon: float
@@ -780,8 +793,7 @@ def haversine(lon1, lat1, lon2, lat2):
 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
     """Plot two locations on a contour map of bathymetry,
-    where bathy, X and Y are returned from get_SS_bathy_data()
-    or get_subdomain_bathy_data()
+    where bathy, X and Y are returned from get_SS_bathy_data();
     e.g. plot_meas_mod_locations(-124.0, 48.4, -124.2, 48.1,X,Y,bathy)
 
     :arg measlon: longitude of point 1
