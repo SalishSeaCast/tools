@@ -222,12 +222,11 @@ def plot_amp_phase_maps(runname, loc, grid):
     mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(
         runname, loc)
     bathy, X, Y = get_bathy_data(grid)
-    titname = ''.join(runname)
-    plot_amp_map(X, Y, grid, mod_M2_amp, titname, True, 'M2')
-    plot_pha_map(X, Y, grid, mod_M2_pha, titname, True, 'M2')
+    plot_amp_map(X, Y, grid, mod_M2_amp, 'M2')
+    plot_pha_map(X, Y, grid, mod_M2_pha, 'M2')
     if runname != 'concepts110' and runname != 'jpp72':
-        plot_amp_map(X, Y, grid, mod_K1_amp, titname, True, 'K1')
-        plot_pha_map(X, Y, grid, mod_K1_pha, titname, True, 'K1')
+        plot_amp_map(X, Y, grid, mod_K1_amp, 'K1')
+        plot_pha_map(X, Y, grid, mod_K1_pha, 'K1')
 
 
 def get_netcdf_amp_phase_data(loc):
