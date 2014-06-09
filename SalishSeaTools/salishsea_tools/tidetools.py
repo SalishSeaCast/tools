@@ -963,15 +963,24 @@ def plot_wlev_const_transect(savename, statnums, runname, loc, grid, *args):
         'meas_mod_wlev_transect_K1_phas'+''.join(runname)+'_'+savename+'.pdf')
 
 
-def plot_wlev_transect_map(grid, statnums, figsize=(9, 9)):
+def plot_wlev_transect_map(
+    grid, stn_nums,
+    stn_file='obs_tidal_wlev_const_all.csv',
+    figsize=(9, 9)
+):
     """Plot a map of the coastline and the transect of water level stations,
     which are plotted in :py:fnc:`plot_wlev_M2_const_transect`.
 
-    :arg grid: bathymetry file
+    :arg grid: Bathymetry file.
     :type grid: netcdf dataset
 
-    :arg statnums: station numbers to plot
-    :type statnums: numpy array
+    :arg stn_nums: Station numbers to plot.
+    :type stn_nums: numpy array
+
+    :arg stn_file: Name of file containing tidal observation station
+                   names, lats/lons, and tidal component amplitudes
+                   and phases.
+    :type stn_file: str
 
     :arg figsize: Figure size, (width, height).
     :type figsize: 2-tuple
@@ -984,12 +993,12 @@ def plot_wlev_transect_map(grid, statnums, figsize=(9, 9)):
     # Add a coastline
     viz_tools.plot_coastline(ax, grid, coords='map')
     # Get the measured data
-    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv', sep=';')
-    sitelats = np.array(meas_wl_harm.Lat[statnums])
-    sitelons = np.array(-meas_wl_harm.Lon[statnums])
+    meas_wl_harm = pd.read_csv(stn_file, sep=';')
+    sitelats = np.array(meas_wl_harm.Lat[stn_nums])
+    sitelons = np.array(-meas_wl_harm.Lon[stn_nums])
     # Plot the transect line
     ax.plot(sitelons, sitelats, 'm-o')
-    ax.title('Location of Select Stations')
+    ax.set_title('Location of Select Stations')
     return fig
 
 
