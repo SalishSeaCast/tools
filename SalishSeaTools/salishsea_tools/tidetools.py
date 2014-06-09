@@ -568,65 +568,70 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
 
 
 def plot_diffs_on_domain(
-    D, meas_wl_harm, calcmethod, constflag, runname, grid,
+    diffs, meas_wl_harm, calc_method, constituent_name, grid,
+    scale_fac=100,
+    legend_scale=0.1,
+    figsize=(9, 9),
 ):
-    """Plot differences as circles of varying radius on a map of the model domain
-    e.g. plot_diffs_on_domain(D_F95_all_M2,meas_wl_harm,'F95','M2',runname,grid)
+    """Plot differences as circles of varying radius on a map of the
+    model domain.
 
-    :arg D: differences calculated between measured and modelled
-    :type D: numpy array
+    :arg diffs: Differences calculated between measured and modelled
+                values [m].
+    :type diffs: numpy array
 
-    :arg meas_wl_harm: measured water level harmonics read in from csv
+    :arg meas_wl_harm: Measured water level harmonics read in from csv.
     :type meas_wl_harm: numpy array
 
-    :arg calcmethod: method for calculating differences ('F95' or 'M04')
-    :type calcmethod: str
+    :arg calc_method: Method for calculating differences ('F95' or 'M04')
+    :type calc_method: str
 
-    :arg constflag: name of constituent
-    :type constflag: str
+    :arg constituent_name: Name of tidal constituent. Used as subplot title.
+    :type constituent_name: str
 
-    :arg runname: name of model run
-    :type runname: str
+    :arg grid: Netcdf file of grid data.
+    :type grid: Netcdf dataset
 
-    :returns: plots and saves plots of differences as circles of
-    varying radius on a map of the model domain
+    :arg scale_fac: Scale factor to make difference dots visible on map.
+    :type scale_fac: float
+
+    :arg legend_scale: Size of legend sot; [cm].
+
+    :arg figsize: Figure size, (width, height).
+    :type figsize: 2-tuple
+
+    :returns: Figure containing plots of observed vs. modelled
+              amplitude and phase of the tidal constituent.
+    :rtype: Matplotlib figure
     """
     # Plot the bathy underneath
     bathy, X, Y = get_bathy_data(grid)
-    plt.figure(figsize=(9, 9))
-    plt.contourf(X, Y, bathy, cmap='spring')
-    cbar = plt.colorbar()
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    mesh = ax.contourf(X, Y, bathy, cmap='spring')
+    cbar = fig.colorbar(mesh)
     cbar.set_label('depth [m]')
-    scalefac = 100
-
     # Plot the differences as dots of varying radii
-    legendD = 0.1  # [m]
     # Multiply the differences by something big to see the results
     # on a map (D is in [m])
-    area = np.array(D)*scalefac
-    plt.scatter(
-        np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
-        c='b', s=area, marker='o')
-    plt.scatter(-124.5, 47.9, c='b', s=(legendD*scalefac), marker='o')
-    plt.text(-124.4, 47.9, 'D='+(str(legendD*100))+'cm')
-    plt.xlabel('Longitude (deg)')
-    plt.ylabel('Latitude (deg)')
-
-    # Plot colours and add labels depending on calculation method
-    if calcmethod == 'F95':
-        plt.scatter(
-            np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
-            c='b', s=area, marker='o')
-        plt.scatter(-124.5, 47.9, c='b', s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Foreman et al) ')
-        plt.savefig(constflag+'_diffs_F95_'+''.join(runname)+'.pdf')
-    if calcmethod == 'M04':
-        plt.scatter(
-            np.array(meas_wl_harm.Lon)*-1, meas_wl_harm.Lat,
-            c='g', s=area, marker='o')
-        plt.scatter(-124.5, 47.9, c='g', s=(legendD*scalefac), marker='o')
-        plt.title(constflag+' differences (Masson & Cummins)')
-        plt.savefig(constflag+'_diffs_M04_'+''.join(runname)+'.pdf')
+    ax.scatter(
+        -meas_wl_harm.Lon, meas_wl_harm.Lat,
+        s=np.array(diffs) * scale_fac, marker='o',
+        c='blue', edgecolors='blue')
+    # Legend and labels
+    ax.text(
+        -124.4, 47.875, 'Diff = {}cm'.format(legend_scale * scale_fac))
+    ax.scatter(
+        -124.5, 47.9,
+        s=legend_scale * scale_fac, marker='o',
+        c='blue', edgecolors='blue')
+    ax.set_xlabel('Longitude [deg E]')
+    ax.set_ylabel('Latitude [deg N]')
+    ref = (
+        'Foreman et al' if calc_method == 'F95' else 'Masson & Cummins')
+    ax.set_title(
+        '{constituent} Differences ({ref})'
+        .format(constituent=constituent_name, ref=ref))
+    return fig
 
 
 def calc_diffs_meas_mod(runname, loc, grid):
