@@ -97,6 +97,7 @@ The command :kbd:`salishsea --help` produces a list of the available :program:`s
       get_cgrf       Download and symlink CGRF atmospheric forcing files
       help           print detailed help for another command
       prepare        Prepare a Salish Sea NEMO run
+      run            Prepare, execute, and gather results from a Salish Sea NEMO model run
 
 For details of the arguments and options for a sub-command use
 :command:`salishsea help <sub-command>`.
@@ -104,25 +105,27 @@ For example:
 
 .. code-block:: bash
 
-    salishsea help gather
+    salishsea help run
 
-    usage: salishsea gather [-h] [--keep-proc-results] [--no-compress]
-                            [--compress-restart] [--delete-restart]
-                            DESC_FILE RESULTS_DIR
+    usage: salishsea run [-h] [-q] [--compress] [--keep-proc-results]
+                         [--compress-restart] [--delete-restart]
+                         DESC_FILE IO_DEFS RESULTS_DIR
 
-    Gather the results files from a Salish Sea NEMO run described in DESC_FILE
-    into files in RESULTS_DIR. The gathering process includes combining the per-
-    processor results files, compressing them using gzip and deleting the per-
-    processor files. If RESULTS_DIR does not exist it will be created.
+    Prepare, execute, and gather the results from a Salish Sea NEMO run described
+    in DESC_FILE and IO_DEFS. The results files from the run are gathered in
+    RESULTS_DIR. If RESULTS_DIR does not exist it will be created.
 
     positional arguments:
       DESC_FILE            run description YAML file
+      IO_DEFS              NEMO IOM server defs file for run
       RESULTS_DIR          directory to store results into
 
     optional arguments:
       -h, --help           show this help message and exit
+      -q, --quiet          don't show the run directory path or job submission
+                           message
+      --compress           compress results files
       --keep-proc-results  don't delete per-processor results files
-      --no-compress        don't compress results files
       --compress-restart   compress restart file(s)
       --delete-restart     delete restart file(s)
 
@@ -133,73 +136,67 @@ You can check what version of :program:`salishsea` you have installed with:
     salishsea --version
 
 
-.. _salishsea-combine:
+.. _salishsea-run:
 
-:kbd:`combine` Sub-command
---------------------------
+:kbd:`run` Sub-command
+----------------------
 
-The :command:`salishsea combine` command is a legacy command that combines the per-processor results files from an MPI Salish Sea NEMO run.
-Its operation is included in the :command:`salishsea gather` command.
-
-
-.. _salishsea-gather:
-
-:kbd:`gather` Sub-command
--------------------------
-
-The :command:`salishsea gather` command gather results from a Salish Sea NEMO run into a results directory.
-Its operation includes running the :command:`salishsea combine` command to combine the pre-processor MPI results files.
+The :command:`salishsea run` command prepares,
+executes,
+and gathers the results from the Salish Sea NEMO run described in the specifed run description and IOM server definitions files.
+The results are gathered in the specified results directory.
 
 .. code-block:: bash
 
-    usage: salishsea gather [-h] [--keep-proc-results] [--no-compress]
-                            [--compress-restart] [--delete-restart]
-                            DESC_FILE RESULTS_DIR
+    usage: salishsea run [-h] [-q] [--compress] [--keep-proc-results]
+                         [--compress-restart] [--delete-restart]
+                         DESC_FILE IO_DEFS RESULTS_DIR
 
-    Gather the results files from a Salish Sea NEMO run described in DESC_FILE
-    into files in RESULTS_DIR. The gathering process includes combining the per-
-    processor results files, compressing them using gzip and deleting the per-
-    processor files. If RESULTS_DIR does not exist it will be created.
+    Prepare, execute, and gather the results from a Salish Sea NEMO run described
+    in DESC_FILE and IO_DEFS. The results files from the run are gathered in
+    RESULTS_DIR. If RESULTS_DIR does not exist it will be created.
 
     positional arguments:
       DESC_FILE            run description YAML file
+      IO_DEFS              NEMO IOM server defs file for run
       RESULTS_DIR          directory to store results into
 
     optional arguments:
       -h, --help           show this help message and exit
+      -q, --quiet          don't show the run directory path or job submission
+                           message
+      --compress           compress results files
       --keep-proc-results  don't delete per-processor results files
-      --no-compress        don't compress results files
       --compress-restart   compress restart file(s)
       --delete-restart     delete restart file(s)
 
+The path to the run directory,
+and the response from the job queue manager
+(typically a job number)
+are printed upon completion of the command.
 
-.. _salishsea-get_cgrf:
+The :command:`salishsea run` command does the following:
 
-:kbd:`get_cgrf` Sub-command
----------------------------
+#. Execute the :ref:`salishsea-prepare` via the :ref:`salishsea-api` to sets up a temporary run directory from which to execute the Salish Sea NEMO run.
+#. Create a :file:`SalishSeaNEMO.sh` job script in the run directory.
+   The job script runs NEMO and executes the :ref:`salishsea-gather` via the :ref:`salishsea-api` to collect the run results files into the results directory.
+#. Submit the job script to the queue manager via :command:`qsub` on systems like :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` that use TORQUE/PBS schedulers,
+   or via :command:`at` on other systems.
 
-The :command:`salishsea get_cgrf` command downloads CGRF products atmospheric forcing files from Dalhousie rsync
-repository and symlink with the file names that NEMO expects:
+See the :ref:`RunDescriptionFileStructure` section for details of the run description file.
+
+The :command:`salishsea run` command concludes by printing the path to the run directory and the response from the job queue manager.
+Example:
 
 .. code-block:: bash
 
-    usage: salishsea get_cgrf [-h] [-d DAYS] [--user USERID] [--password PASSWD]
-                              START_DATE
+    salishsea run SalishSea.yaml iodef.xml ../../SalishSea/myrun
 
-    Download CGRF products atmospheric forcing files from Dalhousie rsync
-    repository and symlink with the file names that NEMO expects.
+    salishsea_cmd.prepare Created run directory ../../SalishSea/38e87e0c-472d-11e3-9c8e-0025909a8461
+    salishsea_cmd.run INFO: 3330782.orca2.ibb
 
-    positional arguments:
-      START_DATE            1st date to download files for
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -d DAYS, --days DAYS  Number of days to download; defaults to 1
-      --user USERID         User id for Dalhousie CGRF rsync repository
-      --password PASSWD     Passowrd for Dalhousie CGRF rsync repository
-
-The command *must* be run in the :file:`/ocean/dlatorne/CGRF/` directory.
-
+If the :command:`salishsea run` command prints an error message,
+you can get a Python traceback containing more information about the error by re-running the command with the :kbd:`--debug` flag.
 
 .. _salishsea-prepare:
 
@@ -207,7 +204,6 @@ The command *must* be run in the :file:`/ocean/dlatorne/CGRF/` directory.
 --------------------------
 
 The :command:`salishsea prepare` command sets up a run directory from which to execute the Salish Sea NEMO run described in the specifed run description,
-namelist,
 and IOM server definitions files:
 
 .. code-block:: bash
@@ -241,9 +237,7 @@ The run directory also contains symbolic links to:
 
 * The run description file provided on the command line
 
-* The namelist file provided on the command line,
-  aliased as :file:`namelist`,
-  the file name expected by NEMO
+* The :file:`namelist` file constructed from the namelists provided in the run description file
 
 * The IOM server definitions files provided on the command line,
   aliased to :file:`iodefs.xml`,
@@ -262,7 +256,7 @@ The run directory also contains symbolic links to:
   open boundary conditions,
   and rivers run-off forcing directories given in the :kbd:`forcing` section of the run description file.
   The initial conditions may be specified from a restart file instead of a directory of netCDF files,
-  in which case the restart file is synlinked as :file:`restart.nc`,
+  in which case the restart file is symlinked as :file:`restart.nc`,
   the file name expected by NEMO.
 
 See the :ref:`RunDescriptionFileStructure` section for details of the run description file.
@@ -272,8 +266,85 @@ Example:
 
 .. code-block:: bash
 
-    salishsea prepare SalishSea.yaml namelist.1h iodef.xml
-    Created run directory ../../runs/SalishSea/38e87e0c-472d-11e3-9c8e-0025909a8461
+    salishsea prepare SalishSea.yaml iodef.xml
+    salishsea_cmd.prepare INFO: Created run directory ../../runs/SalishSea/38e87e0c-472d-11e3-9c8e-0025909a8461
+
+If the :command:`salishsea prepare` command prints an error message,
+you can get a Python traceback containing more information about the error by re-running the command with the :kbd:`--debug` flag.
+
+
+.. _salishsea-gather:
+
+:kbd:`gather` Sub-command
+-------------------------
+
+The :command:`salishsea gather` command gather results from a Salish Sea NEMO run into a results directory.
+Its operation includes running the :command:`salishsea combine` command to combine the pre-processor MPI results files.
+
+.. code-block:: bash
+
+    usage: salishsea gather [-h] [--keep-proc-results] [--no-compress]
+                            [--compress-restart] [--delete-restart]
+                            DESC_FILE RESULTS_DIR
+
+    Gather the results files from a Salish Sea NEMO run described in DESC_FILE
+    into files in RESULTS_DIR. The gathering process includes combining the per-
+    processor results files, compressing them using gzip and deleting the per-
+    processor files. If RESULTS_DIR does not exist it will be created.
+
+    positional arguments:
+      DESC_FILE            run description YAML file
+      RESULTS_DIR          directory to store results into
+
+    optional arguments:
+      -h, --help           show this help message and exit
+      --keep-proc-results  don't delete per-processor results files
+      --no-compress        don't compress results files
+      --compress-restart   compress restart file(s)
+      --delete-restart     delete restart file(s)
+
+If the :command:`salishsea gather` command prints an error message,
+you can get a Python traceback containing more information about the error by re-running the command with the :kbd:`--debug` flag.
+
+
+.. _salishsea-get_cgrf:
+
+:kbd:`get_cgrf` Sub-command
+---------------------------
+
+The :command:`salishsea get_cgrf` command downloads CGRF products atmospheric forcing files from Dalhousie rsync
+repository and symlink with the file names that NEMO expects:
+
+.. code-block:: bash
+
+    usage: salishsea get_cgrf [-h] [-d DAYS] [--user USERID] [--password PASSWD]
+                              START_DATE
+
+    Download CGRF products atmospheric forcing files from Dalhousie rsync
+    repository and symlink with the file names that NEMO expects.
+
+    positional arguments:
+      START_DATE            1st date to download files for
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -d DAYS, --days DAYS  Number of days to download; defaults to 1
+      --user USERID         User id for Dalhousie CGRF rsync repository
+      --password PASSWD     Passowrd for Dalhousie CGRF rsync repository
+
+The command *must* be run in the :file:`/ocean/dlatorne/CGRF/` directory.
+
+If the :command:`salishsea get_cgrf` command prints an error message,
+you can get a Python traceback containing more information about the error by re-running the command with the :kbd:`--debug` flag.
+
+
+.. _salishsea-combine:
+
+:kbd:`combine` Sub-command
+--------------------------
+
+The :command:`salishsea combine` command is a legacy command that combines the per-processor results files from an MPI Salish Sea NEMO run.
+Its operation is included in the :command:`salishsea gather` command.
 
 
 .. _RunDescriptionFileStructure:
@@ -293,6 +364,11 @@ Example:
 
 The value associated with the :kbd:`config_name` key is the name of the NEMO configuration to use for runs.
 It is the name of a directory in :file:`NEMO-code/NEMOGCM/CONFIG/`.
+
+The values associated with the :kbd:`run_id` and :kbd:`walltime` keys are used by the :command:`salishsea run` command for runs on systems like :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` that use TORQUE/PBS schedulers and jobs submission via :command:`qsub`.
+The :kbd:`run_id` value is the job identifier that appears in the :command:`qstat` listing.
+The :kbd:`walltime` value is the wall-clock time requested for the run.
+All other values for the :file:`SalishSeaNEMO.sh` job scripts that :command:`salishsea run` creates are read from the namelist or otherwise calculated.
 
 The :kbd:`paths` section of the run description file is a collection of directory paths that :program:`salishsea` uses to find files in other repos that it needs.
 The paths may be either absolute or relative.
@@ -344,3 +420,5 @@ The API provides Python function interfaces to command processor sub-commands fo
 and by other software.
 
 .. autofunction:: api.combine
+
+.. autofunction:: api.prepare
