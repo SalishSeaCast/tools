@@ -74,13 +74,14 @@ Descriptions below the links are from the first cell of the notebooks
     
     **Plotting Velocity Fields on Horizontal Planes (Depth Slices)**  
       
-    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Surface and Depth Slices.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Tracers%20on%20Surface%20and%20Depth%20Slices.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.  
+    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting%20Tracers%20on%20Horizontal%20Planes.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.  
     Topics include:  
       
     * Reading velocity component values from NEMO `*grid_[UVW].nc` results files  
     * Plotting colour meshes of velocity components  
     * "Un-staggering" velocity component values for vector plots  
     * Quiver plots of velocity vectors  
+    * Streamline plots of velocity fields  
 
 
 ##License
