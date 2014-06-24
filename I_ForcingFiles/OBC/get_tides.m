@@ -3,13 +3,13 @@ function [pred,wlev,anomaly,tim] = get_tides(csvfilename, location)
 % Take the csv file of measured water level and calculate sea surface
 % anomaly using predicted tide level from t_xtide
 % e.g. [pred,wlev,anomaly] = get_tides('wlev_timeseries.csv', 'tofino(2)');
-% location is the location for t_xtide predictions. This should correspond
+% location is the location for t_tide predictions. This should correspond
 % to the location of the measured water level.
 % The dates are set by the date in the csvfilename
 
 
 % KLS November 2013
-% Feb 2014: This has been adapted to use the t_xtide package. NKS
+% Feb 2014: This has been adapted to use the t_tide package. NKS
 % This fcuntion will save the harmonics data and the predictions in separate files. 
 
 %Read in the measured water level data the location
