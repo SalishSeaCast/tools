@@ -70,6 +70,15 @@ Descriptions below the links are from the first cell of the notebooks
     * Anomaly plots  
     * Plotting salinity fields with various colour scales  
 
+* ##[Plotting Velocities and Tracers on Vertical Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)  
+    
+    **Plotting Velocities and Tracers on Vertical Planes**  
+      
+    This notebook contains discussion, examples, and best practices for plotting velocity field and tracer results from NEMO on vertical planes.  
+    Topics include:  
+      
+    * Plotting colour meshes of velocity on vertical sections through the domain  
+
 * ##[Plotting Velocity Fields on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)  
     
     **Plotting Velocity Fields on Horizontal Planes (Depth Slices)**  
