@@ -635,10 +635,7 @@ def plot_diffs_on_domain(
 
 def calc_diffs_meas_mod(runname, loc, grid):
     """Calculate differences between measured and modelled water level
-    e.g. (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
-          D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all,
-          go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod(
-            '50s_13Sep-20Sep')
+    e.g. (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all, D_M04_M2_all,Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all = calc_diffs_meas_mod('50s_13Sep-20Sep')
 
     :arg runname: name of model run
     :type runname: str
@@ -973,7 +970,7 @@ def plot_wlev_transect_map(
     figsize=(9, 9)
 ):
     """Plot a map of the coastline and the transect of water level stations,
-    which are plotted in :py:fnc:`plot_wlev_M2_const_transect`.
+    which are plotted in :py:func:`plot_wlev_M2_const_transect`.
 
     :arg grid: Bathymetry file.
     :type grid: netcdf dataset
@@ -1201,7 +1198,7 @@ def get_current_harms(runname, loc):
 
     :arg runname: name of the model run to process;
                   e.g. runname = '50s_15Sep-21Sep'
-                 (doesn't deal with multiple runs)
+                  (doesn't deal with multiple runs)
     :type runname: str
 
     :arg loc: location of results folder;
