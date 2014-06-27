@@ -365,9 +365,33 @@ Example:
 The value associated with the :kbd:`config_name` key is the name of the NEMO configuration to use for runs.
 It is the name of a directory in :file:`NEMO-code/NEMOGCM/CONFIG/`.
 
-The values associated with the :kbd:`run_id` and :kbd:`walltime` keys are used by the :command:`salishsea run` command for runs on systems like :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` that use TORQUE/PBS schedulers and jobs submission via :command:`qsub`.
-The :kbd:`run_id` value is the job identifier that appears in the :command:`qstat` listing.
-The :kbd:`walltime` value is the wall-clock time requested for the run.
+The values associated with the :kbd:`run_id`,
+:kbd:`walltime`,
+and :kbd:`email` keys are used by the :command:`salishsea run` command in the :file:`SalishSeaNEMO.sh` TORQUE/PBS job scripts that it creates and submits to the job scheduler via :command:`qsub`.
+
+* The :kbd:`run_id` value is the job identifier that appears in the :command:`qstat` listing.
+
+* The :kbd:`walltime` value is the wall-clock time requested for the run.
+  It is required for all runs,
+  but only has relevance for runs on Westgrid machines where it affects queue priority and limits the time that the job will run for.
+  `Benchmark tests`_ on :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` in Jun-2014 indicate that with 12x27 = 324 processors
+  (i.e. :file:`namelist.compute.12x27`)
+  about 1 minute of compute time is required per hour of model time.
+  It is recommended to allow some buffer time when calculating your walltime limits on those systems to allow for indeterminancy,
+  and the time required to combine the per-processor results files into run results files at the end of the run.
+  Examples of recommended walltime values are:
+
+  * :kbd:`00:15:00` for a 6 hour run
+  * :kbd:`01:00:00` for a 1 day run
+  * :kbd:`02:30:00` for a 5 day run
+  * :kbd:`05:00:00` for a 10 day run
+
+  .. _Benchmark tests: http://nbviewer.ipython.org/gist/douglatornell/9e140cb555c07344b2e4
+
+* The :kbd:`email`: value is the email address at which you want to receive notification of the beginning and end of execution of the run,
+  as well as notification of abnormal abort messages.
+  The email key is only required if the address is different than would be constructed by combining your user id on the machine that the job runs on with :kbd:`@eos.ubc.ca`.
+
 All other values for the :file:`SalishSeaNEMO.sh` job scripts that :command:`salishsea run` creates are read from the namelist or otherwise calculated.
 
 The :kbd:`paths` section of the run description file is a collection of directory paths that :program:`salishsea` uses to find files in other repos that it needs.
