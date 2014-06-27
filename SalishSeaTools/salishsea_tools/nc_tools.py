@@ -21,8 +21,13 @@ from __future__ import (
     division,
 )
 
-from datetime import datetime
+from datetime import (
+    datetime,
+    timedelta,
+)
 import os
+
+import arrow
 
 from salishsea_tools import hg_commands as hg
 
@@ -34,6 +39,8 @@ __all__ = [
     'show_dimensions',
     'show_variables',
     'show_variable_attrs',
+    'time_origin',
+    'timestamp',
 ]
 
 
@@ -85,6 +92,64 @@ def show_variable_attrs(dataset, *vars):
     else:
         for var in dataset.variables.itervalues():
             print(var)
+
+
+def time_origin(dataset):
+    """Return the time_counter.time_origin value.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
+
+    :returns: Value of the time_origin attribute of the time_counter
+              variable.
+    :rtype: :py:class:`Arrow` instance
+    """
+    try:
+        time_counter = dataset.variables['time_counter']
+    except KeyError:
+        raise KeyError('dataset does not have time_counter variable')
+    try:
+        time_origin = time_counter.time_origin.title()
+    except AttributeError:
+        raise AttributeError(
+            'NetCDF: '
+            'time_counter variable does not have time_origin attribute')
+    value = arrow.get(time_origin, 'YYYY-MMM-DD HH:mm:ss')
+    return value
+
+
+def timestamp(dataset, tindex):
+    """Return the time stamp of the tindex time_counter value(s) in dataset.
+
+    The time stamp is calculated by adding the time_counter[tindex] value
+    (in seconds) to the dataset's time_counter.time_origin value.
+
+    :arg dataset: netcdf dataset object
+    :type dataset: :py:class:`netCDF4.Dataset`
+
+    :arg tindex: time_counter variable index.
+    :type tindex: int or list
+
+    :returns: Time stamp value(s) at tindex in the dataset.
+    :rtype: :py:class:`Arrow` instance or list of instances
+    """
+    time_orig = time_origin(dataset)
+    time_counter = dataset.variables['time_counter']
+    try:
+        iter(tindex)
+    except TypeError:
+        tindex = [tindex]
+    results = []
+    for i in tindex:
+        try:
+            results.append(time_orig + timedelta(seconds=time_counter[i]))
+        except IndexError:
+            raise IndexError(
+                'time_counter variable has no tindex={}'.format(tindex))
+    if len(results) > 1:
+        return results
+    else:
+        return results[0]
 
 
 def init_dataset_attrs(

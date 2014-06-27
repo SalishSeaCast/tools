@@ -19,6 +19,11 @@ limitations under the License.
 """
 from mock import patch
 
+import arrow
+import dateutil
+import numpy as np
+import pytest
+
 from salishsea_tools import nc_tools
 
 
@@ -148,6 +153,85 @@ def test_show_variable_attrs_spec_var_order(capsys, nc_dataset):
     nc_tools.show_variable_attrs(nc_dataset, 'foo', 'bar')
     out, err = capsys.readouterr()
     assert out.split('\n')[7] == 'float64 bar(x)'
+
+
+def test_time_origin_value(nc_dataset):
+    """time_origin returns expected Arrow instance
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_origin = nc_tools.time_origin(nc_dataset)
+    assert time_origin == arrow.get(2002, 10, 26, 0, 0, 0)
+
+
+def test_time_origin_UTC_timezone(nc_dataset):
+    """time_origin return value has UTC timezone
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_origin = nc_tools.time_origin(nc_dataset)
+    assert time_origin.tzinfo == dateutil.tz.tzutc()
+
+
+def test_time_origin_missing(nc_dataset):
+    """time_origin raises AttributeError if dataset lacks time_origin attr
+    """
+    with pytest.raises(AttributeError):
+        nc_dataset.createDimension('time_counter')
+        nc_dataset.createVariable(
+            'time_counter', float, ('time_counter',))
+        nc_tools.time_origin(nc_dataset)
+
+
+def test_time_counter_missing(nc_dataset):
+    """time_origin raises KeyError if dataset lacks time_counter variable
+    """
+    with pytest.raises(KeyError):
+        nc_tools.time_origin(nc_dataset)
+
+
+def test_timestamp_value(nc_dataset):
+    """timestamp returns expected Arrow instance
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_counter[:] = np.array([8.5 * 60*60])
+    timestamp = nc_tools.timestamp(nc_dataset, 0)
+    assert timestamp == arrow.get(2002, 10, 26, 8, 30, 0)
+
+
+def test_timestamp_value_list(nc_dataset):
+    """timestamp returns expected list of Arrow instances
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_counter[:] = np.array([0.5, 1.5]) * 60*60
+    timestamp = nc_tools.timestamp(nc_dataset, (0, 1))
+    expected = [
+        arrow.get(2002, 10, 26, 0, 30, 0),
+        arrow.get(2002, 10, 26, 1, 30, 0),
+    ]
+    assert timestamp == expected
+
+
+def test_timestamp_index_error(nc_dataset):
+    """timestamp returns expected Arrow instance
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_counter[:] = np.array([8.5 * 60*60])
+    with pytest.raises(IndexError):
+        nc_tools.timestamp(nc_dataset, 1)
 
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
