@@ -18,15 +18,22 @@
 from __future__ import division
 
 import datetime
-
 import netCDF4 as NC
 import numpy as np
 import pytz
-
+import arrow
+import cStringIO
+import requests
+from pytz import timezone as tz
+from xml.etree import cElementTree as ElementTree
+import pandas as pd
+from salishsea_tools import tidetools
+import csv
 
 def convert_date_seconds(times, start):
     """
     This function converts model output time in seconds to datetime objects.
+    Note: Doug has a better version of this in nc_tools.timestamp
 
     :arg times: array of seconds since the start date of a simulation. From time_counter in model output.
     :type times: int
@@ -39,8 +46,6 @@ def convert_date_seconds(times, start):
 
     :returns: array of datetime objects representing the time of model outputs.
     """
-    import arrow
-
     arr_times=[]
     for ii in range(0,len(times)):
         arr_start =arrow.Arrow.strptime(start,'%d-%b-%Y')
@@ -64,8 +69,6 @@ def convert_date_hours(times, start):
 
     :returns: array of datetime objects representing the time of model outputs.
     """
-    import arrow
-
     arr_times=[]
     for ii in range(0,len(times)):
         arr_start =arrow.Arrow.strptime(start,'%d-%b-%Y')
@@ -90,7 +93,6 @@ def get_CGRF_weather(start,end,grid):
     :returns: windspeed, pressure and time array from CGRF data for the times indicated
     """
     u10=[]; v10=[]; pres=[]; time=[];
-    import arrow
     st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
 
@@ -132,12 +134,14 @@ def get_CGRF_weather(start,end,grid):
 
 def combine_data(data_list):
     """
-    This function combines output from a list of netcdf files into a dict objects of model fields. It is used for easy handling of output from thalweg and surge stations.
+    This function combines output from a list of netcdf files into a dict objects of model fields.
+    It is used for easy handling of output from thalweg and surge stations.
 
     :arg data_list: dict object that contains the netcdf handles for the files to be combined. e.g {'Thelweg1': f1, 'Thalweg2': f2,...} where f1 = NC.Dataset('1h_Thalweg1.nc','r')
     :type data_list: dict object
 
-    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs with the zonal velocity, meridional velocity, latitude, longitude, salinity, temperature, and sea surface height for each station. The keys are the same as those in data_list. For example, us['Thalweg1'] contains the zonal velocity from the Thalweg 1 station.
+    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs with the zonal velocity, meridional velocity, latitude, longitude, salinity, temperature, and sea surface height for each station.
+    The keys are the same as those in data_list. For example, us['Thalweg1'] contains the zonal velocity from the Thalweg 1 station.
     """
 
     us={}; vs={}; lats={}; lons={}; sals={}; tmps={}; sshs={};
@@ -152,11 +156,9 @@ def combine_data(data_list):
         sshs[k]=net.variables['sossheig']
     return us, vs, lats, lons, tmps, sals, sshs
 
-
-
 def get_variables(fU,fV,fT,timestamp,depth):
     """
-    Generates masked u,v,SSH,S,T from NETCDF handles fU,fV,fT at timestamp and depth
+    Generates masked u,v,SSH,S,T from NETCDF handles fU,fV,fT at timestamp and depth.
 
     :arg fU: netcdf handle for Ugrid model output
     :type fU: netcdf handle
@@ -176,9 +178,6 @@ def get_variables(fU,fV,fT,timestamp,depth):
     :returns: masked arrays U,V,E,S,T with of zonal velocity,merdional velocity, sea surface height, salinity, and temperature at specified time and z-level.
 
     """
-
-    import numpy as np
-
     # get u and ugrid
     u_vel = fU.variables['vozocrtx']  #u currents and grid
     U = u_vel[timestamp,depth,:,:] #grab data at specified level and time.
@@ -225,12 +224,6 @@ def get_EC_observations(station, start_day, end_day):
     :return wind_speed, pressure: wind speed and pressure data from observations. Note that pressure data is not always available.
 
     """
-    import arrow
-    import cStringIO
-    import requests
-    from pytz import timezone as tz
-    from xml.etree import cElementTree as ElementTree
-
     station_ids = {
         'Sandheads': 6831,
         'YVR': 889,
@@ -297,7 +290,6 @@ def get_SSH_forcing(boundary, date):
     :returns ssh_forc, time_ssh: arrays of the ssh forcing values and corresponding times
 
     """
-    import arrow
     date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
     year = date_arr.year
     month = date_arr.month
@@ -313,3 +305,72 @@ def get_SSH_forcing(boundary, date):
     time_ssh=convert_date_hours(t,date);
 
     return ssh_forc, time_ssh
+
+def dateParserMeasured2(s):
+    """
+    converts string in %d-%b-%Y %H:%M:%S format Pacific time to a datetime object UTC time.
+    """
+    #convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%d-%b-%Y %H:%M:%S ")
+    #add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    #convert to UTC
+    return aware.astimezone(pytz.timezone('UTC'))
+
+def dateParserMeasured(s):
+    """
+    converts string in %Y/%m/%d %H:%M format Pacific time to a datetime object UTC time.
+    """
+    #convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
+    #add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    #convert to UTC
+    return aware.astimezone(pytz.timezone('UTC'))
+
+def load_tidal_predictions(filename):
+    """
+    Load tidal prediction from a file.
+
+    :arg filename: A string representing the path of the csv file that contains the tidal predictions. This file should be generated with get_ttide_8.m
+    :type filename: string
+
+    :returns ttide a dict object that contains tidal predictions and msl the mean component from the harmonic analysis
+    """
+     
+    #read msl
+    line_number = 1     
+    with open(filename, 'rb') as f:
+        mycsv = csv.reader(f); mycsv = list(mycsv)
+        msl = mycsv[line_number][1]
+        msl=float(msl)
+    
+    ttide = pd.read_csv(filename,skiprows=3,parse_dates=[0],date_parser=dateParserMeasured2)
+    ttide = ttide.rename(columns={'Time_Local ': 'time', ' pred_8 ': 'pred_8', ' pred_all ': 'pred_all'})
+    
+    return ttide, msl
+
+def load_observations(start,end,location):
+    """
+    Loads tidal observations from the DFO website using tidetools function
+
+    :arg start: a string representing the starting date of the observations.
+    :type start: string in format %d-%b-%Y
+
+    :arg end: a string representing the end date of the observations.
+    :type end: string in format %d-%b-%Y
+
+    :arg location: a string representing the location for observations
+    :type location: a string from the following - PointAtkinson, Victoria, PatriciaBay, CampbellRiver
+
+    :returns wlev_meas a dict object with the water level measurements reference to Chart Datum
+    """
+
+    stations = {'PointAtkinson': 7795, 'Victoria': 7120, 'PatriciaBay': 7277, 'CampbellRiver': 8074}
+    statID_PA = stations[location]
+    filename = 'wlev_' +str(statID_PA) + '_' + start +'_' +end +'.csv'
+    tidetools.get_dfo_wlev(statID_PA,start,end)
+    wlev_meas = pd.read_csv(filename,skiprows=7,parse_dates=[0],date_parser=dateParserMeasured)
+    wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
+    
+    return wlev_meas
