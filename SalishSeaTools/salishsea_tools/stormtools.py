@@ -374,3 +374,101 @@ def load_observations(start,end,location):
     wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
     
     return wlev_meas
+
+def observed_anomaly(ttide,wlev_meas,msl):
+    """
+    Calculates the observed anomaly (water level obs - tidal predictions).
+
+    :arg ttide: A struc object that contains tidal precitions from get_ttide_8.m
+    :type ttide: struc with dimensions time, pred_all, pred_8
+
+    :arg wlev_meas: A struc object with observations from DFO
+    :type wlev_meas: sruc with dimensions time, slev
+
+    :arg msl: The mean sea level from tidal predictions
+    :type msl: float
+
+    :returns ssanomaly the ssh snamoaly (wlev_meas.slev-(ttide.pred_all+msl))
+    """
+    ssanomaly = np.zeros(len(wlev_meas.time))
+    for i in np.arange(0,len(wlev_meas.time)):
+    #check that there is a corresponding time 
+    #if any(wlev_pred.time == wlev_meas.time[i]):
+        ssanomaly[i] =(wlev_meas.slev[i] - (ttide.pred_all[ttide.time==wlev_meas.time[i]]+msl))
+        if not(ssanomaly[i]):
+            ssanomaly[i]=float('Nan')
+        
+    return ssanomaly
+
+def modelled_anomaly(sshs,location):
+    """
+    Calculates the modelled ssh anomaly by finding the difference between a simulation with all forcing and a simulation with tides only.
+    
+    :arg sshs: A struc object with ssh data from all_forcing and tidesonly model runs
+    :type sshs: struc with dimensions 'all_forcing' and 'tidesonly'
+
+    :arg location: string defining the desired location
+    :type location: string either "PointAtkinson", "Victoria", "PatriciaBay", "CampbellRiver"
+
+    :returns anom the difference between all_forcing and tidesonly
+    """
+    anom=sshs['all_forcing'][location][:,0,0]-sshs['tidesonly'][location][:,0,0]
+    return anom
+
+def correct_model(ssh,ttide,sdt,edt):
+    """
+    Adjusts model output by correcting for error in using only 8 constituents
+
+    :arg ssh: an array with model ssh data
+    :type ssh: array of numbers
+
+    :arg ttide: struc with tidal predictions
+    :type ttide: struc with dimension time, pred_all, pred_8
+
+    :arg sdt: datetime object representing start date of simulation
+    :type sdt: datetime object
+
+    :arg edt: datetime object representing end date of simulation
+    :type edt: datetime object 
+
+    :returns corr_model the corrected model output
+    """
+    #find index of ttide.time at start and end
+    inds = ttide.time[ttide.time==sdt].index[0]
+    inde = ttide.time[ttide.time==edt].index[0]
+    
+    difference = ttide.pred_all-ttide.pred_8
+    difference = np.array(difference)
+    #average correction over two times to shift to the model 1/2 outputs
+    corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
+    
+    corr_model = ssh+corr
+    return corr_model
+
+def surge_tide(ssh,ttide,sdt,edt):
+    """
+    Calculates the sea surface height from the model run with surge only. That is, addes tidal prediction to modelled surge.
+    :arg ssh: shh from surge only model run
+    :type ssh: array of numbers
+    
+    :arg ttide: struc with tidal predictions
+    :type ttide: struc with dimension time, pred_all, pred_8
+
+    :arg sdt: datetime object representing start date of simulation
+    :type sdt: datetime object
+
+    :arg edt: datetime object representing end date of simulation
+    :type edt: datetime object 
+
+    :returns surgetide surge only run with tides added (mean not inculded)
+    """
+    #find index of ttide.time at start and end
+    inds = ttide.time[ttide.time==sdt].index[0]
+    inde = ttide.time[ttide.time==edt].index[0]
+
+    #average correction over two times to shift to the model 1/2 outputs
+    tide = np.array(ttide.pred_all)
+    tide_corr = 0.5*(tide[inds:inde] + tide[inds+1:inde+1])
+    
+    surgetide = ssh+tide_corr
+    return surgetide
