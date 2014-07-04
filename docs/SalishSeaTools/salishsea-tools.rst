@@ -116,3 +116,12 @@ or import modules from it:
 
 .. automodule:: viz_tools
     :members:
+
+
+.. _salishsea_tools.stormtools:
+
+:py:mod:`stormtools` Module
+===========================
+
+.. automodule:: stormtools
+    :members:
