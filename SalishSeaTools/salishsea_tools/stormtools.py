@@ -64,9 +64,6 @@ def convert_date_hours(times, start):
     :arg start: string containing the start date of the simulation in format '01-Nov-2006'
     :type start: str
 
-    :arg diff: string indicating the time step in the times data E.g. months, seconds, days
-    :type diff: str
-
     :returns: array of datetime objects representing the time of model outputs.
     """
     arr_times=[]
@@ -140,8 +137,8 @@ def combine_data(data_list):
     :arg data_list: dict object that contains the netcdf handles for the files to be combined. e.g {'Thelweg1': f1, 'Thalweg2': f2,...} where f1 = NC.Dataset('1h_Thalweg1.nc','r')
     :type data_list: dict object
 
-    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs with the zonal velocity, meridional velocity, latitude, longitude, salinity, temperature, and sea surface height for each station.
-    The keys are the same as those in data_list. For example, us['Thalweg1'] contains the zonal velocity from the Thalweg 1 station.
+    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs with the zonal velocity, meridional velocity, latitude, longitude, salinity, temperature, and sea surface height for each station. The keys are the same as those in data_list. For example, us['Thalweg1'] contains the zonal velocity from the Thalweg 1 station.
+
     """
 
     us={}; vs={}; lats={}; lons={}; sals={}; tmps={}; sshs={};
@@ -221,7 +218,7 @@ def get_EC_observations(station, start_day, end_day):
     :arg end_day: string contating the end date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :return wind_speed, pressure: wind speed and pressure data from observations. Note that pressure data is not always available.
+    :returns: wind_speed, pressure: wind speed and pressure data from observations. Note that pressure data is not always available.
 
     """
     station_ids = {
@@ -287,7 +284,7 @@ def get_SSH_forcing(boundary, date):
     :arg date: A string indicating the date of interest. e.g. '01-Dec-2006'. The day needs to be the first day of the month.
     :type date: str
 
-    :returns ssh_forc, time_ssh: arrays of the ssh forcing values and corresponding times
+    :returns: ssh_forc, time_ssh: arrays of the ssh forcing values and corresponding times
 
     """
     date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
@@ -335,7 +332,7 @@ def load_tidal_predictions(filename):
     :arg filename: A string representing the path of the csv file that contains the tidal predictions. This file should be generated with get_ttide_8.m
     :type filename: string
 
-    :returns ttide a dict object that contains tidal predictions and msl the mean component from the harmonic analysis
+    :returns: ttide: a dict object that contains tidal predictions and msl the mean component from the harmonic analysis
     """
      
     #read msl
@@ -363,7 +360,7 @@ def load_observations(start,end,location):
     :arg location: a string representing the location for observations
     :type location: a string from the following - PointAtkinson, Victoria, PatriciaBay, CampbellRiver
 
-    :returns wlev_meas a dict object with the water level measurements reference to Chart Datum
+    :returns: wlev_meas: a dict object with the water level measurements reference to Chart Datum
     """
 
     stations = {'PointAtkinson': 7795, 'Victoria': 7120, 'PatriciaBay': 7277, 'CampbellRiver': 8074}
@@ -388,7 +385,7 @@ def observed_anomaly(ttide,wlev_meas,msl):
     :arg msl: The mean sea level from tidal predictions
     :type msl: float
 
-    :returns ssanomaly the ssh snamoaly (wlev_meas.slev-(ttide.pred_all+msl))
+    :returns: ssanomaly: the ssh anomaly (wlev_meas.slev-(ttide.pred_all+msl))
     """
     ssanomaly = np.zeros(len(wlev_meas.time))
     for i in np.arange(0,len(wlev_meas.time)):
@@ -410,7 +407,7 @@ def modelled_anomaly(sshs,location):
     :arg location: string defining the desired location
     :type location: string either "PointAtkinson", "Victoria", "PatriciaBay", "CampbellRiver"
 
-    :returns anom the difference between all_forcing and tidesonly
+    :returns: anom: the difference between all_forcing and tidesonly
     """
     anom=sshs['all_forcing'][location][:,0,0]-sshs['tidesonly'][location][:,0,0]
     return anom
@@ -431,7 +428,7 @@ def correct_model(ssh,ttide,sdt,edt):
     :arg edt: datetime object representing end date of simulation
     :type edt: datetime object 
 
-    :returns corr_model the corrected model output
+    :returns: corr_model: the corrected model output
     """
     #find index of ttide.time at start and end
     inds = ttide.time[ttide.time==sdt].index[0]
@@ -460,7 +457,7 @@ def surge_tide(ssh,ttide,sdt,edt):
     :arg edt: datetime object representing end date of simulation
     :type edt: datetime object 
 
-    :returns surgetide surge only run with tides added (mean not inculded)
+    :returns: surgetide: the surge only run with tides added (mean not inculded)
     """
     #find index of ttide.time at start and end
     inds = ttide.time[ttide.time==sdt].index[0]
