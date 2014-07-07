@@ -372,19 +372,26 @@ and :kbd:`email` keys are used by the :command:`salishsea run` command in the :f
 * The :kbd:`run_id` value is the job identifier that appears in the :command:`qstat` listing.
 
 * The :kbd:`walltime` value is the wall-clock time requested for the run.
-  It is required for all runs,
-  but only has relevance for runs on Westgrid machines where it affects queue priority and limits the time that the job will run for.
-  `Benchmark tests`_ on :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` in Jun-2014 indicate that with 12x27 = 324 processors
+  It limits the time that the job will run for on all machines,
+  and it also affects queue priority for runs on Westgrid machines.
+  On :kbd:`salish` with 4x4 = 16 cores
+  (i.e. :file:`namelist.compute.4x4`)
+  about 22 minutes of compute time are required per hour of model time.
+  `Benchmark tests`_ on :kbd:`jasper.westgrid.ca` and :kbd:`orcinus.westgrid.ca` in Jun-2014 indicate that 12x27 = 324 processors
   (i.e. :file:`namelist.compute.12x27`)
-  about 1 minute of compute time is required per hour of model time.
-  It is recommended to allow some buffer time when calculating your walltime limits on those systems to allow for indeterminancy,
+  produces optimal processor use and about 1 minute of compute time is required per hour of model time.
+  It is recommended to allow some buffer time when calculating your walltime limits to allow for indeterminancy,
   and the time required to combine the per-processor results files into run results files at the end of the run.
   Examples of recommended walltime values are:
 
-  * :kbd:`0:15:00` for a 6 hour run
-  * :kbd:`1:00:00` for a 1 day run
-  * :kbd:`2:30:00` for a 5 day run
-  * :kbd:`5:00:00` for a 10 day run
+  ============  ============================  ===============
+  Run Duration  :kbd:`jasper`/:kbd:`orcinus`  :kbd:`salish`
+  ============  ============================  ===============
+  6 hours       :kbd:`00:15:00`               :kbd:`02:30:00`
+  1 day         :kbd:`01:00:00`               :kbd:`10:00:00`
+  5 days        :kbd:`03:00:00`               :kbd:`48:00:00`
+  10 days       :kbd:`06:00:00`               :kbd:`90:00:00`
+  ============  ============================  ===============
 
   .. _Benchmark tests: http://nbviewer.ipython.org/gist/douglatornell/9e140cb555c07344b2e4
 
