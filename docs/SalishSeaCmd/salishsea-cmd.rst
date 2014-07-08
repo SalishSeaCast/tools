@@ -381,10 +381,10 @@ and :kbd:`email` keys are used by the :command:`salishsea run` command in the :f
   and the time required to combine the per-processor results files into run results files at the end of the run.
   Examples of recommended walltime values are:
 
-  * :kbd:`00:15:00` for a 6 hour run
-  * :kbd:`01:00:00` for a 1 day run
-  * :kbd:`02:30:00` for a 5 day run
-  * :kbd:`05:00:00` for a 10 day run
+  * :kbd:`0:15:00` for a 6 hour run
+  * :kbd:`1:00:00` for a 1 day run
+  * :kbd:`2:30:00` for a 5 day run
+  * :kbd:`5:00:00` for a 10 day run
 
   .. _Benchmark tests: http://nbviewer.ipython.org/gist/douglatornell/9e140cb555c07344b2e4
 
