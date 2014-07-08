@@ -9,17 +9,20 @@ def get_data_from_csv(tidevar, constituent, depth):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 5 #K1 phase correction in degrees.
-    amp_K1 = 1/1.15 #K1 amp correction factor
-    pha_M2 = 9 #M2 phase correction in degrees 
+    pha_K1 = 5 #K1 phase correction in degrees.    applied to velocity and ssh
+    amp_K1 = 1/1.15 #K1 amp correction factor      applied to velocity and ssh
+    pha_M2 = 5 #M2 phase correction in degrees     applied to velocity and ssh
+    pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
 
     corr_pha = 0
     corr_amp=1
+    corr_shift = 0
     if constituent == "K1":
        corr_pha=pha_K1
        corr_amp=amp_K1
     if constituent == "M2":
        corr_pha = pha_M2
+       corr_shift = pha_shift_M2
        
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
@@ -73,7 +76,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(uZ2[i],uZ1[i])-numpy.radians(corr_pha))
+            pha.append(math.atan2(uZ2[i],uZ1[i])-numpy.radians(corr_pha+corr_shift))
         uZ1 = amp*numpy.cos(pha)*corr_amp
         uZ2 = amp*numpy.sin(pha)*corr_amp
         
@@ -112,7 +115,7 @@ def get_data_from_csv(tidevar, constituent, depth):
         amp = numpy.sqrt(vZ1[:]**2 + vZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(vZ2[i],vZ1[i])-numpy.radians(corr_pha))
+            pha.append(math.atan2(vZ2[i],vZ1[i])-numpy.radians(corr_pha+corr_shift))
         vZ1 = amp*numpy.cos(pha)*corr_amp
         vZ2 = amp*numpy.sin(pha)*corr_amp
         
