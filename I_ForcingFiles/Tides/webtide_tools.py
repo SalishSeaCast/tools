@@ -139,14 +139,14 @@ def get_data_from_csv(tidevar, constituent, depth):
 # - depth data
 
     
-def create_tide_netcdf(tidevar,constituent,depth,number):
+def create_tide_netcdf(tidevar,constituent,depth,number,code):
     import netCDF4 as NC
     import numpy
 
     #get the data from the csv file
     Z1, Z2, I, boundlen = get_data_from_csv(tidevar,constituent,depth)
         
-    nemo = NC.Dataset('SalishSea'+number+'_corr_west_tide_'+constituent+'_grid_'+tidevar+'.nc','w')
+    nemo = NC.Dataset('SalishSea'+number+'_'+code+'_west_tide_'+constituent+'_grid_'+tidevar+'.nc','w')
     nemo.description = 'Tide data from WebTide - K1 phase shifted'
     
     # give the netcdf some dimensions
