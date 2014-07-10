@@ -12,7 +12,7 @@ def get_data_from_csv(tidevar, constituent, depth):
     pha_K1 = 5 #K1 phase correction in degrees.    applied to velocity and ssh
     amp_K1 = 1/1.15 #K1 amp correction factor      applied to velocity and ssh
     pha_M2 = 5 #M2 phase correction in degrees     applied to velocity and ssh
-    pha_shift_M2 = -10 #M2 phase shift in degrees   velocity only
+    pha_shift_M2 = -20 #M2 phase shift in degrees   velocity only
 
     corr_pha = 0
     corr_amp=1
