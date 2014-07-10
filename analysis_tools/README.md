@@ -79,6 +79,8 @@ Descriptions under the links below are from the first cell of the notebooks
     Topics include:  
       
     * Plotting colour meshes of velocity on vertical sections through the domain  
+    * Using `nc_tools.timestamp()` to get time stamps from results datasets  
+    * Plotting salinity as a colour mesh on thalweg section  
 
 * ##[Plotting Velocity Fields on Horizontal Planes.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)  
     
