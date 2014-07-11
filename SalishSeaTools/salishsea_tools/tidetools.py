@@ -359,7 +359,7 @@ def get_subdomain_bathy_data():
     return bathy, X, Y
 
 
-def find_closest_model_point(lon, lat, X, Y, bathy):
+def find_closest_model_point(lon, lat, X, Y, bathy, allow_land = False):
     """Returns the grid co-ordinates of the closest non-land model point
     to a specified lon/lat.
 
@@ -380,6 +380,9 @@ def find_closest_model_point(lon, lat, X, Y, bathy):
 
     :arg bathy: model bathymetry
     :type bathy: numpy array
+
+    :arg allow_land: whether code should return a land point or closest water point
+    :type allow_land: boolean
 
     :returns: x1, j1
     """
@@ -403,7 +406,7 @@ def find_closest_model_point(lon, lat, X, Y, bathy):
         # If x1,y1 is masked, search 3x3 grid around.
         # If all those points are masked, search 4x4 grid around, etc.
         for ii in np.arange(1, 100):
-            if bathy.mask[x1, y1]:
+            if bathy.mask[x1, y1] and not allow_land:
                 for i in np.arange(x1-ii, x1+ii+1):
                     for j in np.arange(y1-ii, y1+ii+1):
                         if not bathy.mask[i, j]:
