@@ -13,6 +13,7 @@ def get_data_from_csv(tidevar, constituent, depth):
     amp_K1 = 1/1.15 #K1 amp correction factor      applied to velocity and ssh
     pha_M2 = 5 #M2 phase correction in degrees     applied to velocity and ssh
     pha_shift_M2 = -30 #M2 phase shift in degrees   velocity only
+    amp_M2 = 1.2 # M2 amp correction               applied to velocity and ssh
 
     corr_pha = 0
     corr_amp=1
@@ -23,6 +24,7 @@ def get_data_from_csv(tidevar, constituent, depth):
     if constituent == "M2":
        corr_pha = pha_M2
        corr_shift = pha_shift_M2
+       corr_amp = amp_M2
        
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
