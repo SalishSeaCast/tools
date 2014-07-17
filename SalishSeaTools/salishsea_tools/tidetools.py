@@ -517,7 +517,8 @@ def plot_pha_map(X, Y, grid, pha, constituent_name, figsize=(9, 9)):
     return fig
 
 
-def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
+def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6), 
+                         split1=0, split2=0, labels=['','','']):
     """Plot scatter plot of observed vs. modelled phase and amplitude
 
     :arg Am: Modelled amplitude.
@@ -538,15 +539,30 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
     :arg figsize: Figure size, (width, height).
     :type figsize: 2-tuple
 
+    :arg split1 split2: change color at this point in array, if > 0
+    :type int
+
+    :arg labels: labels for three different splits
+    :type list of strings
+
     :returns: Figure containing plots of observed vs. modelled
               amplitude and phase of the tidal constituent.
     :rtype: Matplotlib figure
     """
     fig, (ax_amp, ax_pha) = plt.subplots(1, 2, figsize=figsize)
     ax_amp.set_aspect('equal')
-    ax_amp.scatter(Ao, Am, color='blue', edgecolors='blue')
+    if split1 == 0:
+        ax_amp.scatter(Ao, Am, color='blue', edgecolors='blue')
+    else:
+        ax_amp.scatter(Ao[:split1], Am[:split1], color='green', 
+                       edgecolors='green', label = labels[0])
+        ax_amp.scatter(Ao[split1:split2], Am[split1:split2], color='blue', 
+                       edgecolors='blue', label = labels[1])
+        ax_amp.scatter(Ao[split2:], Am[split2:], color='black', 
+                       edgecolors='black', label = labels[2])
     min_value, max_value = ax_amp.set_xlim(0, 1.2)
     ax_amp.set_ylim(min_value, max_value)
+    ax_amp.legend(loc='upper left')
     # Equality line
     ax_amp.plot([min_value, max_value], [min_value, max_value], color='red')
     ax_amp.set_xlabel('Observed Amplitude [m]')
@@ -555,9 +571,18 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6)):
         '{constituent} Amplitude'.format(constituent=constituent_name))
     # Phase plot
     ax_pha.set_aspect('equal')
-    ax_pha.scatter(go, gm, color='blue', edgecolors='blue')
+    if split1 == 0:
+        ax_pha.scatter(go, gm, color='blue', edgecolors='blue')
+    else:
+        ax_pha.scatter(go[:split1], gm[:split1], color='green', 
+                       edgecolors='green', label = labels[0])
+        ax_pha.scatter(go[split1:split2], gm[split1:split2], color='blue', 
+                       edgecolors='blue', label = labels[1])
+        ax_pha.scatter(go[split2:], gm[split2:], color='black', 
+                       edgecolors='black', label = labels[2])
     min_value, max_value = ax_pha.set_xlim(0, 360)
     ax_pha.set_ylim(min_value, max_value)
+    ax_pha.legend(loc='upper left')
     # Equality line
     ax_pha.plot([min_value, max_value], [min_value, max_value], color='red')
     ticks = range(0, 420, 60)
