@@ -469,3 +469,26 @@ def surge_tide(ssh,ttide,sdt,edt):
     
     surgetide = ssh+tide_corr
     return surgetide
+
+def get_background(Es_run,Es_tides,location):
+    """
+    returns a background ssh anomaly state based on a time far away from storm surge for the specified location
+
+    :arg Es_run: sea surface height array over the whole domin at a certain time for the run case
+    :type Es_run: array
+
+    :arg Es_tides: sea surface height array over the whole domin at a certain time for the tides run
+    :type Es_tides: array
+
+    :arg location: string specifying the location
+    :type location: string e.g. 'PointAtkinson', 'Victoria', 'CampbellRiver', 'PatriciaBay'
+
+    :returns: the background state at the given location and time (run -tides only)
+    """
+    ls={'PointAtkinson':[328,467],'Victoria':[195,298],'PatriciaBay':[213,351], 'CampbellRiver':[124,747]}
+    if isinstance(Es_tides,int):
+       background=Es_run[ls[location][1],ls[location][0]]
+    else:
+        background=Es_run[ls[location][1],ls[location][0]] - Es_tides[ls[location][1],ls[location][0]]
+    return background
+
