@@ -9,15 +9,17 @@ def get_data_from_csv(tidevar, constituent, depth):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 8.39#K1 phase correction in degrees.    applied to velocity and ssh
+    pha_K1 = 8.39 #K1 phase correction in degrees.    applied to velocity and ssh
     amp_K1 = 0.921 #K1 amp correction factor      applied to velocity and ssh
-    pha_M2 = 5 #M2 phase correction in degrees     applied to velocity and ssh
+    pha_M2 = 12.84 #M2 phase correction in degrees     applied to velocity and ssh
     pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
-    amp_M2 = 1. # M2 amp correction               applied to velocity and ssh
+    amp_M2 = 1.051 # M2 amp correction               applied to velocity and ssh
+    corr_M2 = 1.2240 # flux correction factor     velocity only
 
     corr_pha = 0
     corr_amp=1
     corr_shift = 0
+    corr = 1
     if constituent == "K1":
        corr_pha=pha_K1
        corr_amp=amp_K1
@@ -25,7 +27,7 @@ def get_data_from_csv(tidevar, constituent, depth):
        corr_pha = pha_M2
        corr_shift = pha_shift_M2
        corr_amp = amp_M2
-       
+       corr = corr_M2
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
         webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Elevation Constituents T.csv',\
@@ -66,8 +68,8 @@ def get_data_from_csv(tidevar, constituent, depth):
         #Convert amplitudes from north/south u/v into grid co-ordinates
         
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
-        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
+        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
+        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
         uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
@@ -105,8 +107,8 @@ def get_data_from_csv(tidevar, constituent, depth):
 	print(boundlen) 
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)
-        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)
+        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
+        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
         uphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
         vphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
         
