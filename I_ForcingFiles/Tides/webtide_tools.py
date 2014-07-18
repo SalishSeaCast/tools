@@ -20,7 +20,7 @@ def get_data_from_csv(tidevar, constituent, depth):
     corr_amp=1
     corr_shift = 0
     corr = 1
-    if constituent == "K1":
+    if constituent == "K1" or constituent == "O1":
        corr_pha=pha_K1
        corr_amp=amp_K1
     if constituent == "M2":
