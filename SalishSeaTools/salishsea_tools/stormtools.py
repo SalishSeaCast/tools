@@ -87,7 +87,7 @@ def get_CGRF_weather(start,end,grid):
     :arg grid: array of the CGRF grid coordinates for the point of interest eg. [244,245]
     :arg type: arr of ints
 
-    :returns: windspeed, pressure and time array from CGRF data for the times indicated
+    :returns: windspeed, winddir pressure and time array from CGRF data for the times indicated
     """
     u10=[]; v10=[]; pres=[]; time=[];
     st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
@@ -127,7 +127,9 @@ def get_CGRF_weather(start,end,grid):
 
         u10s=np.array(u10); v10s=np.array(v10); press=np.array(pres)
         windspeed=np.sqrt(u10s**2+v10s**2)
-    return windspeed, press, times
+	winddir=np.arctan2(v10,u10) * 180 / np.pi
+	winddir=winddir + 360 * (winddir<0)
+    return windspeed, winddir, press, times
 
 def combine_data(data_list):
     """
@@ -218,7 +220,7 @@ def get_EC_observations(station, start_day, end_day):
     :arg end_day: string contating the end date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :returns: wind_speed, pressure: wind speed and pressure data from observations. Note that pressure data is not always available.
+    :returns: wind_speed, wind_dir, pressure: wind speed and direction, and pressure data from observations. Note that pressure data is not always available.
 
     """
     station_ids = {
@@ -233,7 +235,7 @@ def get_EC_observations(station, start_day, end_day):
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
 
-    wind_spd= []
+    wind_spd= []; wind_dir=[];
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -270,9 +272,15 @@ def get_EC_observations(station, start_day, end_day):
                 wind_spd.append(0)
                 t.to('utc')
                 times.append(t.datetime)
+	    try:
+                wind_dir.append(float(record.find('winddir').text) * 10)
+            except ValueError:
+                wind_dir.append(0)
     wind_spd= np.array(wind_spd) * 1000 / 3600
+    wind_dir=np.array(wind_dir)-270
+    wind_dir=wind_dir + 360 * (wind_dir<0)
 
-    return wind_spd, times
+    return wind_spd, wind_dir, times
 
 def get_SSH_forcing(boundary, date):
     """
