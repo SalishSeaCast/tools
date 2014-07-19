@@ -17,8 +17,6 @@
 """
 from __future__ import division
 
-from collections import defaultdict
-
 from mock import (
     MagicMock,
     Mock,
