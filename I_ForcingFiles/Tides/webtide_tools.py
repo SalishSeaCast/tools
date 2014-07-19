@@ -235,7 +235,7 @@ def create_northern_tides(Z1,Z2,tidevar,constituent):
     import numpy as np
     from salishsea_tools import nc_tools
     
-    nemo = NC.Dataset('SalishSea2_corrF_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
+    nemo = NC.Dataset('SalishSea2_corrF2_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
 
     #start and end points
     starti = 32
