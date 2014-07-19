@@ -413,7 +413,7 @@ The paths may be either absolute or relative.
   open boundary conditions,
   etc. are found.
 
-* The :kbd:`runs directory` key gives the path to the directory where run directories will be created by the :command:`salishsea prepare` sub-command.
+* The :kbd:`runs directory` key gives the path to the directory where run directories will be created by the :command:`salishsea run` (or :command:`salishsea prepare`) sub-command.
 
 The :kbd:`grid` section of the file contains 2 keys that provide the names of the coordinates and bathymetry files to use for the run.
 Those file are presumed to be in the :file:`grid/` directory of the :ref:`NEMO-forcing-repo` clone pointed to by the :kbd:`forcing` key in the :kbd:`paths` section.
@@ -453,3 +453,7 @@ and by other software.
 .. autofunction:: api.combine
 
 .. autofunction:: api.prepare
+
+.. autofunction:: api.run
+
+.. autofunction:: api.run_description
