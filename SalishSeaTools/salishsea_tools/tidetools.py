@@ -304,7 +304,7 @@ def get_SS_bathy_data():
 
         This function is deprecated due to hard-coding of
         :file:`/ocean/klesouef/` path.
-        Use :py:func:`tidetools.get_SS_bathy_data` instead.
+        Use :py:func:`tidetools.get_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
@@ -325,7 +325,7 @@ def get_SS2_bathy_data():
 
         This function is deprecated due to hard-coding of
         :file:`/ocean/klesouef/` path.
-        Use :py:func:`tidetools.get_SS_bathy_data` instead.
+        Use :py:func:`tidetools.get_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
@@ -346,7 +346,7 @@ def get_subdomain_bathy_data():
 
         This function is deprecated due to hard-coding of
         :file:`/ocean/klesouef/` path.
-        Use :py:func:`tidetools.get_SS_bathy_data` instead.
+        Use :py:func:`tidetools.get_bathy_data` instead.
 
     :returns: bathy, X, Y
     """
