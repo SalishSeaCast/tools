@@ -9,6 +9,12 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
+    pha_K1 = 8.39 #K1 phase correction in degrees.    applied to velocity and ssh
+    amp_K1 = 0.921 #K1 amp correction factor      applied to velocity and ssh
+    pha_M2 = 11.69 #M2 phase correction in degrees     applied to velocity and ssh
+    pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
+    amp_M2 = 1.0793 # M2 amp correction               applied to velocity and ssh
+    corr_M2 = 1. # flux correction factor     velocity only
 
     corr_shift = 0
     corr = 1
@@ -43,7 +49,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
-        webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Elevation Constituents T.csv',\
+        webtide = pd.read_csv('Tidal Elevation Constituents T.csv',\
                               skiprows = 2)
         webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
                                           'Amplitude (m)': 'amp', 'Phase (deg GMT)': 'pha'})
@@ -69,7 +75,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 
     #U VELOCITY
     if tidevar == 'U': 
-        webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Current Constituents U.csv',\
+        webtide = pd.read_csv('Tidal Current Constituents U.csv',\
                                  skiprows = 2)
         webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
                                           'U Amplitude (m)': 'ewamp', 'U Phase (deg GMT)': 'ewpha',\
@@ -110,7 +116,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         
     #V VELOCITY
     if tidevar == 'V':
-        webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Current Constituents V.csv',\
+        webtide = pd.read_csv('Tidal Current Constituents V.csv',\
                               skiprows = 2)
         webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
                                           'U Amplitude (m)': 'ewamp', 'U Phase (deg GMT)': 'ewpha',\
