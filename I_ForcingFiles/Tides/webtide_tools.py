@@ -9,11 +9,11 @@ def get_data_from_csv(tidevar, constituent, depth):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 8.39 #K1 phase correction in degrees.    applied to velocity and ssh
-    amp_K1 = 0.921 #K1 amp correction factor      applied to velocity and ssh
-    pha_M2 = 13.74 #M2 phase correction in degrees     applied to velocity and ssh
+    pha_K1 = 8.75 #K1 phase correction in degrees.    applied to velocity and ssh
+    amp_K1 = 0.933 #K1 amp correction factor      applied to velocity and ssh
+    pha_M2 = 13.99 #M2 phase correction in degrees     applied to velocity and ssh
     pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
-    amp_M2 = 0.948 # M2 amp correction               applied to velocity and ssh
+    amp_M2 = 0.978 # M2 amp correction               applied to velocity and ssh
     corr_M2 = 1.2240 # flux correction factor     velocity only
 
     corr_pha = 0
@@ -23,7 +23,7 @@ def get_data_from_csv(tidevar, constituent, depth):
     if constituent == "K1" or constituent == "O1":
        corr_pha=pha_K1
        corr_amp=amp_K1
-    if constituent == "M2":
+    if constituent == "M2" or constituent == "S2":
        corr_pha = pha_M2
        corr_shift = pha_shift_M2
        corr_amp = amp_M2
