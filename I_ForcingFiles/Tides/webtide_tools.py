@@ -1,6 +1,6 @@
 #Define a function that gets the constituent data from the csv file
 
-def get_data_from_csv(tidevar, constituent, depth):
+def get_data_from_csv(tidevar, constituent, depth, CFactor):
     import pandas as pd
     from math import radians
     import numpy
@@ -20,14 +20,21 @@ def get_data_from_csv(tidevar, constituent, depth):
     corr_amp=1
     corr_shift = 0
     corr = 1
-    if constituent == "K1" or constituent == "O1":
-       corr_pha=pha_K1
-       corr_amp=amp_K1
-    if constituent == "M2" or constituent == "S2":
-       corr_pha = pha_M2
-       corr_shift = pha_shift_M2
-       corr_amp = amp_M2
-       corr = corr_M2
+
+    if constituent == "M2":
+        corr_pha = CFactor['A2 Phase']
+        corr_amp = CFactor['A2 Amp']
+        corr = CFactor['A2 Flux']
+    elif constituent == "S2":
+        corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
+        corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
+        corr = CFactor['A2 Flux']
+    elif constituent == "K1":
+        corr_pha = CFactor['A1 Phase']
+        corr_amp = CFactor['A1 Amp']
+    elif constituent == "O1":
+        corr_pha = CFactor['A1 Phase'] + CFactor['O1 Phase']
+        corr_amp = CFactor['A1 Amp'] * CFactor['O1 Amp']
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
         webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Elevation Constituents T.csv',\
@@ -143,12 +150,12 @@ def get_data_from_csv(tidevar, constituent, depth):
 # - depth data
 
     
-def create_tide_netcdf(tidevar,constituent,depth,number,code):
+def create_tide_netcdf(tidevar,constituent,depth,number,code,CFactors):
     import netCDF4 as NC
     import numpy
 
     #get the data from the csv file
-    Z1, Z2, I, boundlen = get_data_from_csv(tidevar,constituent,depth)
+    Z1, Z2, I, boundlen = get_data_from_csv(tidevar,constituent,depth,CFactors)
         
     nemo = NC.Dataset('SalishSea'+number+'_'+code+'_west_tide_'+constituent+'_grid_'+tidevar+'.nc','w')
     nemo.description = 'Tide data from WebTide - K1 phase shifted'
