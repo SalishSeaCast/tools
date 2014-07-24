@@ -21,7 +21,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     corr_shift = 0
     corr = 1
 
-    if constituent == "M2":
+    if constituent == "M2" or constituent == "N2" or constituent == "K2":
         corr_pha = CFactor['A2 Phase']
         corr_amp = CFactor['A2 Amp']
         corr = CFactor['A2 Flux']
@@ -29,7 +29,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
         corr = CFactor['A2 Flux']
-    elif constituent == "K1":
+    elif constituent == "K1" or constituent == "Q1" or constituent == "P1":
         corr_pha = CFactor['A1 Phase']
         corr_amp = CFactor['A1 Amp']
     elif constituent == "O1":
