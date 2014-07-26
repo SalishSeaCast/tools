@@ -9,25 +9,21 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 8.75 #K1 phase correction in degrees.    applied to velocity and ssh
-    amp_K1 = 0.933 #K1 amp correction factor      applied to velocity and ssh
-    pha_M2 = 13.99 #M2 phase correction in degrees     applied to velocity and ssh
-    pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
-    amp_M2 = 0.978 # M2 amp correction               applied to velocity and ssh
-    corr_M2 = 1.2240 # flux correction factor     velocity only
 
-    corr_pha = 0
-    corr_amp=1
     corr_shift = 0
     corr = 1
 
-    if constituent == "M2" or constituent == "N2" or constituent == "K2":
+    if constituent == "M2" or constituent == "K2":
         corr_pha = CFactor['A2 Phase']
         corr_amp = CFactor['A2 Amp']
         corr = CFactor['A2 Flux']
     elif constituent == "S2":
         corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
+        corr = CFactor['A2 Flux']
+    elif constituent == "N2":
+        corr_pha = CFactor['A2 Phase'] + CFactor['N2 Phase']
+        corr_amp = CFactor['A2 Amp'] * CFactor['N2 Amp']
         corr = CFactor['A2 Flux']
     elif constituent == "K1" or constituent == "Q1" or constituent == "P1":
         corr_pha = CFactor['A1 Phase']
