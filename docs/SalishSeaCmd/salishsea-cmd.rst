@@ -387,10 +387,10 @@ and :kbd:`email` keys are used by the :command:`salishsea run` command in the :f
   ============  ============================  ===============
   Run Duration  :kbd:`jasper`/:kbd:`orcinus`  :kbd:`salish`
   ============  ============================  ===============
-  6 hours       :kbd:`0:15:00`               :kbd:`2:30:00`
-  1 day         :kbd:`1:00:00`               :kbd:`10:00:00`
-  5 days        :kbd:`3:00:00`               :kbd:`48:00:00`
-  10 days       :kbd:`6:00:00`               :kbd:`90:00:00`
+  6 hours       :kbd:`0:15:00`                :kbd:`2:30:00`
+  1 day         :kbd:`1:00:00`                :kbd:`10:00:00`
+  5 days        :kbd:`3:00:00`                :kbd:`48:00:00`
+  10 days       :kbd:`6:00:00`                :kbd:`90:00:00`
   ============  ============================  ===============
 
   .. _Benchmark tests: http://nbviewer.ipython.org/gist/douglatornell/9e140cb555c07344b2e4
