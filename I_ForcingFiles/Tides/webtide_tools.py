@@ -13,7 +13,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     corr_shift = 0
     corr = 1
 
-    if constituent == "M2" or constituent == "K2":
+    if constituent == "M2":
         corr_pha = CFactor['A2 Phase']
         corr_amp = CFactor['A2 Amp']
         corr = CFactor['A2 Flux']
@@ -25,12 +25,22 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_pha = CFactor['A2 Phase'] + CFactor['N2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['N2 Amp']
         corr = CFactor['A2 Flux']
-    elif constituent == "K1" or constituent == "Q1" or constituent == "P1":
+    elif constituent == "K2":
+        corr_pha = CFactor['A2 Phase'] + CFactor['K2 Phase']
+        corr_amp = CFactor['A2 Amp'] * CFactor['K2 Amp']
+        corr = CFactor['A2 Flux']
+    elif constituent == "K1":
         corr_pha = CFactor['A1 Phase']
         corr_amp = CFactor['A1 Amp']
     elif constituent == "O1":
         corr_pha = CFactor['A1 Phase'] + CFactor['O1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['O1 Amp']
+    elif constituent == "P1":
+        corr_pha = CFactor['A1 Phase'] + CFactor['P1 Phase']
+        corr_amp = CFactor['A1 Amp'] * CFactor['P1 Amp']
+    elif constituent == "Q1":
+        corr_pha = CFactor['A1 Phase'] + CFactor['Q1 Phase']
+        corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
     #WATER LEVEL ELEVATION
     if tidevar == 'T':
         webtide = pd.read_csv('/ocean/klesouef/meopar/tools/I_ForcingFiles/Tidal Elevation Constituents T.csv',\
@@ -51,7 +61,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         #allocate the M2 phase and amplitude from Webtide to the boundary cells
         #(CHECK: Are these allocated in the right order?)
         amp_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].amp*corr_amp
-        pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha - corr_pha
+        pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha + corr_pha
         
         #convert the phase and amplitude to cosine and sine format that NEMO likes
         Z1 = amp_W*numpy.cos(numpy.radians(pha_W))
@@ -83,7 +93,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(uZ2[i],uZ1[i])-numpy.radians(corr_pha+corr_shift))
+            pha.append(math.atan2(uZ2[i],uZ1[i])+numpy.radians(corr_pha+corr_shift))
         uZ1 = amp*numpy.cos(pha)*corr_amp
         uZ2 = amp*numpy.sin(pha)*corr_amp
         
@@ -122,7 +132,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         amp = numpy.sqrt(vZ1[:]**2 + vZ2[:]**2);
         pha=[]
         for i in range(0,len(amp)):
-            pha.append(math.atan2(vZ2[i],vZ1[i])-numpy.radians(corr_pha+corr_shift))
+            pha.append(math.atan2(vZ2[i],vZ1[i])+numpy.radians(corr_pha+corr_shift))
         vZ1 = amp*numpy.cos(pha)*corr_amp
         vZ2 = amp*numpy.sin(pha)*corr_amp
         
