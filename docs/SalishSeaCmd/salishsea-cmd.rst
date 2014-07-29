@@ -454,8 +454,6 @@ and by other software.
 
 .. autofunction:: api.prepare
 
-.. autofunction:: api.run
-
 .. autofunction:: api.run_description
 
 .. autofunction:: api.run_in_subprocess
