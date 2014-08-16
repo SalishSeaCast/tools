@@ -9,6 +9,10 @@ and associated data.
 
 Documentation for the tools is included in the docs/ directory and is rendered at http://salishsea-meopar-tools.readthedocs.org/.
 
+.. image:: https://readthedocs.org/projects/salishsea-meopar-tools/badge/?version=latest
+   :target: https://readthedocs.org/projects/salishsea-meopar-tools/?badge=latest
+   :alt: Documentation Status
+
 
 Licenses
 ========
