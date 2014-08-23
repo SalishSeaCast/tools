@@ -28,9 +28,9 @@ from salishsea_tools import nc_tools
 
 #define the month and year.
 start_day = 1
-end_day=27
-month=10
-year =2002
+end_day=31
+month=12
+year =2003
 
 #define constants
 R = 287 #ideal gas constant
@@ -39,7 +39,7 @@ gam = 0.0098 #lapse rate(deg/m)
 p0=101000 #average sea surface heigh in Pa
 
 #path for CGRF data
-CGRF = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
+CGRF = '/home/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
 
 #function for calculating altitude
 def altitude(P,T,p0):
@@ -77,13 +77,13 @@ lon=C.variables['nav_lon'][:]
 #save in a netcdf file
 alt_str= 'altitude_y' +str(year) +'m'+str(m)+'.nc'
 alt_file = NC.Dataset(alt_str, 'w', zlib=True)
-# dataset attributes
-nc_tools.init_dataset_attrs(
-    alt_file, 
-    title='Average monthly altitude', 
-    notebook_name='altitude/py', 
-    nc_filepath='../tools/I_ForcingFiles/Atmos/' + alt_str,
-    comment='Average altitude at each CGRF grid cell')
+# dataset attributes - can't get this to work
+#nc_tools.init_dataset_attrs(
+#    alt_file, 
+#    title='Average monthly altitude',
+#    notebook='altitude.py',
+#    nc_filepath=alt_str,
+#    comment='Average altitude at each CGRF grid cell')
 #dimensions
 alt_file.createDimension('x', Z.shape[0])
 alt_file.createDimension('y', Z.shape[1])
