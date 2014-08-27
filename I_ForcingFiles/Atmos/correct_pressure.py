@@ -96,6 +96,7 @@ time_counter.long_name=time.long_name
 time_counter.title=time.title
 time_counter.units=time.units
 time_counter.time_origin=time.time_origin
+time_counter.valid_range=time.valid_range
 time_counter[:]=time[:]
 #lat/lon variables
 nav_lat = slp_file.createVariable('nav_lat','float32',('y','x'))
@@ -103,12 +104,14 @@ nav_lat.long_name = lat.long_name
 nav_lat.units = lat.units
 nav_lat.valid_max=lat.valid_max
 nav_lat.valid_min=lat.valid_min
+nav_lat.nav_model=lat.nav_model
 nav_lat[:]=lat
 nav_lon = slp_file.createVariable('nav_lon','float32',('y','x'))
 nav_lon.long_name = lon.long_name
 nav_lon.units = lon.units
 nav_lon.valid_max=lon.valid_max
 nav_lon.valid_min=lon.valid_min
+nav_lon.nav_model=lon.nav_model
 nav_lon[:]=lon
 #Pressure
 atmpres = slp_file.createVariable('atmpres','float32',('time_counter','y','x'))
