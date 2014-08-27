@@ -71,9 +71,20 @@ sav_str = sav_dir + '/slp_corr_y'+str(y) + 'm'+str(m)+'d'+str(d)+'.nc'
 
 #Create netcdf
 slp_file = nc.Dataset(sav_str, 'w', zlib=True)
+description = 'corrected sea level pressure'
 # dataset attributes
-slp_file.title='CGRF pressure corrected to sea level - ' +str(y)+'/'+str(m)+'/'+str(d)
-slp_file.comment='Corrected sea level pressure -CGRF'
+nc_tools.init_dataset_attrs(
+    slp_file,
+    title=(
+            'CGRF {} forcing dataset for {}'
+            .format(description, a.format('YYYY-MM-DD'))),
+        notebook_name='',
+        nc_filepath='',
+        comment=(
+            'Processed and adjusted from '
+            'goapp.ocean.dal.ca::canadian_GDPS_reforecasts_v1 files.'),
+        quiet=True,
+    )
 #dimensions
 slp_file.createDimension('time_counter',0)
 slp_file.createDimension('y', press_corr.shape[1])
@@ -88,21 +99,21 @@ time_counter.time_origin=time.time_origin
 time_counter[:]=time[:]
 #lat/lon variables
 nav_lat = slp_file.createVariable('nav_lat','float32',('y','x'))
-nav_lat.long_name = 'Latitude'
-nav_lat.units = 'degrees_north'
+nav_lat.long_name = lat.long_name
+nav_lat.units = lat.units
 nav_lat.valid_max=lat.valid_max
 nav_lat.valid_min=lat.valid_min
 nav_lat[:]=lat
 nav_lon = slp_file.createVariable('nav_lon','float32',('y','x'))
-nav_lon.long_name = 'Longitude'
-nav_lon.units = 'degrees_east'
+nav_lon.long_name = lon.long_name
+nav_lon.units = lon.units
 nav_lon.valid_max=lon.valid_max
 nav_lon.valid_min=lon.valid_min
 nav_lon[:]=lon
 #Pressure
 atmpres = slp_file.createVariable('atmpres','float32',('time_counter','y','x'))
 atmpres.long_name = 'Sea Level Pressure'
-atmpres.units = 'Pascals'
+atmpres.units = press.units
 atmpres.missing_value=press.missing_value
 atmpres.valid_min=press.valid_min
 atmpres.valid_max=press.valid_max
