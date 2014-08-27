@@ -75,7 +75,7 @@ slp_file = nc.Dataset(sav_str, 'w', zlib=True)
 slp_file.title='CGRF pressure corrected to sea level - ' +str(y)+'/'+str(m)+'/'+str(d)
 slp_file.comment='Corrected sea level pressure -CGRF'
 #dimensions
-slp_file.createDimension('time_counter', press_corr.shape[0])
+slp_file.createDimension('time_counter',0)
 slp_file.createDimension('y', press_corr.shape[1])
 slp_file.createDimension('x', press_corr.shape[2])
 #time counter
