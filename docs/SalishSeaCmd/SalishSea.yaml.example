@@ -15,9 +15,11 @@
 
 config_name: SalishSea
 
-# For runs on systems that use qsub/PBS/TORQUE; e.g. Westgrid
+# For runs on systems that use qsub/PBS/TORQUE
 run_id: example
 walltime: 10:00:00
+nodes: 27
+processors_per_node: 12
 email: dlatornell@example.com
 
 paths:

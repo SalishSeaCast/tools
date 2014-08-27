@@ -395,6 +395,16 @@ and :kbd:`email` keys are used by the :command:`salishsea run` command in the :f
 
   .. _Benchmark tests: http://nbviewer.ipython.org/gist/douglatornell/9e140cb555c07344b2e4
 
+* The :kbd:`nodes` and :kbd:`processors_per_node` values are the number of nodes and number of processors per node to use on :kbd:`jasper.westgrid.ca` where preference is given to jobs that use entire nodes.
+  For 12x27 = 324 processors
+  (i.e. :file:`namelist.compute.12x27`)
+  runs the appropriate values are:
+
+  .. code-block:: yaml
+
+      nodes: 27
+      processors_per_node: 12
+
 * The :kbd:`email`: value is the email address at which you want to receive notification of the beginning and end of execution of the run,
   as well as notification of abnormal abort messages.
   The email key is only required if the address is different than would be constructed by combining your user id on the machine that the job runs on with :kbd:`@eos.ubc.ca`.
