@@ -31,37 +31,14 @@ from salishsea_tools import (viz_tools,
 import sys
 import arrow
 
-# pressure correction function
-def slp(Z,P,T):
-    ps = P*(gam*(Z/T) +1)**(g/gam/R)
-    return ps
-
-#define constants
-R = 287 #ideal gas constant
-g = 9.81 #gravity
-gam = 0.0098 #lapse rate(deg/m)
-p0=101000 #average sea surface heigh in Pa
-
 # Read  from command line
 pres_file=sys.argv[1] #pressure file
 tmp_file=sys.argv[2] #temperature file
 sav_dir=sys.argv[3] #directory for saving
 
-#Load pressure, temperature and altitude data
-f = nc.Dataset(pres_file)
-press=f.variables['atmpres']
+#Grab time
 f = nc.Dataset(tmp_file)
-temp=f.variables['tair']
 time =f.variables['time_counter']
-lon=f.variables['nav_lon']
-lat=f.variables['nav_lat']
-f=nc.Dataset('altitude_y2003.nc')
-alt=f.variables['alt']
-
-#correct pressure
-press_corr=np.zeros(press.shape)
-for k in range(press.shape[0]):
-    press_corr[k,:,:] = slp(alt,press[k,:,:],temp[k,:,:])
 
 #generate strings for saving file
 a=arrow.get(time.time_origin, 'YYYY-MMM-DD HH:mm:ss')
@@ -69,59 +46,7 @@ y=a.year; mo=a.month; da=a.day
 m = "%02d" % (mo,); d= "%02d" % (da,)
 sav_str = sav_dir + '/slp_corr_y'+str(y) + 'm'+str(m)+'d'+str(d)+'.nc'
 
-#Create netcdf
-slp_file = nc.Dataset(sav_str, 'w', zlib=True)
-description = 'corrected sea level pressure'
-# dataset attributes
-nc_tools.init_dataset_attrs(
-    slp_file,
-    title=(
-            'CGRF {} forcing dataset for {}'
-            .format(description, a.format('YYYY-MM-DD'))),
-        notebook_name='',
-        nc_filepath='',
-        comment=(
-            'Processed and adjusted from '
-            'goapp.ocean.dal.ca::canadian_GDPS_reforecasts_v1 files.'),
-        quiet=True,
-    )
-#dimensions
-slp_file.createDimension('time_counter',0)
-slp_file.createDimension('y', press_corr.shape[1])
-slp_file.createDimension('x', press_corr.shape[2])
-#time counter
-time_counter=slp_file.createVariable('time_counter','double', ('time_counter',))
-time_counter.calendar=time.calendar
-time_counter.long_name=time.long_name
-time_counter.title=time.title
-time_counter.units=time.units
-time_counter.time_origin=time.time_origin
-time_counter.valid_range=time.valid_range
-time_counter[:]=time[:]
-#lat/lon variables
-nav_lat = slp_file.createVariable('nav_lat','float32',('y','x'))
-nav_lat.long_name = lat.long_name
-nav_lat.units = lat.units
-nav_lat.valid_max=lat.valid_max
-nav_lat.valid_min=lat.valid_min
-nav_lat.nav_model=lat.nav_model
-nav_lat[:]=lat
-nav_lon = slp_file.createVariable('nav_lon','float32',('y','x'))
-nav_lon.long_name = lon.long_name
-nav_lon.units = lon.units
-nav_lon.valid_max=lon.valid_max
-nav_lon.valid_min=lon.valid_min
-nav_lon.nav_model=lon.nav_model
-nav_lon[:]=lon
-#Pressure
-atmpres = slp_file.createVariable('atmpres','float32',('time_counter','y','x'))
-atmpres.long_name = 'Sea Level Pressure'
-atmpres.units = press.units
-atmpres.missing_value=press.missing_value
-atmpres.valid_min=press.valid_min
-atmpres.valid_max=press.valid_max
-atmpres.axis=press.axis
-atmpres[:]=press_corr[:]
+#generate the pressure file
+nc_tools.generate_pressure_file(sav_str,pres_file,tmp_file,'altitude_y2003.nc',a)
 
-slp_file.close()
 
