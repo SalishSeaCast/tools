@@ -26,7 +26,8 @@ from datetime import (
     timedelta,
 )
 import os
-
+import netCDF4 as nc
+import numpy as np
 import arrow
 
 from salishsea_tools import hg_commands as hg
@@ -314,3 +315,103 @@ def check_dataset_attrs(dataset):
             if not value:
                 print('Missing value for variable attribute for {}: {}'
                       .format(var_name, attr))
+
+def generate_pressure_file(filename, p_file, t_file, alt_file,day):
+	""" Generates a file with CGRF pressure corrected to sea level.
+
+	:arg filename: full path name where the corrected pressure should be saved
+	:type filename: string
+
+	:arg p_file: full path name of the uncorrected CGRF pressure
+	:type p_file: string
+
+	:arg t_file: full path name of the corresponding CGRF temperature
+	:type t_file: string
+
+	:arg alt_file: full path name of the altitude of CGRF cells
+	:type alt_file: string
+
+	:arg day: the date
+	:type day: arrow
+	"""
+	#load data
+	f = nc.Dataset(p_file)
+	press=f.variables['atmpres']
+	f = nc.Dataset(t_file)
+	temp=f.variables['tair']
+	time =f.variables['time_counter']
+	lon=f.variables['nav_lon']
+	lat=f.variables['nav_lat']
+	f=nc.Dataset(alt_file)
+	alt=f.variables['alt']
+
+	#correct pressure
+	press_corr=np.zeros(press.shape)
+	for k in range(press.shape[0]):
+    		press_corr[k,:,:] = _slp(alt,press[k,:,:],temp[k,:,:])
+
+	#Create netcdf
+	slp_file = nc.Dataset(filename, 'w', zlib=True)
+	description = 'corrected sea level pressure'
+	# dataset attributes
+	init_dataset_attrs(
+    	slp_file,
+    	title=(
+            	'CGRF {} forcing dataset for {}'
+            	.format(description, day.format('YYYY-MM-DD'))),
+        	notebook_name='',
+        	nc_filepath='',
+        	comment=(
+            	'Processed and adjusted from '
+            	'goapp.ocean.dal.ca::canadian_GDPS_reforecasts_v1 files.'),
+        	quiet=True,
+   		 )
+    	#dimensions
+    	slp_file.createDimension('time_counter', 0)
+    	slp_file.createDimension('y', press_corr.shape[1])
+    	slp_file.createDimension('x', press_corr.shape[2])
+    	#time
+    	time_counter=slp_file.createVariable('time_counter','double', ('time_counter',))
+    	time_counter.calendar=time.calendar
+    	time_counter.long_name=time.long_name
+    	time_counter.title=time.title
+    	time_counter.units=time.units
+    	time_counter[:] = time[:]
+    	time_counter.valid_range = time.valid_range
+    	#lat/lon variables
+    	nav_lat = slp_file.createVariable('nav_lat','float32',('y','x'))
+    	nav_lat.long_name = lat.long_name
+    	nav_lat.units = lat.units
+    	nav_lat.valid_max=lat.valid_max
+    	nav_lat.valid_min=lat.valid_min
+    	nav_lat.nav_model=lat.nav_model
+    	nav_lat[:]=lat
+    	nav_lon = slp_file.createVariable('nav_lon','float32',('y','x'))
+    	nav_lon.long_name = lon.long_name
+    	nav_lon.units = lon.units
+    	nav_lon.valid_max=lon.valid_max
+    	nav_lon.valid_min=lon.valid_min
+    	nav_lon.nav_model=lon.nav_model
+    	nav_lon[:]=lon
+    	#Pressure
+    	atmpres = slp_file.createVariable('atmpres','float32',('time_counter','y','x'))
+   	atmpres.long_name = 'Sea Level Pressure'
+   	atmpres.units = press.units
+    	atmpres.valid_min=press.valid_min
+    	atmpres.valid_max=press.valid_max
+    	atmpres.missing_value=press.missing_value
+    	atmpres.axis=press.axis
+    	atmpres[:]=press_corr[:]
+
+    	slp_file.close()
+	
+def _slp(Z,P,T):
+    R = 287 #ideal gas constant
+    g = 9.81 #gravity
+    gam = 0.0098 #lapse rate(deg/m)
+    p0=101000 #average sea surface heigh in Pa
+    
+    ps = P*(gam*(Z/T) +1)**(g/gam/R)
+    return ps
+
+
