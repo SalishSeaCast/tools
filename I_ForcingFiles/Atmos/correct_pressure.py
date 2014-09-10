@@ -47,6 +47,6 @@ m = "%02d" % (mo,); d= "%02d" % (da,)
 sav_str = sav_dir + '/slp_corr_y'+str(y) + 'm'+str(m)+'d'+str(d)+'.nc'
 
 #generate the pressure file
-nc_tools.generate_pressure_file(sav_str,pres_file,tmp_file,'altitude_y2003.nc',a)
+nc_tools.generate_pressure_file(sav_str,pres_file,tmp_file,'altitude_CGRF.nc',a)
 
 
