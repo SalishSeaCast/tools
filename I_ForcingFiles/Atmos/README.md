@@ -6,6 +6,23 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[GetGrib.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/GetGrib.ipynb)  
+    
+    Notebook to design script to download GRIB2 data from EC webpage  
+
+* ##[CheckAltitude-JL.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude-JL.ipynb)  
+    
+    This notebook checks that the altitude.py script generates a files that are reasonable.  
+      
+    It also combines the monthly altitude calculation into one file by averaging.  
+
+* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
+    
+    **Initial Check of GEM Products Forcing Data**  
+      
+    This notebook is about initial checks and exploration of the 2.5 km grid GEM products  
+    atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.  
+
 * ##[NoSnow.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/NoSnow.ipynb)  
     
     **No Snow on the Salish Sea**  
@@ -13,11 +30,14 @@ Descriptions below the links are from the first cell of the notebooks
     Create an annual climatology CGRF-like atmospheric forcing file for NEMO  
     that always supplies zero as the solid precipitation value.  
 
-* ##[CheckAltitude.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude.ipynb)  
+* ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
     
-    This notebook checks that the altitude.py script generates a files that are reasonable.  
+    **Convert Atmospheric Forcing Weights to netCDF4**  
       
-    It also combines the monthly altitude calculation into one file by averaging.  
+    Transfer the values from the `met_gem_weight.nc`   
+    from the 2-Oct-2013 `WC3_PREP` tarball  
+    into a netCDF4 file with zlib compression on variables  
+    and CF-1.6 conventions conformant attributes.  
 
 * ##[RebaseCGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)  
     
@@ -49,25 +69,15 @@ Descriptions below the links are from the first cell of the notebooks
       
     [salishsea get_cgrf]: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command  
 
+* ##[CheckAltitude.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude.ipynb)  
+    
+    This notebook checks that the altitude.py script generates a files that are reasonable.  
+      
+    It also combines the monthly altitude calculation into one file by averaging.  
+
 * ##[VerifyAtmosphericForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)  
     
     **Verification of Atmospheric Forcing**  
-
-* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
-    
-    **Initial Check of GEM Products Forcing Data**  
-      
-    This notebook is about initial checks and exploration of the 2.5 km grid GEM products  
-    atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.  
-
-* ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
-    
-    **Convert Atmospheric Forcing Weights to netCDF4**  
-      
-    Transfer the values from the `met_gem_weight.nc`   
-    from the 2-Oct-2013 `WC3_PREP` tarball  
-    into a netCDF4 file with zlib compression on variables  
-    and CF-1.6 conventions conformant attributes.  
 
 
 ##License
