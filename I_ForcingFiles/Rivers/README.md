@@ -6,8 +6,6 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[Add Rivers Month and Constant.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Add Rivers Month and Constant.ipynb)  
-    
 * ##[AddRivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/AddRivers.ipynb)  
     
     *This notebook has been superceded by the notebook: 'Add Rivers Month and Constant'*  
@@ -16,8 +14,14 @@ Descriptions below the links are from the first cell of the notebooks
       
     *Usual Imports*  
 
+* ##[Add Rivers Month and Constant.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Add Rivers Month and Constant.ipynb)  
+    
 * ##[Prep_Seasonal_Rivers.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/Prep_Seasonal_Rivers.ipynb)  
     
+* ##[RealFraserClimateElse.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Rivers/RealFraserClimateElse.ipynb)  
+    
+    Notebook to combine actual Fraser River data with monthly climatologies for all the other rivers.  
+
 
 ##License
 
