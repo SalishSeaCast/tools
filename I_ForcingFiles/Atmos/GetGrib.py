@@ -5,7 +5,7 @@ import os
 import urllib
 
 def GetGrib():
-    '''Notebook to design script to download GRIB2 data from EC webpage'''
+    '''Script to download GRIB2 data from EC webpage'''
 
     # variables we need
     variablenames = ("UGRD_TGL_10_","VGRD_TGL_10_","DSWRF_SFC_0_","DLWRF_SFC_0_", "TMP_TGL_2_",
@@ -41,4 +41,9 @@ def GetGrib():
             os.chdir('..')
         os.chdir('..')
 
-    return
+if __name__ == '__main__':
+    GetGrib()
+
+
+
+    
