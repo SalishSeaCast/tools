@@ -478,5 +478,97 @@ def surge_tide(ssh,ttide,sdt,edt):
     surgetide = ssh+tide_corr
     return surgetide
 
+def get_statistics(obs,model,t_obs,t_model,sdt,edt):
+    """
+    Calculates several statisitcs, such as mean error, maximum value, etc for model and observations in a given time period.
+    :arg obs: observation data
+    :type obs: array
 
+    :arg model: model data
+    :type model: array
 
+    :arg t_obs: observations time
+    :type t_obs: array
+	
+    :arg t_model: model time
+    :type t_model: array
+
+    :arg sdt: datetime object representing start date of analysis period
+    :type sdt: datetime object
+
+    :arg edt: datetime object representing end date of analysis period
+    :type edt: datetime object 
+
+    :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error, rms_error, gamma2
+    """
+    #truncate model
+    trun_model, trun_tm = truncate(model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
+    trun_model = trun_model[:-1]; trun_tm = trun_tm[:-1]
+    #truncate observations
+    trun_obs,trun_to=truncate(obs,t_obs,sdt,edt)
+    #rebase observations
+    rbase_obs, rbase_to=rebase_obs(trun_obs,trun_to)
+    error = rbase_obs-trun_model
+    #calculate statisitcs
+    gamma2 = np.var(error)/np.var(rbase_obs)
+    mean_error = np.mean(error)
+    mean_abs_error = np.mean(np.abs(error))
+    rms_error= _rmse(error)
+    max_obs,tmax_obs=_find_max(rbase_obs,rbase_to)
+    max_model,tmax_model=_find_max(trun_model,trun_tm)
+
+    return max_obs,max_model,tmax_obs,tmax_model,mean_error,mean_abs_error,rms_error,gamma2
+    
+
+def truncate(data,time,sdt,edt):
+    """
+    Returns truncated array for the time period of interest
+    :arg data: data to be truncated
+    :type data: array
+
+    :arg time: time output associated with data
+    :type time: array
+    
+    :arg sdt: datetime object representing start date of analysis period
+    :type sdt: datetime object
+
+    :arg edt: datetime object representing end date of analysis period
+    :type edt: datetime object 
+
+    :returns: data_t, time_t, truncated data and time arrays
+    """
+    inds = np.where(time==sdt)[0]
+    inde = np.where(time==edt)[0]
+    data_t=np.array(data[inds:inde+1])
+    time_t = np.array(time[inds:inde+1])
+    
+    return data_t, time_t
+
+def rebase_obs(data,time):
+    """
+    Rebases the observations so that they are given on the half hour instead of hour. 
+    Half hour outputs caclulated by averaging between two hourly outputs. 
+    :arg data: data to be rebased
+    :type data: array
+
+    :arg time: time outputs associated with data
+    :type time: array
+
+    :returns: rebase_data, rebase_time, the data and times shifted by half an hour
+    """
+    rebase_data = 0.5*(data[1:]+data[:-1])
+    rebase_time=[]
+    for k in range(time.shape[0]):
+        rebase_time.append(time[k].replace(minute=30))
+    rebase_time=np.array(rebase_time)
+    rebase_time=rebase_time[0:-1]
+    return rebase_data, rebase_time
+
+def _rmse(diff):
+    return np.sqrt(np.mean(diff**2))
+
+def _find_max(data,time):
+    max_data = np.nanmax(data)
+    time_max =time[np.nanargmax(data)]
+    
+    return max_data, time_max
