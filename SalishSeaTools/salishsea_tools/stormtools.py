@@ -220,7 +220,7 @@ def get_EC_observations(station, start_day, end_day):
     :arg end_day: string contating the end date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :returns: wind_speed, wind_dir, pressure: wind speed and direction, and pressure data from observations. Note that pressure data is not always available.
+    :returns: wind_speed, wind_dir, timees: wind speed and direction, and time of data from observations.
 
     """
     station_ids = {
@@ -277,7 +277,7 @@ def get_EC_observations(station, start_day, end_day):
             except ValueError:
                 wind_dir.append(0)
     wind_spd= np.array(wind_spd) * 1000 / 3600
-    wind_dir=np.array(wind_dir)-270
+    wind_dir=-np.array(wind_dir)+270
     wind_dir=wind_dir + 360 * (wind_dir<0)
 
     return wind_spd, wind_dir, times
