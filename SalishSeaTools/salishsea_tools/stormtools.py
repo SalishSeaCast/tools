@@ -229,7 +229,8 @@ def get_EC_observations(station, start_day, end_day):
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
-        'PatriciaBay': 11007
+        'PatriciaBay': 11007,
+        'HalibutBank': 46146
     }
 
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
