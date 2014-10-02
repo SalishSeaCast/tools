@@ -224,6 +224,7 @@ def get_EC_observations(station, start_day, end_day):
 
     """
     station_ids = {
+	'PamRocks': 6817,
 	'EntranceIsland': 29411,
         'Sandheads': 6831,
         'YVR': 889,
