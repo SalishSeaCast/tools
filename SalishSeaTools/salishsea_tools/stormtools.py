@@ -275,7 +275,7 @@ def get_EC_observations(station, start_day, end_day):
                 times.append(t.datetime)
 	    try:
                 wind_dir.append(float(record.find('winddir').text) * 10)
-            except ValueError:
+            except:
                 wind_dir.append(0)
     wind_spd= np.array(wind_spd) * 1000 / 3600
     wind_dir=-np.array(wind_dir)+270
