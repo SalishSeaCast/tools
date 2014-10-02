@@ -121,7 +121,7 @@ def get_CGRF_weather(start,end,grid):
         var=fV.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])
 
         #pressure
-        strP='slp_corr_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
+        strP='slp_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
         fP=NC.Dataset(CGRF_path+strP)
         var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
 
@@ -229,7 +229,7 @@ def get_EC_observations(station, start_day, end_day):
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
-        'PatriciaBay': 11007,
+        'PatriciaBay': 118,
         'HalibutBank': 46146
     }
 
@@ -280,6 +280,8 @@ def get_EC_observations(station, start_day, end_day):
     wind_spd= np.array(wind_spd) * 1000 / 3600
     wind_dir=-np.array(wind_dir)+270
     wind_dir=wind_dir + 360 * (wind_dir<0)
+    for i in np.arange(len(times)):
+    	times[i] = times[i].astimezone(pytz.timezone('utc'))
 
     return wind_spd, wind_dir, times
 
