@@ -227,7 +227,7 @@ def get_EC_observations(station, start_day, end_day):
 	'PamRocks': 6817,
 	'EntranceIsland': 29411,
         'Sandheads': 6831,
-        'YVR': 889,
+        'YVR': 51442,
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
