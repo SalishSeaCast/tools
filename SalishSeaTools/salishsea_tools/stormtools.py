@@ -225,7 +225,7 @@ def get_EC_observations(station, start_day, end_day):
     """
     station_ids = {
 	'PamRocks': 6817,
-	'SistersIslands': 6813,
+	'SistersIsland': 6813,
 	'EntranceIsland': 29411,
         'Sandheads': 6831,
         'YVR': 51442, #note, I think YVR station name changed in 2013. Older data use 889
