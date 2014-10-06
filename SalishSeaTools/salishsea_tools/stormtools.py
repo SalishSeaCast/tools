@@ -231,14 +231,13 @@ def get_EC_observations(station, start_day, end_day):
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
-        'PatriciaBay': 11007,
-        'HalibutBank': 46146
+        'PatriciaBay': 11007, # not exactly at Patricia Bay
     }
 
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
 
-    wind_spd= []; wind_dir=[];
+    wind_spd= []; wind_dir=[]; 
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -251,6 +250,11 @@ def get_EC_observations(station, start_day, end_day):
     response = requests.get(url, params=query)
     tree = ElementTree.parse(cStringIO.StringIO(response.content))
     root = tree.getroot()
+    #read lat and lon
+    for raw_info in root.findall('stationinformation'):
+	lat =float(raw_info.find('latitude').text)
+	lon =float(raw_info.find('longitude').text)
+    #read data
     raw_data = root.findall('stationdata')
     times = []
     for record in raw_data:
@@ -285,7 +289,7 @@ def get_EC_observations(station, start_day, end_day):
     for i in np.arange(len(times)):
     	times[i] = times[i].astimezone(pytz.timezone('utc'))
 
-    return wind_spd, wind_dir, times
+    return wind_spd, wind_dir, times, lat, lon
 
 def get_SSH_forcing(boundary, date):
     """
