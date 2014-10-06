@@ -220,7 +220,7 @@ def get_EC_observations(station, start_day, end_day):
     :arg end_day: string contating the end date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :returns: wind_speed, wind_dir, timees: wind speed and direction, and time of data from observations.
+    :returns: wind_speed, wind_dir, times, lat and lon: wind speed and direction, and time of data from observations. Also latitude and longitude of the station
 
     """
     station_ids = {
