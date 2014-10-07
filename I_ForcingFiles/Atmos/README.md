@@ -6,6 +6,17 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[GetGrib.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/GetGrib.ipynb)  
+    
+    Notebook to design script to download GRIB2 data from EC webpage  
+
+* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
+    
+    **Initial Check of GEM Products Forcing Data**  
+      
+    This notebook is about initial checks and exploration of the 2.5 km grid GEM products  
+    atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.  
+
 * ##[NoSnow.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/NoSnow.ipynb)  
     
     **No Snow on the Salish Sea**  
@@ -13,15 +24,14 @@ Descriptions below the links are from the first cell of the notebooks
     Create an annual climatology CGRF-like atmospheric forcing file for NEMO  
     that always supplies zero as the solid precipitation value.  
 
-* ##[GetGrib.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/GetGrib.ipynb)  
+* ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
     
-    Notebook to design script to download GRIB2 data from EC webpage  
-
-* ##[CheckAltitude.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude.ipynb)  
-    
-    This notebook checks that the altitude.py script generates a files that are reasonable.  
+    **Convert Atmospheric Forcing Weights to netCDF4**  
       
-    It also combines the monthly altitude calculation into one file by averaging.  
+    Transfer the values from the `met_gem_weight.nc`   
+    from the 2-Oct-2013 `WC3_PREP` tarball  
+    into a netCDF4 file with zlib compression on variables  
+    and CF-1.6 conventions conformant attributes.  
 
 * ##[RebaseCGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)  
     
@@ -53,6 +63,11 @@ Descriptions below the links are from the first cell of the notebooks
       
     [salishsea get_cgrf]: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command  
 
+* ##[gribTnetcdf.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)  
+    
+    Notebook to convert grib2 files to netCDF files that can be used in NEMO  
+    Makes use of wgrib2  
+
 * ##[RadiationCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/RadiationCheck.ipynb)  
     
     This notebook compares the longwave/shortwave radiation from the GEM2.5 model provided by  
@@ -60,32 +75,22 @@ Descriptions below the links are from the first cell of the notebooks
     1. Pramod converted from grib2 format to netcdf covering all of Dec 2012  
     2. Kao-Shen at Environment Canada covering 1 hour on Dec 16, 2012  
       
-    Question: Are the longwave/shortwave radiation variables in Pramdod's netcdf files the ones we should be using? There are several radiation flux variables in the grib2 output.  
+    Question: Are the longwave/shortwave radiation variables in Pramod's netcdf files the ones we should be using? There are several radiation flux variables in the grib2 output.  
       
     Description of grib2 variables  
     https://weather.gc.ca/grib/HRDPS_HR/HRDPS_ps2p5km_P000_deterministic_e.html  
       
     Plan: Comapre Pramod's radiation variables to Kao Shen's.  
 
+* ##[CheckAltitude.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude.ipynb)  
+    
+    This notebook checks that the altitude.py script generates a files that are reasonable.  
+      
+    It also combines the monthly altitude calculation into one file by averaging.  
+
 * ##[VerifyAtmosphericForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)  
     
     **Verification of Atmospheric Forcing**  
-
-* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
-    
-    **Initial Check of GEM Products Forcing Data**  
-      
-    This notebook is about initial checks and exploration of the 2.5 km grid GEM products  
-    atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.  
-
-* ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
-    
-    **Convert Atmospheric Forcing Weights to netCDF4**  
-      
-    Transfer the values from the `met_gem_weight.nc`   
-    from the 2-Oct-2013 `WC3_PREP` tarball  
-    into a netCDF4 file with zlib compression on variables  
-    and CF-1.6 conventions conformant attributes.  
 
 
 ##License
