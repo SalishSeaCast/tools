@@ -307,7 +307,7 @@ def get_SSH_forcing(boundary, date):
     """
     date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
     year = date_arr.year
-    month = date_arr.month
+    month = date_arr.month;    month= "%02d" % (month,)
     if boundary == 'north':
 	filen='sshNorth'
     else:
