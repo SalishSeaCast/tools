@@ -582,3 +582,81 @@ def _find_max(data,time):
     time_max =time[np.nanargmax(data)]
     
     return max_data, time_max
+
+def get_NOAA_wlev(station_no, start_date, end_date):
+    """Download water level data from NOAA site for one NOAA station
+    for specified period.
+
+    :arg station_no: Station number e.g. 9443090.
+    :type station_no: int
+
+    :arg start_date: Start date; e.g. '01-JAN-2010'.
+    :type start_date: str
+
+    :arg end_date: End date; e.g. '31-JAN-2010'
+    :type end_date: str
+
+    :returns: Saves text file with water level data in meters at one station. Time zone is UTC
+    """
+    # Name the output file
+    outfile = 'wlev_'+str(station_no)+'_'+str(start_date)+'_'+str(end_date)+'.csv'
+    # Form urls and html information
+    
+    st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    
+    base_url = 'http://tidesandcurrents.noaa.gov'
+    form_handler = (
+        '/stationhome.html?id='
+        + str(station_no))
+    data_provider = (
+        '/api/datagetter?product=hourly_height&application=NOS.COOPS.TAC.WL'
+        + '&begin_date=' +st_ar.format('YYYYMMDD') +'&end_date='+end_ar.format('YYYYMMDD')
+        + '&datum=MLLW&station='+str(station_no)
+        + '&time_zone=GMT&units=metric&interval=h&format=csv')
+    # Go get the data from the DFO site
+    with requests.Session() as s:
+        s.post(base_url)
+        r = s.get(base_url + data_provider)
+    # Write the data to a text file
+    with open(outfile, 'w') as f:
+        f.write(r.text)
+
+def get_NOAA_predictions(station_no, start_date, end_date):
+    """Download tide predictions from NOAA site for one NOAA station
+    for specified period.
+
+    :arg station_no: Station number e.g. 9443090.
+    :type station_no: int
+
+    :arg start_date: Start date; e.g. '01-JAN-2010'.
+    :type start_date: str
+
+    :arg end_date: End date; e.g. '31-JAN-2010'
+    :type end_date: str
+
+    :returns: Saves text file with predictions in meters at one station. Time zone is UTC
+    """
+    # Name the output file
+    outfile = 'predictions_'+str(station_no)+'_'+str(start_date)+'_'+str(end_date)+'.csv'
+    # Form urls and html information
+    
+    st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    
+    base_url = 'http://tidesandcurrents.noaa.gov'
+    form_handler = (
+        '/stationhome.html?id='
+        + str(station_no))
+    data_provider = (
+        '/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL'
+        + '&begin_date=' +st_ar.format('YYYYMMDD') +'&end_date='+end_ar.format('YYYYMMDD')
+        + '&datum=MLLW&station='+str(station_no)
+        + '&time_zone=GMT&units=metric&interval=h&format=csv')
+    # Go get the data from the DFO site
+    with requests.Session() as s:
+        s.post(base_url)
+        r = s.get(base_url + data_provider)
+    # Write the data to a text file
+    with open(outfile, 'w') as f:
+        f.write(r.text)
