@@ -509,7 +509,8 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     :arg edt: datetime object representing end date of analysis period
     :type edt: datetime object 
 
-    :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error, rms_error, gamma2
+    :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error, rms_error, gamma2 (see Bernier Thompson 2006), correlation matrix, willmott score,
+    mean_obs, mean_model, std_obs, std_model
     """
     #truncate model
     trun_model, trun_tm = truncate(model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
@@ -524,10 +525,17 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     mean_error = np.mean(error)
     mean_abs_error = np.mean(np.abs(error))
     rms_error= _rmse(error)
+    corr = np.corrcoef(rbase_obs,trun_model)
     max_obs,tmax_obs=_find_max(rbase_obs,rbase_to)
     max_model,tmax_model=_find_max(trun_model,trun_tm)
+    mean_obs = np.mean(rbase_obs)
+    mean_model = np.mean(trun_model)
+    std_obs = np.std(rbase_obs)
+    std_model = np.std(trun_model)
 
-    return max_obs,max_model,tmax_obs,tmax_model,mean_error,mean_abs_error,rms_error,gamma2
+    ws = willmott_skill(rbase_obs,trun_model)
+
+    return max_obs,max_model,tmax_obs,tmax_model,mean_error,mean_abs_error,rms_error,gamma2, corr, ws, mean_obs, mean_model, std_obs, std_model
     
 
 def truncate(data,time,sdt,edt):
@@ -582,6 +590,26 @@ def _find_max(data,time):
     time_max =time[np.nanargmax(data)]
     
     return max_data, time_max
+
+def willmott_skill(obs,model):
+    """Caclulates the Willmott skill score of the model. See Willmott 1982.
+    :arg obs: observations data
+    :type obs: array
+
+    :arg model: model data
+    :type model: array
+
+    :returns: ws, the Willmott skill score
+    """
+    obar = np.nanmean(obs)
+    mprime = model -obar
+    oprime = obs -obar
+
+    diff_sq = np.sum((model-obs)**2)
+    add_sq = np.sum((np.abs(mprime) +np.abs(oprime))**2)
+
+    ws = 1-diff_sq/add_sq
+    return ws
 
 def get_NOAA_wlev(station_no, start_date, end_date):
     """Download water level data from NOAA site for one NOAA station
