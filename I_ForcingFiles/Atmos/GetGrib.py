@@ -30,7 +30,7 @@ def GetGrib():
     for forecast in forecasts:
         os.mkdir(forecast)
         os.chdir(forecast)
-        for fhour in range(1,42+1):
+        for fhour in range(0,42+1):
             sfhour = '{:0=3}'.format(fhour)
             os.mkdir(sfhour)
             os.chdir(sfhour)
