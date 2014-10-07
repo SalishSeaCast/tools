@@ -519,7 +519,7 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     trun_obs,trun_to=truncate(obs,t_obs,sdt,edt)
     #rebase observations
     rbase_obs, rbase_to=rebase_obs(trun_obs,trun_to)
-    error = rbase_obs-trun_model
+    error = trun_model-rbase_obs
     #calculate statisitcs
     gamma2 = np.var(error)/np.var(rbase_obs)
     mean_error = np.mean(error)
