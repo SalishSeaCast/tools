@@ -488,9 +488,12 @@ def surge_tide(ssh,ttide,sdt,edt):
     surgetide = ssh+tide_corr
     return surgetide
 
-def get_statistics(obs,model,t_obs,t_model,sdt,edt):
+
+def get_statistics(obs, model, t_obs, t_model, sdt, edt):
     """
-    Calculates several statisitcs, such as mean error, maximum value, etc for model and observations in a given time period.
+    Calculates several statisitcs, such as mean error, maximum value, etc.
+    for model and observations in a given time period.
+
     :arg obs: observation data
     :type obs: array
 
@@ -514,30 +517,35 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
               correlation matrix, willmott score, mean_obs, mean_model,
               std_obs, std_model
     """
-    #truncate model
-    trun_model, trun_tm = truncate(model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
-    trun_model = trun_model[:-1]; trun_tm = trun_tm[:-1]
-    #truncate observations
-    trun_obs,trun_to=truncate(obs,t_obs,sdt,edt)
-    #rebase observations
-    rbase_obs, rbase_to=rebase_obs(trun_obs,trun_to)
+    # truncate model
+    trun_model, trun_tm = truncate(
+        model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
+    trun_model = trun_model[:-1]
+    trun_tm = trun_tm[:-1]
+    # truncate observations
+    trun_obs, trun_to = truncate(obs, t_obs, sdt, edt)
+    # rebase observations
+    rbase_obs, rbase_to = rebase_obs(trun_obs, trun_to)
     error = trun_model-rbase_obs
-    #calculate statisitcs
+    # calculate statisitcs
     gamma2 = np.var(error)/np.var(rbase_obs)
     mean_error = np.mean(error)
     mean_abs_error = np.mean(np.abs(error))
-    rms_error= _rmse(error)
-    corr = np.corrcoef(rbase_obs,trun_model)
-    max_obs,tmax_obs=_find_max(rbase_obs,rbase_to)
-    max_model,tmax_model=_find_max(trun_model,trun_tm)
+    rms_error = _rmse(error)
+    corr = np.corrcoef(rbase_obs, trun_model)
+    max_obs, tmax_obs = _find_max(rbase_obs, rbase_to)
+    max_model, tmax_model = _find_max(trun_model, trun_tm)
     mean_obs = np.mean(rbase_obs)
     mean_model = np.mean(trun_model)
     std_obs = np.std(rbase_obs)
     std_model = np.std(trun_model)
 
-    ws = willmott_skill(rbase_obs,trun_model)
+    ws = willmott_skill(rbase_obs, trun_model)
 
-    return max_obs,max_model,tmax_obs,tmax_model,mean_error,mean_abs_error,rms_error,gamma2, corr, ws, mean_obs, mean_model, std_obs, std_model
+    return (
+        max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error,
+        rms_error, gamma2, corr, ws, mean_obs, mean_model, std_obs, std_model,
+    )
 
 
 def truncate(data,time,sdt,edt):
