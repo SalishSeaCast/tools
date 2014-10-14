@@ -509,8 +509,10 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     :arg edt: datetime object representing end date of analysis period
     :type edt: datetime object
 
-    :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error, rms_error, gamma2 (see Bernier Thompson 2006), correlation matrix, willmott score,
-    mean_obs, mean_model, std_obs, std_model
+    :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error,
+              mean_abs_error, rms_error, gamma2 (see Bernier Thompson 2006),
+              correlation matrix, willmott score, mean_obs, mean_model,
+              std_obs, std_model
     """
     #truncate model
     trun_model, trun_tm = truncate(model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
