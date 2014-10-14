@@ -238,7 +238,7 @@ def get_EC_observations(station, start_day, end_day):
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
 
-    wind_spd= []; wind_dir=[]; 
+    wind_spd= []; wind_dir=[];
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -352,17 +352,17 @@ def load_tidal_predictions(filename):
 
     :returns: ttide: a dict object that contains tidal predictions and msl the mean component from the harmonic analysis
     """
-     
+
     #read msl
-    line_number = 1     
+    line_number = 1
     with open(filename, 'rb') as f:
         mycsv = csv.reader(f); mycsv = list(mycsv)
         msl = mycsv[line_number][1]
         msl=float(msl)
-    
+
     ttide = pd.read_csv(filename,skiprows=3,parse_dates=[0],date_parser=dateParserMeasured2)
     ttide = ttide.rename(columns={'Time_Local ': 'time', ' pred_8 ': 'pred_8', ' pred_all ': 'pred_all'})
-    
+
     return ttide, msl
 
 def load_observations(start,end,location):
@@ -387,7 +387,7 @@ def load_observations(start,end,location):
     tidetools.get_dfo_wlev(statID_PA,start,end)
     wlev_meas = pd.read_csv(filename,skiprows=7,parse_dates=[0],date_parser=dateParserMeasured)
     wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
-    
+
     return wlev_meas
 
 def observed_anomaly(ttide,wlev_meas,msl):
@@ -407,18 +407,18 @@ def observed_anomaly(ttide,wlev_meas,msl):
     """
     ssanomaly = np.zeros(len(wlev_meas.time))
     for i in np.arange(0,len(wlev_meas.time)):
-    #check that there is a corresponding time 
+    #check that there is a corresponding time
     #if any(wlev_pred.time == wlev_meas.time[i]):
         ssanomaly[i] =(wlev_meas.slev[i] - (ttide.pred_all[ttide.time==wlev_meas.time[i]]+msl))
         if not(ssanomaly[i]):
             ssanomaly[i]=float('Nan')
-        
+
     return ssanomaly
 
 def modelled_anomaly(sshs,location):
     """
     Calculates the modelled ssh anomaly by finding the difference between a simulation with all forcing and a simulation with tides only.
-    
+
     :arg sshs: A struc object with ssh data from all_forcing and tidesonly model runs
     :type sshs: struc with dimensions 'all_forcing' and 'tidesonly'
 
@@ -444,19 +444,19 @@ def correct_model(ssh,ttide,sdt,edt):
     :type sdt: datetime object
 
     :arg edt: datetime object representing end date of simulation
-    :type edt: datetime object 
+    :type edt: datetime object
 
     :returns: corr_model: the corrected model output
     """
     #find index of ttide.time at start and end
     inds = ttide.time[ttide.time==sdt].index[0]
     inde = ttide.time[ttide.time==edt].index[0]
-    
+
     difference = ttide.pred_all-ttide.pred_8
     difference = np.array(difference)
     #average correction over two times to shift to the model 1/2 outputs
     corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
-    
+
     corr_model = ssh+corr
     return corr_model
 
@@ -465,7 +465,7 @@ def surge_tide(ssh,ttide,sdt,edt):
     Calculates the sea surface height from the model run with surge only. That is, addes tidal prediction to modelled surge.
     :arg ssh: shh from surge only model run
     :type ssh: array of numbers
-    
+
     :arg ttide: struc with tidal predictions
     :type ttide: struc with dimension time, pred_all, pred_8
 
@@ -473,7 +473,7 @@ def surge_tide(ssh,ttide,sdt,edt):
     :type sdt: datetime object
 
     :arg edt: datetime object representing end date of simulation
-    :type edt: datetime object 
+    :type edt: datetime object
 
     :returns: surgetide: the surge only run with tides added (mean not inculded)
     """
@@ -484,7 +484,7 @@ def surge_tide(ssh,ttide,sdt,edt):
     #average correction over two times to shift to the model 1/2 outputs
     tide = np.array(ttide.pred_all)
     tide_corr = 0.5*(tide[inds:inde] + tide[inds+1:inde+1])
-    
+
     surgetide = ssh+tide_corr
     return surgetide
 
@@ -499,7 +499,7 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
 
     :arg t_obs: observations time
     :type t_obs: array
-	
+
     :arg t_model: model time
     :type t_model: array
 
@@ -507,7 +507,7 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     :type sdt: datetime object
 
     :arg edt: datetime object representing end date of analysis period
-    :type edt: datetime object 
+    :type edt: datetime object
 
     :returns: max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error, rms_error, gamma2 (see Bernier Thompson 2006), correlation matrix, willmott score,
     mean_obs, mean_model, std_obs, std_model
@@ -536,7 +536,7 @@ def get_statistics(obs,model,t_obs,t_model,sdt,edt):
     ws = willmott_skill(rbase_obs,trun_model)
 
     return max_obs,max_model,tmax_obs,tmax_model,mean_error,mean_abs_error,rms_error,gamma2, corr, ws, mean_obs, mean_model, std_obs, std_model
-    
+
 
 def truncate(data,time,sdt,edt):
     """
@@ -546,12 +546,12 @@ def truncate(data,time,sdt,edt):
 
     :arg time: time output associated with data
     :type time: array
-    
+
     :arg sdt: datetime object representing start date of analysis period
     :type sdt: datetime object
 
     :arg edt: datetime object representing end date of analysis period
-    :type edt: datetime object 
+    :type edt: datetime object
 
     :returns: data_t, time_t, truncated data and time arrays
     """
@@ -559,13 +559,13 @@ def truncate(data,time,sdt,edt):
     inde = np.where(time==edt)[0]
     data_t=np.array(data[inds:inde+1])
     time_t = np.array(time[inds:inde+1])
-    
+
     return data_t, time_t
 
 def rebase_obs(data,time):
     """
-    Rebases the observations so that they are given on the half hour instead of hour. 
-    Half hour outputs caclulated by averaging between two hourly outputs. 
+    Rebases the observations so that they are given on the half hour instead of hour.
+    Half hour outputs caclulated by averaging between two hourly outputs.
     :arg data: data to be rebased
     :type data: array
 
@@ -588,7 +588,7 @@ def _rmse(diff):
 def _find_max(data,time):
     max_data = np.nanmax(data)
     time_max =time[np.nanargmax(data)]
-    
+
     return max_data, time_max
 
 def willmott_skill(obs,model):
@@ -629,10 +629,10 @@ def get_NOAA_wlev(station_no, start_date, end_date):
     # Name the output file
     outfile = 'wlev_'+str(station_no)+'_'+str(start_date)+'_'+str(end_date)+'.csv'
     # Form urls and html information
-    
+
     st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
-    
+
     base_url = 'http://tidesandcurrents.noaa.gov'
     form_handler = (
         '/stationhome.html?id='
@@ -668,10 +668,10 @@ def get_NOAA_predictions(station_no, start_date, end_date):
     # Name the output file
     outfile = 'predictions_'+str(station_no)+'_'+str(start_date)+'_'+str(end_date)+'.csv'
     # Form urls and html information
-    
+
     st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
-    
+
     base_url = 'http://tidesandcurrents.noaa.gov'
     form_handler = (
         '/stationhome.html?id='
