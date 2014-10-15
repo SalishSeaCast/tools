@@ -233,6 +233,7 @@ def get_EC_observations(station, start_day, end_day):
         'Victoria': 10944,
         'CampbellRiver': 145,
         'PatriciaBay': 11007, # not exactly at Patricia Bay
+	'Esquimalt': 52
     }
 
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
