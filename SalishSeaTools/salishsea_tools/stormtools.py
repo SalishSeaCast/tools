@@ -220,7 +220,7 @@ def get_EC_observations(station, start_day, end_day):
     :arg end_day: string contating the end date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :returns: wind_speed, wind_dir, times, lat and lon: wind speed and direction, and time of data from observations. Also latitude and longitude of the station
+    :returns: wind_speed, wind_dir, temperature, times, lat and lon: wind speed and direction, and time of data from observations. Also latitude and longitude of the station
 
     """
     station_ids = {
@@ -239,7 +239,7 @@ def get_EC_observations(station, start_day, end_day):
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
 
-    wind_spd= []; wind_dir=[];
+    wind_spd= []; wind_dir=[]; temp=[];
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -285,13 +285,18 @@ def get_EC_observations(station, start_day, end_day):
                 wind_dir.append(float(record.find('winddir').text) * 10)
             except:
                 wind_dir.append(float('NaN'))
+	    try:
+                temp.append(float(record.find('temp').text) +273)
+            except:
+                temp.append(float('NaN'))
     wind_spd= np.array(wind_spd) * 1000 / 3600
     wind_dir=-np.array(wind_dir)+270
     wind_dir=wind_dir + 360 * (wind_dir<0)
+    temp=np.array(temp)
     for i in np.arange(len(times)):
     	times[i] = times[i].astimezone(pytz.timezone('utc'))
 
-    return wind_spd, wind_dir, times, lat, lon
+    return wind_spd, wind_dir, temp, times, lat, lon
 
 def get_SSH_forcing(boundary, date):
     """
