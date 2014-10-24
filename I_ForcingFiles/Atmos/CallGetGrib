@@ -1,1 +1,11 @@
 python -m GetGrib
+python -m gribTnetcdf
+
+cd ../../../Operational
+Year=`date +%y`
+Month=`date +%m`
+Day=`date +%d`
+netfile=ops_y20$Year'm'$Month'd'$Day'.nc'
+echo $netfile
+ncks -4 -L4 -O $netfile $netfile
+cd ../Tools/I_ForcingFiles/Atmos
