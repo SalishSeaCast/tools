@@ -1,5 +1,6 @@
 # Standard Imports
 from __future__ import division
+import arrow
 import glob
 import netCDF4 as nc
 import numpy as np
@@ -18,46 +19,48 @@ def gribTnetcdf():
 
     GRIBdir = '../../../GRIB/'
     OPERdir = '../../../Operational/'
-    commandfile = open('commands','r')
-    for line in commandfile:
-        year = line[0:4]; month = line[5:7]; day = line[8:10]; 
-        size = line[11:-1]
-        print year,month,day,size
-        ymd = 'y{year}m{month}d{day}'.format(year=year,month=month,day=day)
-        p1 = '{year}{month}{daym1:0=2}/18/'.format(year=year,month=month,
+    utc = arrow.utcnow()
+    now = utc.to('Canada/Pacific')
+    year = now.year
+    month = now.month
+    day = now.day
+    size = 'watershed'
+    ymd = 'y{year}m{month}d{day}'.format(year=year,month=month,day=day)
+    p1 = '{year}{month}{daym1:0=2}/18/'.format(year=year,month=month,
                                                    daym1=int(day)-1)
-        p2 = '{year}{month}{day}/06/'.format(year=year,month=month,day=day)
-        p3 = '{year}{month}{day}/18/'.format(year=year,month=month,day=day)
-        HoursWeNeed = {
+    p2 = '{year}{month}{day}/06/'.format(year=year,month=month,day=day)
+    p3 = '{year}{month}{day}/18/'.format(year=year,month=month,day=day)
+    HoursWeNeed = {
             'part one':  (p1, 24-18-1, 24+6-18),
             'part two':  (p2, 7-6, 18-6),
             'part three':(p3, 19-18, 23-18),
-            }
-        if size == 'full':
-            fileextra = ''
-        elif size == 'watershed':  # see AtmosphericGridSelection.ipynb
-            fileextra = ''
-            ist = 110; ien = 365
-            jst = 20; jen = 285
-        try:
-            os.remove('wglog')
-        except Exception: 
-            pass
-        logfile = open('wglog','w')
+           }
+    if size == 'full':
+        fileextra = ''
+    elif size == 'watershed':  # see AtmosphericGridSelection.ipynb
+        fileextra = ''
+        ist = 110; ien = 365
+        jst = 20; jen = 285
+        
+    try:
+        os.remove('wglog')
+    except Exception: 
+        pass
+    logfile = open('wglog','w')
         
 
-        process_gribUV(GRIBdir, HoursWeNeed, logfile)
-        process_gribscalar(GRIBdir, HoursWeNeed, logfile)
-        outgrib, outzeros = GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed,
+    process_gribUV(GRIBdir, HoursWeNeed, logfile)
+    process_gribscalar(GRIBdir, HoursWeNeed, logfile)
+    outgrib, outzeros = GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed,
                                        logfile)
-        if size != 'full':
-            outgrib, outzeros = subsample(OPERdir, ymd, ist, ien, jst, jen, 
+    if size != 'full':
+        outgrib, outzeros = subsample(OPERdir, ymd, ist, ien, jst, jen, 
                                           outgrib, outzeros, logfile)
-        outnetcdf,out0netcdf = makeCDF(OPERdir, ymd, fileextra, outgrib, 
+    outnetcdf,out0netcdf = makeCDF(OPERdir, ymd, fileextra, outgrib, 
                                            outzeros, logfile)
-        processCDF(outnetcdf, out0netcdf, ymd)
-        renameCDF(outnetcdf)
-        plt.savefig('wg.png')
+    processCDF(outnetcdf, out0netcdf, ymd)
+    renameCDF(outnetcdf)
+    plt.savefig('wg.png')
 
 def process_gribUV(GRIBdir, HoursWeNeed, logfile):
     '''Script to align winds with N/S, amalgamate files'''
