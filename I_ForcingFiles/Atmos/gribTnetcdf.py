@@ -4,8 +4,11 @@ import glob
 import netCDF4 as nc
 import numpy as np
 import os
-from salishsea_tools import nc_tools
 import subprocess as sp
+# next two lines are to allow Salish (without good Display) to produce the plots
+# in matplotlib
+import matplotlib as mt
+mt.use('Agg')
 import matplotlib.pyplot as plt
 
 def gribTnetcdf():
@@ -33,28 +36,36 @@ def gribTnetcdf():
         if size == 'full':
             fileextra = ''
         elif size == 'watershed':  # see AtmosphericGridSelection.ipynb
-            fileextra = '_ss'
+            fileextra = ''
             ist = 110; ien = 365
             jst = 20; jen = 285
+        try:
+            os.remove('wglog')
+        except Exception: 
+            pass
+        logfile = open('wglog','w')
+        
 
-        process_gribUV(GRIBdir,HoursWeNeed)
-        process_gribscalar(GRIBdir,HoursWeNeed)
-        outgrib, outzeros = GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed)
+        process_gribUV(GRIBdir, HoursWeNeed, logfile)
+        process_gribscalar(GRIBdir, HoursWeNeed, logfile)
+        outgrib, outzeros = GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed,
+                                       logfile)
         if size != 'full':
-            outgrib, outzeros = subsample(OPERdir,ymd, outgrib, outzeros)
-            outnetcdf,out0netcdf = makeCDF(OPERdir, ymd, fileextra, outgrib, 
-                                           outzeros)
-            processCDF(outnetcdf, out0netcdf)
-            renameCDF(outnetcdf)
+            outgrib, outzeros = subsample(OPERdir, ymd, ist, ien, jst, jen, 
+                                          outgrib, outzeros, logfile)
+        outnetcdf,out0netcdf = makeCDF(OPERdir, ymd, fileextra, outgrib, 
+                                           outzeros, logfile)
+        processCDF(outnetcdf, out0netcdf, ymd)
+        renameCDF(outnetcdf)
+        plt.savefig('wg.png')
 
-def process_gribUV(GRIBdir,HoursWeNeed):
+def process_gribUV(GRIBdir, HoursWeNeed, logfile):
     '''Script to align winds with N/S, amalgamate files'''
     for part in ('part one','part two','part three'):
         for fhour in range(HoursWeNeed[part][1],HoursWeNeed[part][2]+1):
         
             # set up directories and files
             sfhour = '{:0=3}'.format(fhour)
-            print sfhour
             dire = HoursWeNeed[part][0]
             outuv = GRIBdir+dire+sfhour+'/UV.grib' 
             try:
@@ -66,13 +77,14 @@ def process_gribUV(GRIBdir,HoursWeNeed):
                 os.remove(outuvrot)
             except Exception:
                 pass
+
         
             # append U and V
             fn = glob.glob(GRIBdir+dire+sfhour+'/*UGRD*')
-            sp.call(["./wgrib2",fn[0],"-append","-grib",outuv])
+            sp.call(["./wgrib2",fn[0],"-append","-grib",outuv], stdout=logfile)
             fn = glob.glob(GRIBdir+dire+sfhour+'/*VGRD*')
-            sp.call(["./wgrib2",fn[0],"-append","-grib",outuv])
-            print sp.check_output(["./wgrib2",fn[0],"-vt"])
+            sp.call(["./wgrib2",fn[0],"-append","-grib",outuv], stdout=logfile)
+            # print sp.check_output(["./wgrib2",fn[0],"-vt"])
         
             # rotate
             GRIDspec = sp.check_output(
@@ -82,10 +94,10 @@ def process_gribUV(GRIBdir,HoursWeNeed):
             cmd.append("-new_grid")
             cmd.extend(GRIDspec.split())
             cmd.append(outuvrot)
-            sp.call(cmd)
+            sp.call(cmd, stdout=logfile)
             os.remove(outuv)
 
-def process_gribscalar(GRIBdir,HoursWeNeed):
+def process_gribscalar(GRIBdir, HoursWeNeed, logfile):
     '''append scalar files, put on same grid as UV'''
     for part in ('part one','part two','part three'):
         for fhour in range(HoursWeNeed[part][1],HoursWeNeed[part][2]+1):
@@ -105,7 +117,8 @@ def process_gribscalar(GRIBdir,HoursWeNeed):
                 pass
             for fn in glob.glob(GRIBdir+dire+sfhour+'/*'):
                 if not ("GRD" in fn) and ("CMC" in fn):                
-                    sp.call(["./wgrib2",fn,"-append","-grib",outscalar])
+                    sp.call(["./wgrib2",fn,"-append","-grib",outscalar], 
+                                                        stdout=logfile)
     #  put on new grid
             GRIDspec = sp.check_output(
               ["/ocean/sallen/allen/research/Meopar/private-tools/PThupaki/grid_defn.pl",outscalar])
@@ -113,10 +126,10 @@ def process_gribscalar(GRIBdir,HoursWeNeed):
             cmd.append("-new_grid")
             cmd.extend(GRIDspec.split())
             cmd.append(outscalargrid)
-            sp.call(cmd)
+            sp.call(cmd, stdout=logfile, stderr=logfile)
             os.remove(outscalar)
 
-def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed):
+def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed, logfile):
     '''Append all the hours and the vector and scalar files'''
     outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))   
     outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
@@ -138,41 +151,45 @@ def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed):
             outuvrot = GRIBdir+dire+sfhour+'/UVrot.grib'
             outscalargrid = GRIBdir+dire+sfhour+'/gscalar.grib'
             if fhour == 0 or (part == 'part one' and fhour == 5):
-                print outuvrot, outscalargrid
-                sp.call(["./wgrib2",outuvrot,"-append","-grib",outzeros])
-                sp.call(["./wgrib2",outscalargrid,"-append","-grib",outzeros]) 
+                sp.call(["./wgrib2",outuvrot,"-append","-grib",outzeros],
+                        stdout=logfile)
+                sp.call(["./wgrib2",outscalargrid,"-append","-grib",outzeros],
+                        stdout=logfile) 
             else:
-                sp.call(["./wgrib2",outuvrot,"-append","-grib",outgrib])
-                sp.call(["./wgrib2",outscalargrid,"-append","-grib",outgrib]) 
+                sp.call(["./wgrib2",outuvrot,"-append","-grib",outgrib],
+                        stdout=logfile)
+                sp.call(["./wgrib2",outscalargrid,"-append","-grib",outgrib],
+                        stdout=logfile) 
             os.remove(outuvrot)
             os.remove(outscalargrid)
     return outgrib, outzeros
 
-def subsample(OPERdir, ymd, ist, ien, jst, jen, outgrib, outzeros):
+def subsample(OPERdir, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
     '''sub sample onto smaller grid'''
     newgrib = os.path.join(OPERdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
     newzeros = os.path.join(OPERdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
     istr = '{ist}:{ien}'.format(ist=ist,ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst,jen=jen)
-    sp.call(["./wgrib2", outgrib, "-ijsmall_grib",istr,jstr,newgrib])    
-    sp.call(["./wgrib2", outzeros, "-ijsmall_grib",istr,jstr,newzeros])
+    sp.call(["./wgrib2", outgrib, "-ijsmall_grib",istr,jstr,newgrib], 
+             stdout=logfile)   
+    sp.call(["./wgrib2", outzeros, "-ijsmall_grib",istr,jstr,newzeros],
+             stdout=logfile)
     os.remove(outgrib)
     os.remove(outzeros)
     return newgrib, newzeros
 
-def makeCDF(OPERdir, ymd, fileextra, outgrib, outzeros):
+def makeCDF(OPERdir, ymd, fileextra, outgrib, outzeros, logfile):
     '''convert the grid files to netcdf (classic) files'''
     outnetcdf = os.path.join(OPERdir, 
             'ops{fileextra}_{ymd}.nc'.format(fileextra=fileextra, ymd=ymd))
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
-    print outgrib, outzeros
-    sp.call(["./wgrib2", outgrib, "-netcdf", outnetcdf])
-    sp.call(["./wgrib2", outzeros, "-netcdf", out0netcdf])
+    sp.call(["./wgrib2", outgrib, "-netcdf", outnetcdf], stdout=logfile)
+    sp.call(["./wgrib2", outzeros, "-netcdf", out0netcdf], stdout=logfile)
     os.remove(outgrib)
     os.remove(outzeros)
     return outnetcdf,out0netcdf
 
-def processCDF(outnetcdf, out0netcdf):
+def processCDF(outnetcdf, out0netcdf, ymd):
     '''calculate instantaneous values for accumulated variables'''
     data = nc.Dataset(outnetcdf, 'r+')
     data0 = nc.Dataset(out0netcdf, 'r')
@@ -188,6 +205,7 @@ def processCDF(outnetcdf, out0netcdf):
         acc_values['inst'][var] = np.empty_like(acc_values['acc'][var])
     plt.subplot(2,3,1)
     plt.plot(acc_values['acc']['APCP_surface'][:,200,200],'o-')
+    plt.title(ymd)
 
     for var in acc_vars:
         acc_values['inst'][var][0] = (acc_values['acc'][var][0] - acc_values['zero'][var][0])/3600.
@@ -210,7 +228,6 @@ def processCDF(outnetcdf, out0netcdf):
 def renameCDF(outnetcdf):
     '''rename variables to match NEMO naming conventions'''
     data = nc.Dataset(outnetcdf, 'r+')
-    nc_tools.show_variables(data)
     data.renameDimension('time','time_counter')
     data.renameVariable('latitude','nav_lat')
     data.renameVariable('longitude','nav_lon')
@@ -223,10 +240,11 @@ def renameCDF(outnetcdf):
     data.renameVariable('TMP_2maboveground','tair')
     data.renameVariable('PRMSL_meansealevel','atmpres')
     data.renameVariable('APCP_surface','precip')
-    nc_tools.show_variables(data)
     Temp = data.variables['tair'][:]
     plt.subplot(2,3,3)
     plt.pcolormesh(Temp[0])
+    plt.xlim([0,Temp.shape[2]])
+    plt.ylim([0,Temp.shape[1]])
     plt.subplot(2,3,4)
     precip = data.variables['precip'][:]
     plt.plot(precip[:,200,200])
