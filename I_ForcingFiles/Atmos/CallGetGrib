@@ -1,11 +1,21 @@
 python -m GetGrib
 python -m gribTnetcdf
 
+# deflate file
 cd ../../../Operational
-Year=`date +%y`
-Month=`date +%m`
-Day=`date +%d`
-netfile=ops_y20$Year'm'$Month'd'$Day'.nc'
+Year=$(date +%y)
+Month=$(date +%m)
+Day=$(date +%d)
+netfile=ops_y20${Year}m${Month}d${Day}.nc
 echo $netfile
 ncks -4 -L4 -O $netfile $netfile
-cd ../Tools/I_ForcingFiles/Atmos
+
+# copy weather file to orcinus
+scp -p $netfile sallen@orcinus:MEOPAR/GEM2.5/ops/NEMO-atmos/
+
+# copy river file to orcinus
+cd ../Tools/I_ForcingFiles/Rivers
+Daym1=$(($Day-1))
+riverfile=RFraserCElse_y20${Year}m${Month}d${Daym1}.nc
+scp -p $riverfile sallen@orcinus:MEOPAR/rivers/
+cd ../Atmos
