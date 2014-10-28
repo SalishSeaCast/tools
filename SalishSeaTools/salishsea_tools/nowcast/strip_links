@@ -1,5 +1,0 @@
-cd ../../../../rivers
-find RFraser*.nc -type l -exec rm {} \;
-cd ../GEM2.5/ops/NEMO-atmos
-find ops*.nc -type l -exec rm {} \;
-cd ../../../SalishSeaTools/salishsea_tools/nowcast
