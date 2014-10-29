@@ -49,6 +49,11 @@ Descriptions below the links are from the first cell of the notebooks
     
     Notebook to prepare simple OBC files from Thomson, Mihaly & Kulikov, 2007 (JGR)  
 
+* ##[Reading Neah Bay Surge website.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Reading Neah Bay Surge website.ipynb)  
+    
+    This notebook reads storm surge data from a NOAA website:  
+    http://www.nws.noaa.gov/mdl/etsurge/index.php?page=stn&region=wc&datum=mllw&list=&map=0-48&type=both&stn=waneah  
+
 
 ##License
 
