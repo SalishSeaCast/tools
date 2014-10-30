@@ -112,7 +112,7 @@ def run_description(run_id, today, prev_itend, forcing_home=FORCING_HOME):
         os.path.abspath('namelist.time'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.domain'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.surface.nowcast'),
-        os.path.abspath('../SS-run-sets/SalishSea/namelist.lateral'),
+        os.path.abspath('../SS-run-sets/SalishSea/namelist.lateral.nowcast'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.bottom'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.tracers'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.dynamics'),
