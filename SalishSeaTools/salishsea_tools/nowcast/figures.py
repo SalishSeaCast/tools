@@ -17,3 +17,5 @@
 figures for analysis and model evaluation of daily nowcast/forecast runs.
 """
 from __future__ import division
+
+import matplotlib.pyplot as plt
