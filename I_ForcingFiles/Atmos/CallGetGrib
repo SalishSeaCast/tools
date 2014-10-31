@@ -3,10 +3,10 @@ python -m gribTnetcdf
 
 # deflate file
 cd ../../../Operational
-Year=$(date +%y)
+Year=$(date +%Y)
 Month=$(date +%m)
 Day=$(date +%d)
-netfile=ops_y20${Year}m${Month}d${Day}.nc
+netfile=ops_y${Year}m${Month}d${Day}.nc
 echo $netfile
 ncks -4 -L4 -O $netfile $netfile
 
@@ -15,7 +15,25 @@ scp -p $netfile sallen@orcinus:MEOPAR/GEM2.5/ops/NEMO-atmos/
 
 # copy river file to orcinus
 cd ../Tools/I_ForcingFiles/Rivers
-Daym1=$(($Day-1))
-riverfile=RFraserCElse_y20${Year}m${Month}d${Daym1}.nc
+# Yesterday
+Yearm1=$(date +%Y -d yesterday)
+Monthm1=$(date +%m -d yesterday)
+Daym1=$(date +%d -d yesterday)
+riverfile=RFraserCElse_y${Yearm1}m${Monthm1}d${Daym1}.nc
 scp -p $riverfile sallen@orcinus:MEOPAR/rivers/
-cd ../Atmos
+
+#
+cd /ocean/nsoontie/MEOPAR/sshNeahBay/obs
+sshfile=ssh_y${Yearm1}m${Monthm1}d${Daym1}.nc
+scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/obs/
+cd ../fcst
+sshfile=ssh_y${Year}m${Month}d${Day}.nc
+scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/fcst/
+# Tomorrow
+Yearp1=$(date +%Y -d tomorrow)
+Monthp1=$(date +%m -d tomorrow)
+Dayp1=$(date +%d -d tomorrow)
+sshfile=ssh_y${Yearp1}m${Monthp1}d${Dayp1}.nc
+scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/fcst/
+
+cd /ocean/sallen/allen/research/MEOPAR/Tools/I_ForcingFiles/Atmos
