@@ -2,9 +2,10 @@
 from __future__ import division
 import arrow
 import os
+import sys
 import urllib
 
-def GetGrib():
+def GetGrib(forecast):
     '''Script to download GRIB2 data from EC webpage'''
 
     # variables we need
@@ -18,32 +19,35 @@ def GetGrib():
     dirlead = "../../../GRIB/"
 
     # things we may, in the future, want to read as arguments
-    forecasts = ('06','18')
     utc = arrow.utcnow()
     now = utc.to('Canada/Pacific')
     date = now.format('YYYYMMDD')
     print date
 
     os.chdir(dirlead)
-    os.mkdir(date)
+    if forecast == '06':
+        os.mkdir(date)
     os.chdir(date)
-    for forecast in forecasts:
-        os.mkdir(forecast)
-        os.chdir(forecast)
-        for fhour in range(0,42+1):
-            sfhour = '{:0=3}'.format(fhour)
-            os.mkdir(sfhour)
-            os.chdir(sfhour)
-            for v in variablenames:
-                filename = filename_template.format(variable=v,date=date,forecast=forecast,hour=sfhour)
-                fileURL = url_template.format(forecast=forecast,hour=sfhour)+filename
-                urllib.urlretrieve(fileURL, filename)
-            os.chdir('..')
+    os.mkdir(forecast)
+    os.chdir(forecast)
+    for fhour in range(0,42+1):
+        sfhour = '{:0=3}'.format(fhour)
+        os.mkdir(sfhour)
+        os.chdir(sfhour)
+        for v in variablenames:
+            filename = filename_template.format(variable=v,date=date,forecast=forecast,hour=sfhour)
+            fileURL = url_template.format(forecast=forecast,hour=sfhour)+filename
+            urllib.urlretrieve(fileURL, filename)
         os.chdir('..')
+    os.chdir('..')
+
+
+def main():
+    """Command-line interface.
+    """
+    script = sys.argv[0]
+    forecast = sys.argv[1]
+    GetGrib(forecast)
 
 if __name__ == '__main__':
-    GetGrib()
-
-
-
-    
+    main()
