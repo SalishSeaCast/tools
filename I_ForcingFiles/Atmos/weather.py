@@ -215,7 +215,7 @@ def compile_model_output_MF(i,j,files,model):
 
 def gather_observed_winds(location, startdate, numdays):
     """Uses the get_EC_observations function to return the winds and temperature at a location over a certain
-    timefame, beginning on startdate and running backward fro numdays.
+    timefame, beginning on startdate and running backward from numdays.
     returns wind speed, wind direction, temperature and times, latitude and longitude. """
     dates = [ startdate - datetime.timedelta(days=num) for num in range(-1,numdays+1)]
     dates.sort();
