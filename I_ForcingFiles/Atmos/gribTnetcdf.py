@@ -21,13 +21,12 @@ def gribTnetcdf():
     OPERdir = '../../../Operational/'
     utc = arrow.utcnow()
     now = utc.to('Canada/Pacific')
-    year = now.year
-    month = now.month
-    day = now.day
+    year = now.year; month = now.month; day = now.day
+    yesterday = now.replace(days=-1)
+    yearm1 = yesterday.year; monthm1 = yesterday.month; daym1 = yesterday.day
     size = 'watershed'
     ymd = 'y{year}m{month}d{day}'.format(year=year,month=month,day=day)
-    p1 = '{year}{month}{daym1:0=2}/18/'.format(year=year,month=month,
-                                                   daym1=int(day)-1)
+    p1 = '{year}{month}{day}/18/'.format(year=yearm1,month=monthm1,day=daym1)
     p2 = '{year}{month}{day}/06/'.format(year=year,month=month,day=day)
     p3 = '{year}{month}{day}/18/'.format(year=year,month=month,day=day)
     HoursWeNeed = {
@@ -262,3 +261,4 @@ def renameCDF(outnetcdf):
 
 if __name__ == '__main__':
     gribTnetcdf()
+
