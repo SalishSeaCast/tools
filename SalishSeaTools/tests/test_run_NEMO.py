@@ -23,10 +23,6 @@ from datetime import (
 )
 import os
 
-from mock import (
-    mock_open,
-    patch,
-)
 import pytest
 
 
@@ -34,23 +30,6 @@ import pytest
 def run_NEMO_module():
     from salishsea_tools.nowcast import run_NEMO
     return run_NEMO
-
-
-def test_update_time_namelist_return_value(run_NEMO_module):
-    today = date(2014, 10, 29)
-    namelist = """
-        nn_it000 = 423361
-        nn_itend = 432000
-        nn_date0 = 20140910
-    """
-    p = patch(
-        'salishsea_tools.nowcast.run_NEMO.open',
-        mock_open(read_data=namelist),
-        create=True,
-    )
-    with p:
-        prev_itend = run_NEMO_module.update_time_namelist(today)
-    assert prev_itend == 423361
 
 
 def test_get_namelist_value(run_NEMO_module):
