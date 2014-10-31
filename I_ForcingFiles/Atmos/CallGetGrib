@@ -1,6 +1,5 @@
 python -m GetGrib
 python -m gribTnetcdf
-python -m ../OBC/getNBssh
 
 # deflate file
 cd ../../../Operational
