@@ -63,8 +63,9 @@ def update_time_namelist(today, timesteps_per_day=TIMESTEPS_PER_DAY):
     date0_line, date0 = get_namelist_value('nn_date0', lines)
     # Prevent namelist from being updated past today
     next_itend = int(prev_itend) + timesteps_per_day
-    y0, m0, d0 = map(int, [date0[:4], date0[4:6], date0[-2:]])
-    if next_itend >= int((today - date(y0, m0, d0)).total_seconds() / 10):
+    date0 = date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
+    one_day = timedelta(days=1)
+    if next_itend / timesteps_per_day > (today - date0 + one_day).days:
         return int(prev_it000) - 1
     # Increment 1st and last time steps to values for today
     lines[it000_line] = lines[it000_line].replace(
