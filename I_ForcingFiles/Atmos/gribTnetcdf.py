@@ -25,10 +25,11 @@ def gribTnetcdf():
     yesterday = now.replace(days=-1)
     yearm1 = yesterday.year; monthm1 = yesterday.month; daym1 = yesterday.day
     size = 'watershed'
-    ymd = 'y{year}m{month}d{day}'.format(year=year,month=month,day=day)
-    p1 = '{year}{month}{day}/18/'.format(year=yearm1,month=monthm1,day=daym1)
-    p2 = '{year}{month}{day}/06/'.format(year=year,month=month,day=day)
-    p3 = '{year}{month}{day}/18/'.format(year=year,month=month,day=day)
+    ymd = 'y{year}m{month:0=2}d{day:0=2}'.format(year=year,month=month,day=day)
+    p1 = '{year}{month:0=2}{day:0=2}/18/'.format(year=yearm1,month=monthm1,day=daym1)
+    p2 = '{year}{month:0=2}{day:0=2}/06/'.format(year=year,month=month,day=day)
+    p3 = '{year}{month:0=2}{day:0=2}/18/'.format(year=year,month=month,day=day)
+    print p1, p2, p3
     HoursWeNeed = {
             'part one':  (p1, 24-18-1, 24+6-18),
             'part two':  (p2, 7-6, 18-6),
