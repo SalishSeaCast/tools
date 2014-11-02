@@ -1,16 +1,9 @@
-python -m GetGrib 06
-python -m GetGrib 18
-python -m gribTnetcdf
-
-# deflate file
-cd ../../../Operational
 Year=$(date +%Y)
 Month=$(date +%m)
 Day=$(date +%d)
 netfile=ops_y${Year}m${Month}d${Day}.nc
-echo $netfile
-ncks -4 -L4 -O $netfile $netfile
 
+cd /ocean/sallen/allen/research/MEOPAR/Operational
 # copy weather file to orcinus
 scp -p $netfile sallen@orcinus:MEOPAR/GEM2.5/ops/NEMO-atmos/
 
@@ -36,5 +29,3 @@ Monthp1=$(date +%m -d tomorrow)
 Dayp1=$(date +%d -d tomorrow)
 sshfile=ssh_y${Yearp1}m${Monthp1}d${Dayp1}.nc
 scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/fcst/
-
-cd /ocean/sallen/allen/research/MEOPAR/Tools/I_ForcingFiles/Atmos
