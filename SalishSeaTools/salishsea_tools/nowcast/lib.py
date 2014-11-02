@@ -16,6 +16,8 @@
 """Salish Sea NEMO nowcast library functions for use by manager and workers.
 """
 import logging
+import signal
+import sys
 
 import yaml
 
@@ -59,3 +61,38 @@ def configure_logging(config, logger):
         datefmt=config['logging']['datetime_format'])
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+def install_signal_handlers(logger, context):
+    """Install handlers to cleanly deal with interrupt and terminate signals.
+
+    This function assumes that the logger and context instances
+    have been created in the module from which the function is called.
+    That is typically done with a module-level commands like::
+
+      logger = logging.getLogger('weather_download')
+
+      context = zmq.Context()
+
+    where `weather_download` is replaced with the name of the module.
+
+    :arg logger: Logger instance.
+    :type logger: :obj:`logging.Logger` instance
+
+    :arg context: ZeroMQ context instance.
+    :type context: :obj:`zmq.Context` instance
+    """
+    def sigint_handler(signal, frame):
+        logger.info(
+            'interrupt signal (SIGINT or Ctrl-C) received; shutting down')
+        context.destroy()
+        sys.exit(0)
+
+    def sigterm_handler(signal, frame):
+        logger.info(
+            'termination signal (SIGTERM) received; shutting down')
+        context.destroy()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, sigint_handler)
+    signal.signal(signal.SIGTERM, sigterm_handler)

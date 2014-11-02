@@ -17,7 +17,6 @@
 """
 import logging
 import os
-import signal
 import sys
 
 import zmq
@@ -36,28 +35,13 @@ def main(args):
     lib.configure_logging(config, logger)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {}'.format(config_file))
-    signal.signal(signal.SIGINT, sigint_handler)
-    signal.signal(signal.SIGTERM, sigterm_handler)
+    lib.install_signal_handlers(logger, context)
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
         message = socket.recv()
         logger.info('REQ:{}'.format(message))
         reply = parse_message(message)
         socket.send(reply)
-
-
-def sigint_handler(signal, frame):
-    logger.info(
-        'interrupt signal (SIGINT or Ctrl-C) received; shutting down')
-    context.destroy()
-    sys.exit(0)
-
-
-def sigterm_handler(signal, frame):
-    logger.info(
-        'termination signal (SIGTERM) received; shutting down')
-    context.destroy()
-    sys.exit(0)
 
 
 def init_req_rep(port, context):
