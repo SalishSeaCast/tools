@@ -1,0 +1,8 @@
+# Example configuration file for Salish Sea NEMO model nowcast system
+
+ports:
+  req_rep: 5555
+
+rivers:
+  # River name: wateroffice.ec.gc.ca station number
+  Fraser: 08MF005
