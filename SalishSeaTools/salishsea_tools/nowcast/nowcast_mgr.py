@@ -20,8 +20,9 @@ import os
 import signal
 import sys
 
-import yaml
 import zmq
+
+from salishsea_tools.nowcast import lib
 
 
 logger = logging.getLogger('nowcast_mgr')
@@ -31,7 +32,7 @@ context = zmq.Context()
 
 def main(args):
     config_file = args[0]
-    config = load_config(config_file)
+    config = lib.load_config(config_file)
     configure_logging(config, logger)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {}'.format(config_file))
@@ -55,12 +56,6 @@ def sigterm_handler(signal, frame):
     logger.info('termination signal (SIGTERM) received; shutting down')
     context.destroy()
     sys.exit(0)
-
-
-def load_config(config_file):
-    with open(config_file, 'rt') as f:
-        config = yaml.load(f)
-    return config
 
 
 def configure_logging(config, logger_name):
