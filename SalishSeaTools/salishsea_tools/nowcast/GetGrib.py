@@ -16,7 +16,7 @@ def GetGrib(forecast):
     # template for URL
     url_template = 'http://dd.weather.gc.ca/model_hrdps/west/grib2/{forecast}/{hour}/'
     # head of destination directory (your MEOPAR/GRIB)
-    dirlead = "../../../GRIB/"
+    dirlead = "/ocean/sallen/allen/research/MEOPAR/GRIB/"
 
     # things we may, in the future, want to read as arguments
     utc = arrow.utcnow()

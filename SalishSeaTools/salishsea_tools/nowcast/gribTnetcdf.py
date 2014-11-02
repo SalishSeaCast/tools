@@ -17,8 +17,8 @@ def gribTnetcdf():
        Calculate instantaneous fluxes
        and rename to NEMO names'''
 
-    GRIBdir = '../../../GRIB/'
-    OPERdir = '../../../Operational/'
+    GRIBdir = '/ocean/sallen/allen/research/MEOPAR/GRIB/'
+    OPERdir = '/ocean/sallen/allen/research/MEOPAR/Operational/'
     utc = arrow.utcnow()
     now = utc.to('Canada/Pacific')
     year = now.year; month = now.month; day = now.day
