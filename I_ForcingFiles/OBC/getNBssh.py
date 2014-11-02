@@ -176,8 +176,17 @@ def retrieve_surge(day,dates, data):
         obs=data.obs[data.date==daystr].item()
         fcst = data.fcst[data.date==daystr].item()
         if obs == 99.90:
-            surge.append(feet_to_metres(fcst-tide))
-            forecast_flag=1
+            #fall daylight savings
+            if fcst==99.90:
+                #if surge is empty, just append 0
+                if not surge:
+                    surge.append(0)
+                else:  
+                #otherwise append previous value 
+                    surge.append(surge[-1])
+            else:
+                surge.append(feet_to_metres(fcst-tide))
+                forecast_flag=1
         else:
             surge.append(feet_to_metres(obs-tide))
     
