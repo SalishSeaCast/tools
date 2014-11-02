@@ -15,6 +15,8 @@
 
 """Salish Sea NEMO nowcast library functions for use by manager and workers.
 """
+import logging
+
 import yaml
 
 
@@ -30,3 +32,30 @@ def load_config(config_file):
     with open(config_file, 'rt') as f:
         config = yaml.load(f)
     return config
+
+
+def configure_logging(config, logger):
+    """Set up logging configuration.
+
+    This function assumes that the logger instance has been created
+    in the module from which the function is called.
+    That is typically done with a module-level command like::
+
+      logger = logging.getLogger('weather_download')
+
+    where `weather_download` is replaced with the name of the module.
+
+    :arg config: Configuration data structure.
+    :type config: dict
+
+    :arg logger: Logger instance to be configured.
+    :type logger: :obj:`logging.Logger` instance
+    """
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        config['logging']['message_format'],
+        datefmt=config['logging']['datetime_format'])
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)

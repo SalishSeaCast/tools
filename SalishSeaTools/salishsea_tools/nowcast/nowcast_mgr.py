@@ -33,7 +33,7 @@ context = zmq.Context()
 def main(args):
     config_file = args[0]
     config = lib.load_config(config_file)
-    configure_logging(config, logger)
+    lib.configure_logging(config, logger)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {}'.format(config_file))
     signal.signal(signal.SIGINT, sigint_handler)
@@ -47,26 +47,17 @@ def main(args):
 
 
 def sigint_handler(signal, frame):
-    logger.info('interrupt signal (SIGINT for Ctrl-C) received; shutting down')
+    logger.info(
+        'interrupt signal (SIGINT or Ctrl-C) received; shutting down')
     context.destroy()
     sys.exit(0)
 
 
 def sigterm_handler(signal, frame):
-    logger.info('termination signal (SIGTERM) received; shutting down')
+    logger.info(
+        'termination signal (SIGTERM) received; shutting down')
     context.destroy()
     sys.exit(0)
-
-
-def configure_logging(config, logger_name):
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        '%(asctime)s %(levelname)s [%(name)s] %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
 
 def init_req_rep(port, context):
