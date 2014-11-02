@@ -17,6 +17,7 @@
 """
 import logging
 import os
+import signal
 import sys
 
 import yaml
@@ -34,17 +35,26 @@ def main(args):
     configure_logging(config, logger)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {}'.format(config_file))
+    signal.signal(signal.SIGINT, sigint_handler)
+    signal.signal(signal.SIGTERM, sigterm_handler)
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
-        try:
-            message = socket.recv()
-        except KeyboardInterrupt:
-            logger.info('keyboard interrupt received; shutting down')
-            context.destroy()
-            break
+        message = socket.recv()
         logger.info('REQ:{}'.format(message))
         reply = parse_message(message)
         socket.send(reply)
+
+
+def sigint_handler(signal, frame):
+    logger.info('interrupt signal (SIGINT for Ctrl-C) received; shutting down')
+    context.destroy()
+    sys.exit(0)
+
+
+def sigterm_handler(signal, frame):
+    logger.info('termination signal (SIGTERM) received; shutting down')
+    context.destroy()
+    sys.exit(0)
 
 
 def load_config(config_file):
