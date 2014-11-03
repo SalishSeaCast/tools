@@ -20,6 +20,7 @@ import signal
 import sys
 
 import yaml
+import zmq
 
 
 def load_config(config_file):
@@ -77,10 +78,10 @@ def install_signal_handlers(logger, context):
     where `weather_download` is replaced with the name of the module.
 
     :arg logger: Logger instance.
-    :type logger: :obj:`logging.Logger` instance
+    :type logger: :class:`logging.Logger` instance
 
     :arg context: ZeroMQ context instance.
-    :type context: :obj:`zmq.Context` instance
+    :type context: :class:`zmq.Context` instance
     """
     def sigint_handler(signal, frame):
         logger.info(
@@ -96,3 +97,24 @@ def install_signal_handlers(logger, context):
 
     signal.signal(signal.SIGINT, sigint_handler)
     signal.signal(signal.SIGTERM, sigterm_handler)
+
+
+def init_zmq_req_rep_worker(context, config, logger):
+    """Initialize a ZeroMQ request/reply (REQ/RPE) worker.
+
+    :arg context: ZeroMQ context instance.
+    :type context: :class:`zmq.Context` instance
+
+    :arg config: Configuration data structure.
+    :type config: dict
+
+    :arg logger: Logger instance.
+    :type logger: :class:`logging.Logger` instance
+
+    :returns: ZeroMQ socket for communication with nowcast manager process.
+    """
+    socket = context.socket(zmq.REP)
+    port = config['ports']['req_rep']
+    socket.connect('tcp://localhost:{}'.format(port))
+    logger.info('ready to send REQ messages on port {}'.format(port))
+    return socket
