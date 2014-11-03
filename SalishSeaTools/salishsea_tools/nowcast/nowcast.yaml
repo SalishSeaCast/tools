@@ -7,6 +7,10 @@ rivers:
   # River name: wateroffice.ec.gc.ca station number
   Fraser: 08MF005
 
+weather:
+  # Destination directory for downloaded GEM 2.5km operational model GRIB2 files
+  GRIB_dir: /ocean/sallen/allen/research/MEOPAR/GRIB/
+
 logging:
   # Format strings must be quoted to protect % characters
   message_format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
