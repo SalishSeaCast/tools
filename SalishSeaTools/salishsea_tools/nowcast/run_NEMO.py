@@ -93,7 +93,7 @@ def run_description(run_id, today, prev_itend, forcing_home=FORCING_HOME):
         'SalishSea_{:08d}_restart.nc'.format(prev_itend),
     )
     run_desc = salishsea_cmd.api.run_description(
-        walltime='1:00:00',
+        walltime='2:30:00',
         NEMO_code=os.path.abspath('../NEMO-code/'),
         forcing=os.path.abspath('../NEMO-forcing/'),
         runs_dir=os.path.abspath('../SalishSea/'),
@@ -117,7 +117,7 @@ def run_description(run_id, today, prev_itend, forcing_home=FORCING_HOME):
         os.path.abspath('../SS-run-sets/SalishSea/namelist.bottom'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.tracers'),
         os.path.abspath('../SS-run-sets/SalishSea/namelist.dynamics'),
-        os.path.abspath('../SS-run-sets/SalishSea/namelist.compute.12x27'),
+        os.path.abspath('../SS-run-sets/SalishSea/namelist.compute.6x14'),
     ]
     return run_desc
 
