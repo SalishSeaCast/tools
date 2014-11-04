@@ -49,6 +49,7 @@ URL_TEMPLATE = (
 FILENAME_TEMPLATE = (
     'CMC_hrdps_west_{variable}ps2.5km_{date}{forecast}_P{hour}-00.grib2'
 )
+FORECAST_DURATION = 42  # hours
 
 
 def main(args):
@@ -58,11 +59,16 @@ def main(args):
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {}'.format(config_file))
     lib.install_signal_handlers(logger, context)
-    socket = lib.init_zmq_worker(context, config, logger)
+    socket = lib.init_zmq_req_rep_worker(context, config, logger)
     forecast = args[1]
-    get_grib(forecast, config)
-    context.destroy()
-    logger.info()
+    try:
+        get_grib(forecast, config)
+        exit_msg = 'weather forecast downloads complete'
+    except OSError:
+        exit_msg = 'weather forecast downloads failed'
+    finally:
+        context.destroy()
+        logger.info('{}; shutting down'.format(exit_msg))
 
 
 def get_grib(forecast, config):
@@ -72,23 +78,48 @@ def get_grib(forecast, config):
     logger.info(
         'downloading {forecast} forecast GRIB2 files for {date}'
         .format(forecast=forecast, date=date))
+
     dest_dir_root = config['weather']['GRIB_dir']
     os.chdir(dest_dir_root)
-    if forecast == '06':
+    try:
         os.mkdir(date)
+    except OSError:
+        pass
     os.chdir(date)
-    os.mkdir(forecast)
+    try:
+        os.mkdir(forecast)
+    except OSError:
+        forecast_path = os.path.join(dest_dir_root, date, forecast)
+        msg = (
+            '{} directory already exists; not overwriting'
+            .format(forecast_path))
+        logger.error(msg)
+        raise OSError(msg)
     os.chdir(forecast)
-    for fhour in range(0, 42+1):
+
+    for fhour in range(0, FORECAST_DURATION+1):
         sfhour = '{:0=3}'.format(fhour)
-        os.mkdir(sfhour)
+        try:
+            os.mkdir(sfhour)
+        except OSError:
+            sfhour_path = os.path.join(dest_dir_root, date, forecast, sfhour)
+            msg = (
+                '{} directory already exists; not overwriting'
+                .format(sfhour_path))
+            logger.error(msg)
+            raise OSError(msg)
         os.chdir(sfhour)
+
         for v in GRIB_VARIABLES:
             filename = FILENAME_TEMPLATE.format(
                 variable=v, date=date, forecast=forecast, hour=sfhour)
             fileURL = URL_TEMPLATE.format(
                 forecast=forecast, hour=sfhour, filename=filename)
-            urllib.urlretrieve(fileURL, filename)
+            _, http_msg = urllib.urlretrieve(fileURL, filename)
+            logger.info(
+                'downloaded {bytes} bytes from {fileURL}'.format(
+                    bytes=http_msg.getheader('Content-Length'),
+                    fileURL=fileURL))
         os.chdir('..')
     os.chdir('..')
 
