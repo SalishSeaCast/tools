@@ -84,12 +84,12 @@ def get_grib(forecast, config):
     dest_dir_root = config['weather']['GRIB_dir']
     os.chdir(dest_dir_root)
     try:
-        os.mkdir(date)
+        os.mkdir(date, 509)  # octal 775 = 'rwxrwxr-x'
     except OSError:
         pass
     os.chdir(date)
     try:
-        os.mkdir(forecast)
+        os.mkdir(forecast, 509)  # octal 775 = 'rwxrwxr-x'
     except OSError:
         forecast_path = os.path.join(dest_dir_root, date, forecast)
         msg = (
@@ -102,7 +102,7 @@ def get_grib(forecast, config):
     for fhour in range(0, FORECAST_DURATION+1):
         sfhour = '{:0=3}'.format(fhour)
         try:
-            os.mkdir(sfhour)
+            os.mkdir(sfhour, 509)  # octal 775 = 'rwxrwxr-x'
         except OSError:
             sfhour_path = os.path.join(dest_dir_root, date, forecast, sfhour)
             msg = (
@@ -122,6 +122,7 @@ def get_grib(forecast, config):
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=http_msg.getheader('Content-Length'),
                     fileURL=fileURL))
+            os.chmod(filename, 436)  # octial 664 = 'rw-rw-r--'
         os.chdir('..')
     os.chdir('..')
 
