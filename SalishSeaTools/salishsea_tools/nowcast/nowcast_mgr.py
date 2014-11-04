@@ -24,7 +24,9 @@ import zmq
 from salishsea_tools.nowcast import lib
 
 
-logger = logging.getLogger('nowcast_mgr')
+mgr_name = lib.get_module_name()
+
+logger = logging.getLogger(mgr_name)
 
 context = zmq.Context()
 

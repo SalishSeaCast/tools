@@ -26,7 +26,9 @@ import zmq
 from salishsea_tools.nowcast import lib
 
 
-logger = logging.getLogger('weather_download')
+worker_name = lib.get_module_name()
+
+logger = logging.getLogger(worker_name)
 
 context = zmq.Context()
 

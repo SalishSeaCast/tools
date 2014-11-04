@@ -16,11 +16,22 @@
 """Salish Sea NEMO nowcast library functions for use by manager and workers.
 """
 import logging
+import os
 import signal
 import sys
 
 import yaml
 import zmq
+
+
+def get_module_name():
+    """Return the name of the module with the path and the extension stripped.
+
+    Example: get_module_name('foo/bar/baz.py') returns 'baz'
+
+    :returns: The name portion of the module filename.
+    """
+    return os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
 
 def load_config(config_file):
