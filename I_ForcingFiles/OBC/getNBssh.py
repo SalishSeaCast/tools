@@ -22,7 +22,7 @@ def getNBssh():
    fB.close()
 
    YEAR=2014; #year of data. Need to change this when we hit 2015.
-   SAVE_PATH = '/ocean/nsoontie/MEOPAR/sshNeahBay/test/'
+   SAVE_PATH = '/ocean/nsoontie/MEOPAR/sshNeahBay/'
 
    #load surge data
    textfile = read_website(SAVE_PATH)
