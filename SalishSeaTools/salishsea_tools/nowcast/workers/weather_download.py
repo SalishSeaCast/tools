@@ -15,9 +15,9 @@
 
 """Salish Sea NEMO nowcast weather model dataset download worker.
 """
+import argparse
 import logging
 import os
-import sys
 import urllib
 
 import arrow
@@ -54,8 +54,16 @@ FILENAME_TEMPLATE = (
 FORECAST_DURATION = 42  # hours
 
 
-def main(args):
-    parser = lib.basic_arg_parser()
+def main():
+    base_parser = lib.basic_arg_parser(add_help=False)
+    parser = configure_argparser(
+        description='''
+        Salish Sea NEMO nowcast weather model dataset download worker.
+        Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km
+        operational model forecast.
+        ''',
+        parents=[base_parser],
+    )
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
@@ -63,15 +71,23 @@ def main(args):
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
-    forecast = args[1]
     try:
-        get_grib(forecast, config)
+        get_grib(parsed_args.forecast, config)
         exit_msg = 'weather forecast downloads complete'
     except OSError:
         exit_msg = 'weather forecast downloads failed'
     finally:
         context.destroy()
         logger.info('{}; shutting down'.format(exit_msg))
+
+
+def configure_argparser(description, parents):
+    parser = argparse.ArgumentParser(description=description, parents=parents)
+    parser.add_argument(
+        'forecast', choices=set(('06', '18')),
+        help='Name of forecast to download files from.',
+    )
+    return parser
 
 
 def get_grib(forecast, config):
@@ -129,4 +145,4 @@ def get_grib(forecast, config):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
