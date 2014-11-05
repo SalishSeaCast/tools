@@ -32,6 +32,8 @@ context = zmq.Context()
 
 
 def main(args):
+    parser = lib.basic_arg_parser()
+    parsed_args = parser.parse_args()
     config_file = args[0]
     config = lib.load_config(config_file)
     lib.configure_logging(config, logger)

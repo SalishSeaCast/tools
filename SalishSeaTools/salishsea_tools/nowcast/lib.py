@@ -15,6 +15,7 @@
 
 """Salish Sea NEMO nowcast library functions for use by manager and workers.
 """
+import argparse
 import logging
 import os
 import signal
@@ -108,6 +109,25 @@ def install_signal_handlers(logger, context):
 
     signal.signal(signal.SIGINT, sigint_handler)
     signal.signal(signal.SIGTERM, sigterm_handler)
+
+
+def basic_arg_parser(description=None, add_help=True):
+    """
+    """
+    parser = argparse.ArgumentParser(
+        description=description, add_help=add_help)
+    defaults = {
+        'config_file': './nowcast.yaml',
+    }
+    parser.set_defaults(**defaults)
+    parser.add_argument(
+        'config_file',
+        help='''
+        foo bar;
+        defaults to {}
+        '''.format(parser.get_default('config_file')),
+    )
+    return parser
 
 
 def init_zmq_req_rep_worker(context, config, logger):
