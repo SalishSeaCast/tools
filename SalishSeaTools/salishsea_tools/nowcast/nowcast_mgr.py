@@ -34,11 +34,10 @@ context = zmq.Context()
 def main(args):
     parser = lib.basic_arg_parser()
     parsed_args = parser.parse_args()
-    config_file = args[0]
-    config = lib.load_config(config_file)
+    config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger)
     logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {}'.format(config_file))
+    logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
