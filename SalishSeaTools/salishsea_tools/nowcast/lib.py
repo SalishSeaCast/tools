@@ -35,12 +35,53 @@ def get_module_name():
     return os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
 
+def basic_arg_parser(description=None, add_help=True):
+    """Return a command-line argument parser w/ handling for always used args.
+
+    The returned parser provides help messages, and handles the
+    `config_file` argument, and the `--debug` option. It can be used as
+    the parser for a worker, or as a parent parser if the worker has
+    additional arguments and/or options.
+
+    :arg description: Brief description of what the worker does that
+                      will be displayed in help messages.
+    :type description: str
+
+    :arg add_help: Add a `-h/--help` option to the parser.
+                   Disable this if you are going to use the returned
+                   parser as a parent parser to facilitate adding more
+                   args/options.
+    :type add_help: boolean
+
+    :returns: :class:`argparse.ArgumentParser` instance
+    """
+    parser = argparse.ArgumentParser(
+        description=description, add_help=add_help)
+    parser.add_argument(
+        'config_file',
+        default='./nowcast.yaml',
+        help='''
+        Path/name of YAML configuration file for Salish Sea NEMO nowcast;
+        defaults to %(default)s
+        '''
+    )
+    parser.add_argument(
+        '--debug', action='store_true',
+        help='''
+        Send logging output to the console instead of the log file;
+        intended only for use when the worker is run in foreground
+        from the command-line
+        ''',
+    )
+    return parser
+
+
 def load_config(config_file):
     """Load the YAML config_file and return its contents as a dict.
 
     :arg config_file: Path/name of YAML configuration file for
                       Salish Sea NEMO nowcast.
-    :type str:
+    :type config_file: str
 
     :returns: config dict
     """
@@ -109,25 +150,6 @@ def install_signal_handlers(logger, context):
 
     signal.signal(signal.SIGINT, sigint_handler)
     signal.signal(signal.SIGTERM, sigterm_handler)
-
-
-def basic_arg_parser(description=None, add_help=True):
-    """
-    """
-    parser = argparse.ArgumentParser(
-        description=description, add_help=add_help)
-    defaults = {
-        'config_file': './nowcast.yaml',
-    }
-    parser.set_defaults(**defaults)
-    parser.add_argument(
-        'config_file',
-        help='''
-        foo bar;
-        defaults to {}
-        '''.format(parser.get_default('config_file')),
-    )
-    return parser
 
 
 def init_zmq_req_rep_worker(context, config, logger):
