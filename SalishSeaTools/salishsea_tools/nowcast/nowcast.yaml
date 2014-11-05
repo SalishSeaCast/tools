@@ -12,6 +12,7 @@ weather:
   GRIB_dir: /ocean/sallen/allen/research/MEOPAR/GRIB/
 
 logging:
+  log_file: /data/dlatorne/MEOPAR/nowcast/nowcast.log
   # Format strings must be quoted to protect % characters
   message_format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
   datetime_format: '%Y-%m-%d %H:%M:%S'

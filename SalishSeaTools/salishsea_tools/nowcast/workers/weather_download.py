@@ -58,7 +58,7 @@ def main(args):
     parser = lib.basic_arg_parser()
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
-    lib.configure_logging(config, logger)
+    lib.configure_logging(config, logger, parsed_args.debug)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
