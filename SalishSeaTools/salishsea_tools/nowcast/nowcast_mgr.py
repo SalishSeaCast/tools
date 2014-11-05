@@ -17,7 +17,6 @@
 """
 import logging
 import os
-import sys
 
 import zmq
 
@@ -31,7 +30,7 @@ logger = logging.getLogger(mgr_name)
 context = zmq.Context()
 
 
-def main(args):
+def main():
     parser = lib.basic_arg_parser()
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
@@ -62,4 +61,4 @@ def parse_message(message):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
