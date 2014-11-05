@@ -90,7 +90,7 @@ def load_config(config_file):
     return config
 
 
-def configure_logging(config, logger):
+def configure_logging(config, logger, debug):
     """Set up logging configuration.
 
     This function assumes that the logger instance has been created
@@ -106,9 +106,14 @@ def configure_logging(config, logger):
 
     :arg logger: Logger instance to be configured.
     :type logger: :obj:`logging.Logger` instance
+
+    :arg debug: Debug mode; log to console instead of to file.
+    :type debug: boolean
     """
     logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
+    handler = (
+        logging.StreamHandler() if debug
+        else logging.FileHandler(config['logging']['log_file']))
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         config['logging']['message_format'],
