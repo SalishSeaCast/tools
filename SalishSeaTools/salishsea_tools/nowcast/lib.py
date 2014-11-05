@@ -59,10 +59,8 @@ def basic_arg_parser(description=None, add_help=True):
         description=description, add_help=add_help)
     parser.add_argument(
         'config_file',
-        default='./nowcast.yaml',
         help='''
-        Path/name of YAML configuration file for Salish Sea NEMO nowcast;
-        defaults to %(default)s
+        Path/name of YAML configuration file for Salish Sea NEMO nowcast.
         '''
     )
     parser.add_argument(
@@ -70,7 +68,7 @@ def basic_arg_parser(description=None, add_help=True):
         help='''
         Send logging output to the console instead of the log file;
         intended only for use when the worker is run in foreground
-        from the command-line
+        from the command-line.
         ''',
     )
     return parser
