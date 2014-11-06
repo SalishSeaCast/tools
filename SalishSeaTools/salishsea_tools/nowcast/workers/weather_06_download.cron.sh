@@ -8,4 +8,4 @@
 PYTHON=/home/dlatorne/anaconda/bin/python
 NOWCAST=/data/dlatorne/MEOPAR/nowcast
 CONFIG=${NOWCAST}/nowcast.yaml
-${PYTHON} -m salishsea_toola.nowcast.workers.weather_download ${CONFIG} 06
+${PYTHON} -m salishsea_tools.nowcast.workers.weather_download ${CONFIG} 06
