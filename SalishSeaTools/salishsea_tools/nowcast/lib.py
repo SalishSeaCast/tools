@@ -174,5 +174,5 @@ def init_zmq_req_rep_worker(context, config, logger):
     socket = context.socket(zmq.REQ)
     port = config['ports']['req_rep']
     socket.connect('tcp://localhost:{}'.format(port))
-    logger.info('ready to send REQ messages on port {}'.format(port))
+    logger.info('connected to port {}'.format(port))
     return socket
