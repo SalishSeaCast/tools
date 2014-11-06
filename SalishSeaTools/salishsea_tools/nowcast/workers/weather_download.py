@@ -55,7 +55,7 @@ FORECAST_DURATION = 42  # hours
 
 
 def main():
-    base_parser = lib.basic_arg_parser(add_help=False)
+    base_parser = lib.basic_arg_parser(worker_name, add_help=False)
     parser = configure_argparser(
         description='''
         Salish Sea NEMO nowcast weather model dataset download worker.
