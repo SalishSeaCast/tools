@@ -176,3 +176,37 @@ def init_zmq_req_rep_worker(context, config, logger):
     socket.connect('tcp://localhost:{}'.format(port))
     logger.info('connected to port {}'.format(port))
     return socket
+
+
+def serialize_message(source, msg_type, payload=None):
+    """Transform message dict into byte-stream suitable for sending.
+
+    :arg source: Name of the worker or manager sending the message;
+                 typically :data:`worker_name`.
+    :arg source: str
+
+    :arg msg_type: Kind of message (used as parsing key).
+    :type msg_type: str
+
+    :arg payload: Content of message;
+                  must be serializable by YAML such that it can be
+                  deserialized by :func:`yaml.safe_load`.
+    :type payload: Python object
+
+    :returns: Message dict serialized using YAML.
+    """
+    message = {
+        'source': source,
+        'msg_type': msg_type,
+        'payload': payload,
+    }
+    return yaml.dump(message)
+
+
+def deserialize_message(message):
+    """Transform received message from byte-stream to dict.
+
+    :arg message: Message dict serialized using YAML.
+    :type message: bytes
+    """
+    return yaml.safe_load(message)
