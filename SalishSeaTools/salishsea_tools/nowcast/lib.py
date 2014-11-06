@@ -36,7 +36,7 @@ def get_module_name():
     return os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
 
-def basic_arg_parser(description=None, add_help=True):
+def basic_arg_parser(prog, description=None, add_help=True):
     """Return a command-line argument parser w/ handling for always used args.
 
     The returned parser provides help messages, and handles the
@@ -58,6 +58,7 @@ def basic_arg_parser(description=None, add_help=True):
     """
     parser = argparse.ArgumentParser(
         description=description, add_help=add_help)
+    parser.prog = 'python -m salishsea_tools.nowcast.workers.{}'.format(prog)
     parser.add_argument(
         'config_file',
         help='''
