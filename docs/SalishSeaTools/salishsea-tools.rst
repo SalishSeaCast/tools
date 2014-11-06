@@ -100,15 +100,6 @@ or import modules from it:
     :members:
 
 
-.. _salishsea_tools.nowcast.figures:
-
-:py:mod:`nowcast.figures` Module
-================================
-
-.. automodule:: nowcast.figures
-    :members:
-
-
 .. _salishsea_tools.tidetools:
 
 :py:mod:`tidetools` Module
