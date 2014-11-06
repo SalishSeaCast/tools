@@ -19,6 +19,7 @@ Contents:
 
    SalishSeaCmd/salishsea-cmd
    SalishSeaTools/salishsea-tools
+   SalishSeaTools/nowcast
    netcdf4/index
    bathymetry/index
    I_ForcingFiles/index
