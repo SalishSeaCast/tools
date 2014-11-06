@@ -31,7 +31,8 @@ context = zmq.Context()
 
 
 def main():
-    parser = lib.basic_arg_parser()
+    parser = lib.basic_arg_parser(mgr_name, description=__doc__)
+    parser.prog = 'python -m salishsea_tools.nowcast.{}'.format(mgr_name)
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
@@ -40,24 +41,41 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
-        message = socket.recv()
-        logger.info('REQ:{}'.format(message))
-        reply = parse_message(message)
+        logger.info('listening...')
+        msg = socket.recv()
+        message = lib.deserialize_message(msg)
+        logger.info(
+            'received message from {source}: {msg_type}'.format(**message))
+        reply, next_step = parse_message(message)
         socket.send(reply)
+        next_step()
 
 
 def init_req_rep(port, context):
     socket = context.socket(zmq.REP)
     socket.bind('tcp://*:{}'.format(port))
-    logger.info('listening for REQs on port {}'.format(port))
+    logger.info('bound to port {}'.format(port))
     return socket
 
 
 def parse_message(message):
-    if message.startswith('river data kickoff'):
-        logger.info('launch river data daily average worker')
-        reply = b'ACK'
-    return reply
+    if message['msg_type'] == 'end of nowcast':
+        logger.info('nowcast completed for today')
+        next_step = rotate_log_file
+        reply = lib.serialize_message(mgr_name, 'acknowledged')
+    return reply, next_step
+
+
+def rotate_log_file():
+    try:
+        for handler in logger.handlers:
+            logger.info('rotating log file')
+            handler.doRollover()
+            logger.info('log file rotated')
+            logger.info('running in process {}'.format(os.getpid()))
+    except AttributeError:
+        # Logging handler has no rollover; probably a StreamHandler
+        pass
 
 
 if __name__ == '__main__':
