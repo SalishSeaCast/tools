@@ -114,7 +114,8 @@ def configure_logging(config, logger, debug):
     handler = (
         logging.StreamHandler() if debug
         else logging.handlers.RotatingFileHandler(
-            config['logging']['log_file'], backupCount=5))
+            config['logging']['log_file'],
+            backupCount=config['logging']['backup_count']))
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         config['logging']['message_format'],
