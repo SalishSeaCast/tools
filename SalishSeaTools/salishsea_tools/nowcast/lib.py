@@ -40,9 +40,10 @@ def basic_arg_parser(prog, description=None, add_help=True):
     """Return a command-line argument parser w/ handling for always used args.
 
     The returned parser provides help messages, and handles the
-    `config_file` argument, and the `--debug` option. It can be used as
-    the parser for a worker, or as a parent parser if the worker has
-    additional arguments and/or options.
+    :option:`config_file` argument, and the :option:`--debug` option.
+    It can be used as the parser for a worker,
+    or as a parent parser if the worker has additional arguments
+    and/or options.
 
     :arg description: Brief description of what the worker does that
                       will be displayed in help messages.
@@ -160,7 +161,7 @@ def install_signal_handlers(logger, context):
 
 
 def init_zmq_req_rep_worker(context, config, logger):
-    """Initialize a ZeroMQ request/reply (REQ/RPE) worker.
+    """Initialize a ZeroMQ request/reply (REQ/REP) worker.
 
     :arg context: ZeroMQ context instance.
     :type context: :class:`zmq.Context` instance
