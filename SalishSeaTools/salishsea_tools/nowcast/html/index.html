@@ -11,14 +11,43 @@
   This is a temporary, initial page that publishes information from the
   Salish Sea NME model nowcast effort.
 </P>
+
 <h1>Log Files</h1>
-<ul>
-  <li>
-    <a href="nowcast.log">foo</a>
-  </li>
-  <li>
-    <a href="nowcast.log.1">foo</a>
-  </li>
-</ul>
+  <p>
+    The log files contain messages from the nowcast automation workers and manager processes.
+    Each day's run is in a separate log file.
+    When the worker-automated part of the run is completed the log file is rolled over,
+    as are the previous log files.
+    The log for the current day's run (nowcast.log) is rolled over to nowcast.log.1,
+    and the previous nowcast.log.1 is rolled over to nowcast.log.2,
+    etc.
+    A total of 7 day's log files are retained.
+  </p>
+  <p>
+    At present only the downloading of the 06 and 18 weather model forecast datasets are included in the worker automation,
+    so the log file rollovers happen after the 18 forecast download completes,
+    usually around 10:00 Pacific time.
+  </p>
+  <dl>
+    <dt><a href="nowcast.log">nowcast.log</a></dt>
+    <dd>
+      Current log file.
+      Disappears after 18 weather forecast download completion when it is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
+      </dd>
+    <dt><a href="nowcast.log.1">nowcast.log.1</a></dt>
+    <dd>
+      Previous log file.
+      Rolls over to <a href="nowcast.log.2">nowcast.log.2</a> when nowcast.log rolls over to nowcast.log.1.
+    </dd>
+  </dl>
+  <p>Older log files:</p>
+  <ul>
+    <li><a href="nowcast.log.2">nowcast.log.2</a></li>
+    <li><a href="nowcast.log.3">nowcast.log.3</a></li>
+    <li><a href="nowcast.log.4">nowcast.log.4</a></li>
+    <li><a href="nowcast.log.5">nowcast.log.5</a></li>
+    <li><a href="nowcast.log.6">nowcast.log.6</a></li>
+    <li><a href="nowcast.log.7">nowcast.log.7</a></li>
+  </ul>
 </body>
 </html>
