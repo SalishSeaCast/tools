@@ -72,13 +72,30 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     try:
-        get_grib(parsed_args.forecast, config)
-        exit_msg = 'weather forecast downloads complete'
+        # get_grib(parsed_args.forecast, config)
+        success = True
+        logger.info(
+            'weather forecast {.forecast} downloads complete'
+            .format(parsed_args))
     except OSError:
-        exit_msg = 'weather forecast downloads failed'
-    finally:
-        context.destroy()
-        logger.info('{}; shutting down'.format(exit_msg))
+        success = False
+        logger.info(
+            'weather forecast {.forecast} downloads failed'
+            .format(parsed_args))
+    if success and parsed_args.forecast == '18':
+        the_end(worker_name, socket)
+    context.destroy()
+    logger.info('task completed; shutting down')
+
+
+def the_end(worker_name, socket):
+    message = lib.serialize_message(worker_name, 'end of automation')
+    socket.send(message)
+    logger.info('sent "end of automation" message')
+    msg = socket.recv()
+    message = lib.deserialize_message(msg)
+    logger.info(
+        'received message from {source}: {msg_type}'.format(**message))
 
 
 def configure_argparser(description, parents):

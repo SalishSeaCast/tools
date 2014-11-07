@@ -59,8 +59,8 @@ def init_req_rep(port, context):
 
 
 def parse_message(message):
-    if message['msg_type'] == 'end of nowcast':
-        logger.info('nowcast completed for today')
+    if message['msg_type'] == 'end of automation':
+        logger.info('worker-automated parts of nowcast completed for today')
         next_step = rotate_log_file
         reply = lib.serialize_message(mgr_name, 'acknowledged')
     return reply, next_step
