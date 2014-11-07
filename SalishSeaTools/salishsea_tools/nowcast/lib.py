@@ -29,7 +29,15 @@ import zmq
 def get_module_name():
     """Return the name of the module with the path and the extension stripped.
 
-    Example: get_module_name('foo/bar/baz.py') returns 'baz'
+    Example::
+
+      get_module_name('foo/bar/baz.py')
+
+    returns 'baz'.
+
+    Typically used to create a module-level :data:`worker_name` variable::
+
+      worker_name = lib.get_module_name()
 
     :returns: The name portion of the module filename.
     """
@@ -101,16 +109,16 @@ def configure_logging(config, logger, debug):
 
     This function assumes that the logger instance has been created
     in the module from which the function is called.
-    That is typically done with a module-level command like::
+    That is typically done with a module-level commands like::
 
-      logger = logging.getLogger('weather_download')
+      worker_name = lib.get_module_name()
 
-    where `weather_download` is replaced with the name of the module.
+      logger = logging.getLogger(worker_name)
 
     :arg config: Configuration data structure.
     :type config: dict
 
-    :arg logger: Logger instance to be configured.
+    :arg logger: Logger to be configured.
     :type logger: :obj:`logging.Logger` instance
 
     :arg debug: Debug mode; log to console instead of to file.
@@ -137,11 +145,11 @@ def install_signal_handlers(logger, context):
     have been created in the module from which the function is called.
     That is typically done with a module-level commands like::
 
-      logger = logging.getLogger('weather_download')
+      worker_name = lib.get_module_name()
+
+      logger = logging.getLogger(worker_name)
 
       context = zmq.Context()
-
-    where `weather_download` is replaced with the name of the module.
 
     :arg logger: Logger instance.
     :type logger: :class:`logging.Logger` instance
