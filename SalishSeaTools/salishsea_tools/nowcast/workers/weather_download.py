@@ -55,13 +55,18 @@ FORECAST_DURATION = 42  # hours
 
 
 def main():
-    base_parser = lib.basic_arg_parser(worker_name, add_help=False)
-    parser = configure_argparser(
+    base_parser = lib.basic_arg_parser(
+        worker_name,
         description='''
         Salish Sea NEMO nowcast weather model dataset download worker.
         Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km
         operational model forecast.
         ''',
+        add_help=False,
+    )
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
         parents=[base_parser],
     )
     parsed_args = parser.parse_args()
@@ -98,8 +103,9 @@ def the_end(worker_name, socket):
         'received message from {source}: {msg_type}'.format(**message))
 
 
-def configure_argparser(description, parents):
-    parser = argparse.ArgumentParser(description=description, parents=parents)
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
     parser.add_argument(
         'forecast', choices=set(('06', '18')),
         help='Name of forecast to download files from.',
