@@ -72,7 +72,7 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     try:
-        # get_grib(parsed_args.forecast, config)
+        get_grib(parsed_args.forecast, config)
         success = True
         logger.info(
             'weather forecast {.forecast} downloads complete'
