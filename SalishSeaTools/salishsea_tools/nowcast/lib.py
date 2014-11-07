@@ -36,14 +36,18 @@ def get_module_name():
     return os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
 
-def basic_arg_parser(prog, description=None, add_help=True):
-    """Return a command-line argument parser w/ handling for always used args.
+def basic_arg_parser(worker_name, description=None, add_help=True):
+    """Return a command-line argument parser w/ handling for always-used args.
 
     The returned parser provides help messages, and handles the
     :option:`config_file` argument, and the :option:`--debug` option.
     It can be used as the parser for a worker,
     or as a parent parser if the worker has additional arguments
     and/or options.
+
+    :arg worker_name: Name of the worker that the parser is for;
+                      used to buid the usage message.
+    :type worker_name: str
 
     :arg description: Brief description of what the worker does that
                       will be displayed in help messages.
@@ -59,7 +63,8 @@ def basic_arg_parser(prog, description=None, add_help=True):
     """
     parser = argparse.ArgumentParser(
         description=description, add_help=add_help)
-    parser.prog = 'python -m salishsea_tools.nowcast.workers.{}'.format(prog)
+    parser.prog = (
+        'python -m salishsea_tools.nowcast.workers.{}'.format(worker_name))
     parser.add_argument(
         'config_file',
         help='''
