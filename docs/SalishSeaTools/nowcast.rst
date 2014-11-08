@@ -97,6 +97,7 @@ below.
     """Salish Sea NEMO nowcast weather model dataset download worker.
     """
     import logging
+    import os
 
     import zmq
 
@@ -150,6 +151,7 @@ The minimum set of imports that a worker needs are:
 .. code-block:: python
 
     import logging
+    import os
 
     import zmq
 
