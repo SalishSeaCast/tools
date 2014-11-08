@@ -91,6 +91,29 @@ def getNBssh(config):
             config['ssh']['ssh_dir'], lat, lon)
 
 
+def read_website(save_path):
+    """Reads a website with Neah Bay storm surge predictions/observations.
+
+    The data is in a file in the given save_path returns the filename
+    where the surge data is stored.
+    """
+    response = urllib2.urlopen(URL)
+    html = response.read()
+    # Parse the text table out of the HTML
+    soup = BeautifulSoup(html)
+    table = soup.find('pre').contents
+    for line in table:
+        line = line.replace('[', '')
+        line = line.replace(']', '')
+    # Save the table as a text file with the date it was generated as its name
+    utc_now = datetime.datetime.now(pytz.timezone('UTC'))
+    filename = os.path.join(
+        save_path, 'txt', 'sshNB_{:%Y-%m-%d}.txt'.format(utc_now))
+    with open(filename, 'wt') as f:
+        f.writelines(table)
+    return filename
+
+
 def load_surge_data(filename):
     """Loads the textfile with surge predictions
     returns as a data structure"""
@@ -101,30 +124,6 @@ def load_surge_data(filename):
     #drop rows with all Nans
     data= data.dropna(how='all')
     return data
-
-
-def read_website(save_path):
-    """Reads a website with Neah Bay storm surge predictions/observations
-    The data is in a file in the given save_path
-    returns the filename where the surge data is stored"""
-    response = urllib2.urlopen(URL)
-    html = response.read()
-
-    #use BeautifulSoup to parse out table
-    soup = BeautifulSoup(html)
-    table=str(soup.findAll('pre'))
-    table=table.replace('<pre>','')
-    table=table.replace('</pre>','')
-    table=table.replace('[','')
-    table=table.replace(']','')
-
-    #save the table as a text file. Use the date the table was generated as a file name?
-    today=datetime.datetime.strftime(datetime.datetime.now(pytz.timezone('UTC')),'%Y-%m-%d')
-    filename = os.path.join(save_path,'txt','sshNB_{}.txt'.format(today))
-    text_file = open(filename, "w")
-    text_file.write(table)
-    text_file.close()
-    return filename
 
 
 def save_netcdf(day,tc,surges,forecast_flag,textfile,save_path,lat,lon):
