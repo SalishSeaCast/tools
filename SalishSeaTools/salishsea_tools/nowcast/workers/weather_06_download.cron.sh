@@ -3,9 +3,9 @@
 # usage:
 #   MEOPAR=/data/dlatorne/MEOPAR
 #   NOWCAST_TOOLS=tools/SalishSeaTools/salishsea_toola/nowcast
-#   0 2 * * *  ${MEOPAR}/${NOWCAST_TOOLS}/workers/weather_download.cron.sh
+#   0 2 * * *  ${MEOPAR}/${NOWCAST_TOOLS}/workers/weather_06_download.cron.sh
 
 PYTHON=/home/dlatorne/anaconda/bin/python
 NOWCAST=/data/dlatorne/MEOPAR/nowcast
 CONFIG=${NOWCAST}/nowcast.yaml
-${PYTHON} -m salishsea_tools.nowcast.workers.weather_download ${CONFIG} 06
+${PYTHON} -m salishsea_tools.nowcast.workers.download_weather ${CONFIG} 06
