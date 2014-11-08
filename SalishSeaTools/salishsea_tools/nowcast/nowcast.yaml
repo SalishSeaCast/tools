@@ -3,9 +3,15 @@
 ports:
   req_rep: 5555
 
+bathymetry: /data/dlatorne/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc
+
 rivers:
   # River name: wateroffice.ec.gc.ca station number
   Fraser: 08MF005
+
+ssh:
+  # Destination directory for Neah Bay sea surface height open boundary files
+  ssh_dir: /ocean/nsoontie/MEOPAR/sshNeahBay/
 
 weather:
   # Destination directory for downloaded GEM 2.5km operational model GRIB2 files
