@@ -16,9 +16,9 @@
 
 .. _SalishSeaTools:
 
-************************
-Salish Sea Tools Package
-************************
+*********************************
+:py:mod:`salishsea_tools` Package
+*********************************
 
 The Salish Sea Tools package is a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
 
