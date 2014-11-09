@@ -97,8 +97,9 @@ def getNBssh(config):
 def read_website(save_path):
     """Reads a website with Neah Bay storm surge predictions/observations.
 
-    The data is in a file in the given save_path returns the filename
-    where the surge data is stored.
+    The data is stored in a file in save_path.
+
+    Returns the filename.
     """
     response = urllib2.urlopen(URL)
     html = response.read()
@@ -125,14 +126,14 @@ def read_website(save_path):
 
 
 def load_surge_data(filename):
-    """Loads the textfile with surge predictions
-    returns as a data structure"""
-
-    #Loading the data from that text file.
-    data = pd.read_csv(filename,skiprows=3,names=['date','surge','tide','obs','fcst','anom','comment'],
-    comment='#')
-    #drop rows with all Nans
-    data= data.dropna(how='all')
+    """Load the storm surge observations & predictions table from filename
+    and return is as a Pandas DataFrame.
+    """
+    col_names = 'date surge tide obs fcst anom comment'.split()
+    data = pd.read_csv(filename, skiprows=3, names=col_names, comment='#')
+    data = data.dropna(how='all')
+    logger.debug(
+        'loaded observations & predictions table into Pandas DataFrame')
     return data
 
 
