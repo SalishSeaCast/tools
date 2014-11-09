@@ -3,7 +3,7 @@
 # usage:
 #   MEOPAR=/data/dlatorne/MEOPAR
 #   NOWCAST_TOOLS=tools/SalishSeaTools/salishsea_tools/nowcast
-#   15 9 * * *  ${MEOPAR}/${NOWCAST_TOOLS}/workers/weather_18_download.cron.sh
+#   0 10 * * *  ${MEOPAR}/${NOWCAST_TOOLS}/workers/weather_18_download.cron.sh
 
 PYTHON=/home/dlatorne/anaconda/bin/python
 NOWCAST=/data/dlatorne/MEOPAR/nowcast
