@@ -53,6 +53,8 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
 
     getNBssh(config)
+    logger.info(
+        'Neah Bay sea surface height web scraping and file creation completed')
 
     # message = lib.serialize_message(worker_name, 'end of nowcast')
     # socket.send(message)
@@ -72,9 +74,10 @@ def getNBssh(config):
     Neah Bay storm surge website.
     """
     fB = nc.Dataset(config['bathymetry'])
-    lat = fB.variables['nav_lat'][:]
-    lon = fB.variables['nav_lon'][:]
+    lats = fB.variables['nav_lat'][:]
+    lons = fB.variables['nav_lon'][:]
     fB.close()
+    logger.debug('loaded lats & lons from {bathymetry}'.format(**config))
     # Load surge data
     textfile = read_website(config['ssh']['ssh_dir'])
     data = load_surge_data(textfile)
@@ -88,7 +91,7 @@ def getNBssh(config):
         surges, tc, forecast_flag = retrieve_surge(d, dates, data)
         save_netcdf(
             d, tc, surges, forecast_flag, textfile,
-            config['ssh']['ssh_dir'], lat, lon)
+            config['ssh']['ssh_dir'], lats, lons)
 
 
 def read_website(save_path):
@@ -99,18 +102,25 @@ def read_website(save_path):
     """
     response = urllib2.urlopen(URL)
     html = response.read()
+    logger.debug(
+        'downloaded Neah Bay storm surge observations & predictions from {}'
+        .format(URL))
     # Parse the text table out of the HTML
     soup = BeautifulSoup(html)
     table = soup.find('pre').contents
     for line in table:
         line = line.replace('[', '')
         line = line.replace(']', '')
+    logger.debug(
+        'scraped observations & predictions table from downloaded HTML')
     # Save the table as a text file with the date it was generated as its name
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
     filename = os.path.join(
         save_path, 'txt', 'sshNB_{:%Y-%m-%d}.txt'.format(utc_now))
     with open(filename, 'wt') as f:
         f.writelines(table)
+    logger.debug(
+        'observations & predictions table saved to {}'.format(filename))
     return filename
 
 
