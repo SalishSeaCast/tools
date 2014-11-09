@@ -238,35 +238,38 @@ def save_netcdf(
     logger.debug('saved western open boundary file {}'.format(filepath))
 
 
-def retrieve_surge(day,dates, data):
-    """gathers the surge information for a single day.
-    returns the surges in meteres, an array with time_counter and a flag indicating if this day was a forecast"""
-    #initialize forecast flag and surge array
-    forecast_flag=0; surge=[]
-    #grab list of times on this day.
-    tc,ds= isolate_day(day,dates)
+def retrieve_surge(day, dates, data):
+    """Gathers the surge information for a single day.
 
+    Returns the surges in metres, an array with time_counter,
+    and a flag indicating if this day was a forecast.
+    """
+    # Initialize forecast flag and surge array
+    forecast_flag = False
+    surge = []
+    # Grab list of times on this day
+    tc, ds = isolate_day(day, dates)
     for d in ds:
-        #convert datetime to string for comparing with times in data
+        # Convert datetime to string for comparing with times in data
         daystr = d.strftime('%m/%d %HZ')
-        tide=data.tide[data.date==daystr].item()
-        obs=data.obs[data.date==daystr].item()
-        fcst = data.fcst[data.date==daystr].item()
+        tide = data.tide[data.date == daystr].item()
+        obs = data.obs[data.date == daystr].item()
+        fcst = data.fcst[data.date == daystr].item()
         if obs == 99.90:
-            #fall daylight savings
-            if fcst==99.90:
-                #if surge is empty, just append 0
-                if not surge:
-                    surge.append(0)
-                else:
-                #otherwise append previous value
+            # Fall daylight savings
+            if fcst == 99.90:
+                try:
+                    # No new forecast value, so persist the previous value
                     surge.append(surge[-1])
+                except IndexError:
+                    # No values yet, so initialize with zero
+                    surge = [0]
             else:
-                surge.append(feet_to_metres(fcst-tide))
-                forecast_flag=1
+                surge.append(feet_to_metres(fcst - tide))
+                forecast_flag = True
         else:
-            surge.append(feet_to_metres(obs-tide))
-    return surge, tc,  forecast_flag
+            surge.append(feet_to_metres(obs - tide))
+    return surge, tc, forecast_flag
 
 
 def isolate_day(day, dates):
