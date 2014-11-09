@@ -6,6 +6,6 @@
 #   0 2 * * *  ${MEOPAR}/${NOWCAST_TOOLS}/workers/weather_06_download.cron.sh
 
 PYTHON=/home/dlatorne/anaconda/bin/python
-NOWCAST=/data/dlatorne/MEOPAR/nowcast
+NOWCAST=/home/dlatorne/public_html/MEOPAR/nowcast
 CONFIG=${NOWCAST}/nowcast.yaml
-${PYTHON} -m salishsea_tools.nowcast.workers.download_weather ${CONFIG} 06
+${PYTHON} -m salishsea_tools.nowcast.workers.download_weather ${CONFIG} 06 --debug
