@@ -260,11 +260,11 @@ def _nc_file_hg_url(nc_filepath):
     """Calculate a Bitbucket URL for nc_filepath.
 
     It is assumed that nc_filepath is a relative path to a netCDF file
-    that resides in a Mercurial repositorywith a default path that points
+    that resides in a Mercurial repository with a default path that points
     to Bitbucket.org.
 
     :arg nc_filepath: Relative path and filename of the netCDF file
-                        to calculate the Bitbucket URL for
+                      to calculate the Bitbucket URL for
     :type nc_filepath: str
 
     :returns: The Bitbucket URL for the nc_filepath netCDF file
@@ -404,13 +404,13 @@ def generate_pressure_file(filename, p_file, t_file, alt_file,day):
     	atmpres[:]=press_corr[:]
 
     	slp_file.close()
-	
+
 def _slp(Z,P,T):
     R = 287 #ideal gas constant
     g = 9.81 #gravity
     gam = 0.0098 #lapse rate(deg/m)
     p0=101000 #average sea surface heigh in Pa
-    
+
     ps = P*(gam*(Z/T) +1)**(g/gam/R)
     return ps
 
