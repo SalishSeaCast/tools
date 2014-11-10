@@ -147,6 +147,7 @@ def read_website(save_path):
         save_path, 'txt', 'sshNB_{:%Y-%m-%d}.txt'.format(utc_now))
     with open(filepath, 'wt') as f:
         f.writelines(table)
+    os.chmod(filepath, 436)  # octial 664 = 'rw-rw-r--'
     logger.debug(
         'observations & predictions table saved to {}'.format(filepath))
     return filepath
@@ -262,6 +263,7 @@ def save_netcdf(
         vobtcrtx[:, 0, ib] = np.zeros(len(surges))
         vobtcrty[:, 0, ib] = np.zeros(len(surges))
     ssh_file.close()
+    os.chmod(filepath, 436)  # octial 664 = 'rw-rw-r--'
     logger.debug('saved western open boundary file {}'.format(filepath))
     return filepath
 
