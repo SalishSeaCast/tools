@@ -112,6 +112,7 @@ below.
 
 
     def main():
+        # Prepare the worker
         parser = lib.basic_arg_parser(worker_name, description=__doc__)
         parsed_args = parser.parse_args()
         config = lib.load_config(parsed_args.config_file)
@@ -121,17 +122,39 @@ below.
         lib.install_signal_handlers(logger, context)
         socket = lib.init_zmq_req_rep_worker(context, config, logger)
 
-        # Do some work
+        # Do the work
+        checklist = {}
+        worker_function(config, checklist, ...)
+        log.info('success message')
 
-        message = lib.serialize_message(worker_name, 'end of nowcast')
-        socket.send(message)
-        logger.info('sent "end of nowcast" message')
-        msg = socket.recv()
-        message = lib.deserialize_message(msg)
-        logger.info(
-            'received message from {source}: {msg_type}'.format(**message))
+        # Exchange success messages with the nowcast manager process
+        success(config, socket, checklist)
+
+        # Finish up
         context.destroy()
         logger.info('task completed; shutting down')
+
+
+        def success(config, socket, checklist):
+            msg_type = 'success'
+            # Send message to nowcast manager
+            message = lib.serialize_message(worker_name, msg_type, checklist)
+            socket.send(message)
+            logger.info(
+                'sent message: ({msg_type}) {msg_words}'
+                .format(
+                    msg_type=msg_type,
+                    msg_words=config['msg_types'][worker_name][msg_type]))
+            # Wait for and process response
+            msg = socket.recv()
+            message = lib.deserialize_message(msg)
+            source = message['source']
+            msg_type = message['msg_type']
+            logger.info(
+                'received message from {source}: ({msg_type}) {msg_words}'
+                .format(source=source,
+                        msg_type=message['msg_type'],
+                        msg_words=config['msg_types'][source][msg_type]))
 
 
     if __name__ == '__main__':
