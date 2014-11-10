@@ -29,6 +29,8 @@ logger = logging.getLogger(mgr_name)
 
 context = zmq.Context()
 
+checklist = {}
+
 
 def main():
     parser = lib.basic_arg_parser(mgr_name, description=__doc__)
@@ -43,9 +45,9 @@ def main():
     while True:
         logger.info('listening...')
         message = socket.recv()
-        reply, next_step = parse_message(config, message)
+        reply, next_step, next_step_args = parse_message(config, message)
         socket.send(reply)
-        next_step()
+        next_step(*next_step_args)
 
 
 def init_req_rep(port, context):
@@ -59,12 +61,13 @@ def parse_message(config, message):
     msg = lib.deserialize_message(message)
     worker = msg['source']
     msg_type = msg['msg_type']
+    next_step = do_nothing
+    next_step_args = []
     if msg_type not in config['msg_types'][worker]:
         logger.error(
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
-        next_step = do_nothing
     else:
         logger.info(
             'received message from {worker}: ({msg_type}) {msg_words}'
@@ -74,31 +77,38 @@ def parse_message(config, message):
     if msg_type == 'success':
         if worker == 'get_NeahBay_ssh':
             reply = lib.serialize_message(mgr_name, 'ack')
-            next_step = do_nothing
+            next_step = update_checklist
+            next_step_args = ['sshNeahBay', msg['payload']]
     if msg_type == 'success 06':
         reply = lib.serialize_message(mgr_name, 'ack')
-        next_step = do_nothing
     if msg_type == 'failure 06':
         reply = lib.serialize_message(mgr_name, 'ack')
-        next_step = do_nothing
     if msg_type == 'success 18':
         reply = lib.serialize_message(mgr_name, 'ack')
-        next_step = do_nothing
     if msg_type == 'failure 18':
         reply = lib.serialize_message(mgr_name, 'ack')
-        next_step = do_nothing
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
         reply = lib.serialize_message(mgr_name, 'ack')
-        next_step = rotate_log_file
-    return reply, next_step
+        next_step = finish_automation
+    return reply, next_step, next_step_args
 
 
-def do_nothing():
+def do_nothing(*args):
     pass
 
 
-def rotate_log_file():
+def update_checklist(key, worker_checklist):
+    checklist.update({key: worker_checklist})
+
+
+def finish_automation(*args):
+    checklist = {}
+    logger.info('checklist cleared')
+    rotate_log_file()
+
+
+def rotate_log_file(*args):
     try:
         for handler in logger.handlers:
             logger.info('rotating log file')

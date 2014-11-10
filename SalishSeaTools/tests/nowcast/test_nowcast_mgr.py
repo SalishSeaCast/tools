@@ -53,7 +53,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_step = nowcast_mgr_module.parse_message(config, message)
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'undefined msg',
@@ -70,29 +71,45 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_step = nowcast_mgr_module.parse_message(config, message)
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
         assert next_step == nowcast_mgr_module.do_nothing
 
-    @pytest.mark.parametrize('msg_type', [
-        'success 06',
-        'failure 06',
-        'success 18',
-        'failure 18',
-        'the end',
-    ])
-    def test_reply(self, msg_type, nowcast_mgr_module):
-        nowcast_mgr_module.mgr_name = 'nowcast_mgr'
+    def test_undefined_msg_type_next_step_args(self, nowcast_mgr_module):
         config = {
             'msg_types': {
                 'worker': {
-                    msg_type: 'foo'
+                    'the end': 'foo'
                 }
             }
         }
+        message = '{source: worker, msg_type: bar, payload: null}\n'
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        assert next_step_args == []
+
+    @pytest.mark.parametrize('worker, msg_type', [
+        ('get_NeahBay_ssh', 'success'),
+        ('download_weather', 'success 06'),
+        ('download_weather', 'failure 06'),
+        ('download_weather', 'success 18'),
+        ('download_weather', 'failure 18'),
+        ('download_weather', 'the end'),
+    ])
+    def test_reply(self, worker, msg_type, nowcast_mgr_module):
+        nowcast_mgr_module.mgr_name = 'nowcast_mgr'
+        config = {
+            'msg_types': {
+                worker: {
+                    msg_type: 'foo',
+                },
+            },
+        }
         message = (
-            '{{source: worker, msg_type: {}, payload: null}}\n'
-            .format(msg_type))
-        reply, next_step = nowcast_mgr_module.parse_message(config, message)
+            '{{source: {}, msg_type: {}, payload: null}}\n'
+            .format(worker, msg_type))
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'ack',
@@ -107,7 +124,6 @@ class TestParseMessage(object):
         'failure 18',
     ])
     def test_next_step(self, msg_type, nowcast_mgr_module):
-        nowcast_mgr_module.mgr_name = 'nowcast_mgr'
         config = {
             'msg_types': {
                 'worker': {
@@ -118,8 +134,80 @@ class TestParseMessage(object):
         message = (
             '{{source: worker, msg_type: {}, payload: null}}\n'
             .format(msg_type))
-        reply, next_step = nowcast_mgr_module.parse_message(config, message)
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
         assert next_step == nowcast_mgr_module.do_nothing
+
+    @pytest.mark.parametrize('msg_type', [
+        'success 06',
+        'failure 06',
+        'success 18',
+        'failure 18',
+    ])
+    def test_next_step_args(self, msg_type, nowcast_mgr_module):
+        config = {
+            'msg_types': {
+                'worker': {
+                    msg_type: 'foo'
+                }
+            }
+        }
+        message = (
+            '{{source: worker, msg_type: {}, payload: null}}\n'
+            .format(msg_type))
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        assert next_step_args == []
+
+    def test_success_get_NeahBay_ssh_reply(self, nowcast_mgr_module):
+        nowcast_mgr_module.mgr_name = 'nowcast_mgr'
+        config = {
+            'msg_types': {
+                'get_NeahBay_ssh': {
+                    'success': 'foo'
+                }
+            }
+        }
+        message = (
+            '{source: get_NeahBay_ssh, msg_type: success, payload: null}\n')
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        expected = {
+            'source': 'nowcast_mgr',
+            'msg_type': 'ack',
+            'payload': None,
+        }
+        assert yaml.safe_load(reply) == expected
+
+    def test_get_NeahBay_ssh_next_step(self, nowcast_mgr_module):
+        config = {
+            'msg_types': {
+                'get_NeahBay_ssh': {
+                    'success': 'foo'
+                }
+            }
+        }
+        message = (
+            '{source: get_NeahBay_ssh, msg_type: success, payload: null}\n')
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        assert next_step == nowcast_mgr_module.update_checklist
+
+    def test_get_NeahBay_ssh_next_step_args(self, nowcast_mgr_module):
+        config = {
+            'msg_types': {
+                'get_NeahBay_ssh': {
+                    'success': 'foo'
+                }
+            }
+        }
+        message = (
+            '{source: get_NeahBay_ssh, msg_type: success, '
+            ' payload: {txt: sshNB_2014-11-10.txt}}\n')
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        expected = ['sshNeahBay', {'txt': 'sshNB_2014-11-10.txt'}]
+        assert next_step_args == expected
 
     def test_the_end_next_step(self, nowcast_mgr_module):
         config = {
@@ -130,5 +218,19 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_step = nowcast_mgr_module.parse_message(config, message)
-        assert next_step == nowcast_mgr_module.rotate_log_file
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        assert next_step == nowcast_mgr_module.finish_automation
+
+    def test_the_end_next_step_args(self, nowcast_mgr_module):
+        config = {
+            'msg_types': {
+                'worker': {
+                    'the end': 'foo'
+                }
+            }
+        }
+        message = '{source: worker, msg_type: the end, payload: null}\n'
+        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
+            config, message)
+        assert next_step_args == []
