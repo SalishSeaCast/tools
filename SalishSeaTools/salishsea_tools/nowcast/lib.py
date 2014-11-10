@@ -201,7 +201,8 @@ def serialize_message(source, msg_type, payload=None):
                  typically :data:`worker_name`.
     :arg source: str
 
-    :arg msg_type: Kind of message (used as parsing key).
+    :arg msg_type: Key of a message type that is defined for source
+                   in the configuration data structure.
     :type msg_type: str
 
     :arg payload: Content of message;
