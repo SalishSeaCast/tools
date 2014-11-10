@@ -135,26 +135,26 @@ below.
         logger.info('task completed; shutting down')
 
 
-        def success(config, socket, checklist):
-            msg_type = 'success'
-            # Send message to nowcast manager
-            message = lib.serialize_message(worker_name, msg_type, checklist)
-            socket.send(message)
-            logger.info(
-                'sent message: ({msg_type}) {msg_words}'
-                .format(
-                    msg_type=msg_type,
-                    msg_words=config['msg_types'][worker_name][msg_type]))
-            # Wait for and process response
-            msg = socket.recv()
-            message = lib.deserialize_message(msg)
-            source = message['source']
-            msg_type = message['msg_type']
-            logger.info(
-                'received message from {source}: ({msg_type}) {msg_words}'
-                .format(source=source,
-                        msg_type=message['msg_type'],
-                        msg_words=config['msg_types'][source][msg_type]))
+    def success(config, socket, checklist):
+        msg_type = 'success'
+        # Send message to nowcast manager
+        message = lib.serialize_message(worker_name, msg_type, checklist)
+        socket.send(message)
+        logger.info(
+            'sent message: ({msg_type}) {msg_words}'
+            .format(
+                msg_type=msg_type,
+                msg_words=config['msg_types'][worker_name][msg_type]))
+        # Wait for and process response
+        msg = socket.recv()
+        message = lib.deserialize_message(msg)
+        source = message['source']
+        msg_type = message['msg_type']
+        logger.info(
+            'received message from {source}: ({msg_type}) {msg_words}'
+            .format(source=source,
+                    msg_type=message['msg_type'],
+                    msg_words=config['msg_types'][source][msg_type]))
 
 
     if __name__ == '__main__':
