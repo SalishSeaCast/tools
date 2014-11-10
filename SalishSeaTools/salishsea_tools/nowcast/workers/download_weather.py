@@ -82,25 +82,17 @@ def main():
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
+        tell_manager('success', parsed_args.forecast, config, socket)
     except OSError:
         success = False
         logger.info(
             'weather forecast {.forecast} downloads failed'
             .format(parsed_args))
+        tell_manager('failure', parsed_args.forecast, config, socket)
     if success and parsed_args.forecast == '18':
-        the_end(worker_name, socket)
+        the_end(config, socket)
     context.destroy()
     logger.info('task completed; shutting down')
-
-
-def the_end(worker_name, socket):
-    message = lib.serialize_message(worker_name, 'end of automation')
-    socket.send(message)
-    logger.info('sent "end of automation" message')
-    msg = socket.recv()
-    message = lib.deserialize_message(msg)
-    logger.info(
-        'received message from {source}: {msg_type}'.format(**message))
 
 
 def configure_argparser(prog, description, parents):
@@ -111,6 +103,50 @@ def configure_argparser(prog, description, parents):
         help='Name of forecast to download files from.',
     )
     return parser
+
+
+def tell_manager(status, forecast, config, socket):
+    msg_type = '{} {}'.format(status, forecast)
+    # Send message to nowcast manager
+    message = lib.serialize_message(worker_name, msg_type)
+    socket.send(message)
+    logger.info(
+        'sent message: ({msg_type}) {msg_words}'
+        .format(
+            msg_type=msg_type,
+            msg_words=config['msg_types'][worker_name][msg_type]))
+    # Wait for and process response
+    msg = socket.recv()
+    message = lib.deserialize_message(msg)
+    source = message['source']
+    msg_type = message['msg_type']
+    logger.info(
+        'received message from {source}: ({msg_type}) {msg_words}'
+        .format(source=source,
+                msg_type=message['msg_type'],
+                msg_words=config['msg_types'][source][msg_type]))
+
+
+def the_end(config, socket):
+    msg_type = 'the end'
+    # Send message to nowcast manager
+    message = lib.serialize_message(worker_name, msg_type)
+    socket.send(message)
+    logger.info(
+        'sent message: ({msg_type}) {msg_words}'
+        .format(
+            msg_type=msg_type,
+            msg_words=config['msg_types'][worker_name][msg_type]))
+    # Wait for and process response
+    msg = socket.recv()
+    message = lib.deserialize_message(msg)
+    source = message['source']
+    msg_type = message['msg_type']
+    logger.info(
+        'received message from {source}: ({msg_type}) {msg_words}'
+        .format(source=source,
+                msg_type=message['msg_type'],
+                msg_words=config['msg_types'][source][msg_type]))
 
 
 def get_grib(forecast, config):

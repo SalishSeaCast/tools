@@ -42,11 +42,8 @@ def main():
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
         logger.info('listening...')
-        msg = socket.recv()
-        message = lib.deserialize_message(msg)
-        logger.info(
-            'received message from {source}: {msg_type}'.format(**message))
-        reply, next_step = parse_message(message)
+        message = socket.recv()
+        reply, next_step = parse_message(config, message)
         socket.send(reply)
         next_step()
 
@@ -58,12 +55,47 @@ def init_req_rep(port, context):
     return socket
 
 
-def parse_message(message):
-    if message['msg_type'] == 'end of automation':
+def parse_message(config, message):
+    msg = lib.deserialize_message(message)
+    worker = msg['source']
+    msg_type = msg['msg_type']
+    if msg_type not in config['msg_types'][worker]:
+        logger.error(
+            'undefined message type received from {worker}: {msg_type}'
+            .format(worker=worker, msg_type=msg_type))
+        reply = lib.serialize_message(mgr_name, 'undefined msg')
+        next_step = do_nothing
+    else:
+        logger.info(
+            'received message from {worker}: ({msg_type}) {msg_words}'
+            .format(worker=worker,
+                    msg_type=msg_type,
+                    msg_words=config['msg_types'][worker][msg_type]))
+    if msg_type == 'success':
+        if worker == 'get_NeahBay_ssh':
+            reply = lib.serialize_message(mgr_name, 'ack')
+            next_step = do_nothing
+    if msg_type == 'success 06':
+        reply = lib.serialize_message(mgr_name, 'ack')
+        next_step = do_nothing
+    if msg_type == 'failure 06':
+        reply = lib.serialize_message(mgr_name, 'ack')
+        next_step = do_nothing
+    if msg_type == 'success 18':
+        reply = lib.serialize_message(mgr_name, 'ack')
+        next_step = do_nothing
+    if msg_type == 'failure 18':
+        reply = lib.serialize_message(mgr_name, 'ack')
+        next_step = do_nothing
+    if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
+        reply = lib.serialize_message(mgr_name, 'ack')
         next_step = rotate_log_file
-        reply = lib.serialize_message(mgr_name, 'acknowledged')
     return reply, next_step
+
+
+def do_nothing():
+    pass
 
 
 def rotate_log_file():
