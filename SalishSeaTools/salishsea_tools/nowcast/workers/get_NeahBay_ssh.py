@@ -53,20 +53,21 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    getNBssh(config)
+    checklist = {}
+    getNBssh(config, checklist)
     logger.info(
         'Neah Bay sea surface height web scraping and file creation completed')
     # Exchange success messages with the nowcast manager process
-    success(config, socket)
+    success(config, socket, checklist)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
 
 
-def success(config, socket):
+def success(config, socket, checklist):
     msg_type = 'success'
     # Send message to nowcast manager
-    message = lib.serialize_message(worker_name, msg_type)
+    message = lib.serialize_message(worker_name, msg_type, checklist)
     socket.send(message)
     logger.info(
         'sent message: ({msg_type}) {msg_words}'
@@ -85,7 +86,7 @@ def success(config, socket):
                 msg_words=config['msg_types'][source][msg_type]))
 
 
-def getNBssh(config):
+def getNBssh(config, checklist):
     """Script for generate sea surface height forcing files from the
     Neah Bay storm surge website.
     """
@@ -96,6 +97,7 @@ def getNBssh(config):
     logger.debug('loaded lats & lons from {bathymetry}'.format(**config))
     # Load surge data
     textfile = read_website(config['ssh']['ssh_dir'])
+    checklist.update({'txt': os.path.basename(textfile)})
     data = load_surge_data(textfile)
     # Process the dates to find days with a full prediction
     dates = np.array(data.date.values)
@@ -105,9 +107,18 @@ def getNBssh(config):
     # Loop through full days and save netcdf
     for d in dates_list:
         surges, tc, forecast_flag = retrieve_surge(d, dates, data)
-        save_netcdf(
+        filepath = save_netcdf(
             d, tc, surges, forecast_flag, textfile,
             config['ssh']['ssh_dir'], lats, lons)
+        filename = os.path.basename(filepath)
+        if forecast_flag:
+            if 'fcst' in checklist:
+                checklist['fcst'].append(filename)
+            else:
+                checklist['fcst'] = [filename]
+        else:
+            item = {'obs': filename}
+        checklist.update(item)
 
 
 def read_website(save_path):
@@ -132,13 +143,13 @@ def read_website(save_path):
         'scraped observations & predictions table from downloaded HTML')
     # Save the table as a text file with the date it was generated as its name
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
-    filename = os.path.join(
+    filepath = os.path.join(
         save_path, 'txt', 'sshNB_{:%Y-%m-%d}.txt'.format(utc_now))
-    with open(filename, 'wt') as f:
+    with open(filepath, 'wt') as f:
         f.writelines(table)
     logger.debug(
-        'observations & predictions table saved to {}'.format(filename))
-    return filename
+        'observations & predictions table saved to {}'.format(filepath))
+    return filepath
 
 
 def load_surge_data(filename):
@@ -252,6 +263,7 @@ def save_netcdf(
         vobtcrty[:, 0, ib] = np.zeros(len(surges))
     ssh_file.close()
     logger.debug('saved western open boundary file {}'.format(filepath))
+    return filepath
 
 
 def retrieve_surge(day, dates, data):
