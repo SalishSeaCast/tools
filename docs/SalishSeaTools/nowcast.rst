@@ -218,3 +218,44 @@ It is called when the worker is run from the command line by virtue of the
         main()
 
 block at the end of the module.
+
+
+Prepare The Worker
+------------------
+
+Lines 35 and 36 set up the worker's command-line interface and parse the command-line arguments:
+
+.. code-block:: python
+
+    parser = lib.basic_arg_parser(worker_name, description=__doc__)
+    parsed_args = parser.parse_args()
+
+The :py:func:`lib.basic_arg_parser` returns a command-line parser instance with the file path/name of the :ref:`NowcastConfigFile` as a required argument,
+and :option:`--debug` and :option:`--help` option flags.
+The value of :py:data:`worker_name` is used to construct the parser's usage message.
+Passing :py:data:`__doc__` as the value of :kbd:`description` causes the worker's module docstring to be used as the parser's descriptive text;
+pass your own string instead to override that.
+Try:
+
+.. code-block:: bash
+
+    $ python -m salishsea_tools.nowcast.workers.get_NeahBay_ssh --help
+
+to see an example of the basic parser.
+
+The :option:`--debug` flag is provided for development and debugging purposes.
+It causes the logging message to be written to the screen instead of the the log file.
+
+See :ref:`ExtendingTheCommandLineParser` for details of how to add required arguments and options flags to the basic parser.
+
+
+.. _ExtendingTheCommandLineParser:
+
+Extending the Command-line Parser
+---------------------------------
+
+
+.. _NowcastConfigFile:
+
+Nowcast Configuration File
+==========================
