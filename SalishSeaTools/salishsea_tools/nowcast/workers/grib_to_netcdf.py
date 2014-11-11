@@ -16,9 +16,6 @@
 """Salish Sea NEMO nowcast worker that collects weather forecast results
 from hourly GRIB2 files and produces day-long NEMO atmospheric forceing
 netCDF files.
-
-Note that wgrib2 and Pramod Thupaki's grid_defn.pl are assumed to be
-symlinked in the working directory.
 """
 from __future__ import division
 
@@ -93,8 +90,6 @@ def grib_to_netcdf(config, checklist):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
-    GRIBdir = config['weather']['GRIB_dir']
-    OPERdir = config['weather']['ops_dir']
     utc = arrow.utcnow()
     now = utc.to('Canada/Pacific')
     year, month, day = now.year, now.month, now.day
@@ -112,7 +107,7 @@ def grib_to_netcdf(config, checklist):
     p3 = (
         '{year}{month:0=2}{day:0=2}/18/'
         .format(year=year, month=month, day=day))
-    logger.debug('forecast sections: '.format(p1, p2, p3))
+    logger.debug('forecast sections: {} {} {}'.format(p1, p2, p3))
     HoursWeNeed = {
         # part: (dir, start hr, end hr)
         'part one':  (p1, 24-18-1, 24+6-18),
@@ -137,37 +132,44 @@ def grib_to_netcdf(config, checklist):
     logfile = open('wglog', 'w')
 
 
-    process_gribUV(GRIBdir, HoursWeNeed, logfile)
-    process_gribscalar(GRIBdir, HoursWeNeed, logfile)
-    outgrib, outzeros = GRIBappend(
-        OPERdir, GRIBdir, ymd, HoursWeNeed, logfile)
+    process_gribUV(config, HoursWeNeed, logfile)
+    process_gribscalar(config, HoursWeNeed, logfile)
+    outgrib, outzeros = GRIBappend(config, ymd, HoursWeNeed, logfile)
     if size != 'full':
         outgrib, outzeros = subsample(
-            OPERdir, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile)
+            config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile)
     outnetcdf, out0netcdf = makeCDF(
-        OPERdir, ymd, fileextra, outgrib, outzeros, logfile)
+        config, ymd, fileextra, outgrib, outzeros, logfile)
     processCDF(outnetcdf, out0netcdf, ymd)
     renameCDF(outnetcdf)
 
     plt.savefig('wg.png')
 
 
-def process_gribUV(GRIBdir, HoursWeNeed, logfile):
+def process_gribUV(config, HoursWeNeed, logfile):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
     coordinates.
     """
+    GRIBdir = config['weather']['GRIB_dir']
+    wgrib2 = config['weather']['wgrib2']
+    grid_defn = config['weather']['grid_defn.pl']
+    # grid_defn.pl expects to find wgrib2 in the pwd,
+    # create a symbolic link to keep it happy
+    os.symlink(wgrib2, 'wgrib2')
     for part in ('part one', 'part two', 'part three'):
         for fhour in range(HoursWeNeed[part][1], HoursWeNeed[part][2]+1):
             # Set up directories and files
             sfhour = '{:0=3}'.format(fhour)
             dire = HoursWeNeed[part][0]
             outuv = GRIBdir+dire+sfhour+'/UV.grib'
+            outuvrot = GRIBdir+dire+sfhour+'/UVrot.grib'
+            # Delete residual instances of files that are created so that
+            # function can be re-run cleanly
             try:
                 os.remove(outuv)
             except Exception:
                 pass
-            outuvrot = GRIBdir+dire+sfhour+'/UVrot.grib'
             try:
                 os.remove(outuvrot)
             except Exception:
@@ -175,27 +177,34 @@ def process_gribUV(GRIBdir, HoursWeNeed, logfile):
             # Consolidate u and v wind component values into one file
             fn = glob.glob(GRIBdir+dire+sfhour+'/*UGRD*')
             sp.call(
-                ['./wgrib2', fn[0], '-append', '-grib', outuv], stdout=logfile)
+                [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
             fn = glob.glob(GRIBdir+dire+sfhour+'/*VGRD*')
             sp.call(
-                ['./wgrib2', fn[0], '-append', '-grib', outuv], stdout=logfile)
+                [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
             ### print sp.check_output(["./wgrib2",fn[0],"-vt"])
             # rotate
-            GRIDspec = sp.check_output(['./grid_defn.pl', outuv])
-            cmd = ['./wgrib2', outuv]
+            GRIDspec = sp.check_output([grid_defn, outuv])
+            cmd = [wgrib2, outuv]
             cmd.extend('-new_grid_winds earth'.split())
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outuvrot)
             sp.call(cmd, stdout=logfile)
             os.remove(outuv)
+    os.unlink('wgrib2')
 
 
-def process_gribscalar(GRIBdir, HoursWeNeed, logfile):
+def process_gribscalar(config, HoursWeNeed, logfile):
     """Use wgrib2 and grid_defn.pl to consolidate each hour's scalar
     variables into an single file and then re-grid them to match the
     u and v wind components.
     """
+    GRIBdir = config['weather']['GRIB_dir']
+    wgrib2 = config['weather']['wgrib2']
+    grid_defn = config['weather']['grid_defn.pl']
+    # grid_defn.pl expects to find wgrib2 in the pwd,
+    # create a symbolic link to keep it happy
+    os.symlink(wgrib2, 'wgrib2')
     for part in ('part one', 'part two', 'part three'):
         for fhour in range(HoursWeNeed[part][1], HoursWeNeed[part][2]+1):
             # Set up directories and files
@@ -217,19 +226,20 @@ def process_gribscalar(GRIBdir, HoursWeNeed, logfile):
             for fn in glob.glob(GRIBdir+dire+sfhour+'/*'):
                 if not ('GRD' in fn) and ('CMC' in fn):
                     sp.call(
-                        ['./wgrib2', fn, '-append', '-grib', outscalar],
+                        [wgrib2, fn, '-append', '-grib', outscalar],
                         stdout=logfile)
             #  Re-grid
-            GRIDspec = sp.check_output(['./grid_defn.pl', outscalar])
-            cmd = ['./wgrib2', outscalar]
+            GRIDspec = sp.check_output([grid_defn, outscalar])
+            cmd = [wgrib2, outscalar]
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outscalargrid)
             sp.call(cmd, stdout=logfile, stderr=logfile)
             os.remove(outscalar)
+    os.unlink('wgrib2')
 
 
-def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed, logfile):
+def GRIBappend(config, ymd, HoursWeNeed, logfile):
     """Concatenate in hour order the wind velocity components
     and scalar variables from hourly files into a daily file.
 
@@ -237,6 +247,9 @@ def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed, logfile):
     calculation of instantaneous values from the forecast accumulated
     values.
     """
+    GRIBdir = config['weather']['GRIB_dir']
+    OPERdir = config['weather']['ops_dir']
+    wgrib2 = config['weather']['wgrib2']
     outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))
     outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
     # Delete residual instances of files that are created so that
@@ -258,26 +271,28 @@ def GRIBappend(OPERdir, GRIBdir, ymd, HoursWeNeed, logfile):
             outscalargrid = GRIBdir+dire+sfhour+'/gscalar.grib'
             if fhour == 0 or (part == 'part one' and fhour == 5):
                 sp.call(
-                    ['./wgrib2', outuvrot, '-append', '-grib', outzeros],
+                    [wgrib2, outuvrot, '-append', '-grib', outzeros],
                     stdout=logfile)
                 sp.call(
-                    ['./wgrib2', outscalargrid, '-append', '-grib', outzeros],
+                    [wgrib2, outscalargrid, '-append', '-grib', outzeros],
                     stdout=logfile)
             else:
                 sp.call(
-                    ['./wgrib2', outuvrot, '-append', '-grib', outgrib],
+                    [wgrib2, outuvrot, '-append', '-grib', outgrib],
                     stdout=logfile)
                 sp.call(
-                    ["./wgrib2", outscalargrid, '-append', "-grib", outgrib],
+                    [wgrib2, outscalargrid, '-append', '-grib', outgrib],
                     stdout=logfile)
             os.remove(outuvrot)
             os.remove(outscalargrid)
     return outgrib, outzeros
 
 
-def subsample(OPERdir, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
+def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
     """Crop the grid to the Salish Sea NEMO model domain.
     """
+    OPERdir = config['weather']['ops_dir']
+    wgrib2 = config['weather']['wgrib2']
     newgrib = os.path.join(
         OPERdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
     newzeros = os.path.join(
@@ -285,25 +300,27 @@ def subsample(OPERdir, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
     istr = '{ist}:{ien}'.format(ist=ist, ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     sp.call(
-        ['./wgrib2', outgrib, '-ijsmall_grib', istr, jstr, newgrib],
+        [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib],
         stdout=logfile)
     sp.call(
-        ['./wgrib2', outzeros, '-ijsmall_grib', istr, jstr, newzeros],
+        [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros],
         stdout=logfile)
     os.remove(outgrib)
     os.remove(outzeros)
     return newgrib, newzeros
 
 
-def makeCDF(OPERdir, ymd, fileextra, outgrib, outzeros, logfile):
+def makeCDF(config, ymd, fileextra, outgrib, outzeros, logfile):
     """Convert the GRIB files to netcdf (classic) files.
     """
+    OPERdir = config['weather']['ops_dir']
+    wgrib2 = config['weather']['wgrib2']
     outnetcdf = os.path.join(
         OPERdir,
         'ops{fileextra}_{ymd}.nc'.format(fileextra=fileextra, ymd=ymd))
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
-    sp.call(['./wgrib2', outgrib, '-netcdf', outnetcdf], stdout=logfile)
-    sp.call(['./wgrib2', outzeros, '-netcdf', out0netcdf], stdout=logfile)
+    sp.call([wgrib2, outgrib, '-netcdf', outnetcdf], stdout=logfile)
+    sp.call([wgrib2, outzeros, '-netcdf', out0netcdf], stdout=logfile)
     os.remove(outgrib)
     os.remove(outzeros)
     return outnetcdf, out0netcdf
