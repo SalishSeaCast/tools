@@ -248,6 +248,40 @@ It causes the logging message to be written to the screen instead of the the log
 
 See :ref:`ExtendingTheCommandLineParser` for details of how to add required arguments and options flags to the basic parser.
 
+Next,
+on line 37,
+we load the :ref:`NowcastConfigFile` given on the command-line into a Python dict data structure:
+
+.. code-block:: python
+
+    config = lib.load_config(parsed_args.config_file)
+
+Lines 38 to 40 configure the logging system and start logging messages about what we've accomplished so far:
+
+.. code-block:: python
+
+    lib.configure_logging(config, logger, parsed_args.debug)
+    logger.info('running in process {}'.format(os.getpid()))
+    logger.info('read config from {.config_file}'.format(parsed_args))
+
+The settings that define where the log files are stored,
+how their contents are formatted,
+and how many days
+(nowcast runs)
+log files are preserved at included in the :ref:`NowcastConfigFile`.
+
+The :option:`--debug` on the command-line sets the value of :kbd:`parsed_arg.debug` to :py:obj:`True`
+(it defaults to :py:obj:`False`).
+
+The :py:data:`logger` instance has a variety of method for sending messages to the logging system at different levels of importance.
+We mostly use :py:meth:`logging.info` for generally informative methods,
+:py:meth:`logging.debug` for message about deeper levels of execution,
+and :py:meth:`logging.error` for error message.
+
+Here,
+we log the id of the operating system process that the worker is running in,
+and the file path/name of the configuration file that it is using.
+
 
 .. _ExtendingTheCommandLineParser:
 
