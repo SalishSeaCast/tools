@@ -260,11 +260,11 @@ def _nc_file_hg_url(nc_filepath):
     """Calculate a Bitbucket URL for nc_filepath.
 
     It is assumed that nc_filepath is a relative path to a netCDF file
-    that resides in a Mercurial repository with a default path that points
+    that resides in a Mercurial repositorywith a default path that points
     to Bitbucket.org.
 
     :arg nc_filepath: Relative path and filename of the netCDF file
-                      to calculate the Bitbucket URL for
+                        to calculate the Bitbucket URL for
     :type nc_filepath: str
 
     :returns: The Bitbucket URL for the nc_filepath netCDF file
@@ -404,6 +404,87 @@ def generate_pressure_file(filename, p_file, t_file, alt_file,day):
     	atmpres[:]=press_corr[:]
 
     	slp_file.close()
+	
+def generate_pressure_file_ops(filename, p_file, t_file, alt_file,day):
+	""" Generates a file with CGRF pressure corrected to sea level.
+
+	:arg filename: full path name where the corrected pressure should be saved
+	:type filename: string
+
+	:arg p_file: full path name of the uncorrected CGRF pressure
+	:type p_file: string
+
+	:arg t_file: full path name of the corresponding CGRF temperature
+	:type t_file: string
+
+	:arg alt_file: full path name of the altitude of CGRF cells
+	:type alt_file: string
+
+	:arg day: the date
+	:type day: arrow
+	"""
+	#load data
+	f = nc.Dataset(p_file)
+	press=f.variables['atmpres']
+	f = nc.Dataset(t_file)
+	temp=f.variables['tair']
+	time =f.variables['time_counter']
+	lon=f.variables['nav_lon']
+	lat=f.variables['nav_lat']
+	f=nc.Dataset(alt_file)
+	alt=f.variables['HGT_surface']
+	lat_a = f.variables['latitude']
+	lon_a = f.variables['longitude']
+
+
+        alt,lon_a,lat_a = _truncate_height(alt,lon_a,lat_a,lon,lat)
+
+	#correct pressure
+	press_corr=np.zeros(press.shape)
+	for k in range(press.shape[0]):
+    		press_corr[k,:,:] = _slp(alt,press[k,:,:],temp[k,:,:])
+
+	#Create netcdf
+	slp_file = nc.Dataset(filename, 'w', zlib=True)
+	description = 'corrected sea level pressure'
+	# dataset attributes
+	init_dataset_attrs(
+    	slp_file,
+    	title=(
+            	'GRIB2 {} forcing dataset for {}'
+            	.format(description, day.format('YYYY-MM-DD'))),
+        	notebook_name='',
+        	nc_filepath='',
+        	comment=(
+            	'Processed and adjusted from '
+            	'GEM 2.5km operational model'),
+        	quiet=True,
+   		 )
+    	#dimensions
+    	slp_file.createDimension('time_counter', 0)
+    	slp_file.createDimension('y', press_corr.shape[1])
+    	slp_file.createDimension('x', press_corr.shape[2])
+    	#time
+    	time_counter=slp_file.createVariable('time_counter','double', ('time_counter',))
+    	time_counter.long_name=time.long_name
+    	time_counter.units=time.units
+    	time_counter[:] = time[:]
+    	#lat/lon variables
+    	nav_lat = slp_file.createVariable('nav_lat','float32',('y','x'))
+    	nav_lat.long_name = lat.long_name
+    	nav_lat.units = lat.units
+   	nav_lat[:]=lat
+    	nav_lon = slp_file.createVariable('nav_lon','float32',('y','x'))
+    	nav_lon.long_name = lon.long_name
+    	nav_lon.units = lon.units
+    	nav_lon[:]=lon
+    	#Pressure
+    	atmpres = slp_file.createVariable('atmpres','float32',('time_counter','y','x'))
+   	atmpres.long_name = 'Sea Level Pressure'
+   	atmpres.units = press.units
+    	atmpres[:]=press_corr[:]
+
+    	slp_file.close()
 
 def _slp(Z,P,T):
     R = 287 #ideal gas constant
@@ -414,4 +495,24 @@ def _slp(Z,P,T):
     ps = P*(gam*(Z/T) +1)**(g/gam/R)
     return ps
 
+def _truncate_height(alt1,lon1,lat1,lon2,lat2):
+    """ Truncates the height file over our smaller domain.
+    alt1, lon1, lat1, are the height, longitude and latitude of the larger domain.
+    lon2, lat2 are the longitude and latitude of the smaller domain.
+    returns h,lons,lats, the height, longiutde and latitude over the smaller domain. """
 
+    #bottom left (i,j)
+    i =np.where(np.logical_and(np.abs(lon1-lon2[0,0])<10**(-5),
+                            np.abs(lat1-lat2[0,0])<10**(-5)))
+    i_st = i[1]; j_st=i[0]
+    
+    #top right
+    i = np.where(np.logical_and(np.abs(lon1-lon2[-1,-1])<10**(-5),
+                            np.abs(lat1-lat2[-1,-1])<10**(-5)))
+    
+    i_ed=i[1]; j_ed = i[0]
+    
+    h_small = alt1[0,j_st:j_ed+1,i_st:i_ed+1]
+    lat_small = lat1[j_st:j_ed+1,i_st:i_ed+1]
+    lon_small = lon1[j_st:j_ed+1,i_st:i_ed+1]
+    return h_small, lon_small, lat_small
