@@ -19,6 +19,7 @@ netCDF files.
 """
 from __future__ import division
 
+from collections import OrderedDict
 import glob
 import logging
 import os
@@ -97,12 +98,12 @@ def grib_to_netcdf(config, checklist):
     p2 = os.path.join(today.format('YYYYMMDD'), '06')
     p3 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.debug('forecast sections: {} {} {}'.format(p1, p2, p3))
-    HoursWeNeed = {
-        # part: (dir, start hr, end hr)
-        'part one':  (p1, 24-18-1, 24+6-18),
-        'part two':  (p2, 7-6, 18-6),
-        'part three': (p3, 19-18, 23-18),
-    }
+    fcst_section_hrs = OrderedDict([
+        # (part, (dir, start hr, end hr))
+        ('section 1', (p1, 24-18-1, 24+6-18)),
+        ('section 2', (p2, 7-6, 18-6)),
+        ('section 3', (p3, 19-18, 23-18)),
+    ])
 
     # CLEANUP
     size = 'watershed'
@@ -121,9 +122,9 @@ def grib_to_netcdf(config, checklist):
     logfile = open('wglog', 'w')
 
 
-    process_gribUV(config, HoursWeNeed, logfile)
-    process_gribscalar(config, HoursWeNeed, logfile)
-    outgrib, outzeros = GRIBappend(config, ymd, HoursWeNeed, logfile)
+    process_gribUV(config, fcst_section_hrs, logfile)
+    process_gribscalar(config, fcst_section_hrs, logfile)
+    outgrib, outzeros = GRIBappend(config, ymd, fcst_section_hrs, logfile)
     if size != 'full':
         outgrib, outzeros = subsample(
             config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile)
@@ -135,7 +136,7 @@ def grib_to_netcdf(config, checklist):
     plt.savefig('wg.png')
 
 
-def process_gribUV(config, HoursWeNeed, logfile):
+def process_gribUV(config, fcst_section_hrs, logfile):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
     coordinates.
@@ -146,13 +147,12 @@ def process_gribUV(config, HoursWeNeed, logfile):
     # grid_defn.pl expects to find wgrib2 in the pwd,
     # create a symbolic link to keep it happy
     os.symlink(wgrib2, 'wgrib2')
-    for part in ('part one', 'part two', 'part three'):
-        for fhour in range(HoursWeNeed[part][1], HoursWeNeed[part][2]+1):
+    for day_fcst, start_hr, end_hr in fcst_section_hrs.values():
+        for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
-            sfhour = '{:0=3}'.format(fhour)
-            dire = HoursWeNeed[part][0]
-            outuv = os.path.join(GRIBdir, dire, sfhour, 'UV.grib')
-            outuvrot = os.path.join(GRIBdir, dire, sfhour, 'UVrot.grib')
+            sfhour = '{:03d}'.format(fhour)
+            outuv = os.path.join(GRIBdir, day_fcst, sfhour, 'UV.grib')
+            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib')
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -164,10 +164,10 @@ def process_gribUV(config, HoursWeNeed, logfile):
             except Exception:
                 pass
             # Consolidate u and v wind component values into one file
-            fn = glob.glob(os.path.join(GRIBdir, dire, sfhour, '*UGRD*'))
+            fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*UGRD*'))
             sp.call(
                 [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
-            fn = glob.glob(os.path.join(GRIBdir, dire, sfhour, '*VGRD*'))
+            fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*VGRD*'))
             sp.call(
                 [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
             ### print sp.check_output(["./wgrib2",fn[0],"-vt"])
@@ -183,7 +183,7 @@ def process_gribUV(config, HoursWeNeed, logfile):
     os.unlink('wgrib2')
 
 
-def process_gribscalar(config, HoursWeNeed, logfile):
+def process_gribscalar(config, fcst_section_hrs, logfile):
     """Use wgrib2 and grid_defn.pl to consolidate each hour's scalar
     variables into an single file and then re-grid them to match the
     u and v wind components.
@@ -194,13 +194,13 @@ def process_gribscalar(config, HoursWeNeed, logfile):
     # grid_defn.pl expects to find wgrib2 in the pwd,
     # create a symbolic link to keep it happy
     os.symlink(wgrib2, 'wgrib2')
-    for part in ('part one', 'part two', 'part three'):
-        for fhour in range(HoursWeNeed[part][1], HoursWeNeed[part][2]+1):
+    for day_fcst, start_hr, end_hr in fcst_section_hrs.values():
+        for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
-            sfhour = '{:0=3}'.format(fhour)
-            dire = HoursWeNeed[part][0]
-            outscalar = os.path.join(GRIBdir, dire, sfhour, 'scalar.grib')
-            outscalargrid = os.path.join(GRIBdir, dire, sfhour, 'gscalar.grib')
+            sfhour = '{:03d}'.format(fhour)
+            outscalar = os.path.join(GRIBdir, day_fcst, sfhour, 'scalar.grib')
+            outscalargrid = os.path.join(
+                GRIBdir, day_fcst, sfhour, 'gscalar.grib')
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -212,7 +212,7 @@ def process_gribscalar(config, HoursWeNeed, logfile):
             except Exception:
                 pass
             # Consolidate scalar variables into one file
-            for fn in glob.glob(os.path.join(GRIBdir, dire, sfhour, '*')):
+            for fn in glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*')):
                 if not ('GRD' in fn) and ('CMC' in fn):
                     sp.call(
                         [wgrib2, fn, '-append', '-grib', outscalar],
@@ -228,7 +228,7 @@ def process_gribscalar(config, HoursWeNeed, logfile):
     os.unlink('wgrib2')
 
 
-def GRIBappend(config, ymd, HoursWeNeed, logfile):
+def GRIBappend(config, ymd, fcst_section_hrs, logfile):
     """Concatenate in hour order the wind velocity components
     and scalar variables from hourly files into a daily file.
 
@@ -244,21 +244,21 @@ def GRIBappend(config, ymd, HoursWeNeed, logfile):
     # Delete residual instances of files that are created so that
     # function can be re-run cleanly
     try:
-        os.unremove(outgrib)
+        os.remove(outgrib)
     except Exception:
         pass
     try:
         os.remove(outzeros)
     except Exception:
         pass
-    for part in ('part one', 'part two', 'part three'):
-        for fhour in range(HoursWeNeed[part][1], HoursWeNeed[part][2]+1):
+    for section, (day_fcst, start_hr, end_hr) in fcst_section_hrs.items():
+        for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
-            sfhour = '{:0=3}'.format(fhour)
-            dire = HoursWeNeed[part][0]
-            outuvrot = os.path.join(GRIBdir, dire, sfhour, 'UVrot.grib')
-            outscalargrid = os.path.join(GRIBdir, dire, sfhour, 'gscalar.grib')
-            if fhour == 0 or (part == 'part one' and fhour == 5):
+            sfhour = '{:03d}'.format(fhour)
+            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib')
+            outscalargrid = os.path.join(
+                GRIBdir, day_fcst, sfhour, 'gscalar.grib')
+            if section == 'section 1' and fhour == 5:
                 sp.call(
                     [wgrib2, outuvrot, '-append', '-grib', outzeros],
                     stdout=logfile)
