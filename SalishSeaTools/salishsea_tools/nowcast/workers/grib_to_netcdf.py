@@ -90,23 +90,12 @@ def grib_to_netcdf(config, checklist):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
-    utc = arrow.utcnow()
-    now = utc.to('Canada/Pacific')
-    year, month, day = now.year, now.month, now.day
-    yesterday = now.replace(days=-1)
-    yearm1, monthm1, daym1 = yesterday.year, yesterday.month, yesterday.day
-    ymd = (
-        'y{year}m{month:0=2}d{day:0=2}'
-        .format(year=year, month=month, day=day))
-    p1 = (
-        '{year}{month:0=2}{day:0=2}/18/'
-        .format(year=yearm1, month=monthm1, day=daym1))
-    p2 = (
-        '{year}{month:0=2}{day:0=2}/06/'
-        .format(year=year, month=month, day=day))
-    p3 = (
-        '{year}{month:0=2}{day:0=2}/18/'
-        .format(year=year, month=month, day=day))
+    today = arrow.utcnow().to('Canada/Pacific')
+    yesterday = today.replace(days=-1)
+    ymd = today.strftime('y%Ym%md%d')
+    p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
+    p2 = os.path.join(today.format('YYYYMMDD'), '06')
+    p3 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.debug('forecast sections: {} {} {}'.format(p1, p2, p3))
     HoursWeNeed = {
         # part: (dir, start hr, end hr)
@@ -162,8 +151,8 @@ def process_gribUV(config, HoursWeNeed, logfile):
             # Set up directories and files
             sfhour = '{:0=3}'.format(fhour)
             dire = HoursWeNeed[part][0]
-            outuv = GRIBdir+dire+sfhour+'/UV.grib'
-            outuvrot = GRIBdir+dire+sfhour+'/UVrot.grib'
+            outuv = os.path.join(GRIBdir, dire, sfhour, 'UV.grib')
+            outuvrot = os.path.join(GRIBdir, dire, sfhour, 'UVrot.grib')
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -175,10 +164,10 @@ def process_gribUV(config, HoursWeNeed, logfile):
             except Exception:
                 pass
             # Consolidate u and v wind component values into one file
-            fn = glob.glob(GRIBdir+dire+sfhour+'/*UGRD*')
+            fn = glob.glob(os.path.join(GRIBdir, dire, sfhour, '*UGRD*'))
             sp.call(
                 [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
-            fn = glob.glob(GRIBdir+dire+sfhour+'/*VGRD*')
+            fn = glob.glob(os.path.join(GRIBdir, dire, sfhour, '*VGRD*'))
             sp.call(
                 [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
             ### print sp.check_output(["./wgrib2",fn[0],"-vt"])
@@ -210,8 +199,8 @@ def process_gribscalar(config, HoursWeNeed, logfile):
             # Set up directories and files
             sfhour = '{:0=3}'.format(fhour)
             dire = HoursWeNeed[part][0]
-            outscalar = GRIBdir+dire+sfhour+'/scalar.grib'
-            outscalargrid = GRIBdir+dire+sfhour+'/gscalar.grib'
+            outscalar = os.path.join(GRIBdir, dire, sfhour, 'scalar.grib')
+            outscalargrid = os.path.join(GRIBdir, dire, sfhour, 'gscalar.grib')
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -223,7 +212,7 @@ def process_gribscalar(config, HoursWeNeed, logfile):
             except Exception:
                 pass
             # Consolidate scalar variables into one file
-            for fn in glob.glob(GRIBdir+dire+sfhour+'/*'):
+            for fn in glob.glob(os.path.join(GRIBdir, dire, sfhour, '*')):
                 if not ('GRD' in fn) and ('CMC' in fn):
                     sp.call(
                         [wgrib2, fn, '-append', '-grib', outscalar],
@@ -267,8 +256,8 @@ def GRIBappend(config, ymd, HoursWeNeed, logfile):
             # Set up directories and files
             sfhour = '{:0=3}'.format(fhour)
             dire = HoursWeNeed[part][0]
-            outuvrot = GRIBdir+dire+sfhour+'/UVrot.grib'
-            outscalargrid = GRIBdir+dire+sfhour+'/gscalar.grib'
+            outuvrot = os.path.join(GRIBdir, dire, sfhour, 'UVrot.grib')
+            outscalargrid = os.path.join(GRIBdir, dire, sfhour, 'gscalar.grib')
             if fhour == 0 or (part == 'part one' and fhour == 5):
                 sp.call(
                     [wgrib2, outuvrot, '-append', '-grib', outzeros],
