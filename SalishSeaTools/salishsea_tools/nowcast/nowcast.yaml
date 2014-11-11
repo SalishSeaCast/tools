@@ -18,6 +18,10 @@ weather:
   GRIB_dir: /ocean/sallen/allen/research/MEOPAR/GRIB/
   # Destination directory for NEMO forcing files generated from GRIB2 files
   ops_dir: /ocean/sallen/allen/research/MEOPAR/Operational/
+  # Location of wgrib2 executable
+  wgrib2: /ocean/sallen/allen/research/MEOPAR/private-tools/grib2/wgrib2/wgrib2
+  # Location of Pramod Thupaki's grid_defn.pl script
+  grid_defn.pl: /ocean/sallen/allen/research/MEOPAR/private-tools/PThupaki/grid_defn.pl
 
 logging:
   log_file: /home/dlatorne/public_html/MEOPAR/nowcast/nowcast.log
