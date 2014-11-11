@@ -16,6 +16,8 @@ ssh:
 weather:
   # Destination directory for downloaded GEM 2.5km operational model GRIB2 files
   GRIB_dir: /ocean/sallen/allen/research/MEOPAR/GRIB/
+  # Destination directory for NEMO forcing files generated from GRIB2 files
+  ops_dir: /ocean/sallen/allen/research/MEOPAR/Operational/
 
 logging:
   log_file: /home/dlatorne/public_html/MEOPAR/nowcast/nowcast.log
@@ -34,6 +36,8 @@ msg_types:
     the end: end of automation
   get_NeahBay_ssh:
     success: Neah Bay ssh ready
+  grib_to_netcdf:
+    success: atmospheric forcing ready
   nowcast_mgr:
     ack: message acknowledged
     undefined msg: ERROR - message type is not defined
