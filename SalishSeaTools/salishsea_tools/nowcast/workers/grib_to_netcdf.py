@@ -23,7 +23,7 @@ from collections import OrderedDict
 import glob
 import logging
 import os
-import subprocess as sp
+import subprocess
 
 import arrow
 import netCDF4 as nc
@@ -40,6 +40,7 @@ from salishsea_tools.nowcast import lib
 worker_name = lib.get_module_name()
 
 logger = logging.getLogger(worker_name)
+wgrib2_logger = logging.getLogger('wgrib2')
 
 context = zmq.Context()
 
@@ -60,19 +61,36 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
+    configure_wgrib2_logging(config)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
-    grib_to_netcdf(config, checklist)
-    logger.info('NEMO-atmos forcing file creation completed')
-    # Exchange success messages with the nowcast manager process
-#    success(config, socket, checklist)
+    try:
+        grib_to_netcdf(config, checklist)
+        logger.info('NEMO-atmos forcing file creation completed')
+        # Exchange success messages with the nowcast manager process
+#       success(config, socket, checklist)
+    except subprocess.CalledProcessError:
+        logger.critical('NEMO-atmos forcing file creation failed')
+#       failure(config, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
+
+
+def configure_wgrib2_logging(config):
+    wgrib2_logger.setLevel(logging.DEBUG)
+    handler = logging.FileHandler(
+        config['logging']['wgrib2_log_file'], mode='w')
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        config['logging']['message_format'],
+        datefmt=config['logging']['datetime_format'])
+    handler.setFormatter(formatter)
+    wgrib2_logger.addHandler(handler)
 
 
 def success(config, socket, checklist):
@@ -115,27 +133,35 @@ def grib_to_netcdf(config, checklist):
         ('section 3', (p3, 19-18, 23-18)),
     ])
 
-    # PROMOTE TO MODULE LEVEL
-    try:
-        os.remove('wglog')
-    except Exception:
-        pass
-    logfile = open('wglog', 'w')
-
-
-    process_gribUV(config, fcst_section_hrs, logfile)
-    process_gribscalar(config, fcst_section_hrs, logfile)
-    outgrib, outzeros = GRIBappend(config, ymd, fcst_section_hrs, logfile)
+    process_gribUV(config, fcst_section_hrs)
+    process_gribscalar(config, fcst_section_hrs)
+    outgrib, outzeros = GRIBappend(config, ymd, fcst_section_hrs)
     outgrib, outzeros = subsample(
-        config, ymd, IST, IEN, JST, JEN, outgrib, outzeros, logfile)
-    outnetcdf, out0netcdf = makeCDF(config, ymd, outgrib, outzeros, logfile)
+        config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
+    outnetcdf, out0netcdf = makeCDF(config, ymd, outgrib, outzeros)
     processCDF(outnetcdf, out0netcdf, ymd)
     renameCDF(outnetcdf)
 
     plt.savefig('wg.png')
 
 
-def process_gribUV(config, fcst_section_hrs, logfile):
+def run_wgrib2(cmd):
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        for line in output.split('\n'):
+            if line:
+                wgrib2_logger.debug(line)
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            'subprocess "{cmd}" failed with return code {status}'
+            .format(cmd=cmd, status=e.returncode))
+        for line in e.output.split('\n'):
+            if line:
+                logger.error(line)
+        raise
+
+
+def process_gribUV(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
     coordinates.
@@ -164,25 +190,24 @@ def process_gribUV(config, fcst_section_hrs, logfile):
                 pass
             # Consolidate u and v wind component values into one file
             fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*UGRD*'))
-            sp.call(
-                [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
+            cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
+            run_wgrib2(cmd)
             fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*VGRD*'))
-            sp.call(
-                [wgrib2, fn[0], '-append', '-grib', outuv], stdout=logfile)
-            ### print sp.check_output(["./wgrib2",fn[0],"-vt"])
+            cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
+            run_wgrib2(cmd)
             # rotate
-            GRIDspec = sp.check_output([grid_defn, outuv])
+            GRIDspec = subprocess.check_output([grid_defn, outuv])
             cmd = [wgrib2, outuv]
             cmd.extend('-new_grid_winds earth'.split())
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outuvrot)
-            sp.call(cmd, stdout=logfile)
+            run_wgrib2(cmd)
             os.remove(outuv)
     os.unlink('wgrib2')
 
 
-def process_gribscalar(config, fcst_section_hrs, logfile):
+def process_gribscalar(config, fcst_section_hrs):
     """Use wgrib2 and grid_defn.pl to consolidate each hour's scalar
     variables into an single file and then re-grid them to match the
     u and v wind components.
@@ -213,21 +238,20 @@ def process_gribscalar(config, fcst_section_hrs, logfile):
             # Consolidate scalar variables into one file
             for fn in glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*')):
                 if not ('GRD' in fn) and ('CMC' in fn):
-                    sp.call(
-                        [wgrib2, fn, '-append', '-grib', outscalar],
-                        stdout=logfile)
+                    cmd = [wgrib2, fn, '-append', '-grib', outscalar]
+                    run_wgrib2(cmd)
             #  Re-grid
-            GRIDspec = sp.check_output([grid_defn, outscalar])
+            GRIDspec = subprocess.check_output([grid_defn, outscalar])
             cmd = [wgrib2, outscalar]
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outscalargrid)
-            sp.call(cmd, stdout=logfile, stderr=logfile)
+            run_wgrib2(cmd)
             os.remove(outscalar)
     os.unlink('wgrib2')
 
 
-def GRIBappend(config, ymd, fcst_section_hrs, logfile):
+def GRIBappend(config, ymd, fcst_section_hrs):
     """Concatenate in hour order the wind velocity components
     and scalar variables from hourly files into a daily file.
 
@@ -258,25 +282,21 @@ def GRIBappend(config, ymd, fcst_section_hrs, logfile):
             outscalargrid = os.path.join(
                 GRIBdir, day_fcst, sfhour, 'gscalar.grib')
             if section == 'section 1' and fhour == 5:
-                sp.call(
-                    [wgrib2, outuvrot, '-append', '-grib', outzeros],
-                    stdout=logfile)
-                sp.call(
-                    [wgrib2, outscalargrid, '-append', '-grib', outzeros],
-                    stdout=logfile)
+                cmd = [wgrib2, outuvrot, '-append', '-grib', outzeros]
+                run_wgrib2(cmd)
+                cmd = [wgrib2, outscalargrid, '-append', '-grib', outzeros]
+                run_wgrib2(cmd)
             else:
-                sp.call(
-                    [wgrib2, outuvrot, '-append', '-grib', outgrib],
-                    stdout=logfile)
-                sp.call(
-                    [wgrib2, outscalargrid, '-append', '-grib', outgrib],
-                    stdout=logfile)
+                cmd = [wgrib2, outuvrot, '-append', '-grib', outgrib]
+                run_wgrib2(cmd)
+                cmd = [wgrib2, outscalargrid, '-append', '-grib', outgrib]
+                run_wgrib2(cmd)
             os.remove(outuvrot)
             os.remove(outscalargrid)
     return outgrib, outzeros
 
 
-def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
+def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
     flows for runoff forcing files for the Salish Sea NEMO model.
@@ -289,26 +309,26 @@ def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
         OPERdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
     istr = '{ist}:{ien}'.format(ist=ist, ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
-    sp.call(
-        [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib],
-        stdout=logfile)
-    sp.call(
-        [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros],
-        stdout=logfile)
+    cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
+    run_wgrib2(cmd)
+    cmd = [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros]
+    run_wgrib2(cmd)
     os.remove(outgrib)
     os.remove(outzeros)
     return newgrib, newzeros
 
 
-def makeCDF(config, ymd, outgrib, outzeros, logfile):
+def makeCDF(config, ymd, outgrib, outzeros):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
     outnetcdf = os.path.join(OPERdir, 'ops_{ymd}.nc'.format(ymd=ymd))
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
-    sp.call([wgrib2, outgrib, '-netcdf', outnetcdf], stdout=logfile)
-    sp.call([wgrib2, outzeros, '-netcdf', out0netcdf], stdout=logfile)
+    cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
+    run_wgrib2(cmd)
+    cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
+    run_wgrib2(cmd)
     os.remove(outgrib)
     os.remove(outzeros)
     return outnetcdf, out0netcdf
