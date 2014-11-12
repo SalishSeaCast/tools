@@ -229,7 +229,7 @@ def get_watershed_prop_dict(watershedname):
 
 #define a function to get the bathymetry and size of each cell
 def get_bathy_cell_size():
-	fC = NC.Dataset('../../../nemo-forcing/grid/coordinates_seagrid_SalishSea.nc','r')
+	fC = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/coordinates_seagrid_SalishSea.nc','r')
 	e1t = fC.variables['e1t']
 	e2t = fC.variables['e2t']
 	return e1t, e2t
