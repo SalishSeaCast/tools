@@ -99,6 +99,13 @@ or import modules from it:
 .. automodule:: nc_tools
     :members:
 
+.. _salishsea_tools.rivertools:
+
+:py:mod:`rivertools` Module
+===========================
+
+.. automodule:: rivertools
+    :members:
 
 .. _salishsea_tools.tidetools:
 
