@@ -72,10 +72,10 @@ def main():
         grib_to_netcdf(config, checklist)
         logger.info('NEMO-atmos forcing file creation completed')
         # Exchange success messages with the nowcast manager process
-#       success(config, socket, checklist)
+        tell_manager('success', config, socket, checklist)
     except subprocess.CalledProcessError:
         logger.critical('NEMO-atmos forcing file creation failed')
-#       failure(config, socket)
+        tell_manager('failure', config, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
@@ -93,8 +93,7 @@ def configure_wgrib2_logging(config):
     wgrib2_logger.addHandler(handler)
 
 
-def success(config, socket, checklist):
-    msg_type = 'success'
+def tell_manager(msg_type, config, socket, checklist=None):
     # Send message to nowcast manager
     message = lib.serialize_message(worker_name, msg_type, checklist)
     socket.send(message)

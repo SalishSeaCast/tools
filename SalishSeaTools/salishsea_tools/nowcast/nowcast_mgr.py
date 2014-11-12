@@ -79,7 +79,11 @@ def parse_message(config, message):
             .format(worker=worker,
                     msg_type=msg_type,
                     msg_words=config['msg_types'][worker][msg_type]))
-    if msg_type == 'success':
+    if msg_type.startswith('success'):
+        if worker == 'download_weather' and msg_type.endswith('06'):
+            reply = reply_ack
+        if worker == 'download_weather' and msg_type.endswith('18'):
+            reply = reply_ack
         if worker == 'get_NeahBay_ssh':
             reply = reply_ack
             next_step = update_checklist
@@ -88,14 +92,21 @@ def parse_message(config, message):
             reply = reply_ack
             next_step = update_checklist
             next_step_args = [worker, 'rivers', payload]
-    if msg_type == 'success 06':
-        reply = reply_ack
-    if msg_type == 'failure 06':
-        reply = reply_ack
-    if msg_type == 'success 18':
-        reply = reply_ack
-    if msg_type == 'failure 18':
-        reply = reply_ack
+        if worker == 'grib_to_netcdf':
+            reply = reply_ack
+            next_step = update_checklist
+            next_step_args = [worker, 'weather forcing', payload]
+    if msg_type.startswith('failure'):
+        if worker == 'download_weather' and msg_type.endswith('06'):
+            reply = reply_ack
+        if worker == 'download_weather' and msg_type.endswith('18'):
+            reply = reply_ack
+        if worker == 'get_NeahBay_ssh':
+            reply = reply_ack
+        if worker == 'make_runoff_file':
+            reply = reply_ack
+        if worker == 'grib_to_netcdf':
+            reply = reply_ack
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
         reply = reply_ack
