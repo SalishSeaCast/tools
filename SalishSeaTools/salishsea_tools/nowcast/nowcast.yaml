@@ -38,6 +38,8 @@ msg_types:
     success 18: 18 weather forecast ready
     failure 18: 18 weather forecast download failed
     the end: end of automation
+  make_runoff_file:
+    success: rivers forcing ready
   get_NeahBay_ssh:
     success: Neah Bay ssh ready
   grib_to_netcdf:

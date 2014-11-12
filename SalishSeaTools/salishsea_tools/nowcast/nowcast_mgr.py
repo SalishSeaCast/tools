@@ -59,8 +59,13 @@ def init_req_rep(port, context):
 
 def parse_message(config, message):
     msg = lib.deserialize_message(message)
+    # Unpack message items
     worker = msg['source']
     msg_type = msg['msg_type']
+    payload = msg['payload']
+    # Set default reply message, next processing step function,
+    # and its arguments
+    reply_ack = lib.serialize_message(mgr_name, 'ack')
     next_step = do_nothing
     next_step_args = []
     if msg_type not in config['msg_types'][worker]:
@@ -76,20 +81,24 @@ def parse_message(config, message):
                     msg_words=config['msg_types'][worker][msg_type]))
     if msg_type == 'success':
         if worker == 'get_NeahBay_ssh':
-            reply = lib.serialize_message(mgr_name, 'ack')
+            reply = reply_ack
             next_step = update_checklist
-            next_step_args = ['sshNeahBay', msg['payload']]
+            next_step_args = [worker, 'sshNeahBay', payload]
+        if worker == 'make_runoff_file':
+            reply = reply_ack
+            next_step = update_checklist
+            next_step_args = [worker, 'rivers', payload]
     if msg_type == 'success 06':
-        reply = lib.serialize_message(mgr_name, 'ack')
+        reply = reply_ack
     if msg_type == 'failure 06':
-        reply = lib.serialize_message(mgr_name, 'ack')
+        reply = reply_ack
     if msg_type == 'success 18':
-        reply = lib.serialize_message(mgr_name, 'ack')
+        reply = reply_ack
     if msg_type == 'failure 18':
-        reply = lib.serialize_message(mgr_name, 'ack')
+        reply = reply_ack
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
-        reply = lib.serialize_message(mgr_name, 'ack')
+        reply = reply_ack
         next_step = finish_automation
     return reply, next_step, next_step_args
 
@@ -98,8 +107,10 @@ def do_nothing(*args):
     pass
 
 
-def update_checklist(key, worker_checklist):
+def update_checklist(worker, key, worker_checklist):
     checklist.update({key: worker_checklist})
+    logger.info(
+        'checklist updated with {} items from {} worker'.format(key, worker))
 
 
 def finish_automation(*args):

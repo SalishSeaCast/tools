@@ -48,9 +48,10 @@ def main():
     checklist = {}
     RealFraserClimateElse(config, checklist)
     logger.info(
-        'Runoff file from Fraser at Hope, Climatology Else creattion completed')
+        'Creation of runoff file from Fraser at Hope '
+        'and climatology elsewhere completed')
     # Exchange success messages with the nowcast manager process
-#    success(config, socket, checklist)
+    success(config, socket, checklist)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
