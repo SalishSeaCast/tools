@@ -8,5 +8,5 @@ python -m gribTnetcdf
 ./deflate.sh
 
 ./upload.sh
-
+ssh orcinus MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
 
