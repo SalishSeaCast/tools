@@ -44,6 +44,16 @@ logger = logging.getLogger(worker_name)
 context = zmq.Context()
 
 
+# Corners of sub-region of GEM 2.5km operational forecast grid
+# that enclose the watersheds (other than the Fraser River)
+# that are used to calculate river flows for runoff forcing files
+# for the Salish Sea NEMO model.
+# The Fraser is excluded because real-time gauge data at Hope are
+# available for it.
+IST, IEN = 110, 365
+JST, JEN = 20, 285
+
+
 def main():
     # Prepare the worker
     parser = lib.basic_arg_parser(worker_name, description=__doc__)
@@ -105,15 +115,6 @@ def grib_to_netcdf(config, checklist):
         ('section 3', (p3, 19-18, 23-18)),
     ])
 
-    # CLEANUP
-    size = 'watershed'
-    if size == 'full':
-        fileextra = ''
-    elif size == 'watershed':  # see AtmosphericGridSelection.ipynb
-        fileextra = ''
-        ist, ien = 110, 365
-        jst, jen = 20, 285
-
     # PROMOTE TO MODULE LEVEL
     try:
         os.remove('wglog')
@@ -125,11 +126,9 @@ def grib_to_netcdf(config, checklist):
     process_gribUV(config, fcst_section_hrs, logfile)
     process_gribscalar(config, fcst_section_hrs, logfile)
     outgrib, outzeros = GRIBappend(config, ymd, fcst_section_hrs, logfile)
-    if size != 'full':
-        outgrib, outzeros = subsample(
-            config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile)
-    outnetcdf, out0netcdf = makeCDF(
-        config, ymd, fileextra, outgrib, outzeros, logfile)
+    outgrib, outzeros = subsample(
+        config, ymd, IST, IEN, JST, JEN, outgrib, outzeros, logfile)
+    outnetcdf, out0netcdf = makeCDF(config, ymd, outgrib, outzeros, logfile)
     processCDF(outnetcdf, out0netcdf, ymd)
     renameCDF(outnetcdf)
 
@@ -278,7 +277,9 @@ def GRIBappend(config, ymd, fcst_section_hrs, logfile):
 
 
 def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
-    """Crop the grid to the Salish Sea NEMO model domain.
+    """Crop the grid to the sub-region of GEM 2.5km operational forecast
+    grid that encloses the watersheds that are used to calculate river
+    flows for runoff forcing files for the Salish Sea NEMO model.
     """
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
@@ -299,14 +300,12 @@ def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros, logfile):
     return newgrib, newzeros
 
 
-def makeCDF(config, ymd, fileextra, outgrib, outzeros, logfile):
+def makeCDF(config, ymd, outgrib, outzeros, logfile):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
-    outnetcdf = os.path.join(
-        OPERdir,
-        'ops{fileextra}_{ymd}.nc'.format(fileextra=fileextra, ymd=ymd))
+    outnetcdf = os.path.join(OPERdir, 'ops_{ymd}.nc'.format(ymd=ymd))
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
     sp.call([wgrib2, outgrib, '-netcdf', outnetcdf], stdout=logfile)
     sp.call([wgrib2, outzeros, '-netcdf', out0netcdf], stdout=logfile)
