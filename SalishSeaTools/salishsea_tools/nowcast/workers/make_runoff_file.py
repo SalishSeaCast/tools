@@ -33,6 +33,7 @@ logger = logging.getLogger(worker_name)
 
 context = zmq.Context()
 
+
 def main():
     # Prepare the worker
     parser = lib.basic_arg_parser(worker_name, description=__doc__)
@@ -78,7 +79,7 @@ def success(config, socket, checklist):
 
 
 def RealFraserClimateElse(config, checklist):
-    '''Driver Routine to read Fraser River at Hope flow and insert in 
+    '''Driver Routine to read Fraser River at Hope flow and insert in
     climatology for everything else'''
 
     # find yesterday
@@ -105,7 +106,7 @@ def RealFraserClimateElse(config, checklist):
 
     # calculate combined runoff
     pd = rivertools.get_watershed_prop_dict('fraser')
-    runoff = fraser_correction(pd, FlowAtHope , yesterday, afterHope, 
+    runoff = fraser_correction(pd, FlowAtHope , yesterday, afterHope,
                                nonFraser, fraserratio, otherratio,
                                driverflow)
 
@@ -129,11 +130,13 @@ def FraserClimatology():
     afterHope = np.array(FraserClimatologySeparation['after Hope by Month'])
     return otherratio, fraserratio, nonFraser, afterHope
 
+
 def getFraserAtHope():
     '''get Fraser Flow data at Hope from ECget file'''
     filename = '/data/dlatorne/SOG-projects/SOG-forcing/ECget/Fraser_flow'
     fraserflow = np.loadtxt(filename)
     return fraserflow
+
 
 def getRiverClimatology():
     '''read in the monthly climatology that we will use for all the other rivers'''
@@ -151,7 +154,6 @@ def getRiverClimatology():
 def calculate_daily_flow(r, criverflow):
     '''interpolate the daily values from the monthly values'''
 
-    print r
     pyear, nyear = r.year, r.year
     if r.day < 16:
         prevmonth = r.month-1
@@ -168,25 +170,24 @@ def calculate_daily_flow(r, criverflow):
 
     fp = r - arrow.get(pyear,prevmonth,15)
     fn = arrow.get(nyear,nextmonth,15) - r
-    print fp, fn
     ft = fp+fn
     fp = fp.days/ft.days
     fn = fn.days/ft.days
-    print ft, fp, fn
     driverflow = fn*criverflow[prevmonth-1] + fp*criverflow[nextmonth-1]
     return driverflow
+
 
 def write_file(directory, filename, r, flow, lat, lon, riverdepth):
     ''' given the flow and the riverdepth and the date, write the nc file'''
     nemo = NC.Dataset(directory+'/'+filename, 'w')
-    nemo.description = 'Real Fraser Values, Daily Climatology for Other Rivers' 
-    
+    nemo.description = 'Real Fraser Values, Daily Climatology for Other Rivers'
+
     # dimensions
     ymax, xmax = lat.shape
     nemo.createDimension('x', xmax)
     nemo.createDimension('y', ymax)
     nemo.createDimension('time_counter', None)
-    
+
     # variables
     # latitude and longitude
     nav_lat = nemo.createVariable('nav_lat','float32',('y','x'),zlib=True)
@@ -211,6 +212,7 @@ def write_file(directory, filename, r, flow, lat, lon, riverdepth):
     rodepth = riverdepth
     nemo.close()
 
+
 def fraser_correction(pd, fraserflux, r, afterHope, NonFraser, fraserratio, otherratio,
                       runoff):
     ''' for the Fraser Basin only, replace basic values with the new climatology after Hope and the
@@ -223,12 +225,13 @@ def fraser_correction(pd, fraserflux, r, afterHope, NonFraser, fraserratio, othe
         else:
             flux = calculate_daily_flow(r,NonFraser)
             subarea = otherratio
-        
+
         river = pd[key]
         runoff = rivertools.fill_runoff_array(flux*river['prop']/subarea,river['i'],
                           river['di'],river['j'],river['dj'],river['depth'],
                           runoff,np.empty_like(runoff))[0]
     return runoff
+
 
 if __name__ == '__main__':
     main()
