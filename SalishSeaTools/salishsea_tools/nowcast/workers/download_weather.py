@@ -85,7 +85,7 @@ def main():
         tell_manager('success', parsed_args.forecast, config, socket)
     except OSError:
         success = False
-        logger.info(
+        logger.error(
             'weather forecast {.forecast} downloads failed'
             .format(parsed_args))
         tell_manager('failure', parsed_args.forecast, config, socket)
@@ -197,7 +197,7 @@ def get_grib(forecast, config):
             fileURL = URL_TEMPLATE.format(
                 forecast=forecast, hour=sfhour, filename=filename)
             _, http_msg = urllib.urlretrieve(fileURL, filename)
-            logger.info(
+            logger.debug(
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=http_msg.getheader('Content-Length'),
                     fileURL=fileURL))
