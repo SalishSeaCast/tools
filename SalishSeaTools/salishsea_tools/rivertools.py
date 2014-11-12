@@ -1,8 +1,9 @@
 import numpy as np
 import netCDF4 as NC
 
-#define a function to fill the river file with the rivers of one watershed
+
 def put_watershed_into_runoff(rivertype,watershedname,flux,runoff,run_depth):
+	"""define a function to fill the river file with the rivers of one watershed"""
 	#get the proportion that each river occupies in the watershed
 	pd = get_watershed_prop_dict(watershedname)
 	for key in pd:
@@ -13,8 +14,8 @@ def put_watershed_into_runoff(rivertype,watershedname,flux,runoff,run_depth):
 			fill_runoff_array_monthly(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
 	return runoff, run_depth
 
-#define a function to get the proportion that each river occupies in the watershed
 def get_watershed_prop_dict(watershedname):
+	"""define a function to get the proportion that each river occupies in the watershed"""
 	if watershedname == 'howe':	
 		#dictionary of rivers in Howe watershed		
 		prop_dict = {'Squamish':{'prop':0.9,'i':532,'j':385,'di':1,'dj':2,'depth':3},'Burrard':{'prop':0.1,'i':457,'j':343,'di':3,'dj':1,'depth':3}}
@@ -227,15 +228,16 @@ def get_watershed_prop_dict(watershedname):
 	print(watershedname+' has '+str(len(prop_dict.keys()))+' rivers')
 	return prop_dict
 
-#define a function to get the bathymetry and size of each cell
 def get_bathy_cell_size():
+	"""define a function to get the bathymetry and size of each cell"""
 	fC = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/coordinates_seagrid_SalishSea.nc','r')
 	e1t = fC.variables['e1t']
 	e2t = fC.variables['e2t']
 	return e1t, e2t
 
-#define a function to initialise the runoff array
 def init_runoff_array():
+	"""define a function to initialise the runoff array"""
+
 	fB = NC.Dataset('../../../nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
 	D = fB.variables['Bathymetry'][:]
 	ymax, xmax = D.shape
@@ -243,8 +245,9 @@ def init_runoff_array():
 	run_depth = -np.ones((ymax,xmax))
 	return runoff, run_depth
 
-#define a function to initialise the runoff array for each month
+
 def init_runoff_array_monthly():
+	"""define a function to initialise the runoff array for each month"""
 	fB = NC.Dataset('../../../nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
 	D = fB.variables['Bathymetry'][:]
 	ymax, xmax = D.shape
@@ -253,8 +256,9 @@ def init_runoff_array_monthly():
 	print runoff.shape
 	return runoff, run_depth
 
-#define a function to fill the runoff array
 def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
+	"""define a function to fill the runoff array"""
+
 	e1t, e2t = get_bathy_cell_size()
 	number_cells = di*dj
 	area = number_cells*e1t[0,istart,jstart]*e2t[0,istart,jstart]
@@ -263,8 +267,8 @@ def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
 	run_depth[istart:istart+di,jstart:jstart+dj] = depth_of_flux
 	return runoff, run_depth
 
-#define a function to fill the runoff array
 def fill_runoff_array_monthly(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
+	"""define a function to fill the runoff array"""
 	e1t, e2t = get_bathy_cell_size()
 	number_cells = di*dj
 	area = number_cells*e1t[0,istart,jstart]*e2t[0,istart,jstart]
@@ -274,12 +278,14 @@ def fill_runoff_array_monthly(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_
 		run_depth[(month-1),istart:istart+di,jstart:jstart+dj] = depth_of_flux
 	return runoff, run_depth
 
-#define a function to check the runoff adds up to what it should
 def check_sum(runoff_orig, runoff_new, Flux):
+	"""define a function to check the runoff adds up to what it should"""
 	e1t, e2t = get_bathy_cell_size()
 	print (np.sum(runoff_new)-runoff_orig.sum())*e1t[0,450,200]*e2t[0,450,200]/1000., Flux
 
 def check_sum_monthly(runoff_orig, runoff_new, Flux):
+	"""define a function to check the runoff adds up per month to what 
+	it should"""
 	e1t, e2t = get_bathy_cell_size()
 	print (np.sum(runoff_new)/12-runoff_orig.sum()/12)*e1t[0,450,200]*e2t[0,450,200]/1000., np.mean(Flux)
 
