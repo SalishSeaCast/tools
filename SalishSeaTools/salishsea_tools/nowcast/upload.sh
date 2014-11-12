@@ -22,7 +22,7 @@ cd /ocean/sallen/allen/research/MEOPAR/Operational
 scp -p $netfile sallen@orcinus:MEOPAR/GEM2.5/ops/NEMO-atmos/
 
 # copy river file to orcinus
-cd ../Tools/I_ForcingFiles/Rivers
+cd /ocean/sallen/allen/research/MEOPAR/Rivers
 riverfile=RFraserCElse_y${Yearm1}m${Monthm1}d${Daym1}.nc
 scp -p $riverfile sallen@orcinus:MEOPAR/rivers/
 
