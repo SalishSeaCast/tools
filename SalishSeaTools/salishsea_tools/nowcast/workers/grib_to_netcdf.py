@@ -145,6 +145,11 @@ def grib_to_netcdf(config, checklist):
 
 
 def run_wgrib2(cmd):
+    """Run the wgrib2 command (cmd) in a subprocess and log its stdout
+    and stderr to the wgrib2 logger. Catch errors from the subprocess,
+    log them to the primary logger, and raise the exception for handling
+    somewhere higher in the call stack.
+    """
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         for line in output.split('\n'):
@@ -204,6 +209,7 @@ def process_gribUV(config, fcst_section_hrs):
             run_wgrib2(cmd)
             os.remove(outuv)
     os.unlink('wgrib2')
+    logger.info('consolidated and rotated wind components')
 
 
 def process_gribscalar(config, fcst_section_hrs):
@@ -248,6 +254,7 @@ def process_gribscalar(config, fcst_section_hrs):
             run_wgrib2(cmd)
             os.remove(outscalar)
     os.unlink('wgrib2')
+    logger.info('consolidated and re-gridded scalar variables')
 
 
 def GRIBappend(config, ymd, fcst_section_hrs):
@@ -292,6 +299,12 @@ def GRIBappend(config, ymd, fcst_section_hrs):
                 run_wgrib2(cmd)
             os.remove(outuvrot)
             os.remove(outscalargrid)
+    logger.info(
+        'concatenated variables in hour order from hourly files '
+        'to daily file {}'.format(outgrib))
+    logger.info(
+        'created zero-hour file for initialization of accumulated -> '
+        'instantaneous values calculations: {}'.format(outzeros))
     return outgrib, outzeros
 
 
@@ -310,8 +323,14 @@ def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
     run_wgrib2(cmd)
+    logger.info(
+        'cropped hourly file to watersheds sub-region: {}'
+        .format(newgrib))
     cmd = [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros]
     run_wgrib2(cmd)
+    logger.info(
+        'cropped zero-hour file to watersheds sub-region: {}'
+        .format(newgrib))
     os.remove(outgrib)
     os.remove(outzeros)
     return newgrib, newzeros
@@ -326,8 +345,14 @@ def makeCDF(config, ymd, outgrib, outzeros):
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
     run_wgrib2(cmd)
+    logger.info(
+        'createdd hourly netCDF classic file: {}'
+        .format(outnetcdf))
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     run_wgrib2(cmd)
+    logger.info(
+        'created zero-hour netCDF classic file: {}'
+        .format(out0netcdf))
     os.remove(outgrib)
     os.remove(outzeros)
     return outnetcdf, out0netcdf
@@ -349,6 +374,8 @@ def processCDF(outnetcdf, out0netcdf, ymd):
         acc_values['acc'][var] = data.variables[var][:]
         acc_values['zero'][var] = data0.variables[var][:]
         acc_values['inst'][var] = np.empty_like(acc_values['acc'][var])
+    data0.close()
+    os.remove(out0netcdf)
 
     plt.subplot(2, 3, 1)
     plt.plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
@@ -368,13 +395,16 @@ def processCDF(outnetcdf, out0netcdf, ymd):
         for t in range(20, 24):
             acc_values['inst'][var][t] = (
                 acc_values['acc'][var][t] - acc_values['acc'][var][t-1]) / 3600
+
     plt.subplot(2, 3, 2)
     plt.plot(acc_values['inst']['APCP_surface'][:, 200, 200])
+
     for var in acc_vars:
         data.variables[var][:] = acc_values['inst'][var][:]
     data.close()
-    data0.close()
-    os.remove(out0netcdf)
+    logger.info(
+        'calculated instantaneous values from forecast accumulated values '
+        'for precipitation and long- & short-wave radiation')
 
 
 def renameCDF(outnetcdf):
@@ -393,6 +423,8 @@ def renameCDF(outnetcdf):
     data.renameVariable('TMP_2maboveground', 'tair')
     data.renameVariable('PRMSL_meansealevel', 'atmpres')
     data.renameVariable('APCP_surface', 'precip')
+    logger.info('changed variable names to their NEMO names')
+
     Temp = data.variables['tair'][:]
     plt.subplot(2, 3, 3)
     plt.pcolormesh(Temp[0])
@@ -407,6 +439,7 @@ def renameCDF(outnetcdf):
     longwave = data.variables['therm_rad'][:]
     plt.subplot(2, 3, 6)
     plt.plot(longwave[:, 150, 150])
+
     data.close()
 
 
