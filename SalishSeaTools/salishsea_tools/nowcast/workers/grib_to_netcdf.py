@@ -132,14 +132,14 @@ def grib_to_netcdf(config, checklist):
         ('section 3', (p3, 19-18, 23-18)),
     ])
 
-    process_gribUV(config, fcst_section_hrs)
-    process_gribscalar(config, fcst_section_hrs)
-    outgrib, outzeros = GRIBappend(config, ymd, fcst_section_hrs)
-    outgrib, outzeros = subsample(
+    rotate_grib_wind(config, fcst_section_hrs)
+    collect_grib_scalars(config, fcst_section_hrs)
+    outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
+    outgrib, outzeros = crop_to_watersheds(
         config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
-    outnetcdf, out0netcdf = makeCDF(config, ymd, outgrib, outzeros)
-    processCDF(outnetcdf, out0netcdf, ymd)
-    renameCDF(outnetcdf)
+    outnetcdf, out0netcdf = make_netCDF_files(config, ymd, outgrib, outzeros)
+    calc_instantaneous(outnetcdf, out0netcdf, ymd)
+    change_to_NEMO_variable_names(outnetcdf)
 
     plt.savefig('wg.png')
 
@@ -165,7 +165,7 @@ def run_wgrib2(cmd):
         raise
 
 
-def process_gribUV(config, fcst_section_hrs):
+def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
     coordinates.
@@ -212,7 +212,7 @@ def process_gribUV(config, fcst_section_hrs):
     logger.info('consolidated and rotated wind components')
 
 
-def process_gribscalar(config, fcst_section_hrs):
+def collect_grib_scalars(config, fcst_section_hrs):
     """Use wgrib2 and grid_defn.pl to consolidate each hour's scalar
     variables into an single file and then re-grid them to match the
     u and v wind components.
@@ -257,7 +257,7 @@ def process_gribscalar(config, fcst_section_hrs):
     logger.info('consolidated and re-gridded scalar variables')
 
 
-def GRIBappend(config, ymd, fcst_section_hrs):
+def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     """Concatenate in hour order the wind velocity components
     and scalar variables from hourly files into a daily file.
 
@@ -308,7 +308,7 @@ def GRIBappend(config, ymd, fcst_section_hrs):
     return outgrib, outzeros
 
 
-def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
+def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
     flows for runoff forcing files for the Salish Sea NEMO model.
@@ -336,7 +336,7 @@ def subsample(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     return newgrib, newzeros
 
 
-def makeCDF(config, ymd, outgrib, outzeros):
+def make_netCDF_files(config, ymd, outgrib, outzeros):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
@@ -358,7 +358,7 @@ def makeCDF(config, ymd, outgrib, outzeros):
     return outnetcdf, out0netcdf
 
 
-def processCDF(outnetcdf, out0netcdf, ymd):
+def calc_instantaneous(outnetcdf, out0netcdf, ymd):
     """Calculate instantaneous values from the forecast accumulated values
     for the precipitation and radiation variables.
     """
@@ -407,7 +407,7 @@ def processCDF(outnetcdf, out0netcdf, ymd):
         'for precipitation and long- & short-wave radiation')
 
 
-def renameCDF(outnetcdf):
+def change_to_NEMO_variable_names(outnetcdf):
     """Rename variables to match NEMO naming conventions.
     """
     data = nc.Dataset(outnetcdf, 'r+')
