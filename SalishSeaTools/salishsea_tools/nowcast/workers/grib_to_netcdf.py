@@ -140,6 +140,7 @@ def grib_to_netcdf(config, checklist):
     outnetcdf, out0netcdf = make_netCDF_files(config, ymd, outgrib, outzeros)
     calc_instantaneous(outnetcdf, out0netcdf, ymd)
     change_to_NEMO_variable_names(outnetcdf)
+    checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
 
     plt.savefig('wg.png')
 
