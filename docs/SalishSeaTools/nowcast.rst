@@ -282,6 +282,31 @@ Here,
 we log the id of the operating system process that the worker is running in,
 and the file path/name of the configuration file that it is using.
 
+Line 41:
+
+.. code-block:: python
+
+    lib.install_signal_handlers(logger, context)
+
+installs signal handlers to cleanly deal with interrupt and termination signals from the operating system.
+This means that if a worker running in :option:`--debug` mode is interrupted with a :kbd:`Ctrl-C` it will end cleanly,
+logging the fact that it has been interrupted,
+and shutting down the ZeroMQ messaging system.
+Likewise,
+if a worker running in the background is sent an interrupt or termination signal with
+
+.. code-block:: bash
+
+    kill <pid>
+
+or
+
+.. code-block:: bash
+
+    kill -9 <pid>
+
+it will shutdown cleanly.
+
 
 .. _ExtendingTheCommandLineParser:
 
