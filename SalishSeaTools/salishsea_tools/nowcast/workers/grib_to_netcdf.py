@@ -348,7 +348,7 @@ def make_netCDF_files(config, ymd, outgrib, outzeros):
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
     run_wgrib2(cmd)
     logger.info(
-        'createdd hourly netCDF classic file: {}'
+        'created hourly netCDF classic file: {}'
         .format(outnetcdf))
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     run_wgrib2(cmd)
