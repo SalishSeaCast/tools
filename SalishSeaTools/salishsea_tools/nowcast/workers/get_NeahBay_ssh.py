@@ -263,7 +263,7 @@ def save_netcdf(
         vobtcrtx[:, 0, ib] = np.zeros(len(surges))
         vobtcrty[:, 0, ib] = np.zeros(len(surges))
     ssh_file.close()
-    os.chmod(filepath, 436)  # octial 664 = 'rw-rw-r--'
+    os.chmod(filepath, 436)  # octal 664 = 'rw-rw-r--'
     logger.debug('saved western open boundary file {}'.format(filepath))
     return filepath
 

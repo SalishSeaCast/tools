@@ -175,7 +175,7 @@ def get_grib(forecast, config):
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=http_msg.getheader('Content-Length'),
                     fileURL=fileURL))
-            os.chmod(filename, 436)  # octial 664 = 'rw-rw-r--'
+            os.chmod(filename, 436)  # octal 664 = 'rw-rw-r--'
         os.chdir('..')
     os.chdir('..')
 
