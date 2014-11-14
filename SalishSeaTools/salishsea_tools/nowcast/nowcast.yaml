@@ -33,12 +33,14 @@ logging:
 
 msg_types:
   # message types registry
+  nowcast_mgr:
+    ack: message acknowledged
+    undefined msg: ERROR - message type is not defined
   download_weather:
     success 06: 06 weather forecast ready
     failure 06: 06 weather forecast download failed
     success 18: 18 weather forecast ready
     failure 18: 18 weather forecast download failed
-    the end: end of automation
   make_runoff_file:
     success: rivers forcing ready
   get_NeahBay_ssh:
@@ -46,6 +48,4 @@ msg_types:
   grib_to_netcdf:
     success: atmospheric forcing ready
     failure: atmospheric forcing files preparation failed
-  nowcast_mgr:
-    ack: message acknowledged
-    undefined msg: ERROR - message type is not defined
+    the end: end of automation

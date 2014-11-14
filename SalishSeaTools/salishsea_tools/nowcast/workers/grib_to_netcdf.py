@@ -73,6 +73,7 @@ def main():
         logger.info('NEMO-atmos forcing file creation completed')
         # Exchange success messages with the nowcast manager process
         tell_manager('success', config, socket, checklist)
+        tell_manager('the end', config, socket)
     except subprocess.CalledProcessError:
         logger.critical('NEMO-atmos forcing file creation failed')
         tell_manager('failure', config, socket)
