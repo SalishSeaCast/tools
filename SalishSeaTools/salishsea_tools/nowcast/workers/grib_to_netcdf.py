@@ -124,7 +124,7 @@ def grib_to_netcdf(config, checklist):
     p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
     p2 = os.path.join(today.format('YYYYMMDD'), '06')
     p3 = os.path.join(today.format('YYYYMMDD'), '18')
-    logger.debug('forecast sections: {} {} {}'.format(p1, p2, p3))
+    logger.info('forecast sections: {} {} {}'.format(p1, p2, p3))
     fcst_section_hrs = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, 24-18-1, 24+6-18)),
