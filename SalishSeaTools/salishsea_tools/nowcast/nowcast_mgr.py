@@ -111,6 +111,7 @@ def parse_message(config, message):
         logger.info('worker-automated parts of nowcast completed for today')
         reply = reply_ack
         next_step = finish_automation
+        next_step_args = [config]
     return reply, next_step, next_step_args
 
 
@@ -124,17 +125,19 @@ def update_checklist(worker, key, worker_checklist):
         'checklist updated with {} items from {} worker'.format(key, worker))
 
 
-def finish_automation(*args):
+def finish_automation(config):
     checklist = {}
     logger.info('checklist cleared')
-    rotate_log_file()
+    rotate_log_file(config)
 
 
-def rotate_log_file(*args):
+def rotate_log_file(config):
     try:
         for handler in logger.handlers:
             logger.info('rotating log file')
             handler.doRollover()
+            # 436 == octal 664 == 'rw-rw-r--'
+            os.chmod(config['logging']['log_file'], 436)
             logger.info('log file rotated')
             logger.info('running in process {}'.format(os.getpid()))
     except AttributeError:
