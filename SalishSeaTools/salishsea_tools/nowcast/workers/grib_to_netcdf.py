@@ -140,6 +140,7 @@ def grib_to_netcdf(config, checklist):
     outnetcdf, out0netcdf = make_netCDF_files(config, ymd, outgrib, outzeros)
     calc_instantaneous(outnetcdf, out0netcdf, ymd)
     change_to_NEMO_variable_names(outnetcdf)
+    netCDF4_deflate(outnetcdf)
     checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
 
     plt.savefig('wg.png')
@@ -158,7 +159,7 @@ def run_wgrib2(cmd):
                 wgrib2_logger.debug(line)
     except subprocess.CalledProcessError as e:
         logger.error(
-            'subprocess "{cmd}" failed with return code {status}'
+            'subprocess {cmd} failed with return code {status}'
             .format(cmd=cmd, status=e.returncode))
         for line in e.output.split('\n'):
             if line:
@@ -442,6 +443,30 @@ def change_to_NEMO_variable_names(outnetcdf):
     plt.plot(longwave[:, 150, 150])
 
     data.close()
+
+
+def netCDF4_deflate(outnetcdf):
+    """Run ncks in a subprocess to convert outnetcdf to netCDF4 format
+    with it variables compressed with Lempel-Ziv deflation.
+    """
+    cmd = ['ncks', '-4', '-L4', '-O', outnetcdf, outnetcdf]
+    try:
+        output = subprocess.check_output(
+            cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+        if output:
+            for line in output.split('\n'):
+                if line:
+                    logger.info(line)
+        else:
+            logger.info('netCDF4 deflated {}'.format(outnetcdf))
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            'subprocess {cmd} failed with return code {status}'
+            .format(cmd=cmd, status=e.returncode))
+        for line in e.output.split('\n'):
+            if line:
+                logger.error(line)
+        raise
 
 
 if __name__ == '__main__':
