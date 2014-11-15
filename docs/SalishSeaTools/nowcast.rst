@@ -61,7 +61,7 @@ and others which are launched by the manager or cron to perform specific tasks.
     :members:
 
 
-. _CreatingNowcastWorkers:
+.. _CreatingNowcastWorkers:
 
 Creating Nowcast Workers
 ========================
