@@ -19,7 +19,6 @@ forecast site and generates western open boundary conditions ssh files.
 import datetime
 import logging
 import os
-import urllib2
 
 from bs4 import BeautifulSoup
 import pytz
@@ -39,7 +38,9 @@ logger = logging.getLogger(worker_name)
 context = zmq.Context()
 
 
-URL = 'http://www.nws.noaa.gov/mdl/etsurge/index.php?page=stn&region=wc&datum=msl&list=&map=0-48&type=both&stn=waneah'
+URL = (
+    'http://www.nws.noaa.gov/mdl/etsurge/index.php'
+    '?page=stn&region=wc&datum=msl&list=&map=0-48&type=both&stn=waneah')
 
 
 def main():
@@ -54,18 +55,23 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
-    getNBssh(config, checklist)
-    logger.info(
-        'Neah Bay sea surface height web scraping and file creation completed')
-    # Exchange success messages with the nowcast manager process
-    success(config, socket, checklist)
+    try:
+        getNBssh(config, checklist)
+        logger.info(
+            'Neah Bay sea surface height web scraping '
+            'and file creation completed')
+        tell_manager('success', config, socket, checklist)
+    except lib.WorkerError:
+        logger.error(
+            'Neah Bay sea surface height web scraping '
+            'and file creation failed')
+        tell_manager('failure', config, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
 
 
-def success(config, socket, checklist):
-    msg_type = 'success'
+def tell_manager(msg_type, config, socket, checklist=None):
     # Send message to nowcast manager
     message = lib.serialize_message(worker_name, msg_type, checklist)
     socket.send(message)
@@ -128,8 +134,7 @@ def read_website(save_path):
 
     Returns the filename.
     """
-    response = urllib2.urlopen(URL)
-    html = response.read()
+    html = lib.get_web_data(URL, logger)
     logger.debug(
         'downloaded Neah Bay storm surge observations & predictions from {}'
         .format(URL))
