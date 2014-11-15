@@ -102,6 +102,9 @@ def basic_arg_parser(worker_name, description=None, add_help=True):
 def load_config(config_file):
     """Load the YAML config_file and return its contents as a dict.
 
+    The value of config_file is added to the config dict with the key
+    :kbd:`config_file`.
+
     :arg config_file: Path/name of YAML configuration file for
                       Salish Sea NEMO nowcast.
     :type config_file: str
@@ -110,6 +113,7 @@ def load_config(config_file):
     """
     with open(config_file, 'rt') as f:
         config = yaml.load(f)
+    config['config_file'] = config_file
     return config
 
 
