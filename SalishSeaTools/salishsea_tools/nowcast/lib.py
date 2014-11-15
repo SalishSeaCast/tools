@@ -20,6 +20,7 @@ import logging
 import logging.handlers
 import os
 import signal
+import subprocess
 import sys
 import time
 
@@ -287,6 +288,8 @@ def get_web_data(
 
     :returns: Downloaded content text if filepath is :py:obj:`None`,
               otherwise :py:obj:`requests.Response.headers` dict.
+
+    :raises: :py:class:`salishsea_tools.nowcast.lib.WorkerError`
     """
     response = requests.get(url, stream=filepath is not None)
     try:
@@ -338,3 +341,37 @@ def _handle_url_content(response, filepath=None):
                 break
             f.write(block)
     return response.headers
+
+
+def run_in_subprocess(cmd, output_logger, error_logger):
+    """Run the wgrib2 command (cmd) in a subprocess and log its stdout
+    and stderr to the wgrib2 logger. Catch errors from the subprocess,
+    log them to the primary logger, and raise the exception for handling
+    somewhere higher in the call stack.
+
+    :arg cmd: Command and its arguments/options to run in subprocess.
+    :type cmd: list
+
+    :arg output_logger: Logger object to send command output to when
+                        command is successful.
+    :type output_logger: :class:`logging.Logger`
+
+    :arg error_logger: Logger object to send error message(s) to when
+                        command returns non-zero status cdoe.
+    :type error_logger: :class:`logging.Logger`
+
+    :raises: :py:class:`salishsea_tools.nowcast.lib.WorkerError`
+    """
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        for line in output.split('\n'):
+            if line:
+                output_logger(line)
+    except subprocess.CalledProcessError as e:
+        error_logger(
+            'subprocess {cmd} failed with return code {status}'
+            .format(cmd=cmd, status=e.returncode))
+        for line in e.output.split('\n'):
+            if line:
+                error_logger(line)
+        raise WorkerError
