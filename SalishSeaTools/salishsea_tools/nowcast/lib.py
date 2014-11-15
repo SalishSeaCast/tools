@@ -26,6 +26,12 @@ import yaml
 import zmq
 
 
+class WorkerError(Exception):
+    """Raised when a worker encounters an error or exception that it can'try:
+    recover from.
+    """
+
+
 def get_module_name():
     """Return the name of the module with the path and the extension stripped.
 

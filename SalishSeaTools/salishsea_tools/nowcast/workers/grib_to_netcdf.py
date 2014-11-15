@@ -74,7 +74,7 @@ def main():
         # Exchange success messages with the nowcast manager process
         tell_manager('success', config, socket, checklist)
         tell_manager('the end', config, socket)
-    except subprocess.CalledProcessError:
+    except lib.WorkerError:
         logger.critical('NEMO-atmos forcing file creation failed')
         tell_manager('failure', config, socket)
     # Finish up
@@ -165,7 +165,7 @@ def run_wgrib2(cmd):
         for line in e.output.split('\n'):
             if line:
                 logger.error(line)
-        raise
+        raise lib.WorkerError
 
 
 def rotate_grib_wind(config, fcst_section_hrs):
@@ -467,7 +467,7 @@ def netCDF4_deflate(outnetcdf):
         for line in e.output.split('\n'):
             if line:
                 logger.error(line)
-        raise
+        raise lib.WorkerError
 
 
 if __name__ == '__main__':

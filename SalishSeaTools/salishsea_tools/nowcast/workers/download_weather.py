@@ -82,7 +82,7 @@ def main():
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
         tell_manager('success', parsed_args.forecast, config, socket)
-    except OSError:
+    except lib.WorkerError:
         logger.error(
             'weather forecast {.forecast} downloads failed'
             .format(parsed_args))
@@ -137,6 +137,7 @@ def get_grib(forecast, config):
         os.mkdir(date)
         os.chmod(date, 509)  # octal 775 = 'rwxrwxr-x'
     except OSError:
+        # Directory already exists
         pass
     os.chdir(date)
     try:
@@ -148,7 +149,7 @@ def get_grib(forecast, config):
             '{} directory already exists; not overwriting'
             .format(forecast_path))
         logger.error(msg)
-        raise OSError(msg)
+        raise lib.WorkerError
     os.chdir(forecast)
 
     for fhour in range(0, FORECAST_DURATION+1):
@@ -162,7 +163,7 @@ def get_grib(forecast, config):
                 '{} directory already exists; not overwriting'
                 .format(sfhour_path))
             logger.error(msg)
-            raise OSError(msg)
+            raise lib.WorkerError
         os.chdir(sfhour)
 
         for v in GRIB_VARIABLES:
