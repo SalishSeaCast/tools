@@ -76,7 +76,7 @@ def basic_arg_parser(worker_name, description=None, add_help=True):
                    args/options.
     :type add_help: boolean
 
-    :returns: :class:`argparse.ArgumentParser` instance
+    :returns: :class:`argparse.ArgumentParser` object
     """
     parser = argparse.ArgumentParser(
         description=description, add_help=add_help)
@@ -116,7 +116,7 @@ def load_config(config_file):
 def configure_logging(config, logger, debug):
     """Set up logging configuration.
 
-    This function assumes that the logger instance has been created
+    This function assumes that the logger object has been created
     in the module from which the function is called.
     That is typically done with a module-level commands like::
 
@@ -128,7 +128,7 @@ def configure_logging(config, logger, debug):
     :type config: dict
 
     :arg logger: Logger to be configured.
-    :type logger: :obj:`logging.Logger` instance
+    :type logger: :obj:`logging.Logger`
 
     :arg debug: Debug mode; log to console instead of to file.
     :type debug: boolean
@@ -150,7 +150,7 @@ def configure_logging(config, logger, debug):
 def install_signal_handlers(logger, context):
     """Install handlers to cleanly deal with interrupt and terminate signals.
 
-    This function assumes that the logger and context instances
+    This function assumes that the logger and context objects
     have been created in the module from which the function is called.
     That is typically done with a module-level commands like::
 
@@ -160,11 +160,11 @@ def install_signal_handlers(logger, context):
 
       context = zmq.Context()
 
-    :arg logger: Logger instance.
-    :type logger: :class:`logging.Logger` instance
+    :arg logger: Logger object.
+    :type logger: :class:`logging.Logger`
 
-    :arg context: ZeroMQ context instance.
-    :type context: :class:`zmq.Context` instance
+    :arg context: ZeroMQ context object.
+    :type context: :class:`zmq.Context`
     """
     def sigint_handler(signal, frame):
         logger.info(
@@ -185,14 +185,14 @@ def install_signal_handlers(logger, context):
 def init_zmq_req_rep_worker(context, config, logger):
     """Initialize a ZeroMQ request/reply (REQ/REP) worker.
 
-    :arg context: ZeroMQ context instance.
-    :type context: :class:`zmq.Context` instance
+    :arg context: ZeroMQ context object.
+    :type context: :class:`zmq.Context`
 
     :arg config: Configuration data structure.
     :type config: dict
 
-    :arg logger: Logger instance.
-    :type logger: :class:`logging.Logger` instance
+    :arg logger: Logger object.
+    :type logger: :class:`logging.Logger`
 
     :returns: ZeroMQ socket for communication with nowcast manager process.
     """
