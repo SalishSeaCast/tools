@@ -3,6 +3,9 @@
 ports:
   req_rep: 5555
 
+# Filesystem group name to use for ownership of newly created files
+file group: sallen
+
 bathymetry: /data/dlatorne/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc
 
 rivers:
