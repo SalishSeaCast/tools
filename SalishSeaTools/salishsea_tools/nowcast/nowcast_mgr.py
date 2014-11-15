@@ -84,6 +84,8 @@ def parse_message(config, message):
             reply = reply_ack
         if worker == 'download_weather' and msg_type.endswith('18'):
             reply = reply_ack
+            next_step = launch_worker
+            next_step_args = ['grib_to_netcdf', config]
         if worker == 'get_NeahBay_ssh':
             reply = reply_ack
             next_step = update_checklist
@@ -123,6 +125,16 @@ def update_checklist(worker, key, worker_checklist):
     checklist.update({key: worker_checklist})
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
+
+
+def launch_worker(worker, config):
+    cmd = [
+        config['python'], '-m',
+        'salishsea_tools.nowcast.workers.{}'.format(worker),
+        config['config_file'],
+    ]
+    logger.info('launching {} worker'.format(worker))
+    lib.run_in_subprocess(cmd, logger.debug, logger.error)
 
 
 def finish_automation(config):
