@@ -21,6 +21,7 @@ from __future__ import division
 
 from collections import OrderedDict
 import glob
+import grp
 import logging
 import os
 import subprocess
@@ -351,6 +352,9 @@ def make_netCDF_files(config, ymd, outgrib, outzeros):
     logger.info(
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
+    gid = grp.getgrnam(config['file group']).gr_gid
+    os.chown(outnetcdf, -1, gid)
+    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     run_wgrib2(cmd)
     logger.info(
