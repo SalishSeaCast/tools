@@ -21,7 +21,9 @@ import logging.handlers
 import os
 import signal
 import sys
+import time
 
+import requests
 import yaml
 import zmq
 
@@ -233,3 +235,106 @@ def deserialize_message(message):
     :type message: bytes
     """
     return yaml.safe_load(message)
+
+
+def get_web_data(
+    url,
+    logger,
+    filepath=None,
+    first_retry_delay=2,        # seconds
+    retry_backoff_factor=2,
+    retry_time_limit=60 * 60,   # seconds
+):
+    """Download content from url, optionally storing it in filepath.
+
+    If the first download attempt fails, retry at intervals until the
+    retry_time_limit is exceeded. The first retry occurs after
+    first_retry_delay seconds. The delay until the next retry is
+    calculated by multiplying the previous delay by retry_backoff_factor.
+
+    So, with the default arugment values, the first retry will occur
+    2 seconds after the download fails, and subsequent retries will
+    occur at 4, 8, 16, 32, 64, ..., 2048 seconds after each failure.
+
+    :arg url: URL to download content from.
+    :type url: str
+
+    :arg logger: Logger object.
+    :type logger: :class:`logging.Logger`
+
+    :arg filepath: File path/name in which to store the downloaded content;
+                   defaults to :py:obj:`None`, in which case the content
+                   is returned.
+    :type filepath: str
+
+    :arg first_retry_delay: Number of seconds to wait before doing the
+                            first retry after the initial download
+                            attempt fails.
+    :type first_retry_delay: int or float
+
+    :arg retry_backoff_factor: Multiplicative factor that increases the
+                               time interval between retries.
+    :type retry_backoff_factor: int or float
+
+    :arg retry_time_limit: Maximum number of seconds for the final retry
+                           wait interval.
+                           The actual wait time is less than or equal to
+                           the limit so it may be significantly less than
+                           the limit;
+                           e.g. with the default argument values the final
+                           retry wait interval will be 2048 seconds.
+    :type retry_time_limit: int or float
+
+    :returns: Downloaded content text if filepath is :py:obj:`None`,
+              otherwise :py:obj:`requests.Response.headers` dict.
+    """
+    response = requests.get(url, stream=filepath is not None)
+    try:
+        response.raise_for_status()
+        return _handle_url_content(response, filepath)
+    except requests.exceptions.HTTPError as e:
+        logger.warning('received {0.message} from {0.request.url}'.format(e))
+        delay = first_retry_delay
+        retries = 0
+        while delay <= retry_time_limit:
+            logger.debug('waiting {} seconds until retry'.format(delay))
+            time.sleep(delay)
+            response = requests.get(url, stream=filepath is not None)
+            try:
+                response.raise_for_status()
+                return _handle_url_content(response, filepath)
+            except requests.exceptions.HTTPError as e:
+                logger.warning(
+                    'received {0.message} from {0.request.url}'.format(e))
+                delay *= retry_backoff_factor
+                retries += 1
+        logger.error(
+            'giving up; download from {} failed {} times'
+            .format(url, retries + 1))
+        raise WorkerError
+
+
+def _handle_url_content(response, filepath=None):
+    """Return HTTP response content as text or store it as bytes in filepath.
+
+    :arg response: HTTP response object.
+    :type response: :py:class:`requests.Response`
+
+    :arg filepath: File path/name in which to store the downloaded content;
+                   defaults to :py:obj:`None`, in which case the content
+                   is returned.
+    :type filepath: str
+
+    :returns: Downloaded content text if filepath is :py:obj:`None`,
+              otherwise :py:obj:`requests.Response.headers` dict.
+    """
+    if filepath is None:
+        # Return the content as text
+        return response.text
+    # Store the streamed content in filepath and return the headers
+    with open(filepath, 'wb') as f:
+        for block in response.iter_content(1024):
+            if not block:
+                break
+            f.write(block)
+    return response.headers

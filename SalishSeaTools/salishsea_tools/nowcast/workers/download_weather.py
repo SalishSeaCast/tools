@@ -18,7 +18,6 @@
 import argparse
 import logging
 import os
-import urllib
 
 import arrow
 import zmq
@@ -171,10 +170,10 @@ def get_grib(forecast, config):
                 variable=v, date=date, forecast=forecast, hour=sfhour)
             fileURL = URL_TEMPLATE.format(
                 forecast=forecast, hour=sfhour, filename=filename)
-            _, http_msg = urllib.urlretrieve(fileURL, filename)
+            headers = lib.get_web_data(fileURL, logger, filename)
             logger.debug(
                 'downloaded {bytes} bytes from {fileURL}'.format(
-                    bytes=http_msg.getheader('Content-Length'),
+                    bytes=headers['Content-Length'],
                     fileURL=fileURL))
             os.chmod(filename, 436)  # octal 664 = 'rw-rw-r--'
         os.chdir('..')
