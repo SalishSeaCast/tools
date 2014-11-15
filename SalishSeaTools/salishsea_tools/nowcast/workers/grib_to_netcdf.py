@@ -148,27 +148,6 @@ def grib_to_netcdf(config, checklist):
     plt.savefig('wg.png')
 
 
-def run_wgrib2(cmd):
-    """Run the wgrib2 command (cmd) in a subprocess and log its stdout
-    and stderr to the wgrib2 logger. Catch errors from the subprocess,
-    log them to the primary logger, and raise the exception for handling
-    somewhere higher in the call stack.
-    """
-    try:
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        for line in output.split('\n'):
-            if line:
-                wgrib2_logger.debug(line)
-    except subprocess.CalledProcessError as e:
-        logger.error(
-            'subprocess {cmd} failed with return code {status}'
-            .format(cmd=cmd, status=e.returncode))
-        for line in e.output.split('\n'):
-            if line:
-                logger.error(line)
-        raise lib.WorkerError
-
-
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
@@ -199,10 +178,10 @@ def rotate_grib_wind(config, fcst_section_hrs):
             # Consolidate u and v wind component values into one file
             fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*UGRD*'))
             cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
-            run_wgrib2(cmd)
+            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*VGRD*'))
             cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
-            run_wgrib2(cmd)
+            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             # rotate
             GRIDspec = subprocess.check_output([grid_defn, outuv])
             cmd = [wgrib2, outuv]
@@ -210,7 +189,7 @@ def rotate_grib_wind(config, fcst_section_hrs):
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outuvrot)
-            run_wgrib2(cmd)
+            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outuv)
     os.unlink('wgrib2')
     logger.info('consolidated and rotated wind components')
@@ -248,14 +227,15 @@ def collect_grib_scalars(config, fcst_section_hrs):
             for fn in glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*')):
                 if not ('GRD' in fn) and ('CMC' in fn):
                     cmd = [wgrib2, fn, '-append', '-grib', outscalar]
-                    run_wgrib2(cmd)
+                    lib.run_in_subprocess(
+                        cmd, wgrib2_logger.debug, logger.error)
             #  Re-grid
             GRIDspec = subprocess.check_output([grid_defn, outscalar])
             cmd = [wgrib2, outscalar]
             cmd.append('-new_grid')
             cmd.extend(GRIDspec.split())
             cmd.append(outscalargrid)
-            run_wgrib2(cmd)
+            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outscalar)
     os.unlink('wgrib2')
     logger.info('consolidated and re-gridded scalar variables')
@@ -293,14 +273,14 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
                 GRIBdir, day_fcst, sfhour, 'gscalar.grib')
             if section == 'section 1' and fhour == 5:
                 cmd = [wgrib2, outuvrot, '-append', '-grib', outzeros]
-                run_wgrib2(cmd)
+                lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
                 cmd = [wgrib2, outscalargrid, '-append', '-grib', outzeros]
-                run_wgrib2(cmd)
+                lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             else:
                 cmd = [wgrib2, outuvrot, '-append', '-grib', outgrib]
-                run_wgrib2(cmd)
+                lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
                 cmd = [wgrib2, outscalargrid, '-append', '-grib', outgrib]
-                run_wgrib2(cmd)
+                lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outuvrot)
             os.remove(outscalargrid)
     logger.info(
@@ -326,12 +306,12 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     istr = '{ist}:{ien}'.format(ist=ist, ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
-    run_wgrib2(cmd)
+    lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
         'cropped hourly file to watersheds sub-region: {}'
         .format(newgrib))
     cmd = [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros]
-    run_wgrib2(cmd)
+    lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
         'cropped zero-hour file to watersheds sub-region: {}'
         .format(newgrib))
@@ -348,7 +328,7 @@ def make_netCDF_files(config, ymd, outgrib, outzeros):
     outnetcdf = os.path.join(OPERdir, 'ops_{ymd}.nc'.format(ymd=ymd))
     out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
-    run_wgrib2(cmd)
+    lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
@@ -356,7 +336,7 @@ def make_netCDF_files(config, ymd, outgrib, outzeros):
     os.chown(outnetcdf, -1, gid)
     os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
-    run_wgrib2(cmd)
+    lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
         'created zero-hour netCDF classic file: {}'
         .format(out0netcdf))
@@ -456,22 +436,10 @@ def netCDF4_deflate(outnetcdf):
     """
     cmd = ['ncks', '-4', '-L4', '-O', outnetcdf, outnetcdf]
     try:
-        output = subprocess.check_output(
-            cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-        if output:
-            for line in output.split('\n'):
-                if line:
-                    logger.info(line)
-        else:
-            logger.info('netCDF4 deflated {}'.format(outnetcdf))
-    except subprocess.CalledProcessError as e:
-        logger.error(
-            'subprocess {cmd} failed with return code {status}'
-            .format(cmd=cmd, status=e.returncode))
-        for line in e.output.split('\n'):
-            if line:
-                logger.error(line)
-        raise lib.WorkerError
+        lib.run_in_subprocess(cmd, logger, logger)
+        logger.info('netCDF4 deflated {}'.format(outnetcdf))
+    except lib.WorkerError:
+        raise
 
 
 if __name__ == '__main__':
