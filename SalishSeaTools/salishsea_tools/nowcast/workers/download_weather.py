@@ -16,6 +16,7 @@
 """Salish Sea NEMO nowcast weather model dataset download worker.
 """
 import argparse
+import grp
 import logging
 import os
 
@@ -131,17 +132,18 @@ def get_grib(forecast, config):
         .format(forecast=forecast, date=date))
 
     dest_dir_root = config['weather']['GRIB_dir']
+    gid = grp.getgrnam(config['file group']).gr_gid
     os.chdir(dest_dir_root)
     try:
         os.mkdir(date)
-        os.chmod(date, 509)  # octal 775 = 'rwxrwxr-x'
     except OSError:
         # Directory already exists
         pass
+    os.chown(date, -1, gid)
+    os.chmod(date, 509)  # octal 775 = 'rwxrwxr-x'
     os.chdir(date)
     try:
         os.mkdir(forecast)
-        os.chmod(forecast, 509)  # octal 775 = 'rwxrwxr-x'
     except OSError:
         forecast_path = os.path.join(dest_dir_root, date, forecast)
         msg = (
@@ -149,13 +151,14 @@ def get_grib(forecast, config):
             .format(forecast_path))
         logger.error(msg)
         raise lib.WorkerError
+    os.chown(forecast, -1, gid)
+    os.chmod(forecast, 509)  # octal 775 = 'rwxrwxr-x'
     os.chdir(forecast)
 
     for fhour in range(1, FORECAST_DURATION+1):
         sfhour = '{:0=3}'.format(fhour)
         try:
             os.mkdir(sfhour)
-            os.chmod(sfhour, 509)  # octal 775 = 'rwxrwxr-x'
         except OSError:
             sfhour_path = os.path.join(dest_dir_root, date, forecast, sfhour)
             msg = (
@@ -163,6 +166,8 @@ def get_grib(forecast, config):
                 .format(sfhour_path))
             logger.error(msg)
             raise lib.WorkerError
+        os.chown(sfhour, -1, gid)
+        os.chmod(sfhour, 509)  # octal 775 = 'rwxrwxr-x'
         os.chdir(sfhour)
 
         for v in GRIB_VARIABLES:
