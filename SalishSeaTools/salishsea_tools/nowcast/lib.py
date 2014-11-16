@@ -290,7 +290,7 @@ def get_web_data(
                            retry wait interval will be 2048 seconds.
     :type retry_time_limit: int or float
 
-    :returns: Downloaded content text if filepath is :py:obj:`None`,
+    :returns: Downloaded content if filepath is :py:obj:`None`,
               otherwise :py:obj:`requests.Response.headers` dict.
 
     :raises: :py:class:`salishsea_tools.nowcast.lib.WorkerError`
@@ -322,7 +322,7 @@ def get_web_data(
 
 
 def _handle_url_content(response, filepath=None):
-    """Return HTTP response content as text or store it as bytes in filepath.
+    """Return HTTP response content or store it in filepath.
 
     :arg response: HTTP response object.
     :type response: :py:class:`requests.Response`
@@ -332,12 +332,12 @@ def _handle_url_content(response, filepath=None):
                    is returned.
     :type filepath: str
 
-    :returns: Downloaded content text if filepath is :py:obj:`None`,
+    :returns: Downloaded content if filepath is :py:obj:`None`,
               otherwise :py:obj:`requests.Response.headers` dict.
     """
     if filepath is None:
         # Return the content as text
-        return response.text
+        return response.content
     # Store the streamed content in filepath and return the headers
     with open(filepath, 'wb') as f:
         for block in response.iter_content(1024):
