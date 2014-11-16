@@ -704,3 +704,57 @@ def get_NOAA_predictions(station_no, start_date, end_date):
     # Write the data to a text file
     with open(outfile, 'w') as f:
         f.write(r.text)
+
+def get_operational_weather(start,end,grid):
+    """
+    Returns the CGRF weather between the dates start and end at the grid point defined in grid.
+
+    :arg start: string containing the start date of the CGRF collection in format '01-Nov-2006'
+    :type start: str
+
+    :arg start: string containing the end date of the CGRF collection in format '01-Nov-2006'
+    :type start: str
+
+    :arg grid: array of the CGRF grid coordinates for the point of interest eg. [244,245]
+    :arg type: arr of ints
+
+    :returns: windspeed, winddir pressure and time array from CGRF data for the times indicated
+    """
+    u10=[]; v10=[]; pres=[]; time=[];
+    st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
+
+    ops_path = '/ocean/sallen/allen/research/Meopar/Operational/'
+    opsp_path = '/ocean/nsoontie/MEOPAR/GEM2.5/ops/'
+
+    for r in arrow.Arrow.range('day', st_ar, end_ar):
+        #u
+	m=r.month;
+	if m<10:
+	  mstr='0' + str(m)
+	else:
+	  mstr=str(m)
+	d=r.day;
+	if d<10:
+	  dstr='0' + str(d)
+	else:
+	  dstr=str(d)
+        fstr='ops_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
+        f=NC.Dataset(ops_path+fstr)
+	#u        
+	var=f.variables['u_wind'][:,grid[0],grid[1]]; u10.extend(var[:])
+	#v
+	var=f.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])    
+	#pressure    
+	fpstr = 'slp_corr_ops_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
+        fP=NC.Dataset(opsp_path+fpstr)
+        var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
+        #time
+        tim=f.variables['time_counter']; time.extend(tim[:])
+        times =convert_date_seconds(time,'01-Jan-1970')
+
+        u10s=np.array(u10); v10s=np.array(v10); press=np.array(pres)
+        windspeed=np.sqrt(u10s**2+v10s**2)
+	winddir=np.arctan2(v10,u10) * 180 / np.pi
+	winddir=winddir + 360 * (winddir<0)
+    return windspeed, winddir, press, times
