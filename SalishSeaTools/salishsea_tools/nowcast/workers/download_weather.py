@@ -151,7 +151,7 @@ def get_grib(forecast, config):
         raise lib.WorkerError
     os.chdir(forecast)
 
-    for fhour in range(0, FORECAST_DURATION+1):
+    for fhour in range(1, FORECAST_DURATION+1):
         sfhour = '{:0=3}'.format(fhour)
         try:
             os.mkdir(sfhour)
