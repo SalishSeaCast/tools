@@ -74,6 +74,7 @@ def parse_message(config, message):
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
+        'upload_forcing': after_upload_forcing,
         'the end': the_end,
     }
     # Handle undefined message type
@@ -130,29 +131,46 @@ def after_download_weather(worker, msg_type, payload, config):
 
 def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
-        'success': (update_checklist, [worker, 'sshNeahBay', payload]),
+        'success': (do_nothing, []),
         'failure': (do_nothing, [])
     }
+    if msg_type == 'success':
+        update_checklist(worker, 'sshNeahBay', payload)
     next_step, next_step_args = actions[msg_type]
     return next_step, next_step_args
 
 
 def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
-        'success': (update_checklist, [worker, 'rivers', payload]),
+        'success': (do_nothing, []),
         'failure': (do_nothing, [])
     }
+    if msg_type == 'success':
+        update_checklist(worker, 'rivers', payload)
     next_step, next_step_args = actions[msg_type]
     return next_step, next_step_args
 
 
 def after_grib_to_netcdf(worker, msg_type, payload, config):
     actions = {
-        'success': (update_checklist, [worker, 'weather forcing', payload]),
+        'success': (launch_worker, ['upload_forcing', config]),
         'failure': (do_nothing, [])
     }
+    if msg_type == 'success':
+        update_checklist(worker, 'weather forcing', payload)
     next_step, next_step_args = actions[msg_type]
     return next_step, next_step_args
+
+
+def after_upload_forcing(worker, msg_type, payload, config):
+    actions = {
+        'success': (do_nothing, []),
+        'failure': (do_nothing, []),
+    }
+    if msg_type == 'success':
+        update_checklist(worker, 'upload_forcing', payload)
+        next_step, next_step_args = actions[msg_type]
+        return next_step, next_step_args
 
 
 def update_checklist(worker, key, worker_checklist):
