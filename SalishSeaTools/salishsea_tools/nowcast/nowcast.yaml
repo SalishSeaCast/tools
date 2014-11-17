@@ -26,6 +26,8 @@ weather:
   # Location of Pramod Thupaki's grid_defn.pl script
   grid_defn.pl: /ocean/sallen/allen/research/MEOPAR/private-tools/PThupaki/grid_defn.pl
 
+upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/upload.sh
+
 logging:
   log_file: /home/dlatorne/public_html/MEOPAR/nowcast/nowcast.log
   backup_count: 7
@@ -56,4 +58,7 @@ msg_types:
   grib_to_netcdf:
     success: atmospheric forcing ready
     failure: atmospheric forcing files preparation failed
+  upload_forcing:
+    success: forcing files uploaded
+    failure: forcing files upload failed
     the end: end of automation
