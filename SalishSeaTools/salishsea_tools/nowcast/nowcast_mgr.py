@@ -17,6 +17,7 @@
 """
 import logging
 import os
+import subprocess
 
 import zmq
 
@@ -167,7 +168,7 @@ def launch_worker(worker, config):
         config['config_file'],
     ]
     logger.info('launching {} worker'.format(worker))
-    lib.run_in_subprocess(cmd, logger.debug, logger.error)
+    subprocess.Popen(cmd)
 
 
 def finish_automation(config):
