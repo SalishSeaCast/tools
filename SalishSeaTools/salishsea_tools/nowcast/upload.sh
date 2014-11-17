@@ -19,19 +19,19 @@ Dayp1=$(date +%d -d tomorrow)
 # copy weather file to orcinus
 netfile=ops_y${Year}m${Month}d${Day}.nc
 cd /ocean/sallen/allen/research/MEOPAR/Operational
-scp -p $netfile sallen@orcinus:MEOPAR/GEM2.5/ops/NEMO-atmos/
+scp -p $netfile orcinus:/home/sallen/MEOPAR/GEM2.5/ops/NEMO-atmos/
 
 # copy river file to orcinus
 cd /ocean/sallen/allen/research/MEOPAR/Rivers
 riverfile=RFraserCElse_y${Yearm1}m${Monthm1}d${Daym1}.nc
-scp -p $riverfile sallen@orcinus:MEOPAR/rivers/
+scp -p $riverfile orcinus:/home/sallen/MEOPAR/rivers/
 
 # copy ssh files to orcinus
 cd /ocean/nsoontie/MEOPAR/sshNeahBay/obs
 sshfile=ssh_y${Yearm1}m${Monthm1}d${Daym1}.nc
-scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/obs/
+scp -p $sshfile orcinus:/home/sallen/MEOPAR/sshNeahBay/obs/
 cd ../fcst
 sshfile=ssh_y${Year}m${Month}d${Day}.nc
-scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/fcst/
+scp -p $sshfile orcinus:/home/sallen/MEOPAR/sshNeahBay/fcst/
 sshfile=ssh_y${Yearp1}m${Monthp1}d${Dayp1}.nc
-scp -p $sshfile sallen@orcinus:MEOPAR/sshNeahBay/fcst/
+scp -p $sshfile orcinus:/home/sallen/MEOPAR/sshNeahBay/fcst/
