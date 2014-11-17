@@ -63,62 +63,95 @@ def parse_message(config, message):
     worker = msg['source']
     msg_type = msg['msg_type']
     payload = msg['payload']
-    # Set default reply message, next processing step function,
-    # and its arguments
+    # Message to acknowledge receipt of message from worker
     reply_ack = lib.serialize_message(mgr_name, 'ack')
-    next_step = do_nothing
-    next_step_args = []
+    # Lookup table of functions to return next step function and its
+    # arguments for the message types that we know how to handle
+    actions = {
+        'undefined message': undefined_message,
+        'download_weather': after_download_weather,
+        'get_NeahBay_ssh': after_get_NeahBay_ssh,
+        'make_runoff_file': after_make_runoff_file,
+        'grib_to_netcdf': after_grib_to_netcdf,
+        'the end': the_end,
+    }
+    # Handle undefined message type
     if msg_type not in config['msg_types'][worker]:
         logger.error(
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
-    else:
-        logger.info(
-            'received message from {worker}: ({msg_type}) {msg_words}'
-            .format(worker=worker,
-                    msg_type=msg_type,
-                    msg_words=config['msg_types'][worker][msg_type]))
-    if msg_type.startswith('success'):
-        if worker == 'download_weather' and msg_type.endswith('06'):
-            reply = reply_ack
-        if worker == 'download_weather' and msg_type.endswith('18'):
-            reply = reply_ack
-            next_step = launch_worker
-            next_step_args = ['grib_to_netcdf', config]
-        if worker == 'get_NeahBay_ssh':
-            reply = reply_ack
-            next_step = update_checklist
-            next_step_args = [worker, 'sshNeahBay', payload]
-        if worker == 'make_runoff_file':
-            reply = reply_ack
-            next_step = update_checklist
-            next_step_args = [worker, 'rivers', payload]
-        if worker == 'grib_to_netcdf':
-            reply = reply_ack
-            next_step = update_checklist
-            next_step_args = [worker, 'weather forcing', payload]
-    if msg_type.startswith('failure'):
-        if worker == 'download_weather' and msg_type.endswith('06'):
-            reply = reply_ack
-        if worker == 'download_weather' and msg_type.endswith('18'):
-            reply = reply_ack
-        if worker == 'get_NeahBay_ssh':
-            reply = reply_ack
-        if worker == 'make_runoff_file':
-            reply = reply_ack
-        if worker == 'grib_to_netcdf':
-            reply = reply_ack
+        next_step, next_step_args = actions['undefined message']()
+        return reply, next_step, next_step_args
+    # Recongnized message type
+    logger.info(
+        'received message from {worker}: ({msg_type}) {msg_words}'
+        .format(worker=worker,
+                msg_type=msg_type,
+                msg_words=config['msg_types'][worker][msg_type]))
+    # Handle end of automation message
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
-        reply = reply_ack
-        next_step = finish_automation
-        next_step_args = [config]
-    return reply, next_step, next_step_args
+        next_step, next_step_args = actions['the end'](config)
+        return reply_ack, next_step, next_step_args
+    # Handle success and failure messages from workers
+    next_step, next_step_args = actions[worker](
+        worker, msg_type, payload, config)
+    return reply_ack, next_step, next_step_args
 
 
 def do_nothing(*args):
     pass
+
+
+def undefined_message():
+    next_step = do_nothing
+    next_step_args = []
+    return next_step, next_step_args
+
+
+def the_end(config):
+    next_step = finish_automation
+    next_step_args = [config]
+    return next_step, next_step_args
+
+
+def after_download_weather(worker, msg_type, payload, config):
+    actions = {
+        'success 06': (do_nothing, []),
+        'failure 06': (do_nothing, []),
+        'success 18': (launch_worker, ['grib_to_netcdf', config]),
+        'failure 18': (do_nothing, []),
+    }
+    next_step, next_step_args = actions[msg_type]
+    return next_step, next_step_args
+
+
+def after_get_NeahBay_ssh(worker, msg_type, payload, config):
+    actions = {
+        'success': (update_checklist, [worker, 'sshNeahBay', payload]),
+        'failure': (do_nothing, [])
+    }
+    next_step, next_step_args = actions[msg_type]
+    return next_step, next_step_args
+
+
+def after_make_runoff_file(worker, msg_type, payload, config):
+    actions = {
+        'success': (update_checklist, [worker, 'rivers', payload]),
+        'failure': (do_nothing, [])
+    }
+    next_step, next_step_args = actions[msg_type]
+    return next_step, next_step_args
+
+
+def after_grib_to_netcdf(worker, msg_type, payload, config):
+    actions = {
+        'success': (update_checklist, [worker, 'weather forcing', payload]),
+        'failure': (do_nothing, [])
+    }
+    next_step, next_step_args = actions[msg_type]
+    return next_step, next_step_args
 
 
 def update_checklist(worker, key, worker_checklist):
