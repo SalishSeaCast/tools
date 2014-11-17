@@ -121,7 +121,7 @@ def get_CGRF_weather(start,end,grid):
         var=fV.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])
 
         #pressure
-        strP='slp_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
+        strP='slp_corr_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
         fP=NC.Dataset(CGRF_path+strP)
         var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
 
