@@ -76,17 +76,21 @@ def main():
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    checklist = {}
     try:
         get_grib(parsed_args.forecast, config)
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
-        tell_manager('success', parsed_args.forecast, config, socket)
+        msg_type = '{} {}'.format('success', parsed_args.forecast)
+        lib.tell_manager(
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.error(
             'weather forecast {.forecast} downloads failed'
             .format(parsed_args))
-        tell_manager('failure', parsed_args.forecast, config, socket)
+        msg_type = '{} {}'.format('failure', parsed_args.forecast)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     context.destroy()
     logger.info('task completed; shutting down')
 

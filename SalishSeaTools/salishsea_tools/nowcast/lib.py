@@ -207,6 +207,54 @@ def init_zmq_req_rep_worker(context, config, logger):
     return socket
 
 
+def tell_manager(
+    worker_name, msg_type, config, logger, socket, checklist=None,
+):
+    """Exchange messages with the nowcast manager process.
+
+    msg_type is sent with checklist as payload.
+    Acknowledgement message from manager process is logged.
+
+    :arg worker_name: Name of the worker sending the message.
+    :arg worker_name: str
+
+    :arg msg_type: Key of the message type to send; must be defined for
+                   worker_name in the configuration data structure.
+    :type msg_type: str
+
+    :arg config: Configuration data structure.
+    :type config: dict
+
+    :arg logger: Logger object.
+    :type logger: :class:`logging.Logger`
+
+    :arg socket: ZeroMQ socket for communication with nowcast manager
+                 process.
+    :type socket: :py:class:`zmq.Socket`
+
+    :arg checklist: Worker's checklist of accomplishments.
+    :type checklist: dict
+    """
+    # Send message to nowcast manager
+    message = serialize_message(worker_name, msg_type, checklist)
+    socket.send(message)
+    logger.info(
+        'sent message: ({msg_type}) {msg_words}'
+        .format(
+            msg_type=msg_type,
+            msg_words=config['msg_types'][worker_name][msg_type]))
+    # Wait for and process response
+    msg = socket.recv()
+    message = deserialize_message(msg)
+    source = message['source']
+    msg_type = message['msg_type']
+    logger.info(
+        'received message from {source}: ({msg_type}) {msg_words}'
+        .format(source=source,
+                msg_type=message['msg_type'],
+                msg_words=config['msg_types'][source][msg_type]))
+
+
 def serialize_message(source, msg_type, payload=None):
     """Transform message dict into byte-stream suitable for sending.
 

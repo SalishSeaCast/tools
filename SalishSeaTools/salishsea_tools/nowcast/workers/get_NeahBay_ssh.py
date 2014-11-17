@@ -60,36 +60,16 @@ def main():
         logger.info(
             'Neah Bay sea surface height web scraping '
             'and file creation completed')
-        tell_manager('success', config, socket, checklist)
+        lib.tell_manager(
+            worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.error(
             'Neah Bay sea surface height web scraping '
             'and file creation failed')
-        tell_manager('failure', config, socket)
+        lib.tell_manager(worker_name, 'failure', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
-
-
-def tell_manager(msg_type, config, socket, checklist=None):
-    # Send message to nowcast manager
-    message = lib.serialize_message(worker_name, msg_type, checklist)
-    socket.send(message)
-    logger.info(
-        'sent message: ({msg_type}) {msg_words}'
-        .format(
-            msg_type=msg_type,
-            msg_words=config['msg_types'][worker_name][msg_type]))
-    # Wait for and process response
-    msg = socket.recv()
-    message = lib.deserialize_message(msg)
-    source = message['source']
-    msg_type = message['msg_type']
-    logger.info(
-        'received message from {source}: ({msg_type}) {msg_words}'
-        .format(source=source,
-                msg_type=message['msg_type'],
-                msg_words=config['msg_types'][source][msg_type]))
 
 
 def getNBssh(config, checklist):
