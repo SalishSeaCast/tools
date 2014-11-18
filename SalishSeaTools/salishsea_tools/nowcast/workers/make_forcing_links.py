@@ -47,7 +47,7 @@ def main():
     try:
         cmd = ['bash', config['make forcing links']]
         lib.run_in_subprocess(cmd, logger, logger)
-        checklist['success'] = True
+        checklist['made'] = True
         logger.info('forcing file links on HPC/cloud created')
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
