@@ -18,6 +18,14 @@ Descriptions under the links below are from the first cell of the notebooks
     functions for the `salishsea_tools.nowcast.figures` module,  
     and provides an example of development of such a function.  
 
+* ##[DailyNowcastFigures.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DailyNowcastFigures.ipynb)  
+    
+    Template notebook for creation of notebooks that show daily figures  
+    from most recent Salish Sea NEMO model real-time (nowcast) run.  
+      
+    This is an interim step toward fully automated web publication of  
+    analysis and monitoring figures from nowcast runs.  
+
 
 ##License
 
