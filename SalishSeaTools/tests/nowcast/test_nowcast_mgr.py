@@ -43,27 +43,13 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'undefined msg',
             'payload': None,
         }
         assert yaml.safe_load(reply) == expected
-
-    def test_undefined_msg_type_next_step(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'worker': {
-                    'the end': 'foo'
-                }
-            }
-        }
-        message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step == nowcast_mgr_module.do_nothing
 
     def test_undefined_msg_type_next_step_args(self, nowcast_mgr_module):
         config = {
@@ -74,9 +60,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step_args == []
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_valid_msg_type_logging(self, m_logger, nowcast_mgr_module):
@@ -103,29 +88,13 @@ class TestParseMessage(object):
         message = (
             '{source: download_weather, '
             'msg_type: success 06, payload: null}\n')
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'ack',
             'payload': None,
         }
         assert yaml.safe_load(reply) == expected
-
-    def test_valid_msg_next_step(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'download_weather': {
-                    'success 06': 'foo'
-                }
-            }
-        }
-        message = (
-            '{source: download_weather, '
-            'msg_type: success 06, payload: null}\n')
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step == nowcast_mgr_module.do_nothing
 
     def test_valid_msg_next_step_args(self, nowcast_mgr_module):
         config = {
@@ -138,9 +107,8 @@ class TestParseMessage(object):
         message = (
             '{source: download_weather, '
             'msg_type: success 06, payload: null}\n')
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step_args == []
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_the_end_msg_logging(self, m_logger, nowcast_mgr_module):
@@ -166,8 +134,7 @@ class TestParseMessage(object):
             },
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'ack',
@@ -175,7 +142,7 @@ class TestParseMessage(object):
         }
         assert yaml.safe_load(reply) == expected
 
-    def test_the_end_msg_next_step(self, nowcast_mgr_module):
+    def test_the_end_next_msg_steps(self, nowcast_mgr_module):
         config = {
             'msg_types': {
                 'worker': {
@@ -184,22 +151,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step == nowcast_mgr_module.finish_automation
-
-    def test_the_end_next_msg_step_args(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'worker': {
-                    'the end': 'foo'
-                }
-            }
-        }
-        message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_step, next_step_args = nowcast_mgr_module.parse_message(
-            config, message)
-        assert next_step_args == [config]
+        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
 def test_do_nothing(nowcast_mgr_module):
@@ -213,88 +166,80 @@ def test_do_nothing_any_args(nowcast_mgr_module):
 
 
 def test_undefined_message_next_step(nowcast_mgr_module):
-    next_step, next_step_args = nowcast_mgr_module.undefined_message()
-    assert next_step == nowcast_mgr_module.do_nothing
-
-
-def test_undefined_message_next_step_args(nowcast_mgr_module):
-    next_step, next_step_args = nowcast_mgr_module.undefined_message()
-    assert next_step_args == []
+    next_steps = nowcast_mgr_module.undefined_message()
+    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
 
 def test_the_end_next_step(nowcast_mgr_module):
     config = Mock(name='config')
-    next_step, next_step_args = nowcast_mgr_module.the_end(config)
-    assert next_step == nowcast_mgr_module.finish_automation
+    next_steps = nowcast_mgr_module.the_end(config)
+    assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
-def test_the_end_next_step_args(nowcast_mgr_module):
-    config = Mock(name='config')
-    next_step, next_step_args = nowcast_mgr_module.the_end(config)
-    assert next_step_args == [config]
-
-
-@pytest.mark.parametrize('worker, msg_type, exp_next_step', [
-    ('after_download_weather', 'success 06', 'do_nothing'),
-    ('after_download_weather', 'failure 06', 'do_nothing'),
-    ('after_download_weather', 'success 18', 'launch_worker'),
-    ('after_download_weather', 'failure 18', 'do_nothing'),
-    ('after_get_NeahBay_ssh', 'success', 'update_checklist'),
-    ('after_get_NeahBay_ssh', 'failure', 'do_nothing'),
-    ('after_make_runoff_file', 'success', 'update_checklist'),
-    ('after_make_runoff_file', 'failure', 'do_nothing'),
-    ('after_grib_to_netcdf', 'success', 'update_checklist'),
-    ('after_grib_to_netcdf', 'failure', 'do_nothing'),
-])
-def test_after_worker_next_step(
-    worker, msg_type, exp_next_step, nowcast_mgr_module,
-):
-    payload = Mock(name='payload')
-    config = Mock(name='config')
-    after_worker_func = getattr(nowcast_mgr_module, worker)
-    next_step, next_step_args = after_worker_func(
-        worker, msg_type, payload, config)
-    assert next_step == getattr(nowcast_mgr_module, exp_next_step)
-
-
-@pytest.mark.parametrize('worker, msg_type, exp_next_step_args', [
-    ('after_download_weather', 'success 06', []),
-    ('after_download_weather', 'failure 06', []),
-    ('after_download_weather', 'failure 18', []),
-    ('after_get_NeahBay_ssh', 'failure', []),
-    ('after_make_runoff_file', 'failure', []),
-    ('after_grib_to_netcdf', 'failure', []),
+@pytest.mark.parametrize('worker, msg_type', [
+    ('after_download_weather', 'success 06'),
+    ('after_download_weather', 'failure 06'),
+    ('after_download_weather', 'failure 18'),
+    ('after_get_NeahBay_ssh', 'failure'),
+    ('after_make_runoff_file', 'failure'),
+    ('after_grib_to_netcdf', 'failure'),
+    ('after_upload_forcing', 'failure'),
 ])
 def test_after_worker_do_nothing_next_step_args(
-    worker, msg_type, exp_next_step_args, nowcast_mgr_module,
+    worker, msg_type, nowcast_mgr_module,
 ):
     payload = Mock(name='payload')
     config = Mock(name='config')
     after_worker_func = getattr(nowcast_mgr_module, worker)
-    next_step, next_step_args = after_worker_func(
-        worker, msg_type, payload, config)
-    assert next_step_args == exp_next_step_args
+    next_steps = after_worker_func(worker, msg_type, payload, config)
+    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
 
 def test_get_NeahBay_ssh_success_next_step_args(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
-    next_step, next_step_args = nowcast_mgr_module.after_get_NeahBay_ssh(
+    next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
         'get_NeahBay_ssh', 'success', payload, config)
-    assert next_step_args == ['get_NeahBay_ssh', 'sshNeahBay', payload]
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['get_NeahBay_ssh', 'sshNeahBay', payload]),
+    ]
+    assert next_steps == expected
 
 
-def test_make_runoff_file_success_next_step_args(nowcast_mgr_module):
+def test_make_runoff_file_success_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
-    next_step, next_step_args = nowcast_mgr_module.after_make_runoff_file(
+    next_steps = nowcast_mgr_module.after_make_runoff_file(
         'make_runoff_file', 'success', payload, config)
-    assert next_step_args == ['make_runoff_file', 'rivers', payload]
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['make_runoff_file', 'rivers', payload]),
+    ]
+    assert next_steps == expected
 
 
-def test_grib_to_netcdf_success_next_step_args(nowcast_mgr_module):
+def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
-    next_step, next_step_args = nowcast_mgr_module.after_grib_to_netcdf(
+    next_steps = nowcast_mgr_module.after_grib_to_netcdf(
         'grib_to_netcdf', 'success', payload, config)
-    assert next_step_args == ['grib_to_netcdf', 'weather forcing', payload]
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['grib_to_netcdf', 'weather forcing', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['upload_forcing', config])
+    ]
+    assert next_steps == expected
+
+
+def test_upload_forcing_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_upload_forcing(
+        'upload_forcing', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['upload_forcing', 'upload_forcing', payload]),
+    ]
+    assert next_steps == expected
