@@ -46,9 +46,10 @@ def main():
     while True:
         logger.info('listening...')
         message = socket.recv()
-        reply, next_step, next_step_args = parse_message(config, message)
+        reply, next_steps = parse_message(config, message)
         socket.send(reply)
-        next_step(*next_step_args)
+        for next_step, next_step_args in next_steps:
+            next_step(*next_step_args)
 
 
 def init_req_rep(port, context):
@@ -83,8 +84,8 @@ def parse_message(config, message):
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
-        next_step, next_step_args = actions['undefined message']()
-        return reply, next_step, next_step_args
+        next_steps = actions['undefined message']()
+        return reply, next_steps
     # Recongnized message type
     logger.info(
         'received message from {worker}: ({msg_type}) {msg_words}'
@@ -94,12 +95,11 @@ def parse_message(config, message):
     # Handle end of automation message
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
-        next_step, next_step_args = actions['the end'](config)
-        return reply_ack, next_step, next_step_args
+        next_steps = actions['the end'](config)
+        return reply_ack, next_steps
     # Handle success and failure messages from workers
-    next_step, next_step_args = actions[worker](
-        worker, msg_type, payload, config)
-    return reply_ack, next_step, next_step_args
+    next_steps = actions[worker](worker, msg_type, payload, config)
+    return reply_ack, next_steps
 
 
 def do_nothing(*args):
@@ -109,68 +109,63 @@ def do_nothing(*args):
 def undefined_message():
     next_step = do_nothing
     next_step_args = []
-    return next_step, next_step_args
+    return [(next_step, next_step_args)]
 
 
 def the_end(config):
     next_step = finish_automation
     next_step_args = [config]
-    return next_step, next_step_args
+    return [(next_step, next_step_args)]
 
 
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
-        'success 06': (do_nothing, []),
-        'failure 06': (do_nothing, []),
-        'success 18': (launch_worker, ['grib_to_netcdf', config]),
-        'failure 18': (do_nothing, []),
+        # msg type: [(step, [step_args])]
+        'success 06': [(do_nothing, [])],
+        'failure 06': [(do_nothing, [])],
+        'success 18': [(launch_worker, ['grib_to_netcdf', config])],
+        'failure 18': [(do_nothing, [])],
     }
-    next_step, next_step_args = actions[msg_type]
-    return next_step, next_step_args
+    return actions[msg_type]
 
 
 def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
-        'success': (do_nothing, []),
-        'failure': (do_nothing, [])
+        # msg type: [(step, [step_args])]
+        'success': [(update_checklist, [worker, 'sshNeahBay', payload])],
+        'failure': [(do_nothing, [])],
     }
-    if msg_type == 'success':
-        update_checklist(worker, 'sshNeahBay', payload)
-    next_step, next_step_args = actions[msg_type]
-    return next_step, next_step_args
+    return actions[msg_type]
 
 
 def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
-        'success': (do_nothing, []),
-        'failure': (do_nothing, [])
+        # msg type: [(step, [step_args])]
+        'success': [(update_checklist, [worker, 'rivers', payload])],
+        'failure': [(do_nothing, [])],
     }
-    if msg_type == 'success':
-        update_checklist(worker, 'rivers', payload)
-    next_step, next_step_args = actions[msg_type]
-    return next_step, next_step_args
+    return actions[msg_type]
 
 
 def after_grib_to_netcdf(worker, msg_type, payload, config):
     actions = {
-        'success': (launch_worker, ['upload_forcing', config]),
-        'failure': (do_nothing, [])
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'weather forcing', payload]),
+            (launch_worker, ['upload_forcing', config]),
+        ],
+        'failure': [(do_nothing, [])],
     }
-    if msg_type == 'success':
-        update_checklist(worker, 'weather forcing', payload)
-    next_step, next_step_args = actions[msg_type]
-    return next_step, next_step_args
+    return actions[msg_type]
 
 
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
-        'success': (do_nothing, []),
-        'failure': (do_nothing, []),
+        # msg type: [(step, [step_args])]
+        'success': [(update_checklist, [worker, 'upload_forcing', payload])],
+        'failure': [(do_nothing, [])],
     }
-    if msg_type == 'success':
-        update_checklist(worker, 'upload_forcing', payload)
-        next_step, next_step_args = actions[msg_type]
-        return next_step, next_step_args
+    return actions[msg_type]
 
 
 def update_checklist(worker, key, worker_checklist):
