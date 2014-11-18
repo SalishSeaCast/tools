@@ -75,7 +75,6 @@ def main():
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
-        lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical('NEMO-atmos forcing file creation failed')
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
