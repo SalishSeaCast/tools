@@ -341,7 +341,7 @@ def get_web_data(
     :returns: Downloaded content if filepath is :py:obj:`None`,
               otherwise :py:obj:`requests.Response.headers` dict.
 
-    :raises: :py:class:`salishsea_tools.nowcast.lib.WorkerError`
+    :raises: :py:exc:`nowcast.lib.WorkerError`
     """
     response = requests.get(url, stream=filepath is not None)
     try:
@@ -412,7 +412,7 @@ def run_in_subprocess(cmd, output_logger, error_logger):
                         command returns non-zero status cdoe.
     :type error_logger: :class:`logging.Logger`
 
-    :raises: :py:class:`salishsea_tools.nowcast.lib.WorkerError`
+    :raises: :py:exc:`nowcast.lib.WorkerError`
     """
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
