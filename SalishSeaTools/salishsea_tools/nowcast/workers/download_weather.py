@@ -14,6 +14,8 @@
 # limitations under the License.
 
 """Salish Sea NEMO nowcast weather model dataset download worker.
+Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km operational
+model forecast.
 """
 import argparse
 import grp
@@ -56,14 +58,7 @@ FORECAST_DURATION = 42  # hours
 
 def main():
     base_parser = lib.basic_arg_parser(
-        worker_name,
-        description='''
-        Salish Sea NEMO nowcast weather model dataset download worker.
-        Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km
-        operational model forecast.
-        ''',
-        add_help=False,
-    )
+        worker_name, description=__doc__, add_help=False)
     parser = configure_argparser(
         prog=base_parser.prog,
         description=base_parser.description,
