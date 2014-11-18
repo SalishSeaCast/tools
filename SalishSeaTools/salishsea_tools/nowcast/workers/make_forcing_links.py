@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that uploads the forcing files
-for a nowcast run to the HPC/cloud facility where the run will be
+"""Salish Sea NEMO nowcast worker that creates the forcing file symlinks
+for a nowcast run on the HPC/cloud facility where the run will be
 executed.
 """
 import logging
@@ -45,15 +45,16 @@ def main():
     # Do the work
     checklist = {}
     try:
-        cmd = ['bash', config['upload forcing']]
+        cmd = ['bash', config['make forcing links']]
         lib.run_in_subprocess(cmd, logger, logger)
         checklist['success'] = True
-        logger.info('forcing files upload to HPC/cloud completed')
+        logger.info('forcing file links on HPC/cloud created')
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
+        lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
-        logger.critical('forcing files upload to HPC/cloud failed')
+        logger.critical('forcing file links creation on HPC/cloud failed')
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     # Finish up
