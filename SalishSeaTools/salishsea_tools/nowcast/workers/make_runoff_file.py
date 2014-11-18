@@ -53,7 +53,6 @@ def main():
             'and climatology elsewhere completed')
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
-        lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         # Exchange failure messages with nowcast manager process
         logger.critical('Rivers runoff file creation failed')
