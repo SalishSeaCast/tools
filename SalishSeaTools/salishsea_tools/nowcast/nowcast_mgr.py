@@ -76,6 +76,7 @@ def parse_message(config, message):
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
         'upload_forcing': after_upload_forcing,
+        'make_forcing_links': after_make_forcing_links,
         'the end': the_end,
     }
     # Handle undefined message type
@@ -162,7 +163,21 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success': [(update_checklist, [worker, 'upload_forcing', payload])],
+        'success': [
+            (update_checklist, [worker, 'upload_forcing', payload]),
+            (launch_worker, ['make_forcing_links', config]),
+        ],
+        'failure': [(do_nothing, [])],
+    }
+    return actions[msg_type]
+
+
+def after_make_forcing_links(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'make_forcing_links', payload])
+        ],
         'failure': [(do_nothing, [])],
     }
     return actions[msg_type]
