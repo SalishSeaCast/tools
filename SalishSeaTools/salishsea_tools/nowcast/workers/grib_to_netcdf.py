@@ -73,11 +73,11 @@ def main():
         grib_to_netcdf(config, checklist)
         logger.info('NEMO-atmos forcing file creation completed')
         # Exchange success messages with the nowcast manager process
-        lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
+#***        lib.tell_manager(
+#***            worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical('NEMO-atmos forcing file creation failed')
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+#***        lib.tell_manager(worker_name, 'failure', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
@@ -102,26 +102,44 @@ def grib_to_netcdf(config, checklist):
     today = arrow.utcnow().to('Canada/Pacific')
     yesterday = today.replace(days=-1)
     ymd = today.strftime('y%Ym%md%d')
+    fcst_section_hrs_arr = [OrderedDict() for x in range(2)]
+    # today
     p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
     p2 = os.path.join(today.format('YYYYMMDD'), '06')
     p3 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.info('forecast sections: {} {} {}'.format(p1, p2, p3))
-    fcst_section_hrs = OrderedDict([
+    fcst_section_hrs_arr[0] = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, 24-18-1, 24+6-18)),
         ('section 2', (p2, 7-6, 18-6)),
         ('section 3', (p3, 19-18, 23-18)),
     ])
+    subdirectory = ['']
+    # tomorrow (forecast)
+#***    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
+    p1 = os.path.join(yesterday.format('YYYYMMDD')+'sav', '18')   
+    logger.info('forecast section: {}'.format(p1))
+    fcst_section_hrs_arr[1] = OrderedDict([
+        # (part, (dir, start hr, end hr))
+        ('section 1', (p1, 24-18-1, 24+24-18))
+     ])    
+    subdirectory.extend(['fcst'])
 
-    rotate_grib_wind(config, fcst_section_hrs)
-    collect_grib_scalars(config, fcst_section_hrs)
-    outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
-    outgrib, outzeros = crop_to_watersheds(
-        config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
-    outnetcdf, out0netcdf = make_netCDF_files(config, ymd, outgrib, outzeros)
-    calc_instantaneous(outnetcdf, out0netcdf, ymd)
-    change_to_NEMO_variable_names(outnetcdf)
-    netCDF4_deflate(outnetcdf)
+#***    for fcst_section_hrs in fcst_section_hrs_arr:
+    for countit in range(1):
+        fcst_section_hrs = fcst_section_hrs_arr[1]
+        subdir = subdirectory[1]
+        print fcst_section_hrs, subdir
+        rotate_grib_wind(config, fcst_section_hrs)
+        collect_grib_scalars(config, fcst_section_hrs)
+        outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
+        outgrib, outzeros = crop_to_watersheds(
+            config, ymd, subdir, IST, IEN, JST, JEN, outgrib, outzeros)
+        outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
+                                                  outgrib, outzeros)
+        calc_instantaneous(outnetcdf, out0netcdf, ymd)
+        change_to_NEMO_variable_names(outnetcdf)
+#***    netCDF4_deflate(outnetcdf)
     checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
 
     plt.savefig('wg.png')
@@ -231,8 +249,10 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     GRIBdir = config['weather']['GRIB_dir']
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
-    outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))
-    outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
+#***    outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))
+    outgrib = os.path.join(OPERdir, 'test_allvar_{ymd}.grib'.format(ymd=ymd))
+#***    outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
+    outzeros = os.path.join(OPERdir, 'test_000_{ymd}.grib'.format(ymd=ymd))
     # Delete residual instances of files that are created so that
     # function can be re-run cleanly
     try:
@@ -271,7 +291,8 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     return outgrib, outzeros
 
 
-def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
+def crop_to_watersheds(config, ymd, subdir, ist, ien, jst, jen, outgrib, 
+                       outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
     flows for runoff forcing files for the Salish Sea NEMO model.
@@ -279,9 +300,9 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
     newgrib = os.path.join(
-        OPERdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
+        OPERdir, subdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
     newzeros = os.path.join(
-        OPERdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
+        OPERdir, subdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
     istr = '{ist}:{ien}'.format(ist=ist, ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
@@ -299,13 +320,14 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, outzeros):
     return newgrib, newzeros
 
 
-def make_netCDF_files(config, ymd, outgrib, outzeros):
+def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
-    outnetcdf = os.path.join(OPERdir, 'ops_{ymd}.nc'.format(ymd=ymd))
-    out0netcdf = os.path.join(OPERdir, 'oper_000_{ymd}.nc'.format(ymd=ymd))
+    outnetcdf = os.path.join(OPERdir, subdir, 'ops_{ymd}.nc'.format(ymd=ymd))
+    out0netcdf = os.path.join(OPERdir, subdir, 
+                              'oper_000_{ymd}.nc'.format(ymd=ymd))
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
