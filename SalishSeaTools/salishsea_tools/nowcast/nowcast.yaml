@@ -28,7 +28,12 @@ weather:
 
 upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/upload.sh
 
-make forcing links: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
+
+run:
+  host: orcinus
+  make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
+  results: /home/dlatorne/MEOPAR/SalishSea/nowcast/
+  results archive: /data/dlatorne/MEOPAR/SalishSea/nowcast/
 
 logging:
   log_file: /home/dlatorne/public_html/MEOPAR/nowcast/nowcast.log
@@ -66,4 +71,7 @@ msg_types:
   make_forcing_links:
     success: forcing file links created
     failure: forcing file links creation failed
+  download_results:
+    success: results files downloaded
+    failure: results files download failed
     the end: end of automation
