@@ -174,7 +174,8 @@ def get_grib(forecast, config):
                 variable=v, date=date, forecast=forecast, hour=sfhour)
             fileURL = URL_TEMPLATE.format(
                 forecast=forecast, hour=sfhour, filename=filename)
-            headers = lib.get_web_data(fileURL, logger, filename)
+            headers = lib.get_web_data(
+                fileURL, logger, filename, retry_time_limit=9000)
             logger.debug(
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=headers['Content-Length'],
