@@ -45,7 +45,10 @@ def main():
     # Do the work
     checklist = {}
     try:
-        cmd = ['bash', config['make forcing links']]
+        cmd = [
+            'ssh', '-C', config['run']['host'],
+            'bash', config['run']['make forcing links']
+        ]
         lib.run_in_subprocess(cmd, logger, logger)
         checklist['made'] = True
         logger.info('forcing file links on HPC/cloud created')
