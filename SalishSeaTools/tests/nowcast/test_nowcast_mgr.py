@@ -185,6 +185,7 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_grib_to_netcdf', 'failure'),
     ('after_upload_forcing', 'failure'),
     ('after_make_forcing_links', 'failure'),
+    ('after_download_results', 'failure'),
 ])
 def test_after_worker_do_nothing_next_step_args(
     worker, msg_type, nowcast_mgr_module,
@@ -241,7 +242,7 @@ def test_upload_forcing_success_next_steps(nowcast_mgr_module):
         'upload_forcing', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
-         ['upload_forcing', 'upload_forcing', payload]),
+         ['upload_forcing', 'forcing upload', payload]),
         (nowcast_mgr_module.launch_worker,
          ['make_forcing_links', config]),
     ]
@@ -255,6 +256,18 @@ def test_make_forcing_links_success_next_steps(nowcast_mgr_module):
         'make_forcing_links', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
-         ['make_forcing_links', 'make_forcing_links', payload]),
+         ['make_forcing_links', 'forcing links', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_download_results_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_download_results(
+        'download_results', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_results', 'results files', payload]),
     ]
     assert next_steps == expected

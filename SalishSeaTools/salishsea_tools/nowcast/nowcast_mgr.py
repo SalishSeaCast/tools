@@ -77,11 +77,12 @@ def parse_message(config, message):
         'grib_to_netcdf': after_grib_to_netcdf,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
+        'download_results': after_download_results,
         'the end': the_end,
     }
     # Handle undefined message type
     if msg_type not in config['msg_types'][worker]:
-        logger.error(
+        logger.warning(
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
@@ -164,7 +165,7 @@ def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [
-            (update_checklist, [worker, 'upload_forcing', payload]),
+            (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker, ['make_forcing_links', config]),
         ],
         'failure': [(do_nothing, [])],
@@ -176,7 +177,18 @@ def after_make_forcing_links(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [
-            (update_checklist, [worker, 'make_forcing_links', payload])
+            (update_checklist, [worker, 'forcing links', payload])
+        ],
+        'failure': [(do_nothing, [])],
+    }
+    return actions[msg_type]
+
+
+def after_download_results(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'results files', payload])
         ],
         'failure': [(do_nothing, [])],
     }
