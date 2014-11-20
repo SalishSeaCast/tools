@@ -13,32 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+
+
 """A collection of Python functions to produce model results visualization
 figures for analysis and model evaluation of daily nowcast/forecast runs.
 """
 from __future__ import division
-
 import matplotlib.pyplot as plt
-
-from salishsea_tools import nc_tools, stormtools
-
+import numpy as np
+from salishsea_tools import nc_tools, stormtools, tidetools
 import datetime
 
 
-def ssh_PtAtkinson(grid_T, bathy=None, figsize=(20, 4)):
+
+
+#SEA SURFACE HEIGHT
+def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
     """Return a figure containing a plot of hourly sea surface height at
     Pt. Atkinson.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
 
-    :arg bathy: Bathymetry dataset for the Salish Sea NEMO model.
-    :type bathy: :class:`netCDF4.Dataset`
+    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+    :type gridB: :class:`netCDF4.Dataset`
 
     :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
 
-    :returns: Matplotlib figure object
+    :returns: Matplotlib figure object instance
     """
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ssh = grid_T.variables['sossheig']
@@ -55,20 +59,19 @@ def ssh_PtAtkinson(grid_T, bathy=None, figsize=(20, 4)):
     return fig
 
 
-
-def PA_tidal_predictions(grid_T,figsize=(20,5)):
+def PA_tidal_predictions(grid_T, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the dsimulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
     
-    :arg gridT: Hourly tracer results dataset from NEMO.
-    :type gridT: :class:`netCDF4.Dataset`
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
 
-    :arg figsize: figure size (width, height) in inches.
+    :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
     
     :returns: Matplotlib figure object instance
     """
-     #beginning and end time of the simulation file.
+    #beginning and end time of the simulation file.
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
     t_end =((nc_tools.timestamp(grid_T,-1)).datetime)
     
@@ -95,5 +98,69 @@ def PA_tidal_predictions(grid_T,figsize=(20,5)):
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson')
     ax.set_ylabel('Sea Surface Height [m]')
+    
+    return fig
+
+
+def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
+    """ Compares modelled water levels to tidal predictions at a station over one day.
+    It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
+    Tidal predictions were calculated with the eight consituents used in the model.
+    
+    :arg name: Name of station (e.g Point Atkinson).
+    :type name: string
+    
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+    
+    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+    :type gridB: :class:`netCDF4.Dataset`
+    
+    :arg figsize:  Figure size (width, height) in inches
+    :type figsize: 2-tuple
+    
+    :returns: Matplotlib figure object instance
+    """
+    
+    #Locations of interest.
+    lons={'Point Atkinson':-123.26}
+    lats={'Point Atkinson': 49.33}
+    
+    #load bathymetry
+    bathy = gridB.variables['Bathymetry'][:, :]
+    X = gridB.variables['nav_lon'][:, :]
+    Y = gridB.variables['nav_lat'][:, :]
+    
+    #time stamp of simulation
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    
+    #loading the tidal predictions
+    path='/data/nsoontie/MEOPAR/analysis/Susan/'
+    filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    tfile = path+name+filename
+    ttide,msl= stormtools.load_tidal_predictions(tfile)
+    
+    #identify grid point of location of interest
+    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=True)
+    
+    #load variables for plotting
+    ssh = grid_T.variables['sossheig'][:,j,i]
+    count=grid_T.variables['time_counter'][:]
+    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
+    #convert times to datetimes because that is what the plot wants
+    for i in range(len(t)):
+        t[i]=t[i].datetime
+    
+    #plotting
+    fig,ax =plt.subplots(1,1,figsize=figsize) 
+    ax.plot(t,ssh,label='model')
+    ax.plot(ttide.time,ttide.pred_8,label='tidal predictions')
+    ax.set_xlim(t_orig,t_orig + datetime.timedelta(days=1))
+    ax.set_ylim([-3,3])
+    ax.legend(loc=0)
+    ax.set_title(name)
+    ax.set_ylabel('Water levels wrt MSL (m)')
+    ax.set_xlabel('time [UTC]')
+
     
     return fig
