@@ -20,10 +20,12 @@ from __future__ import division
 
 import matplotlib.pyplot as plt
 
-from salishsea_tools import nc_tools
+from salishsea_tools import nc_tools, stormtools
+
+import datetime
 
 
-def ssh_PtAtkinson(grid_T, bathy=None, figsize=(12, 4)):
+def ssh_PtAtkinson(grid_T, bathy=None, figsize=(20, 4)):
     """Return a figure containing a plot of hourly sea surface height at
     Pt. Atkinson.
 
@@ -49,12 +51,12 @@ def ssh_PtAtkinson(grid_T, bathy=None, figsize=(12, 4)):
         .format(label=ssh.long_name.title(), units=ssh.units))
     ax.grid()
     ax.set_title(
-        'Pt. Atkinson Hourly Sea Surface Height on {}'.format(results_date))
+        'Hourly Sea Surface Height at Point Atkinson on {}'.format(results_date))
     return fig
 
 
 
-def PA_tidal_predictions(grid_T,figsize=(10,5)):
+def PA_tidal_predictions(grid_T,figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the dsimulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
     
@@ -67,8 +69,8 @@ def PA_tidal_predictions(grid_T,figsize=(10,5)):
     :returns: Matplotlib figure object instance
     """
      #beginning and end time of the simulation file.
-    t_orig=(nc_tools.timestamp(gridT,0)).datetime
-    t_end =((nc_tools.timestamp(gridT,-1)).datetime)
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_end =((nc_tools.timestamp(grid_T,-1)).datetime)
     
     #set axis limits 2 weeks before and after start date
     ax_start = t_orig - datetime.timedelta(weeks=2)
@@ -92,6 +94,6 @@ def PA_tidal_predictions(grid_T,figsize=(10,5)):
     ax.set_xlim([ax_start,ax_end])
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson')
-    ax.set_ylabel('SSH [m]')
+    ax.set_ylabel('Sea Surface Height [m]')
     
     return fig
