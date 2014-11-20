@@ -55,7 +55,6 @@ def main():
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
-        lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical('forcing file links creation on HPC/cloud failed')
         # Exchange failure messages with the nowcast manager process
