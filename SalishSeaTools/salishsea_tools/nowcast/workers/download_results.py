@@ -99,7 +99,7 @@ def arrow_date(string):
 
 
 def download_results(run_date, config, checklist):
-    results_dir = run_date.strftime('%d%b%y')
+    results_dir = run_date.strftime('%d%b%y').lower()
     src_dir = os.path.join(config['run']['results'], results_dir)
     src = (
         '{host}:{src_dir}'.format(host=config['run']['host'], src_dir=src_dir))
