@@ -418,14 +418,14 @@ def run_in_subprocess(cmd, output_logger, error_logger):
         'running command in subprocess: {}'.format(cmd))
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        for line in output.split('\n'):
+        for line in output.splitlines():
             if line:
                 output_logger(line)
     except subprocess.CalledProcessError as e:
         error_logger(
             'subprocess {cmd} failed with return code {status}'
             .format(cmd=cmd, status=e.returncode))
-        for line in e.output.split('\n'):
+        for line in e.output.splitlines():
             if line:
                 error_logger(line)
         raise WorkerError
