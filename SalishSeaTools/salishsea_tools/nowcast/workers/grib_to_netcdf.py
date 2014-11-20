@@ -141,7 +141,7 @@ def grib_to_netcdf(config, checklist):
         ('section 1', (p1, -1, 24+24-18-1, 24+24+12-18)),
      ])
     zerostart.extend([[]])
-    length.extend([12])
+    length.extend([13])
     subdirectory.extend(['fcst'])
     yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
 
