@@ -46,7 +46,7 @@ def main():
     checklist = {}
     try:
         cmd = ['bash', config['upload forcing']]
-        lib.run_in_subprocess(cmd, logger, logger)
+        lib.run_in_subprocess(cmd, logger.debug, logger.error)
         checklist['success'] = True
         logger.info('forcing files upload to HPC/cloud completed')
         # Exchange success messages with the nowcast manager process
