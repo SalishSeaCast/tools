@@ -75,7 +75,7 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run-date', type=arrow_date,
+        '--run-date', type=arrow_date,
         default=arrow.now().date(),
         help='''
         Date of the run to download results files from;
