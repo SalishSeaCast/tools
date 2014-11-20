@@ -104,7 +104,7 @@ def download_results(run_date, config, checklist):
     src = (
         '{host}:{src_dir}'.format(host=config['run']['host'], src_dir=src_dir))
     dest = os.path.join(config['run']['results archive'])
-    cmd = ['scp', '-C', '-r', src, dest]
+    cmd = ['scp', '-Cpr', src, dest]
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
     for freq in '1h 1d'.split():
         checklist[freq] = glob.glob(
