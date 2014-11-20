@@ -73,11 +73,11 @@ def main():
         grib_to_netcdf(config, checklist)
         logger.info('NEMO-atmos forcing file creation completed')
         # Exchange success messages with the nowcast manager process
-#***        lib.tell_manager(
-#***            worker_name, 'success', config, logger, socket, checklist)
+        lib.tell_manager(
+            worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical('NEMO-atmos forcing file creation failed')
-#***        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        lib.tell_manager(worker_name, 'failure', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
@@ -100,9 +100,6 @@ def grib_to_netcdf(config, checklist):
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
     today = arrow.utcnow().to('Canada/Pacific')
-#***
-    today = today.replace(days=-1)  #*** for testing only
-#***
     yesterday = today.replace(days=-1)
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days=+2)
@@ -358,8 +355,8 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
     gid = grp.getgrnam(config['file group']).gr_gid
-#***    os.chown(outnetcdf, -1, gid)
-#***    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
+    os.chown(outnetcdf, -1, gid)
+    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
