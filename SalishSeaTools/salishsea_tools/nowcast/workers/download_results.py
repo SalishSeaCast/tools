@@ -110,9 +110,8 @@ def download_results(run_date, config, checklist):
         checklist[freq] = glob.glob(
             os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
     for filename in 'stdout stderr'.split():
-        filepath = os.path.join(results_dir, filename)
+        filepath = os.path.join(dest, results_dir, filename)
         os.chmod(filepath, 436)  # octal 664 = 'rw-rw-r--'
-
 
 
 if __name__ == '__main__':
