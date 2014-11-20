@@ -24,15 +24,18 @@
     A total of 7 day's log files are retained.
   </p>
   <p>
-    At present only the downloading of the 06 and 18 weather model forecast datasets are included in the worker automation,
-    so the log file rollovers happen after the 18 forecast download completes,
-    usually around 09:30 Pacific time.
+    At present all of the pre-processing steps are included in the worker automation,
+    as is the run results downloading step.
+    So,
+    there is a pause in the log while the run is manually queued on orcinus and while it is executed,
+    but the log resumes with downloading of the results,
+    after which  the log file rollovers happen.
   </p>
   <dl>
     <dt><a href="nowcast.log">nowcast.log</a></dt>
     <dd>
       Current log file.
-      Nearly empty after 18 weather forecast download completion when the current day's run log file is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
+      Nearly empty after the run results download is completed and the current day's run log file is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
       </dd>
     <dt><a href="nowcast.log.1">nowcast.log.1</a></dt>
     <dd>
