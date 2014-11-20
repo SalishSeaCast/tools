@@ -100,9 +100,6 @@ def grib_to_netcdf(config, checklist):
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
     today = arrow.utcnow().to('Canada/Pacific')
-#***
-    today = today.replace(days=-1)  #*** remove this line!!!
-#***
     yesterday = today.replace(days=-1)
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days=+2)
@@ -121,12 +118,11 @@ def grib_to_netcdf(config, checklist):
     ])
     zerostart = [[7, 19]]
     length = [24]
-    subdirectory = ['fcst']  #*** change this
+    subdirectory = ['']  
     yearmonthday = [today.strftime('y%Ym%md%d')]
 
     # tomorrow (forecast)
-#***    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
-    p1 = os.path.join(today.format('YYYYMMDD')+'sav', '18')   
+    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
     logger.info('tomorrow forecast section: {}'.format(p1))
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
@@ -138,8 +134,7 @@ def grib_to_netcdf(config, checklist):
     yearmonthday.extend([tomorrow.strftime('y%Ym%md%d')])
 
     # next day (forecast)
-#***    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
-    p1 = os.path.join(today.format('YYYYMMDD')+'sav', '18') 
+    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
     logger.info('next day forecast section: {}'.format(p1))
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
@@ -162,10 +157,10 @@ def grib_to_netcdf(config, checklist):
                                                   outgrib, outzeros)
         calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart)
         change_to_NEMO_variable_names(outnetcdf)
-        plt.savefig('wg'+ymd+'.png')
+        plt.savefig('wg.png')
         
-#***    netCDF4_deflate(outnetcdf)
-    checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
+        netCDF4_deflate(outnetcdf)
+        checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
 
     
 
