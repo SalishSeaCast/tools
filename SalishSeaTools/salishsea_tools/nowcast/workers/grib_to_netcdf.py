@@ -100,6 +100,9 @@ def grib_to_netcdf(config, checklist):
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
     today = arrow.utcnow().to('Canada/Pacific')
+#***
+    today = today.replace(days=-1)  #*** for testing only
+#***
     yesterday = today.replace(days=-1)
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days=+2)
@@ -145,9 +148,11 @@ def grib_to_netcdf(config, checklist):
     subdirectory.extend(['fcst'])
     yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
 
+    # set-up plotting
+    fig, axs, ip = set_up_plotting()
+
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
         fcst_section_hrs_arr, zerostart, length, subdirectory, yearmonthday):
-        print fcst_section_hrs, subdir
         rotate_grib_wind(config, fcst_section_hrs)
         collect_grib_scalars(config, fcst_section_hrs)
         outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
@@ -155,15 +160,15 @@ def grib_to_netcdf(config, checklist):
             config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
         outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
                                                   outgrib, outzeros)
-        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart)
-        change_to_NEMO_variable_names(outnetcdf)
-        plt.savefig('wg.png')
+        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, 
+                           axs)
+        change_to_NEMO_variable_names(outnetcdf, axs, ip)
+        ip += 1
         
         netCDF4_deflate(outnetcdf)
         checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
-
-    
-
+    axs[2,0].legend(loc='upper left')
+    fig.savefig('wg.png')
 
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
@@ -353,8 +358,8 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
     gid = grp.getgrnam(config['file group']).gr_gid
-    os.chown(outnetcdf, -1, gid)
-    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
+#***    os.chown(outnetcdf, -1, gid)
+#***    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
@@ -365,7 +370,7 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     return outnetcdf, out0netcdf
 
 
-def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart):
+def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     """Calculate instantaneous values from the forecast accumulated values
     for the precipitation and radiation variables.
     """
@@ -379,15 +384,13 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart):
     }
     for var in acc_vars:
         acc_values['acc'][var] = data.variables[var][:]
-        print var, acc_values['acc'][var].shape
         acc_values['zero'][var] = data0.variables[var][:]
         acc_values['inst'][var] = np.empty_like(acc_values['acc'][var])
     data0.close()
     os.remove(out0netcdf)
 
-    plt.subplot(2, 3, 1)
-    plt.plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
-    plt.title(ymd)
+    axs[1,0].plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
+    
 
     for var in acc_vars:
         acc_values['inst'][var][0] = (
@@ -401,8 +404,8 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart):
                 acc_values['acc'][var][realhour] 
                 - acc_values['acc'][var][realhour-1]) / 3600
 
-    plt.subplot(2, 3, 2)
-    plt.plot(acc_values['inst']['APCP_surface'][:, 200, 200])
+    axs[1,1].plot(acc_values['inst']['APCP_surface'][:, 200, 200],'o-',
+                      label=ymd)
 
     for var in acc_vars:
         data.variables[var][:] = acc_values['inst'][var][:]
@@ -412,7 +415,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart):
         'for precipitation and long- & short-wave radiation')
 
 
-def change_to_NEMO_variable_names(outnetcdf):
+def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     """Rename variables to match NEMO naming conventions.
     """
     data = nc.Dataset(outnetcdf, 'r+')
@@ -431,19 +434,30 @@ def change_to_NEMO_variable_names(outnetcdf):
     logger.info('changed variable names to their NEMO names')
 
     Temp = data.variables['tair'][:]
-    plt.subplot(2, 3, 3)
-    plt.pcolormesh(Temp[0])
-    plt.xlim([0, Temp.shape[2]])
-    plt.ylim([0, Temp.shape[1]])
-    plt.subplot(2, 3, 4)
-    precip = data.variables['precip'][:]
-    plt.plot(precip[:, 200, 200])
+    axs[0,ip].pcolormesh(Temp[0])
+    axs[0,ip].set_xlim([0, Temp.shape[2]])
+    axs[0,ip].set_ylim([0, Temp.shape[1]])
+    axs[0,ip].plot(200,200,'wo')
+
+    if ip == 0:
+        label = "day 1"
+    elif ip == 1:
+        label = "day 2"
+    else:
+        label = "day 3"
+    humid = data.variables['qair'][:]
+    axs[1,2].plot(humid[:, 200, 200],'-o')
     solar = data.variables['solar'][:]
-    plt.subplot(2, 3, 5)
-    plt.plot(solar[:, 150, 150])
+    axs[2,0].plot(solar[:, 200, 200],'-o', label = label)
     longwave = data.variables['therm_rad'][:]
-    plt.subplot(2, 3, 6)
-    plt.plot(longwave[:, 150, 150])
+    axs[2,1].plot(longwave[:, 200, 200],'-o')
+    pres = data.variables['atmpres'][:]
+    axs[2,2].plot(pres[:, 200, 200],'-o')
+    uwind = data.variables['u_wind'][:]
+    axs[3,0].plot(uwind[:, 200, 200],'-o')
+    vwind = data.variables['v_wind'][:]
+    axs[3,1].plot(vwind[:, 200, 200],'-o')
+    axs[3,2].plot(np.sqrt(uwind[:, 200, 200]**2 + vwind[:, 200, 200]**2),'-o')
 
     data.close()
 
@@ -453,10 +467,27 @@ def netCDF4_deflate(outnetcdf):
     """
     cmd = ['ncks', '-4', '-L4', '-O', outnetcdf, outnetcdf]
     try:
-        lib.run_in_subprocess(cmd, logger, logger)
+        lib.run_in_subprocess(cmd, logger.debug, logger.error)
         logger.info('netCDF4 deflated {}'.format(outnetcdf))
     except lib.WorkerError:
         raise
+
+def set_up_plotting():
+    fig, axs = plt.subplots(4,3,figsize=(10,15))
+    axs[0,0].set_title('Air Temp. 0 hr')
+    axs[0,1].set_title('Air Temp. +1 day')
+    axs[0,2].set_title('Air Temp. +2 days')
+    axs[1,0].set_title('Accumulated Precip')
+    axs[1,1].set_title('Instant. Precip')
+    axs[1,2].set_title('Humidity')
+    axs[2,0].set_title('Solar Rad')
+    axs[2,1].set_title('Longwave Down')
+    axs[2,2].set_title('Sea Level Pres')
+    axs[3,0].set_title('u wind')
+    axs[3,1].set_title('v wind')
+    axs[3,2].set_title('Wind Speed')
+    ip = 0
+    return fig, axs, ip
 
 
 if __name__ == '__main__':
