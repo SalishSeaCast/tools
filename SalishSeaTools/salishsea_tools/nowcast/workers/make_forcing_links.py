@@ -49,7 +49,7 @@ def main():
             'ssh', '-C', config['run']['host'],
             'bash', config['run']['make forcing links']
         ]
-        lib.run_in_subprocess(cmd, logger, logger)
+        lib.run_in_subprocess(cmd, logger.debug, logger.error)
         checklist['made'] = True
         logger.info('forcing file links on HPC/cloud created')
         # Exchange success messages with the nowcast manager process

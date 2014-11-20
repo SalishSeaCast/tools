@@ -414,7 +414,7 @@ def run_in_subprocess(cmd, output_logger, error_logger):
 
     :raises: :py:exc:`nowcast.lib.WorkerError`
     """
-    output_logger.debug(
+    output_logger(
         'running command in subprocess: {}'.format(cmd))
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
