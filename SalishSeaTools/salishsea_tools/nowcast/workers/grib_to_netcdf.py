@@ -100,49 +100,74 @@ def grib_to_netcdf(config, checklist):
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
     today = arrow.utcnow().to('Canada/Pacific')
+#***
+    today = today.replace(days=-1)  #*** remove this line!!!
+#***
     yesterday = today.replace(days=-1)
-    ymd = today.strftime('y%Ym%md%d')
-    fcst_section_hrs_arr = [OrderedDict() for x in range(2)]
+    tomorrow = today.replace(days=+1)
+    nextday = today.replace(days=+2)
+    fcst_section_hrs_arr = [OrderedDict() for x in range(3)]
+
     # today
     p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
     p2 = os.path.join(today.format('YYYYMMDD'), '06')
     p3 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.info('forecast sections: {} {} {}'.format(p1, p2, p3))
     fcst_section_hrs_arr[0] = OrderedDict([
-        # (part, (dir, start hr, end hr))
-        ('section 1', (p1, 24-18-1, 24+6-18)),
-        ('section 2', (p2, 7-6, 18-6)),
-        ('section 3', (p3, 19-18, 23-18)),
+        # (part, (dir, real start hr, forecast start hr, end hr))
+        ('section 1', (p1, -1, 24-18-1, 24+6-18)),
+        ('section 2', (p2, 7, 7-6, 18-6)),
+        ('section 3', (p3, 19, 19-18, 23-18)),
     ])
-    subdirectory = ['']
+    zerostart = [[7, 19]]
+    length = [24]
+    subdirectory = ['fcst']  #*** change this
+    yearmonthday = [today.strftime('y%Ym%md%d')]
+
     # tomorrow (forecast)
 #***    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
-    p1 = os.path.join(yesterday.format('YYYYMMDD')+'sav', '18')   
-    logger.info('forecast section: {}'.format(p1))
+    p1 = os.path.join(today.format('YYYYMMDD')+'sav', '18')   
+    logger.info('tomorrow forecast section: {}'.format(p1))
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
-        ('section 1', (p1, 24-18-1, 24+24-18))
-     ])    
+        ('section 1', (p1, -1, 24-18-1, 24+23-18)),
+     ])
+    zerostart.extend([[]])
+    length.extend([24])
     subdirectory.extend(['fcst'])
+    yearmonthday.extend([tomorrow.strftime('y%Ym%md%d')])
 
-#***    for fcst_section_hrs in fcst_section_hrs_arr:
-    for countit in range(1):
-        fcst_section_hrs = fcst_section_hrs_arr[1]
-        subdir = subdirectory[1]
+    # next day (forecast)
+#***    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
+    p1 = os.path.join(today.format('YYYYMMDD')+'sav', '18') 
+    logger.info('next day forecast section: {}'.format(p1))
+    fcst_section_hrs_arr[2] = OrderedDict([
+        # (part, (dir, start hr, end hr))
+        ('section 1', (p1, -1, 24+24-18-1, 24+24+12-18)),
+     ])
+    zerostart.extend([[]])
+    length.extend([12])
+    subdirectory.extend(['fcst'])
+    yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
+
+    for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
+        fcst_section_hrs_arr, zerostart, length, subdirectory, yearmonthday):
         print fcst_section_hrs, subdir
         rotate_grib_wind(config, fcst_section_hrs)
         collect_grib_scalars(config, fcst_section_hrs)
         outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
         outgrib, outzeros = crop_to_watersheds(
-            config, ymd, subdir, IST, IEN, JST, JEN, outgrib, outzeros)
+            config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
         outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
                                                   outgrib, outzeros)
-        calc_instantaneous(outnetcdf, out0netcdf, ymd)
+        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart)
         change_to_NEMO_variable_names(outnetcdf)
+        plt.savefig('wg'+ymd+'.png')
+        
 #***    netCDF4_deflate(outnetcdf)
     checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
 
-    plt.savefig('wg.png')
+    
 
 
 def rotate_grib_wind(config, fcst_section_hrs):
@@ -156,7 +181,7 @@ def rotate_grib_wind(config, fcst_section_hrs):
     # grid_defn.pl expects to find wgrib2 in the pwd,
     # create a symbolic link to keep it happy
     os.symlink(wgrib2, 'wgrib2')
-    for day_fcst, start_hr, end_hr in fcst_section_hrs.values():
+    for day_fcst, realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
@@ -203,7 +228,7 @@ def collect_grib_scalars(config, fcst_section_hrs):
     # grid_defn.pl expects to find wgrib2 in the pwd,
     # create a symbolic link to keep it happy
     os.symlink(wgrib2, 'wgrib2')
-    for day_fcst, start_hr, end_hr in fcst_section_hrs.values():
+    for day_fcst,  realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
@@ -249,10 +274,9 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     GRIBdir = config['weather']['GRIB_dir']
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
-#***    outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))
-    outgrib = os.path.join(OPERdir, 'test_allvar_{ymd}.grib'.format(ymd=ymd))
-#***    outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
-    outzeros = os.path.join(OPERdir, 'test_000_{ymd}.grib'.format(ymd=ymd))
+    outgrib = os.path.join(OPERdir, 'oper_allvar_{ymd}.grib'.format(ymd=ymd))
+    outzeros = os.path.join(OPERdir, 'oper_000_{ymd}.grib'.format(ymd=ymd))
+
     # Delete residual instances of files that are created so that
     # function can be re-run cleanly
     try:
@@ -263,14 +287,14 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
         os.remove(outzeros)
     except Exception:
         pass
-    for section, (day_fcst, start_hr, end_hr) in fcst_section_hrs.items():
+    for day_fcst,  realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
             outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib')
             outscalargrid = os.path.join(
                 GRIBdir, day_fcst, sfhour, 'gscalar.grib')
-            if section == 'section 1' and fhour == 5:
+            if (fhour == start_hr and realstart == -1):
                 cmd = [wgrib2, outuvrot, '-append', '-grib', outzeros]
                 lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
                 cmd = [wgrib2, outscalargrid, '-append', '-grib', outzeros]
@@ -291,7 +315,7 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     return outgrib, outzeros
 
 
-def crop_to_watersheds(config, ymd, subdir, ist, ien, jst, jen, outgrib, 
+def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, 
                        outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
@@ -300,9 +324,9 @@ def crop_to_watersheds(config, ymd, subdir, ist, ien, jst, jen, outgrib,
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
     newgrib = os.path.join(
-        OPERdir, subdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
+        OPERdir, 'oper_allvar_small_{ymd}.grib'.format(ymd=ymd))
     newzeros = os.path.join(
-        OPERdir, subdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
+        OPERdir, 'oper_000_small_{ymd}.grib'.format(ymd=ymd))
     istr = '{ist}:{ien}'.format(ist=ist, ien=ien)
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
@@ -346,7 +370,7 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     return outnetcdf, out0netcdf
 
 
-def calc_instantaneous(outnetcdf, out0netcdf, ymd):
+def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart):
     """Calculate instantaneous values from the forecast accumulated values
     for the precipitation and radiation variables.
     """
@@ -360,6 +384,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd):
     }
     for var in acc_vars:
         acc_values['acc'][var] = data.variables[var][:]
+        print var, acc_values['acc'][var].shape
         acc_values['zero'][var] = data0.variables[var][:]
         acc_values['inst'][var] = np.empty_like(acc_values['acc'][var])
     data0.close()
@@ -372,17 +397,14 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd):
     for var in acc_vars:
         acc_values['inst'][var][0] = (
             acc_values['acc'][var][0] - acc_values['zero'][var][0]) / 3600
-        for t in range(1, 7):
-            acc_values['inst'][var][t] = (
-                acc_values['acc'][var][t] - acc_values['acc'][var][t-1]) / 3600
-        acc_values['inst'][var][7] = acc_values['acc'][var][7] / 3600
-        for t in range(8, 19):
-            acc_values['inst'][var][t] = (
-                acc_values['acc'][var][t] - acc_values['acc'][var][t-1]) / 3600
-        acc_values['inst'][var][19] = (acc_values['acc'][var][19]) / 3600
-        for t in range(20, 24):
-            acc_values['inst'][var][t] = (
-                acc_values['acc'][var][t] - acc_values['acc'][var][t-1]) / 3600
+        for realhour in range(1,flen):
+            if realhour in zstart:
+                acc_values['inst'][var][realhour] = (
+                    acc_values['acc'][var][realhour] / 3600)
+            else:
+                acc_values['inst'][var][realhour] = (
+                acc_values['acc'][var][realhour] 
+                - acc_values['acc'][var][realhour-1]) / 3600
 
     plt.subplot(2, 3, 2)
     plt.plot(acc_values['inst']['APCP_surface'][:, 200, 200])
@@ -429,7 +451,6 @@ def change_to_NEMO_variable_names(outnetcdf):
     plt.plot(longwave[:, 150, 150])
 
     data.close()
-
 
 def netCDF4_deflate(outnetcdf):
     """Run ncks in a subprocess to convert outnetcdf to netCDF4 format
