@@ -118,11 +118,11 @@ def grib_to_netcdf(config, checklist):
     ])
     zerostart = [[7, 19]]
     length = [24]
-    subdirectory = ['']  
+    subdirectory = ['']
     yearmonthday = [today.strftime('y%Ym%md%d')]
 
     # tomorrow (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
+    p1 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.info('tomorrow forecast section: {}'.format(p1))
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
@@ -134,7 +134,7 @@ def grib_to_netcdf(config, checklist):
     yearmonthday.extend([tomorrow.strftime('y%Ym%md%d')])
 
     # next day (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '18')   
+    p1 = os.path.join(today.format('YYYYMMDD'), '18')
     logger.info('next day forecast section: {}'.format(p1))
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
@@ -157,11 +157,11 @@ def grib_to_netcdf(config, checklist):
             config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
         outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
                                                   outgrib, outzeros)
-        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, 
+        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
                            axs)
         change_to_NEMO_variable_names(outnetcdf, axs, ip)
         ip += 1
-        
+
         netCDF4_deflate(outnetcdf)
         checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
     axs[2,0].legend(loc='upper left')
@@ -312,7 +312,7 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     return outgrib, outzeros
 
 
-def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib, 
+def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib,
                        outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
@@ -347,7 +347,7 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     OPERdir = config['weather']['ops_dir']
     wgrib2 = config['weather']['wgrib2']
     outnetcdf = os.path.join(OPERdir, subdir, 'ops_{ymd}.nc'.format(ymd=ymd))
-    out0netcdf = os.path.join(OPERdir, subdir, 
+    out0netcdf = os.path.join(OPERdir, subdir,
                               'oper_000_{ymd}.nc'.format(ymd=ymd))
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
@@ -387,7 +387,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     os.remove(out0netcdf)
 
     axs[1,0].plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
-    
+
 
     for var in acc_vars:
         acc_values['inst'][var][0] = (
@@ -398,7 +398,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
                     acc_values['acc'][var][realhour] / 3600)
             else:
                 acc_values['inst'][var][realhour] = (
-                acc_values['acc'][var][realhour] 
+                acc_values['acc'][var][realhour]
                 - acc_values['acc'][var][realhour-1]) / 3600
 
     axs[1,1].plot(acc_values['inst']['APCP_surface'][:, 200, 200],'o-',
