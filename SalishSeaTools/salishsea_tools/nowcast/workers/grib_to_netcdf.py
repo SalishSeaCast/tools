@@ -127,7 +127,7 @@ def grib_to_netcdf(config, checklist):
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24-18-1, 24+23-18)),
-     ])
+    ])
     zerostart.extend([[]])
     length.extend([24])
     subdirectory.extend(['fcst'])
@@ -139,7 +139,7 @@ def grib_to_netcdf(config, checklist):
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24+24-18-1, 24+24+12-18)),
-     ])
+    ])
     zerostart.extend([[]])
     length.extend([13])
     subdirectory.extend(['fcst'])
@@ -149,7 +149,8 @@ def grib_to_netcdf(config, checklist):
     fig, axs, ip = set_up_plotting()
 
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
-        fcst_section_hrs_arr, zerostart, length, subdirectory, yearmonthday):
+            fcst_section_hrs_arr, zerostart, length, subdirectory,
+            yearmonthday):
         rotate_grib_wind(config, fcst_section_hrs)
         collect_grib_scalars(config, fcst_section_hrs)
         outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
@@ -163,9 +164,11 @@ def grib_to_netcdf(config, checklist):
         ip += 1
 
         netCDF4_deflate(outnetcdf)
-        checklist.update({today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
-    axs[2,0].legend(loc='upper left')
+        checklist.update(
+            {today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
+    axs[2, 0].legend(loc='upper left')
     fig.savefig('wg.png')
+
 
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
@@ -390,23 +393,23 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     data0.close()
     os.remove(out0netcdf)
 
-    axs[1,0].plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
-
+    axs[1, 0].plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
 
     for var in acc_vars:
         acc_values['inst'][var][0] = (
             acc_values['acc'][var][0] - acc_values['zero'][var][0]) / 3600
-        for realhour in range(1,flen):
+        for realhour in range(1, flen):
             if realhour in zstart:
                 acc_values['inst'][var][realhour] = (
                     acc_values['acc'][var][realhour] / 3600)
             else:
                 acc_values['inst'][var][realhour] = (
-                acc_values['acc'][var][realhour]
-                - acc_values['acc'][var][realhour-1]) / 3600
+                    acc_values['acc'][var][realhour]
+                    - acc_values['acc'][var][realhour-1]) / 3600
 
-    axs[1,1].plot(acc_values['inst']['APCP_surface'][:, 200, 200],'o-',
-                      label=ymd)
+    axs[1, 1].plot(
+        acc_values['inst']['APCP_surface'][:, 200, 200], 'o-',
+        label=ymd)
 
     for var in acc_vars:
         data.variables[var][:] = acc_values['inst'][var][:]
@@ -435,10 +438,10 @@ def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     logger.info('changed variable names to their NEMO names')
 
     Temp = data.variables['tair'][:]
-    axs[0,ip].pcolormesh(Temp[0])
-    axs[0,ip].set_xlim([0, Temp.shape[2]])
-    axs[0,ip].set_ylim([0, Temp.shape[1]])
-    axs[0,ip].plot(200,200,'wo')
+    axs[0, ip].pcolormesh(Temp[0])
+    axs[0, ip].set_xlim([0, Temp.shape[2]])
+    axs[0, ip].set_ylim([0, Temp.shape[1]])
+    axs[0, ip].plot(200, 200, 'wo')
 
     if ip == 0:
         label = "day 1"
@@ -447,20 +450,22 @@ def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     else:
         label = "day 3"
     humid = data.variables['qair'][:]
-    axs[1,2].plot(humid[:, 200, 200],'-o')
+    axs[1, 2].plot(humid[:, 200, 200], '-o')
     solar = data.variables['solar'][:]
-    axs[2,0].plot(solar[:, 200, 200],'-o', label = label)
+    axs[2, 0].plot(solar[:, 200, 200], '-o', label=label)
     longwave = data.variables['therm_rad'][:]
-    axs[2,1].plot(longwave[:, 200, 200],'-o')
+    axs[2, 1].plot(longwave[:, 200, 200], '-o')
     pres = data.variables['atmpres'][:]
-    axs[2,2].plot(pres[:, 200, 200],'-o')
+    axs[2, 2].plot(pres[:, 200, 200], '-o')
     uwind = data.variables['u_wind'][:]
-    axs[3,0].plot(uwind[:, 200, 200],'-o')
+    axs[3, 0].plot(uwind[:, 200, 200], '-o')
     vwind = data.variables['v_wind'][:]
-    axs[3,1].plot(vwind[:, 200, 200],'-o')
-    axs[3,2].plot(np.sqrt(uwind[:, 200, 200]**2 + vwind[:, 200, 200]**2),'-o')
+    axs[3, 1].plot(vwind[:, 200, 200], '-o')
+    axs[3, 2].plot(np.sqrt(
+        uwind[:, 200, 200]**2 + vwind[:, 200, 200]**2), '-o')
 
     data.close()
+
 
 def netCDF4_deflate(outnetcdf):
     """Run ncks in a subprocess to convert outnetcdf to netCDF4 format
@@ -473,20 +478,21 @@ def netCDF4_deflate(outnetcdf):
     except lib.WorkerError:
         raise
 
+
 def set_up_plotting():
-    fig, axs = plt.subplots(4,3,figsize=(10,15))
-    axs[0,0].set_title('Air Temp. 0 hr')
-    axs[0,1].set_title('Air Temp. +1 day')
-    axs[0,2].set_title('Air Temp. +2 days')
-    axs[1,0].set_title('Accumulated Precip')
-    axs[1,1].set_title('Instant. Precip')
-    axs[1,2].set_title('Humidity')
-    axs[2,0].set_title('Solar Rad')
-    axs[2,1].set_title('Longwave Down')
-    axs[2,2].set_title('Sea Level Pres')
-    axs[3,0].set_title('u wind')
-    axs[3,1].set_title('v wind')
-    axs[3,2].set_title('Wind Speed')
+    fig, axs = plt.subplots(4, 3, figsize=(10, 15))
+    axs[0, 0].set_title('Air Temp. 0 hr')
+    axs[0, 1].set_title('Air Temp. +1 day')
+    axs[0, 2].set_title('Air Temp. +2 days')
+    axs[1, 0].set_title('Accumulated Precip')
+    axs[1, 1].set_title('Instant. Precip')
+    axs[1, 2].set_title('Humidity')
+    axs[2, 0].set_title('Solar Rad')
+    axs[2, 1].set_title('Longwave Down')
+    axs[2, 2].set_title('Sea Level Pres')
+    axs[3, 0].set_title('u wind')
+    axs[3, 1].set_title('v wind')
+    axs[3, 2].set_title('Wind Speed')
     ip = 0
     return fig, axs, ip
 
