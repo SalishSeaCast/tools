@@ -32,7 +32,7 @@ def test_show_dataset_attrs_file_format(capsys, nc_dataset):
     """
     nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[0] == 'file format: NETCDF4'
+    assert out.splitlines()[0] == 'file format: NETCDF4'
 
 
 def test_show_dataset_attrs_1_attr(capsys, nc_dataset):
@@ -41,7 +41,7 @@ def test_show_dataset_attrs_1_attr(capsys, nc_dataset):
     nc_dataset.Conventions = 'CF-1.6'
     nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[1] == 'Conventions: CF-1.6'
+    assert out.splitlines()[1] == 'Conventions: CF-1.6'
 
 
 def test_show_dataset_attrs_order(capsys, nc_dataset):
@@ -51,7 +51,7 @@ def test_show_dataset_attrs_order(capsys, nc_dataset):
     nc_dataset.title = 'Test Dataset'
     nc_tools.show_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[2] == 'title: Test Dataset'
+    assert out.splitlines()[2] == 'title: Test Dataset'
 
 
 def test_show_dimensions(capsys, nc_dataset):
@@ -60,7 +60,7 @@ def test_show_dimensions(capsys, nc_dataset):
     nc_dataset.createDimension('foo', 42)
     nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[0] == (
+    assert out.splitlines()[0] == (
         "<type 'netCDF4.Dimension'>: name = 'foo', size = 42")
 
 
@@ -71,7 +71,7 @@ def test_show_dimensions_order(capsys, nc_dataset):
     nc_dataset.createDimension('bar', 24)
     nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[2] == (
+    assert out.splitlines()[2] == (
         "<type 'netCDF4.Dimension'>: name = 'bar', size = 24")
 
 
@@ -82,7 +82,7 @@ def test_show_variables(capsys, nc_dataset):
     nc_dataset.createVariable('foo', float, ('x',))
     nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[0] == "['foo']"
+    assert out.splitlines()[0] == "['foo']"
 
 
 def test_show_variables_order(capsys, nc_dataset):
@@ -93,7 +93,7 @@ def test_show_variables_order(capsys, nc_dataset):
     nc_dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[0] == "['foo', 'bar']"
+    assert out.splitlines()[0] == "['foo', 'bar']"
 
 
 def test_show_variable_attrs(capsys, nc_dataset):
@@ -122,7 +122,7 @@ def test_show_variable_attrs_order(capsys, nc_dataset):
     nc_dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variable_attrs(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.split('\n')[7] == 'float64 bar(x)'
+    assert out.splitlines()[7] == 'float64 bar(x)'
 
 
 def test_show_variable_attrs_spec_var(capsys, nc_dataset):
@@ -152,7 +152,7 @@ def test_show_variable_attrs_spec_var_order(capsys, nc_dataset):
     nc_dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variable_attrs(nc_dataset, 'foo', 'bar')
     out, err = capsys.readouterr()
-    assert out.split('\n')[7] == 'float64 bar(x)'
+    assert out.splitlines()[7] == 'float64 bar(x)'
 
 
 def test_time_origin_value(nc_dataset):
@@ -267,7 +267,7 @@ def test_init_dataset_attrs_no_oversrite(
     nc_tools.init_dataset_attrs(
         nc_dataset, 'Test Dataset', 'TestDatasetNotebook', 'test_dataset.nc')
     out, err = capsys.readouterr()
-    assert out.split('\n')[0] == (
+    assert out.splitlines()[0] == (
         'Existing attribute value found, not overwriting: Conventions')
 
 
@@ -363,7 +363,7 @@ def test_check_dataset_attrs_reqd_dataset_attrs(capsys, nc_dataset):
         'comment',
     )
     for line, expected in enumerate(reqd_attrs):
-        assert out.split('\n')[line] == (
+        assert out.splitlines()[line] == (
             'Missing required dataset attribute: {}'.format(expected))
 
 
@@ -383,7 +383,7 @@ def test_check_dataset_attrs_reqd_dataset_attr_values(capsys, nc_dataset):
     nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, attr in enumerate(reqd_attrs):
-        assert out.split('\n')[line] == (
+        assert out.splitlines()[line] == (
             'Missing value for dataset attribute: {}'.format(attr))
 
 
@@ -407,7 +407,7 @@ def test_check_dataset_attrs_url_reqd(capsys, nc_dataset):
     nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, attr in enumerate(REQUIRED_reqd_attrs):
-        assert out.split('\n')[line] == (
+        assert out.splitlines()[line] == (
             'Missing value for dataset attribute: {}'.format(attr))
 
 
@@ -453,7 +453,7 @@ def test_check_dataset_attrs_reqd_var_attrs(capsys, nc_dataset):
         'long_name',
     )
     for line, expected in enumerate(reqd_attrs):
-        assert out.split('\n')[line] == (
+        assert out.splitlines()[line] == (
             'Missing required variable attribute for foo: {}'.format(expected))
 
 
@@ -482,7 +482,7 @@ def test_check_dataset_attrs_reqd_var_attr_values(capsys, nc_dataset):
     nc_tools.check_dataset_attrs(nc_dataset)
     out, err = capsys.readouterr()
     for line, expected in enumerate(reqd_attrs):
-        assert out.split('\n')[line] == (
+        assert out.splitlines()[line] == (
             'Missing value for variable attribute for foo: {}'
             .format(expected))
 

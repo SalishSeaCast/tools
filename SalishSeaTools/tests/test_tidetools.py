@@ -96,7 +96,7 @@ def test_get_run_length(tidetools_module):
    rn_rdtmax   =   300.    !  maximum time step on tracers (used if nn_acc=1)
    rn_rdth     =  300.     !  depth variation of tracer time step  (used if nn_acc=1)
 &end
-        '''.split('\n')
+        '''.splitlines()
     with patch('salishsea_tools.tidetools.namelist.open', m_open, create=True):
         run_length = tidetools_module.get_run_length('foo', 'bar')
     np.testing.assert_almost_equal(run_length, 2)
