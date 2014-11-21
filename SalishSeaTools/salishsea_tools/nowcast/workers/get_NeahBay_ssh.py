@@ -19,6 +19,7 @@ forecast site and generates western open boundary conditions ssh files.
 import datetime
 import logging
 import os
+import traceback
 
 from bs4 import BeautifulSoup
 import pytz
@@ -60,13 +61,21 @@ def main():
         logger.info(
             'Neah Bay sea surface height web scraping '
             'and file creation completed')
+        # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.error(
             'Neah Bay sea surface height web scraping '
             'and file creation failed')
+        # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')

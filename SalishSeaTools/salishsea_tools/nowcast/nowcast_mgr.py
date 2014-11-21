@@ -18,6 +18,7 @@
 import logging
 import os
 import subprocess
+import traceback
 
 import zmq
 
@@ -45,11 +46,16 @@ def main():
     socket = init_req_rep(config['ports']['req_rep'], context)
     while True:
         logger.info('listening...')
-        message = socket.recv()
-        reply, next_steps = parse_message(config, message)
-        socket.send(reply)
-        for next_step, next_step_args in next_steps:
-            next_step(*next_step_args)
+        try:
+            message = socket.recv()
+            reply, next_steps = parse_message(config, message)
+            socket.send(reply)
+            for next_step, next_step_args in next_steps:
+                next_step(*next_step_args)
+        except:
+            logger.critical('unhandled exception:')
+            for line in traceback.format_exc():
+                logger.error(line)
 
 
 def init_req_rep(port, context):
@@ -127,6 +133,7 @@ def after_download_weather(worker, msg_type, payload, config):
         'failure 06': [(do_nothing, [])],
         'success 18': [(launch_worker, ['grib_to_netcdf', config])],
         'failure 18': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -136,6 +143,7 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'sshNeahBay', payload])],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -145,6 +153,7 @@ def after_make_runoff_file(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'rivers', payload])],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -157,6 +166,7 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
             (launch_worker, ['upload_forcing', config]),
         ],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -169,6 +179,7 @@ def after_upload_forcing(worker, msg_type, payload, config):
             (launch_worker, ['make_forcing_links', config]),
         ],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -180,6 +191,7 @@ def after_make_forcing_links(worker, msg_type, payload, config):
             (update_checklist, [worker, 'forcing links', payload])
         ],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 
@@ -191,6 +203,7 @@ def after_download_results(worker, msg_type, payload, config):
             (update_checklist, [worker, 'results files', payload])
         ],
         'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
     }
     return actions[msg_type]
 

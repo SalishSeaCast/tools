@@ -25,6 +25,7 @@ import grp
 import logging
 import os
 import subprocess
+import traceback
 
 import arrow
 import netCDF4 as nc
@@ -77,7 +78,14 @@ def main():
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical('NEMO-atmos forcing file creation failed')
+        # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')

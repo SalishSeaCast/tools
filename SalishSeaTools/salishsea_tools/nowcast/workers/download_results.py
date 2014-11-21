@@ -20,6 +20,7 @@ import argparse
 import glob
 import logging
 import os
+import traceback
 
 import arrow
 import zmq
@@ -66,6 +67,12 @@ def main():
             .format(config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')

@@ -57,21 +57,29 @@ msg_types:
     failure 06: 06 weather forecast download failed
     success 18: 18 weather forecast ready
     failure 18: 18 weather forecast download failed
+    crash: download_weather worker crashed
   make_runoff_file:
     success: rivers forcing ready
+    failure: rivers forcing files preparation failed
+    crash: make_runoff_file worker crashed
   get_NeahBay_ssh:
     success: Neah Bay ssh ready
     failure: Neah Bay sea surface height file preparation failed
+    crash: get_NeahBay_ssh worker crashed
   grib_to_netcdf:
     success: atmospheric forcing ready
     failure: atmospheric forcing files preparation failed
+    crash: grib_to_netcdf worker crashed
   upload_forcing:
     success: forcing files uploaded
     failure: forcing files upload failed
+    crash: upload_forcing worker crashed
   make_forcing_links:
     success: forcing file links created
     failure: forcing file links creation failed
+    crash: make_forcing_links worker crashed
   download_results:
     success: results files downloaded
     failure: results files download failed
+    crash: download_results worker crashed
     the end: end of automation

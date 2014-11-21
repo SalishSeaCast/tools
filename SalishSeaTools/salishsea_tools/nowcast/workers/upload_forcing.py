@@ -19,6 +19,7 @@ executed.
 """
 import logging
 import os
+import traceback
 
 import zmq
 
@@ -56,6 +57,12 @@ def main():
         logger.critical('forcing files upload to HPC/cloud failed')
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
