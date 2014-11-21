@@ -21,6 +21,7 @@ import argparse
 import grp
 import logging
 import os
+import traceback
 
 import arrow
 import zmq
@@ -57,6 +58,7 @@ FORECAST_DURATION = 42  # hours
 
 
 def main():
+    # Prepare the worker
     base_parser = lib.basic_arg_parser(
         worker_name, description=__doc__, add_help=False)
     parser = configure_argparser(
@@ -71,12 +73,14 @@ def main():
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    # Do the work
     checklist = {}
     try:
         get_grib(parsed_args.forecast, config)
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
+        # Exchange success messages with the nowcast manager process
         msg_type = '{} {}'.format('success', parsed_args.forecast)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
@@ -85,7 +89,15 @@ def main():
             'weather forecast {.forecast} downloads failed'
             .format(parsed_args))
         msg_type = '{} {}'.format('failure', parsed_args.forecast)
+        # Exchange failure messages with nowcast manager process
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
+    # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
 

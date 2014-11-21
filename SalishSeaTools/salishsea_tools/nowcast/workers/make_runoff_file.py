@@ -17,15 +17,20 @@
 Hope with Climatology for all other rivers and generates runoff file.
 """
 from __future__ import division
-import arrow
+
 import logging
 import os
+import traceback
+
+import arrow
 import netCDF4 as NC
 import numpy as np
-from salishsea_tools import rivertools
-from salishsea_tools.nowcast import lib
 import yaml
 import zmq
+
+from salishsea_tools import rivertools
+from salishsea_tools.nowcast import lib
+
 
 worker_name = lib.get_module_name()
 
@@ -51,12 +56,19 @@ def main():
         logger.info(
             'Creation of runoff file from Fraser at Hope '
             'and climatology elsewhere completed')
+        # Exchange success messages with nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         # Exchange failure messages with nowcast manager process
         logger.critical('Rivers runoff file creation failed')
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')

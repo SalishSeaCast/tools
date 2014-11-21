@@ -98,6 +98,7 @@ below.
     """
     import logging
     import os
+    import traceback
 
     import zmq
 
@@ -135,6 +136,13 @@ below.
             # Exchange failure messages with nowcast manager process
             logger.critical('failure message')
             lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        except:
+            logger.critical('unhandled exception:')
+            # Log the traceback from any unhandled exception
+            for line in traceback.format_exc():
+                logger.error(line)
+            # Exchange crash messages with the nowcast manager process
+            lib.tell_manager(worker_name, 'crash', config, logger, socket)
 
         # Finish up
         context.destroy()
@@ -159,6 +167,7 @@ The minimum set of imports that a worker needs are:
 
     import logging
     import os
+    import traceback
 
     import zmq
 
@@ -166,6 +175,8 @@ The minimum set of imports that a worker needs are:
 
 The :py:mod:`logging` module provides the mechanism that we use to print output about the worker's progress and status to the log file or the screen,
 effectively developer-approved print statements on steroids :-)
+The :py:mod:`os` module provides the interface to the operating system,
+and :py:mod:`traceback` is used to report tracebacks if the worker raises an unanticipated eception.
 :py:mod:`zmq` is the Python bindings to the `ZeroMQ`_ messaging library that we use to communicate between the workers and the nowcast manager process.
 The :ref:`salishsea_tools.nowcast.lib` is our collection of functions that are used across workers.
 If you find yourself writing the same function in more than one worker it should probably be generalized and included in :py:mod:`lib`.
@@ -207,7 +218,7 @@ block at the end of the module.
 Prepare The Worker
 ------------------
 
-Lines 35 and 36 set up the worker's command-line interface and parse the command-line arguments:
+Lines 36 and 37 set up the worker's command-line interface and parse the command-line arguments:
 
 .. code-block:: python
 
@@ -233,14 +244,14 @@ It causes the logging message to be written to the screen instead of the the log
 See :ref:`ExtendingTheCommandLineParser` for details of how to add required arguments and options flags to the basic parser.
 
 Next,
-on line 37,
+on line 38,
 we load the :ref:`NowcastConfigFile` given on the command-line into a Python dict data structure:
 
 .. code-block:: python
 
     config = lib.load_config(parsed_args.config_file)
 
-Lines 38 to 40 configure the logging system and start logging messages about what we've accomplished so far:
+Lines 39 to 41 configure the logging system and start logging messages about what we've accomplished so far:
 
 .. code-block:: python
 
@@ -266,7 +277,7 @@ Here,
 we log the id of the operating system process that the worker is running in,
 and the file path/name of the configuration file that it is using.
 
-Line 41:
+Line 42:
 
 .. code-block:: python
 
