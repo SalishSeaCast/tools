@@ -355,8 +355,12 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
     gid = grp.getgrnam(config['file group']).gr_gid
-    os.chown(outnetcdf, -1, gid)
-    os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
+    try:
+        os.chown(outnetcdf, -1, gid)
+        os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
+    except OSError:
+        # File isn't owned by current user, but that's okay
+        pass
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
