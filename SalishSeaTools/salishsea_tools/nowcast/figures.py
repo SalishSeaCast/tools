@@ -336,3 +336,92 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     ax2.plot(i,j,marker='D',color='Indigo',ms=8)
 
     return fig
+
+#
+def Sandheads_winds(grid_T, figsize=(20,10)):
+    """ Plot the observed winds at Sandheads during the simulation.
+    
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+    
+    :arg figsize:  Figure size (width, height) in inches
+    :type figsize: 2-tuple
+    
+    :returns: Matplotlib figure object instance
+    """
+    
+    #simulation date range.
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_end=(nc_tools.timestamp(grid_T,-1)).datetime
+    #strings for timetamps of EC data
+    start=t_orig.strftime('%d-%b-%Y')
+    end=t_end.strftime('%d-%b-%Y')
+
+    [winds,dirs,temps,time, lat,lon] = stormtools.get_EC_observations('Sandheads',start,end)
+
+    fig,axs=plt.subplots(2,1,figsize=figsize)
+    #plotting wind speed
+    ax=axs[0]
+    ax.set_title('Winds at Sandheads ' + start )
+    ax.plot(time,winds)
+    ax.set_xlim([time[0],time[-1]])
+    ax.set_ylim([0,20])
+    ax.set_ylabel('Wind speed (m/s)')
+    #plotting wind direction
+    ax=axs[1]
+    ax.plot(time,dirs)
+    ax.set_ylabel('Wind direction \n (degress CCW of East)')
+    ax.set_ylim([0,360])
+    ax.set_xlim([time[0],time[-1]])
+    ax.set_xlabel('Time [UTC]')
+        
+    return fig
+
+#
+def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
+    """ Plot the daily averaged salinity field along the thalweg.
+    
+    :arg grid_T_d: Hourly tracer results dataset from NEMO.
+    :type grid_T_d: :class:`netCDF4.Dataset`
+    
+    :arg figsize:  Figure size (width, height) in inches
+    :type figsize: 2-tuple
+    
+    :arg cs: list of salinity contour levels for shading.
+    :type cs: list
+    
+    :returns: Matplotlib figure object instance
+    """
+    
+    lon_d = grid_T_d.variables['nav_lon']
+    lat_d = grid_T_d.variables['nav_lat']
+    dep_d = grid_T_d.variables['deptht']
+    sal_d = grid_T_d.variables['vosaline']
+    
+    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/analysis_tools/thalweg.txt', delimiter=" ", unpack=False)
+    lines = lines.astype(int)
+
+    thalweg_lon = lon_d[lines[:,0],lines[:,1]]
+    thalweg_lat = lat_d[lines[:,0],lines[:,1]]
+
+    ds=np.arange(0,lines.shape[0],1);
+    XX,ZZ = np.meshgrid(ds,-dep_d[:])
+    
+    salP=sal_d[0,:,lines[:,0],lines[:,1]]
+    salP= np.ma.masked_values(salP,0)
+    
+    fig,ax=plt.subplots(1,1,figsize=figsize)
+    land_colour = 'burlywood'
+    ax.set_axis_bgcolor(land_colour)
+    mesh=ax.contourf(XX,ZZ,salP,cs,cmap='hsv',extend='both')
+    
+    cbar=fig.colorbar(mesh,ax=ax)
+    cbar.set_ticks(cs)
+    cbar.set_label('Practical Salinity [psu]')
+    
+    timestamp = nc_tools.timestamp(grid_T_d,0)
+    ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'))
+    ax.set_ylabel('Depth [m]')
+    ax.set_xlabel('position along thalweg')
+    
+    return fig
