@@ -20,6 +20,7 @@ import logging
 import logging.handlers
 import os
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -27,6 +28,21 @@ import time
 import requests
 import yaml
 import zmq
+
+
+# File permissions:
+# rw-rw-r--
+PERMS_RW_RW_R = (
+    stat.S_IRUSR | stat.S_IWUSR |
+    stat.S_IRGRP | stat.S_IWGRP |
+    stat.S_IROTH
+)
+# rwxrwxr-x
+PERMS_RWX_RWX_R_X = (
+    stat.S_IRWXU |
+    stat.S_IRWXG |
+    stat.S_IROTH | stat.S_IXOTH
+)
 
 
 class WorkerError(Exception):

@@ -222,8 +222,7 @@ def rotate_log_file(config):
         for handler in logger.handlers:
             logger.info('rotating log file')
             handler.doRollover()
-            # 436 == octal 664 == 'rw-rw-r--'
-            os.chmod(config['logging']['log_file'], 436)
+            os.chmod(config['logging']['log_file'], lib.PERMS_RW_RW_R)
             logger.info('log file rotated')
             logger.info('running in process {}'.format(os.getpid()))
     except AttributeError:
