@@ -64,8 +64,9 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 
 #
 def PA_tidal_predictions(grid_T, figsize=(20,5)):
-    """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the dsimulation start date.
+    """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
+    Tidal predictions were calculated with ttide based on a time series from 2013. 
     
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -110,6 +111,7 @@ def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
     """ Compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with the eight consituents used in the model.
+    Tidal predictions were calculated with ttide based on a time series from 2013. 
     
     :arg name: Name of station (e.g Point Atkinson).
     :type name: string
@@ -170,6 +172,7 @@ def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
 def get_NOAA_wlevels(station_no, start_date, end_date):
     """ Retrieves recent, 6 minute interval, NOAA water levels relative to mean sea level
     from a station in a given date range.
+    NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
     
     :arg station_no: NOAA station number.
     :type station_no: integer
@@ -177,7 +180,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     :arg start_date: The start of the date range eg. 01-Jan-2014.
     :type start_date: string
     
-    :arg end_date: The end of the date range ef. 02-Jan-2014.
+    :arg end_date: The end of the date range eg. 02-Jan-2014.
     :type end_date: string
     
     :returns: DataFrame object with time and wlev columns, among others that are irrelevant.
@@ -209,7 +212,8 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
 
 #
 def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
-    """ Compares modelled water levels to observed water levels at a NOAA station over one day.
+    """ Compares modelled water levels to observed water levels at a NOAA station over one day. 
+    NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
     
     :arg name: Name of the NOAA station (e.g NeahBay, CherryPoint, FridayHarbor).
     :type name: string
@@ -340,6 +344,7 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
 #
 def Sandheads_winds(grid_T, figsize=(20,10)):
     """ Plot the observed winds at Sandheads during the simulation.
+     Obsersvations are from Environment Canada data: http://climate.weather.gc.ca/ 
     
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
