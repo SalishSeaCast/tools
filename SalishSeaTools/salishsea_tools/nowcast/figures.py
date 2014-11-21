@@ -28,7 +28,9 @@ import datetime
 import requests
 import arrow
 from StringIO import StringIO
-
+import pytz
+from scipy import interpolate as interp
+import csv
 
 
 
@@ -555,6 +557,177 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
     
     return fig
 
+    #***VENUS
 
+#
+def dateparse(s):
+    """Parse the dates from the VENUS files"""
+    unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f') 
+    aware = unaware.replace(tzinfo=pytz.timezone('utc'))
+    return  aware
+
+#
+def load_VENUS(station):
+    """ 
+    Loads the most recent State of the Ocean data from the VENUS node indicated by station. T
+    This data set includes pressure, temperature, and salinity among other things. 
+    See: http://venus.uvic.ca/research/state-of-the-ocean/
+    
+    :arg station: the name of the station, either "East" or "Central"
+    :type station: string
+    
+    :returns: A DataFrame with the VENUS data, and the longitude and latitude and depth (m) of the node
+    """
+    #define location
+    filename = 'SG-{}-VIP/VSG-{}-VIP-State_of_Ocean.txt'.format(station,station)
+    if station == 'East':
+        lat = 49.0419
+        lon = -123.3176
+        depth = 170
+    elif station == 'Central':
+        lat = 49.0401
+        lon = -123.4261
+        depth=300
+        
+    #hit the website    
+    url = 'http://venus.uvic.ca/scripts/log_download.php'
+    params = {
+    'userid': 'nsoontie@eos.ubc.ca',
+    'filename': filename,
+    }
+    response = requests.get(url, params=params)
+    
+    #parse the data
+    fakefile = StringIO(response.content)
+    data = pd.read_csv(fakefile,delimiter=' ,',skiprows=17,
+                   names=['date','pressure','pflag','temp','tflag','sal','sflag','sigmaT','stflag','oxygen','oflag'],
+                   parse_dates=['date'],date_parser=dateparse)
+    
+    return data, lon, lat, depth
+
+#
+def plot_VENUS(ax_sal, ax_temp, station, start, end):
+    """
+    Plot a time series of the VENUS data between start and end.
+    
+    :arg ax_sal: The axis in which the salinity is displayed.
+    :type ax_sal: axis object
+    
+    :arg ax_temp: The axis in which the temperature is displayed.
+    :type ax_temp: axis object
+    
+    :arg station: the name of the station, either "East" or "Central"
+    :type station: string
+    
+    :arg start: the start date of the plot
+    :type start: datetime object
+    
+    :arg end: the end date of the plot
+    :type end: datetime object
+    
+    :returns: the longitude, latitude and depth of the VENUS station
+    
+    """
+    [data,lon,lat,depth]= load_VENUS(station)
+    ax_sal.plot(data.date[:],data.sal,'r-',label='VENUS')
+    ax_sal.set_xlim([start,end])
+    ax_temp.plot(data.date[:],data.temp,'r-',label='VENUS')
+    ax_temp.set_xlim([start,end])
+    
+    return lon, lat, depth
+
+#
+def interpolate_depth(data, depth_array, depth_new):
+    """ 
+    Interpolates data field to a desired depth.
+    
+    :arg data: The data to be interpolated. Should be one-dimensional over the z-axis.
+    :type data: 1-d numpy array
+    
+    :arg depth_array: The z-axis for data.
+    :type depth_array: 1-d numpy array.
+    
+    :arg depth_new: The new depth to which we want to interpolate.
+    :type depth_new: float
+    
+    :returns: a float representing the field interpolated to the desired depth.
+    """
+    #using masked arrays for more accurate interpolation
+    mu=data==0
+    datao=np.ma.array(data,mask=mu)
+    mu=depth_array==0
+    depth_arrayo=np.ma.array(depth_array,mask=mu)
+    #interpolations
+    f= interp.interp1d(depth_arrayo,datao)
+    data_interp = f(depth_new)
+    return data_interp
+
+#
+def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
+    """ 
+    Compare the model's temperature and salinity with observations VENUS station (either Central or East).
+    
+    :arg station: The name of the station ('East' or 'Central')
+    :type station: string
+    
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+    
+    :arg gridB: Model bathymetry file.
+    :type gridB: :class:`netCDF4.Dataset`
+
+    :arg figsize: figure size (width, height) in inches.
+    :type figsize: 2-tuple
+    
+    :returns: Matplotlib figure object instance
+    """
+    
+    #set date of this simulation
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_end =((nc_tools.timestamp(grid_T,-1)).datetime)
+    
+    #load bathymetry
+    bathy, X, Y = tidetools.get_bathy_data(gridB)
+    
+    #process VENUS data
+    fig,(ax_sal, ax_temp) = plt.subplots(2,1,figsize=figsize,sharex=True)
+    fig.autofmt_xdate()
+    lon, lat, depth = plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
+    
+    #identify grid point of VENUS station (could this just be saved somewhere?)
+    [j,i]=tidetools.find_closest_model_point(lon,lat,X,Y,bathy,allow_land=True)
+    #load model data
+    sal = grid_T.variables['vosaline'][:,:,j,i]
+    temp = grid_T.variables['votemper'][:,:,j,i]
+    ds = grid_T.variables['deptht']
+    count=grid_T.variables['time_counter'][:]
+    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
+    #convert times to datetimes because that is what the plot wants
+    for i in range(len(t)):
+        t[i]=t[i].datetime
+    
+    #interpolating data
+    salc=[]
+    tempc=[]
+    for ind in np.arange(0,sal.shape[0]):
+        salc.append(interpolate_depth(sal[ind,:],ds,depth))
+        tempc.append(interpolate_depth(temp[ind,:],ds,depth))
+        
+    #plot model data
+    ax_sal.plot(t,salc,'-b',label='model')
+    ax_temp.plot(t,tempc,'-b',label='model')
+    
+    #pretty the plot
+    ax_sal.set_ylabel('Practical Salinity [psu]')
+    ax_sal.legend(loc=0)
+    ax_sal.set_title('VENUS - {}'.format(station) )
+    ax_sal.set_ylim([30,32])
+    ax_temp.set_ylabel('Temperature [deg C]')
+    ax_temp.set_xlabel('Time [UTC]')
+    ax_temp.set_ylim([7,11])
+    
+    return fig
+
+#
 
 
