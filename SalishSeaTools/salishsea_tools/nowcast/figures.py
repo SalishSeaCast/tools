@@ -381,7 +381,7 @@ def Sandheads_winds(grid_T, figsize=(20,10)):
 def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
     """ Plot the daily averaged salinity field along the thalweg.
     
-    :arg grid_T_d: Hourly tracer results dataset from NEMO.
+    :arg grid_T_d: Daily tracer results dataset from NEMO.
     :type grid_T_d: :class:`netCDF4.Dataset`
     
     :arg figsize:  Figure size (width, height) in inches
@@ -425,3 +425,131 @@ def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6
     ax.set_xlabel('position along thalweg')
     
     return fig
+
+#
+def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
+    """Function that plots the daily average surface salinity, temperature and currents.
+    
+    :arg grid_T_d: Daily tracer results dataset from NEMO.
+    :type grid_T_d: :class:`netCDF4.Dataset`
+    
+    :arg grid_U_d: Daily zonal velocity results dataset from NEMO.
+    :type grid_U_d: :class:`netCDF4.Dataset`
+    
+    :arg grid_V_d: Daily meridional velocity results dataset from NEMO.
+    :type grid_V_d: :class:`netCDF4.Dataset`
+    
+    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+    :type gridB: :class:`netCDF4.Dataset`
+    
+    :arg figsize: figure size (width, height) in inches.
+    :type figsize: 2-tuple
+    
+    """
+    
+    #loading lon, lat, depth, salinity, temperature
+    lon_d = grid_T_d.variables['nav_lon']
+    lat_d = grid_T_d.variables['nav_lat']
+    dep_d = grid_T_d.variables['deptht']
+    sal_d = grid_T_d.variables['vosaline']
+    tem_d = grid_T_d.variables['votemper']
+
+    bathy, X, Y = tidetools.get_bathy_data(gridB)
+    
+    #tracers ready to plot
+    t, z = 0, 0
+    sal_d = np.ma.masked_values(sal_d[t, z], 0)
+    tem_d = np.ma.masked_values(tem_d[t, z], 0)
+    
+    
+    #for loop
+    tracers = [sal_d, tem_d]
+    titles = ['Average Salinity: ','Average Temperature: ']
+    cmaps = ['ocean','jet']
+    units = ['[psu]','[degC]']
+    
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
+    axs = [ax1, ax2]
+    plots = np.arange(1,3,1)
+    
+    #***temperature and salinity plots
+    
+    for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
+        #general set up
+        viz_tools.set_aspect(ax)
+        land_colour = 'burlywood'
+        ax.set_axis_bgcolor(land_colour)
+        cmap = plt.get_cmap(cmap)
+        
+        #colourmap breakdown
+        if plot == 1:
+            cs = [0,4,8,12,16,20,24,28,32,36]
+        if plot == 2:
+            cs = [0,2,4,6,8,10,12,14,16,18,20]
+
+        #plotting tracers
+        mesh=ax.contourf(tracer,cs,cmap=cmap,extend='both')
+        
+        #colour bars
+        cbar = fig.colorbar(mesh,ax=ax)
+        cbar.set_ticks(cs)
+        
+        #labels
+        ax.grid()
+        ax.set_xlabel('x Index')
+        ax.set_ylabel('y Index')
+        timestamp = nc_tools.timestamp(grid_T_d,0)
+        ax.set_title(title + timestamp.format('DD-MMM-YYYY'))
+        cbar.set_label(unit)
+    
+    #loading velocity components
+    ugrid = grid_U_d.variables['vozocrtx']
+    vgrid = grid_V_d.variables['vomecrty']
+    zlevels = grid_U_d.variables['depthu']
+    timesteps = grid_U_d.variables['time_counter']
+
+    #day's average, surface velocity field
+    t, zlevel = 0, 0
+
+    #region
+    y_slice = np.arange(0, ugrid.shape[2])
+    x_slice = np.arange(0, ugrid.shape[3])
+
+    arrow_step = 25
+    y_slice_a = y_slice[::arrow_step]
+    x_slice_a = x_slice[::arrow_step]
+
+    #masking arrays
+    ugrid_tzyx = np.ma.masked_values(ugrid[t, zlevel, y_slice_a, x_slice_a], 0)
+    vgrid_tzyx = np.ma.masked_values(vgrid[t, zlevel, y_slice_a, x_slice_a], 0)
+    #unstagger velocity values
+    u_tzyx, v_tzyx = viz_tools.unstagger(ugrid_tzyx, vgrid_tzyx)
+    #velocity magnitudes
+    speeds = np.sqrt(np.square(u_tzyx) + np.square(v_tzyx))
+
+    #***velocity plot
+    viz_tools.set_aspect(ax3)
+    cs = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+
+    quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds, pivot='mid', cmap='gnuplot_r', width=0.015)
+    viz_tools.plot_land_mask(ax3, gridB, xslice=x_slice, yslice=y_slice, color='burlywood')
+    
+    cbar = fig.colorbar(quiver,ax=ax3)
+    cbar.set_ticks(cs)
+    cbar.set_label('[m / s]')
+
+    ax3.set_xlim(x_slice[0], x_slice[-1])
+    ax3.set_ylim(y_slice[0], y_slice[-1])
+    ax3.grid()
+
+    ax3.set_xlabel('x Index')
+    ax3.set_ylabel('y Index')
+    ax3.set_title('Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY') + 
+                  u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels))
+    ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', color='Indigo', labelcolor='black')
+    
+    return fig
+
+
+
+
