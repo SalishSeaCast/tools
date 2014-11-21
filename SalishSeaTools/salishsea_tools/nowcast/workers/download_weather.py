@@ -139,7 +139,7 @@ def get_grib(forecast, config):
         # Directory already exists
         pass
     os.chown(date, -1, gid)
-    os.chmod(date, 509)  # octal 775 = 'rwxrwxr-x'
+    os.chmod(date, lib.PERMS_RWX_RWX_R_X)
     os.chdir(date)
     try:
         os.mkdir(forecast)
@@ -151,7 +151,7 @@ def get_grib(forecast, config):
         logger.error(msg)
         raise lib.WorkerError
     os.chown(forecast, -1, gid)
-    os.chmod(forecast, 509)  # octal 775 = 'rwxrwxr-x'
+    os.chmod(forecast, lib.PERMS_RWX_RWX_R_X)
     os.chdir(forecast)
 
     for fhour in range(1, FORECAST_DURATION+1):
@@ -166,7 +166,7 @@ def get_grib(forecast, config):
             logger.error(msg)
             raise lib.WorkerError
         os.chown(sfhour, -1, gid)
-        os.chmod(sfhour, 509)  # octal 775 = 'rwxrwxr-x'
+        os.chmod(sfhour, lib.PERMS_RWX_RWX_R_X)
         os.chdir(sfhour)
 
         for v in GRIB_VARIABLES:
@@ -180,7 +180,7 @@ def get_grib(forecast, config):
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=headers['Content-Length'],
                     fileURL=fileURL))
-            os.chmod(filename, 436)  # octal 664 = 'rw-rw-r--'
+            os.chmod(filename, lib.PERMS_RW_RW_R)
         os.chdir('..')
     os.chdir('..')
 

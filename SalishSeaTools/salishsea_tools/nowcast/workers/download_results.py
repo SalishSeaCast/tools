@@ -111,7 +111,7 @@ def download_results(run_date, config, checklist):
             os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
     for filename in 'stdout stderr'.split():
         filepath = os.path.join(dest, results_dir, filename)
-        os.chmod(filepath, 436)  # octal 664 = 'rw-rw-r--'
+        os.chmod(filepath, lib.PERMS_RW_RW_R)
 
 
 if __name__ == '__main__':
