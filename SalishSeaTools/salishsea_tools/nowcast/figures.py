@@ -231,7 +231,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
     
-    base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=prediction&application=NOS.COOPS.TAC.WL'
+    base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL'
     params = {
     'begin_date': st_ar.format('YYYYMMDD'),
     'end_date': end_ar.format('YYYYMMDD'),
@@ -239,7 +239,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     'station': str(station_no),
     'time_zone': 'GMT',
     'units':'metric',
-    'interval': ''
+    'interval': '',
     'format': 'csv',}
 
     response = requests.get(base_url, params=params)
@@ -247,7 +247,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     fakefile = StringIO(response.content)
     
     tides = pd.read_csv(fakefile)
-    tides=tides.rename(columns={'Date Time': 'time', 'Predictions': 'pred'})
+    tides=tides.rename(columns={'Date Time': 'time', ' Prediction': 'pred'})
     
     return tides
 
@@ -293,15 +293,16 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
     for i in range(len(t)):
         t[i]=t[i].datetime
-    
+
     fig,ax =plt.subplots(1,1,figsize=figsize) 
     ax.plot(t,ssh,label='model')
     ax.plot(obs.time,obs.wlev,label='observed water levels')
-    ax.plot(tides.time,tides.wlev,label='tidal predictions')
+    ax.plot(tides.time,tides.pred,label='tidal predictions')
     ax.set_xlim(t_orig,t_end)
-    ax.set_ylim([-1.5,1.5])
+    ax.set_ylim([-2,2])
     ax.legend(loc=0)
     ax.set_title(name)
+    ax.grid()
     ax.set_ylabel('Water levels wrt MSL (m)')
 
     return fig
