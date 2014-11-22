@@ -188,8 +188,6 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     :returns: DataFrame object with time and wlev columns, among others that are irrelevant.
     """
     
-    outfile = 'wlev_'+str(station_no)+'_'+str(start_date)+'_'+str(end_date)+'.csv'
-    
     st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
     
@@ -213,8 +211,50 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     return obs
 
 #
+def get_NOAA_tides(station_no, start_date, end_date):
+    """ Retrieves NOAA predicted tides on 6-minute intervals, relative to mean sea level
+    from a station in a given date range.
+    NOAA tidal predictions from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
+    
+    :arg station_no: NOAA station number.
+    :type station_no: integer
+    
+    :arg start_date: The start of the date range eg. 01-Jan-2014.
+    :type start_date: string
+    
+    :arg end_date: The end of the date range eg. 02-Jan-2014.
+    :type end_date: string
+    
+    :returns: DataFrame object with time and pred columns.
+    """
+    
+    st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
+    end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    
+    base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=prediction&application=NOS.COOPS.TAC.WL'
+    params = {
+    'begin_date': st_ar.format('YYYYMMDD'),
+    'end_date': end_ar.format('YYYYMMDD'),
+    'datum':  'MSL',
+    'station': str(station_no),
+    'time_zone': 'GMT',
+    'units':'metric',
+    'interval': ''
+    'format': 'csv',}
+
+    response = requests.get(base_url, params=params)
+
+    fakefile = StringIO(response.content)
+    
+    tides = pd.read_csv(fakefile)
+    tides=tides.rename(columns={'Date Time': 'time', 'Predictions': 'pred'})
+    
+    return tides
+
+
+#
 def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
-    """ Compares modelled water levels to observed water levels at a NOAA station over one day. 
+    """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
     
     :arg name: Name of the NOAA station (e.g NeahBay, CherryPoint, FridayHarbor).
@@ -239,10 +279,12 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     bathy, X, Y = tidetools.get_bathy_data(gridB)
     
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_end =(nc_tools.timestamp(grid_T,-1)).datetime
     start_date = t_orig.strftime('%d-%b-%Y')
-    end_date = (t_orig + datetime.timedelta(days=1)).strftime('%d-%b-%Y')
+    end_date = t_end.strftime('%d-%b-%Y')
     
     obs=get_NOAA_wlevels(stations[name],start_date,end_date)
+    tides=get_NOAA_tides(stations[name],start_date,end_date)
     
     [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
     
@@ -255,7 +297,8 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     fig,ax =plt.subplots(1,1,figsize=figsize) 
     ax.plot(t,ssh,label='model')
     ax.plot(obs.time,obs.wlev,label='observed water levels')
-    ax.set_xlim(t_orig,t_orig + datetime.timedelta(days=1))
+    ax.plot(tides.time,tides.wlev,label='tidal predictions')
+    ax.set_xlim(t_orig,t_end)
     ax.set_ylim([-1.5,1.5])
     ax.legend(loc=0)
     ax.set_title(name)
