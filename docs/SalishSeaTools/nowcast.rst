@@ -392,3 +392,5 @@ and the ipdb debugger:
 
 to support writing and building docs,
 and developing and debugging Python code and :ref:`salishsea_tools.nowcast.figures` functions.
+
+The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`pip freeze` command is available in :file:`salishsea_tools/nowcast/requirements.txt`.
