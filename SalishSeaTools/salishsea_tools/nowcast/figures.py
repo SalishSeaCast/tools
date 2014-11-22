@@ -28,7 +28,6 @@ import arrow
 from StringIO import StringIO
 import pytz
 from scipy import interpolate as interp
-import csv
 
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
