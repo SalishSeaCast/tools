@@ -354,14 +354,16 @@ not all of the packages that we need are available in the :program:`conda` repos
 .. _Python Package Index: https://pypi.python.org/pypi
 
 Install the packages that the :ref:`SalishSeaTools` depends on,
-and the package itself:
+the package itself,
+and its companion package :ref:`SalishSeaCmd`:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml
+    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml mock
     (nowcast)$ pip install arrow angles
     (nowcast)$ cd MEOPAR/tools
     (nowcast)$ pip install --editable SalishSeaTools
+    (nowcast)$ pip install --editable SalishSeaCmd
 
 Install the Python bindings to the `ZeroMQ`_ messaging library:
 
