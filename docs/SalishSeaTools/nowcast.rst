@@ -139,7 +139,7 @@ below.
         except:
             logger.critical('unhandled exception:')
             # Log the traceback from any unhandled exception
-            for line in traceback.format_exc():
+            for line in traceback.format_exc().splitlines():
                 logger.error(line)
             # Exchange crash messages with the nowcast manager process
             lib.tell_manager(worker_name, 'crash', config, logger, socket)
