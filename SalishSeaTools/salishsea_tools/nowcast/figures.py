@@ -18,16 +18,24 @@
 figures for analysis and model evaluation of daily nowcast/forecast runs.
 """
 from __future__ import division
+
+import datetime
+from StringIO import StringIO
+
+import arrow
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from salishsea_tools import nc_tools, viz_tools, stormtools, tidetools
-import datetime
-import requests
-import arrow
-from StringIO import StringIO
 import pytz
+import requests
 from scipy import interpolate as interp
+
+from salishsea_tools import (
+    nc_tools,
+    viz_tools,
+    stormtools,
+    tidetools,
+)
 
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
