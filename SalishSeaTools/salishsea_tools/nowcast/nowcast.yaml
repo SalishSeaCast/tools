@@ -1,7 +1,7 @@
 # Example configuration file for Salish Sea NEMO model nowcast system
 
 # Python interpreter in environment with all dependencies installed
-python: /home/dlatorne/anaconda/bin/python
+python: /home/dlatorne/anaconda/envs/nowcast/bin/python
 
 # Filesystem group name to use for ownership of newly created files
 file group: sallen
@@ -28,9 +28,12 @@ weather:
 
 upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/upload.sh
 
-
 run:
   host: orcinus
+  image name: nowcast-no-mntMEOPAR
+  flavor name: m1.xlarge
+  network label: NEMO-network
+  ssh key name: doug-nefos
   make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
   results: /home/dlatorne/MEOPAR/SalishSea/nowcast/
   results archive: /data/dlatorne/MEOPAR/SalishSea/nowcast/
@@ -70,6 +73,10 @@ msg_types:
     success: atmospheric forcing ready
     failure: atmospheric forcing files preparation failed
     crash: grib_to_netcdf worker crashed
+  create_compute_node:
+    success: compute node created
+    failure: compute node creation failed
+    crash: create_compute_node worker crashed
   upload_forcing:
     success: forcing files uploaded
     failure: forcing files upload failed
