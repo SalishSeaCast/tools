@@ -136,6 +136,9 @@ below.
             # Exchange failure messages with nowcast manager process
             logger.critical('failure message')
             lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        except SystemExit:
+            # Normal termination
+            pass
         except:
             logger.critical('unhandled exception:')
             # Log the traceback from any unhandled exception
