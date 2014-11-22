@@ -81,6 +81,7 @@ def parse_message(config, message):
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
+        'create_compute_node': after_create_compute_node,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
@@ -171,6 +172,18 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
     return actions[msg_type]
 
 
+def after_create_compute_node(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'nodes', payload]),
+        ],
+        'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
+    }
+    return actions[msg_type]
+
+
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
@@ -209,7 +222,11 @@ def after_download_results(worker, msg_type, payload, config):
 
 
 def update_checklist(worker, key, worker_checklist):
-    checklist.update({key: worker_checklist})
+    try:
+        checklist[key].update(worker_checklist)
+    except KeyError:
+        checklist[key] = worker_checklist
+    logger.debug('checklist: {}'.format(checklist))
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
 
