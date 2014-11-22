@@ -54,8 +54,7 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
     ssh = grid_T.variables['sossheig']
     results_date = nc_tools.timestamp(grid_T, 0).format('YYYY-MM-DD')
     ax.plot(ssh[:, 468, 328], 'o')
-    ax.set_xlim(0, 23)
-    ax.set_xlabel('UTC Hour on {}'.format(results_date))
+    ax.set_xlabel('UTC Hour from {}'.format(results_date))
     ax.set_ylabel(
         '{label} [{units}]'
         .format(label=ssh.long_name.title(), units=ssh.units))
@@ -139,6 +138,7 @@ def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
     
     #time stamp of simulation
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
     
     #loading the tidal predictions
     path='/data/nsoontie/MEOPAR/analysis/Susan/'
@@ -161,7 +161,7 @@ def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
     fig,ax =plt.subplots(1,1,figsize=figsize) 
     ax.plot(t,ssh,label='model')
     ax.plot(ttide.time,ttide.pred_8,label='tidal predictions')
-    ax.set_xlim(t_orig,t_orig + datetime.timedelta(days=1))
+    ax.set_xlim(t_orig,t_final)
     ax.set_ylim([-3,3])
     ax.legend(loc=0)
     ax.set_title(name)
@@ -239,8 +239,9 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     bathy, X, Y = tidetools.get_bathy_data(gridB)
     
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
     start_date = t_orig.strftime('%d-%b-%Y')
-    end_date = (t_orig + datetime.timedelta(days=1)).strftime('%d-%b-%Y')
+    end_date = t_final.strftime('%d-%b-%Y')
     
     obs=get_NOAA_wlevels(stations[name],start_date,end_date)
     
@@ -255,8 +256,8 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     fig,ax =plt.subplots(1,1,figsize=figsize) 
     ax.plot(t,ssh,label='model')
     ax.plot(obs.time,obs.wlev,label='observed water levels')
-    ax.set_xlim(t_orig,t_orig + datetime.timedelta(days=1))
-    ax.set_ylim([-1.5,1.5])
+    ax.set_xlim(t_orig,t_final)
+    ax.set_ylim([-1.6,1.6])
     ax.legend(loc=0)
     ax.set_title(name)
     ax.set_ylabel('Water levels wrt MSL (m)')
@@ -303,9 +304,10 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_orig = (nc_tools.timestamp(grid_T,0)).datetime
+    t_final = (nc_tools.timestamp(grid_T,-1)).datetime 
     start_date = t_orig.strftime('%d-%b-%Y')
-    end_date = (t_orig + datetime.timedelta(days=1)).strftime('%d-%b-%Y')
+    end_date = t_final.strftime('%d-%b-%Y')
     
     #timestamp
     timestamp = nc_tools.timestamp(grid_T,index)
@@ -316,7 +318,7 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     #curve plot
     ax1.plot(t,ssh_loc,label='Model')
     ax1.plot(t[index],ssh_loc[index],color='Indigo',marker='D',markersize=12,label='Maximum SSH')
-    ax1.set_xlim(t_orig,t_orig + datetime.timedelta(days=1))
+    ax1.set_xlim(t_orig,t_final)
     ax1.set_ylim([-3,3])
     ax1.set_title('Point Atkinson')
     ax1.set_xlabel(timestamp.strftime('%d-%b-%Y'))
@@ -346,7 +348,7 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
 #
 def Sandheads_winds(grid_T, figsize=(20,10)):
     """ Plot the observed winds at Sandheads during the simulation.
-     Obsersvations are from Environment Canada data: http://climate.weather.gc.ca/ 
+     Observations are from Environment Canada data: http://climate.weather.gc.ca/ 
     
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
