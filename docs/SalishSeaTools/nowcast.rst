@@ -358,7 +358,7 @@ and the package itself:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install matplotlib netCDF4 numpy pandas
+    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml
     (nowcast)$ pip install arrow angles
     (nowcast)$ cd MEOPAR/tools
     (nowcast)$ pip install --editable SalishSeaTools
