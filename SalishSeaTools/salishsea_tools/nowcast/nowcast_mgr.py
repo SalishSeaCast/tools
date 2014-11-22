@@ -54,7 +54,7 @@ def main():
                 next_step(*next_step_args)
         except:
             logger.critical('unhandled exception:')
-            for line in traceback.format_exc():
+            for line in traceback.format_exc().splitlines():
                 logger.error(line)
 
 
