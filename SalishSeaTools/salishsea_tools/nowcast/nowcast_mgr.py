@@ -52,6 +52,9 @@ def main():
             socket.send(reply)
             for next_step, next_step_args in next_steps:
                 next_step(*next_step_args)
+        except SystemExit:
+            # Normal termination
+            break
         except:
             logger.critical('unhandled exception:')
             for line in traceback.format_exc().splitlines():

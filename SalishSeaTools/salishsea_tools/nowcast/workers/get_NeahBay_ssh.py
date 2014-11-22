@@ -70,6 +70,9 @@ def main():
             'and file creation failed')
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
     except:
         logger.critical('unhandled exception:')
         for line in traceback.format_exc().splitlines():
