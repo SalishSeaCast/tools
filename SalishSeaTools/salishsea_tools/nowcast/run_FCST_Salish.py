@@ -100,7 +100,7 @@ def run_description(run_id, runday, nowcast_end, forcing_home=FORCING_HOME):
         'SalishSea_{:08d}_restart.nc'.format(nowcast_end),
     )
     run_desc = salishsea_cmd.api.run_description(
-        walltime='36:00:00',
+        walltime='23:00:00',
         NEMO_code=os.path.abspath('../NEMO-code/'),
         forcing=os.path.abspath('../NEMO-forcing/'),
         runs_dir=os.path.abspath('../SalishSea/'),
