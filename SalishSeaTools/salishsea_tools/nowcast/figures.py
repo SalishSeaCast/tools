@@ -301,7 +301,7 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     ax.plot(t,ssh,label='model')
     ax.plot(obs.time,obs.wlev,label='observed water levels')
     ax.plot(tides.time,tides.pred,label='tidal predictions')
-    ax.set_xlim(t_orig,t_end)
+    ax.set_xlim(t_orig,t_final)
     ax.set_ylim([-2,2])
     ax.legend(loc=0)
     ax.set_title(name)
