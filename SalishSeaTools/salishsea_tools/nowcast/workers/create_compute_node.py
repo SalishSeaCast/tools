@@ -57,14 +57,14 @@ def main():
         create_compute_node(config, checklist, parsed_args.node_name)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            'instance creation on {} cloud completed'
-            .format(config['run']['host']))
+            '{0.node_name} node creation on {host} cloud completed'
+            .format(parsed_args, host=config['run']['host']))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'instance creation on {} cloud failed'
-            .format(config['run']['host']))
+            '{0.node_name} node creation on {host} cloud failed'
+            .format(parsed_args, host=config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
