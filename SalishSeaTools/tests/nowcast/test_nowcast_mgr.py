@@ -141,6 +141,95 @@ class TestParseMessage(object):
         assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
+@pytest.mark.use_fixtures(['nowcast_mgr_module'])
+class TestAfterInitCloudSuccess(object):
+    """Unit tests for after_init_cloud() function actions for success message.
+    """
+    def test_launch_n_nodes(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {}
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+        ]
+        for i in range(3):
+            node_name = 'nowcast{}'.format(i)
+            expected.append(
+                (nowcast_mgr_module.launch_worker,
+                 ['create_compute_node', config, [node_name]]),
+            )
+        assert next_steps == expected
+
+    def test_launch_missing_0_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {
+            'nowcast1': '192.168.0.10',
+            'nowcast2': '192.168.0.11',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast0']]),
+        ]
+        assert next_steps == expected
+
+    def test_launch_missing_last_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast2']]),
+        ]
+        assert next_steps == expected
+
+    def test_launch_missing_misc_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+            'nowcast3': '192.168.0.13',
+            'nowcast4': '192.168.0.14',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast2']]),
+        ]
+        assert next_steps == expected
+
+    def test_launch_no_nodes(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+            'nowcast2': '192.168.0.12',
+            'nowcast3': '192.168.0.13',
+            'nowcast4': '192.168.0.14',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+        ]
+        assert next_steps == expected
+
+
 def test_the_end_next_step(nowcast_mgr_module):
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.the_end(config)
@@ -158,6 +247,8 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_make_runoff_file', 'crash'),
     ('after_grib_to_netcdf', 'failure'),
     ('after_grib_to_netcdf', 'crash'),
+    ('after_init_cloud', 'failure'),
+    ('after_init_cloud', 'crash'),
     ('after_create_compute_node', 'failure'),
     ('after_create_compute_node', 'crash'),
     ('after_set_head_node_ip', 'failure'),
