@@ -187,6 +187,10 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_make_runoff_file', 'crash'),
     ('after_grib_to_netcdf', 'failure'),
     ('after_grib_to_netcdf', 'crash'),
+    ('after_create_compute_node', 'failure'),
+    ('after_create_compute_node', 'crash'),
+    ('after_set_head_node_ip', 'failure'),
+    ('after_set_head_node_ip', 'crash'),
     ('after_upload_forcing', 'failure'),
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
@@ -238,6 +242,30 @@ def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
          ['grib_to_netcdf', 'weather forcing', payload]),
         (nowcast_mgr_module.launch_worker,
          ['upload_forcing', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_create_compute_node_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_create_compute_node(
+        'create_compute_node', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['create_compute_node', 'nodes', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_set_head_node_ip_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_set_head_node_ip(
+        'set_head_node_ip', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['set_head_node_ip', 'cloud addr', payload]),
     ]
     assert next_steps == expected
 

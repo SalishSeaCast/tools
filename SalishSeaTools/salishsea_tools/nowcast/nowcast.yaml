@@ -34,6 +34,7 @@ run:
   flavor name: m1.xlarge
   network label: NEMO-network
   ssh key name: doug-nefos
+  floating ip pool: VLAN3337
   make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
   results: /home/dlatorne/MEOPAR/SalishSea/nowcast/
   results archive: /data/dlatorne/MEOPAR/SalishSea/nowcast/
@@ -77,6 +78,10 @@ msg_types:
     success: compute node created
     failure: compute node creation failed
     crash: create_compute_node worker crashed
+  set_head_node_ip:
+    success: head node IP address assigned
+    success: head node IP address assignment failed
+    success: set_head_node_ip worker crashed
   upload_forcing:
     success: forcing files uploaded
     failure: forcing files upload failed
