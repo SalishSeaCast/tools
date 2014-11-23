@@ -51,7 +51,7 @@ class TestParseMessage(object):
         }
         assert yaml.safe_load(reply) == expected
 
-    def test_undefined_msg_type_next_step_args(self, nowcast_mgr_module):
+    def test_undefined_msg_type_next_steps(self, nowcast_mgr_module):
         config = {
             'msg_types': {
                 'worker': {
@@ -61,7 +61,7 @@ class TestParseMessage(object):
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
         reply, next_steps = nowcast_mgr_module.parse_message(config, message)
-        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
+        assert next_steps is None
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_valid_msg_type_logging(self, m_logger, nowcast_mgr_module):
@@ -95,20 +95,6 @@ class TestParseMessage(object):
             'payload': None,
         }
         assert yaml.safe_load(reply) == expected
-
-    def test_valid_msg_next_step_args(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'download_weather': {
-                    'success 06': 'foo'
-                }
-            }
-        }
-        message = (
-            '{source: download_weather, '
-            'msg_type: success 06, payload: null}\n')
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
-        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_the_end_msg_logging(self, m_logger, nowcast_mgr_module):
@@ -155,21 +141,6 @@ class TestParseMessage(object):
         assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
-def test_do_nothing(nowcast_mgr_module):
-    result = nowcast_mgr_module.do_nothing()
-    assert result is None
-
-
-def test_do_nothing_any_args(nowcast_mgr_module):
-    result = nowcast_mgr_module.do_nothing('foo', 42)
-    assert result is None
-
-
-def test_undefined_message_next_step(nowcast_mgr_module):
-    next_steps = nowcast_mgr_module.undefined_message()
-    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
-
-
 def test_the_end_next_step(nowcast_mgr_module):
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.the_end(config)
@@ -198,14 +169,14 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_download_results', 'failure'),
     ('after_download_results', 'crash'),
 ])
-def test_after_worker_do_nothing_next_step_args(
+def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
 ):
     payload = Mock(name='payload')
     config = Mock(name='config')
     after_worker_func = getattr(nowcast_mgr_module, worker)
     next_steps = after_worker_func(worker, msg_type, payload, config)
-    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
+    assert next_steps is None
 
 
 def test_get_NeahBay_ssh_success_next_step_args(nowcast_mgr_module):

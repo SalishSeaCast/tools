@@ -50,8 +50,9 @@ def main():
             message = socket.recv()
             reply, next_steps = parse_message(config, message)
             socket.send(reply)
-            for next_step, next_step_args in next_steps:
-                next_step(*next_step_args)
+            if next_steps is not None:
+                for next_step, next_step_args in next_steps:
+                    next_step(*next_step_args)
         except SystemExit:
             # Normal termination
             break
@@ -79,7 +80,6 @@ def parse_message(config, message):
     # Lookup table of functions to return next step function and its
     # arguments for the message types that we know how to handle
     actions = {
-        'undefined message': undefined_message,
         'download_weather': after_download_weather,
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
@@ -97,8 +97,7 @@ def parse_message(config, message):
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
-        next_steps = actions['undefined message']()
-        return reply, next_steps
+        return reply, None
     # Recongnized message type
     logger.info(
         'received message from {worker}: ({msg_type}) {msg_words}'
@@ -115,16 +114,6 @@ def parse_message(config, message):
     return reply_ack, next_steps
 
 
-def do_nothing(*args):
-    pass
-
-
-def undefined_message():
-    next_step = do_nothing
-    next_step_args = []
-    return [(next_step, next_step_args)]
-
-
 def the_end(config):
     next_step = finish_automation
     next_step_args = [config]
@@ -134,11 +123,11 @@ def the_end(config):
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success 06': [(do_nothing, [])],
-        'failure 06': [(do_nothing, [])],
+        'success 06': None,
+        'failure 06': None,
         'success 18': [(launch_worker, ['grib_to_netcdf', config])],
-        'failure 18': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure 18': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -147,8 +136,8 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'sshNeahBay', payload])],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -157,8 +146,8 @@ def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'rivers', payload])],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -170,8 +159,8 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker, ['upload_forcing', config]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -182,8 +171,8 @@ def after_create_compute_node(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'nodes', payload]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -194,8 +183,8 @@ def after_set_head_node_ip(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'cloud addr', payload]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -207,8 +196,8 @@ def after_upload_forcing(worker, msg_type, payload, config):
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker, ['make_forcing_links', config]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -219,8 +208,8 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'forcing links', payload])
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -231,8 +220,8 @@ def after_download_results(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'results files', payload])
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
