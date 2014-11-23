@@ -85,6 +85,7 @@ def parse_message(config, message):
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
         'create_compute_node': after_create_compute_node,
+        'set_head_node_ip': after_set_head_node_ip,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
@@ -180,6 +181,18 @@ def after_create_compute_node(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'nodes', payload]),
+        ],
+        'failure': [(do_nothing, [])],
+        'crash': [(do_nothing, [])],
+    }
+    return actions[msg_type]
+
+
+def after_set_head_node_ip(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'cloud addr', payload]),
         ],
         'failure': [(do_nothing, [])],
         'crash': [(do_nothing, [])],
