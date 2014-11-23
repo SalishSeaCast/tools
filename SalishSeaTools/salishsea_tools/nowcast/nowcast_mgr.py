@@ -84,6 +84,7 @@ def parse_message(config, message):
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
+        'init_cloud': after_init_cloud,
         'create_compute_node': after_create_compute_node,
         'set_head_node_ip': after_set_head_node_ip,
         'upload_forcing': after_upload_forcing,
@@ -165,6 +166,27 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
     return actions[msg_type]
 
 
+def after_init_cloud(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'nodes', payload]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    if msg_type == 'success':
+        existing_nodes = [
+            int(node.lstrip('nowcast')) for node in payload.keys()]
+        for i in range(config['run']['nodes']):
+            if i not in existing_nodes:
+                node_name = 'nowcast{}'.format(i)
+                actions['success'].append(
+                    (launch_worker,
+                     ['create_compute_node', config, [node_name]]))
+    return actions[msg_type]
+
+
 def after_create_compute_node(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
@@ -236,12 +258,14 @@ def update_checklist(worker, key, worker_checklist):
         'checklist updated with {} items from {} worker'.format(key, worker))
 
 
-def launch_worker(worker, config):
+def launch_worker(worker, config, cmd_line_args=[]):
     cmd = [
         config['python'], '-m',
         'salishsea_tools.nowcast.workers.{}'.format(worker),
         config['config_file'],
     ]
+    if cmd_line_args:
+        cmd.extend(cmd_line_args)
     logger.info('launching {} worker'.format(worker))
     subprocess.Popen(cmd)
 

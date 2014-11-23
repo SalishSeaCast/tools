@@ -30,6 +30,7 @@ upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowca
 
 run:
   host: orcinus
+  nodes: 5
   image name: nowcast-no-mntMEOPAR
   flavor name: m1.xlarge
   network label: NEMO-network
@@ -74,6 +75,10 @@ msg_types:
     success: atmospheric forcing ready
     failure: atmospheric forcing files preparation failed
     crash: grib_to_netcdf worker crashed
+  init_cloud:
+    success: cloud nodes initialization underway
+    failure: cloud nodes initialization failed
+    crash: init_cloud worker crashed
   create_compute_node:
     success: compute node created
     failure: compute node creation failed
