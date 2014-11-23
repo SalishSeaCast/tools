@@ -53,8 +53,12 @@ def main():
             if next_steps is not None:
                 for next_step, next_step_args in next_steps:
                     next_step(*next_step_args)
+        except zmq.ZMQError as e:
+            # Fatal ZeroMQ problem
+            logger.critical('ZMQError: {}'.format(e))
+            break
         except SystemExit:
-            # Normal termination
+            # Termination by signal
             break
         except:
             logger.critical('unhandled exception:')
