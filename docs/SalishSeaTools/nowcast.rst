@@ -388,12 +388,12 @@ and the Python bindings for the `OpenStack compute API`_
 Finally,
 install Sphinx and the sphinx-rtd-theme ReadTheDocs theme,
 IPython and IPython Notebook,
-the pytest unit testing tool,
+the pytest and coverage unit testing tools,
 and the ipdb debugger:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install sphinx ipython-notebook pytest
+    (nowcast)$ conda install sphinx ipython-notebook pytest coverage
     (nowcast)$ pip install sphinx-rtd-theme ipdb
 
 to support writing and building docs,
