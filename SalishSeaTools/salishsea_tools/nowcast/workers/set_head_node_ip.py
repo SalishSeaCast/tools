@@ -50,13 +50,13 @@ def main():
         set_head_node_ip(config, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            'public IP address associated with nowcast0 node on {} cloud'
+            'public IP address associated with nowcast0 node in {} cloud'
             .format(config['run']['host']))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'public IP address association with nowcast0 on {} cloud failed'
+            'public IP address association with nowcast0 in {} cloud failed'
             .format(config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
@@ -95,6 +95,7 @@ def set_head_node_ip(config, checklist):
     nowcast0 = nova.servers.find(name='nowcast0')
     ip = get_ip(nowcast0, network_label)
     if ip is None:
+        logger.error('public IP address associateion with nowcast0 failed')
         raise lib.WorkerError
         return
     logger.info('{} associated with nowcast0 node'.format(ip))
