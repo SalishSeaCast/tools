@@ -276,14 +276,13 @@ def is_cloud_ready(config):
         if 'cloud addr' not in checklist:
             # Add an empty address so that worker only gets launched once
             checklist['cloud addr'] = {}
-            launch_worker('set_head_node_ip', config, ['--debug'])
+            launch_worker('set_head_node_ip', config)
         if len(checklist['nodes']) == config['run']['nodes']:
             checklist['cloud ready'] = True
             logger.info(
                 '{node_count} nodes in {host} cloud ready for run provisioning'
                 .format(node_count=config['run']['nodes'],
                         host=config['run']['host']))
-            # launch_worker('set_ssh_config', config)
 
 
 def the_end(config):
