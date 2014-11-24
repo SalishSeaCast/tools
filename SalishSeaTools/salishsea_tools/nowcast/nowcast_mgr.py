@@ -119,12 +119,6 @@ def parse_message(config, message):
     return reply_ack, next_steps
 
 
-def the_end(config):
-    next_step = finish_automation
-    next_step_args = [config]
-    return [(next_step, next_step_args)]
-
-
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
@@ -188,6 +182,7 @@ def after_init_cloud(worker, msg_type, payload, config):
                 actions['success'].append(
                     (launch_worker,
                      ['create_compute_node', config, [node_name]]))
+        actions['success'].append([is_cloud_ready, [config]])
     return actions[msg_type]
 
 
@@ -196,6 +191,7 @@ def after_create_compute_node(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'nodes', payload]),
+            (is_cloud_ready, [config]),
         ],
         'failure': None,
         'crash': None,
@@ -274,7 +270,30 @@ def launch_worker(worker, config, cmd_line_args=[]):
     subprocess.Popen(cmd)
 
 
+def is_cloud_ready(config):
+    global checklist
+    if 'nowcast0' in checklist['nodes']:
+        if 'cloud addr' not in checklist:
+            # Add an empty address so that worker only gets launched once
+            checklist['cloud addr'] = {}
+            launch_worker('set_head_node_ip', config, ['--debug'])
+        if len(checklist['nodes']) == config['run']['nodes']:
+            checklist['cloud ready'] = True
+            logger.info(
+                '{node_count} nodes in {host} cloud ready for run provisioning'
+                .format(node_count=config['run']['nodes'],
+                        host=config['run']['host']))
+            # launch_worker('set_ssh_config', config)
+
+
+def the_end(config):
+    next_step = finish_automation
+    next_step_args = [config]
+    return [(next_step, next_step_args)]
+
+
 def finish_automation(config):
+    global checklist
     checklist = {}
     logger.info('checklist cleared')
     rotate_log_file(config)
