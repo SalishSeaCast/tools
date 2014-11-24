@@ -47,8 +47,6 @@ TIMESTEPS_PER_DAY = 8640
 
 def main():
     today = date.today()
-#   running yesterday's forecast
-    today = today + timedelta(days=-1)
     print today, 'Today'
     tomorrow = today + timedelta(days=1)
     nowcast_end = update_time_namelist(tomorrow)
