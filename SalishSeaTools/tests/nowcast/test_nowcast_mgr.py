@@ -51,7 +51,7 @@ class TestParseMessage(object):
         }
         assert yaml.safe_load(reply) == expected
 
-    def test_undefined_msg_type_next_step_args(self, nowcast_mgr_module):
+    def test_undefined_msg_type_next_steps(self, nowcast_mgr_module):
         config = {
             'msg_types': {
                 'worker': {
@@ -61,7 +61,7 @@ class TestParseMessage(object):
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
         reply, next_steps = nowcast_mgr_module.parse_message(config, message)
-        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
+        assert next_steps is None
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_valid_msg_type_logging(self, m_logger, nowcast_mgr_module):
@@ -95,20 +95,6 @@ class TestParseMessage(object):
             'payload': None,
         }
         assert yaml.safe_load(reply) == expected
-
-    def test_valid_msg_next_step_args(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'download_weather': {
-                    'success 06': 'foo'
-                }
-            }
-        }
-        message = (
-            '{source: download_weather, '
-            'msg_type: success 06, payload: null}\n')
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
-        assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
     def test_the_end_msg_logging(self, m_logger, nowcast_mgr_module):
@@ -155,19 +141,157 @@ class TestParseMessage(object):
         assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
-def test_do_nothing(nowcast_mgr_module):
-    result = nowcast_mgr_module.do_nothing()
-    assert result is None
+@pytest.mark.use_fixtures(['nowcast_mgr_module'])
+class TestAfterInitCloudSuccess(object):
+    """Unit tests for after_init_cloud() function actions for success message.
+    """
+    def test_launch_n_nodes(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {}
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+        ]
+        for i in range(3):
+            node_name = 'nowcast{}'.format(i)
+            expected.append(
+                (nowcast_mgr_module.launch_worker,
+                 ['create_compute_node', config, [node_name]]),
+            )
+        expected.append([nowcast_mgr_module.is_cloud_ready, [config]])
+        assert next_steps == expected
+
+    def test_launch_missing_0_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {
+            'nowcast1': '192.168.0.10',
+            'nowcast2': '192.168.0.11',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast0']]),
+        ]
+        expected.append([nowcast_mgr_module.is_cloud_ready, [config]])
+        assert next_steps == expected
+
+    def test_launch_missing_last_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 3}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast2']]),
+        ]
+        expected.append([nowcast_mgr_module.is_cloud_ready, [config]])
+        assert next_steps == expected
+
+    def test_launch_missing_misc_node(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+            'nowcast3': '192.168.0.13',
+            'nowcast4': '192.168.0.14',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['create_compute_node', config, ['nowcast2']]),
+        ]
+        expected.append([nowcast_mgr_module.is_cloud_ready, [config]])
+        assert next_steps == expected
+
+    def test_launch_no_nodes(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        payload = {
+            'nowcast0': '192.168.0.10',
+            'nowcast1': '192.168.0.11',
+            'nowcast2': '192.168.0.12',
+            'nowcast3': '192.168.0.13',
+            'nowcast4': '192.168.0.14',
+        }
+        next_steps = nowcast_mgr_module.after_init_cloud(
+            'init_cloud', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['init_cloud', 'nodes', payload]),
+        ]
+        expected.append([nowcast_mgr_module.is_cloud_ready, [config]])
+        assert next_steps == expected
 
 
-def test_do_nothing_any_args(nowcast_mgr_module):
-    result = nowcast_mgr_module.do_nothing('foo', 42)
-    assert result is None
+@pytest.mark.use_fixtures(['nowcast_mgr_module'])
+class TestIsCloudReady(object):
+    """Unit tests for is_cloud_ready() function.
+    """
+    def test_no_nowcast0(self, nowcast_mgr_module):
+        config = Mock(name='config')
+        p_checklist = patch.dict(
+            nowcast_mgr_module.checklist,
+            {'nodes': {'nowcast1': '192.168.0.11'}})
+        with p_checklist:
+            nowcast_mgr_module.is_cloud_ready(config)
+            assert 'cloud ready' not in nowcast_mgr_module.checklist
 
+    def test_no_cloud_addr_sets_empty_addr(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
+        p_checklist = patch.dict(
+            nowcast_mgr_module.checklist,
+            {'nodes': {'nowcast0': '192.168.0.10'}})
+        with p_checklist:
+            nowcast_mgr_module.is_cloud_ready(config)
+            assert nowcast_mgr_module.checklist['cloud addr'] == {}
 
-def test_undefined_message_next_step(nowcast_mgr_module):
-    next_steps = nowcast_mgr_module.undefined_message()
-    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
+    def test_no_cloud_addr_launches_set_head_node_ip(self, nowcast_mgr_module):
+        config = {'run': {'nodes': 5}}
+        nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
+        p_checklist = patch.dict(
+            nowcast_mgr_module.checklist,
+            {'nodes': {'nowcast0': '192.168.0.10'}})
+        with p_checklist:
+            nowcast_mgr_module.is_cloud_ready(config)
+            nowcast_mgr_module.launch_worker.assert_called_once_with(
+                'set_head_node_ip', config)
+
+    def test_cloud_ready(self, nowcast_mgr_module):
+        config = {'run': {'host': 'nefos', 'nodes': 2}}
+        nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
+        p_checklist = patch.dict(
+            nowcast_mgr_module.checklist,
+            {'nodes': {'nowcast0': '192.168.0.10',
+                       'nowcast1': '192.168.0.11'}})
+        with p_checklist:
+            nowcast_mgr_module.is_cloud_ready(config)
+            assert nowcast_mgr_module.checklist['cloud ready']
+
+    def test_cloud_ready_launches_set_ssh_config(self, nowcast_mgr_module):
+        config = {'run': {'host': 'nefos', 'nodes': 2}}
+        nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
+        p_checklist = patch.dict(
+            nowcast_mgr_module.checklist,
+            {'cloud addr': {'ip': '206.12.48.112'},
+             'nodes': {'nowcast0': '192.168.0.10',
+                       'nowcast1': '192.168.0.11'}})
+        with p_checklist:
+            nowcast_mgr_module.is_cloud_ready(config)
+            nowcast_mgr_module.launch_worker.assert_called_once_with(
+                'set_ssh_config', config)
 
 
 def test_the_end_next_step(nowcast_mgr_module):
@@ -187,6 +311,12 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_make_runoff_file', 'crash'),
     ('after_grib_to_netcdf', 'failure'),
     ('after_grib_to_netcdf', 'crash'),
+    ('after_init_cloud', 'failure'),
+    ('after_init_cloud', 'crash'),
+    ('after_create_compute_node', 'failure'),
+    ('after_create_compute_node', 'crash'),
+    ('after_set_head_node_ip', 'failure'),
+    ('after_set_head_node_ip', 'crash'),
     ('after_upload_forcing', 'failure'),
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
@@ -194,14 +324,14 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_download_results', 'failure'),
     ('after_download_results', 'crash'),
 ])
-def test_after_worker_do_nothing_next_step_args(
+def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
 ):
     payload = Mock(name='payload')
     config = Mock(name='config')
     after_worker_func = getattr(nowcast_mgr_module, worker)
     next_steps = after_worker_func(worker, msg_type, payload, config)
-    assert next_steps == [(nowcast_mgr_module.do_nothing, [])]
+    assert next_steps is None
 
 
 def test_get_NeahBay_ssh_success_next_step_args(nowcast_mgr_module):
@@ -238,6 +368,31 @@ def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
          ['grib_to_netcdf', 'weather forcing', payload]),
         (nowcast_mgr_module.launch_worker,
          ['upload_forcing', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_create_compute_node_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_create_compute_node(
+        'create_compute_node', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['create_compute_node', 'nodes', payload]),
+        (nowcast_mgr_module.is_cloud_ready, [config])
+    ]
+    assert next_steps == expected
+
+
+def test_set_head_node_ip_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_set_head_node_ip(
+        'set_head_node_ip', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['set_head_node_ip', 'cloud addr', payload]),
     ]
     assert next_steps == expected
 

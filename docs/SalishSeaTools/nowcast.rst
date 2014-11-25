@@ -136,10 +136,13 @@ below.
             # Exchange failure messages with nowcast manager process
             logger.critical('failure message')
             lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        except SystemExit:
+            # Normal termination
+            pass
         except:
             logger.critical('unhandled exception:')
             # Log the traceback from any unhandled exception
-            for line in traceback.format_exc():
+            for line in traceback.format_exc().splitlines():
                 logger.error(line)
             # Exchange crash messages with the nowcast manager process
             lib.tell_manager(worker_name, 'crash', config, logger, socket)
@@ -308,8 +311,92 @@ it will shutdown cleanly.
 Extending the Command-line Parser
 ---------------------------------
 
+**TODO**
+
 
 .. _NowcastConfigFile:
 
 Nowcast Configuration File
 ==========================
+
+**TODO**
+
+
+Development and Deployment
+==========================
+
+Python Package Environment
+--------------------------
+
+The nowcast workers that do pre- and post-processing for the runs can be run in a default :ref:`AnacondaPythonDistro` environment with the :ref:`SalishSeaTools` installed.
+However,
+the workers that interact with the `Ocean Networks Canada`_ private cloud `nefos`_ computing facility
+(see :ref:`WorkingOnNefos`)
+require additional Python packages to use the `OpenStack`_ APIs.
+To avoid adding complexity and potential undesirable interactions and/or side-effects to the default Anaconda Python environment we create an isolated environment for nowcast.
+
+.. _Ocean Networks Canada: http://www.oceannetworks.ca/
+.. _nefos: https://www.westgrid.ca/support/systems/Nefos
+.. _OpenStack: http://www.openstack.org/
+
+Create a new :program:`conda` environment with Python 2.7 and pip installed in it,
+and activate the environment:
+
+.. code-block:: bash
+
+    $ conda create -n nowcast python=2.7 pip
+
+    ...
+
+    $ source activate nowcast
+
+Our first choice for installing packages is the :program:`conda` installer because it uses pre-built binary packages so it is faster and avoids problems that can arise with compilation of C extensions that are part of some of the packages.
+Unfortunately,
+not all of the packages that we need are available in the :program:`conda` repositories so we use :program:`pip` to install those from the `Python Package Index`_ (PyPI).
+
+.. _Python Package Index: https://pypi.python.org/pypi
+
+Install the packages that the :ref:`SalishSeaTools` depends on,
+the package itself,
+and its companion package :ref:`SalishSeaCmd`:
+
+.. code-block:: bash
+
+    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml mock
+    (nowcast)$ pip install arrow angles
+    (nowcast)$ cd MEOPAR/tools
+    (nowcast)$ pip install --editable SalishSeaTools
+    (nowcast)$ pip install --editable SalishSeaCmd
+
+Install the Python bindings to the `ZeroMQ`_ messaging library:
+
+.. code-block:: bash
+
+    (nowcast)$ conda install pyzmq
+
+Install the packages available from the :program:`conda` repositories that are used by the `OpenStack` APIs,
+and the Python bindings for the `OpenStack compute API`_
+(which is called :program:`nova`):
+
+.. code-block:: bash
+
+    (nowcast)$ conda install requests pyopenssl cryptography cffi pycparser
+    (nowcast)$ pip install python-novaclient
+
+.. _OpenStack compute API: http://docs.openstack.org/user-guide/content/sdk_compute_apis.html
+
+Finally,
+install Sphinx and the sphinx-rtd-theme ReadTheDocs theme,
+IPython and IPython Notebook,
+the pytest and coverage unit testing tools,
+and the ipdb debugger:
+
+.. code-block:: bash
+
+    (nowcast)$ conda install sphinx ipython-notebook pytest coverage
+    (nowcast)$ pip install sphinx-rtd-theme ipdb
+
+to support writing and building docs,
+and developing and debugging Python code and :ref:`salishsea_tools.nowcast.figures` functions.
+
+The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`pip freeze` command is available in :file:`salishsea_tools/nowcast/requirements.txt`.

@@ -63,9 +63,12 @@ def main():
         # Exchange failure messages with nowcast manager process
         logger.critical('Rivers runoff file creation failed')
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
     except:
         logger.critical('unhandled exception:')
-        for line in traceback.format_exc():
+        for line in traceback.format_exc().splitlines():
             logger.error(line)
         # Exchange crash messages with the nowcast manager process
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
