@@ -37,6 +37,11 @@ from salishsea_tools import (
     tidetools,
 )
 
+#Defining colours
+model_c = 'MediumBlue'
+observations_c = 'DarkGreen'
+predictions_c = 'OrangeRed'
+
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
     """Return a figure containing a plot of hourly sea surface height at
@@ -107,69 +112,6 @@ def PA_tidal_predictions(grid_T, figsize=(20,5)):
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson')
     ax.set_ylabel('Sea Surface Height [m]')
-
-    return fig
-
-#
-def compare_tidal_predictions(name, grid_T, gridB, figsize=(20,5)):
-    """ Compares modelled water levels to tidal predictions at a station over one day.
-    It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
-    Tidal predictions were calculated with the eight consituents used in the model.
-    Tidal predictions were calculated with ttide based on a time series from 2013.
-
-    :arg name: Name of station (e.g Point Atkinson).
-    :type name: string
-
-    :arg grid_T: Hourly tracer results dataset from NEMO.
-    :type grid_T: :class:`netCDF4.Dataset`
-
-    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
-    :type gridB: :class:`netCDF4.Dataset`
-
-    :arg figsize:  Figure size (width, height) in inches
-    :type figsize: 2-tuple
-
-    :returns: Matplotlib figure object instance
-    """
-
-    #Locations of interest.
-    lons={'Point Atkinson':-123.26}
-    lats={'Point Atkinson': 49.33}
-
-    #load bathymetry
-    bathy, X, Y = tidetools.get_bathy_data(gridB)
-
-    #time stamp of simulation
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
-
-    #loading the tidal predictions
-    path='/data/nsoontie/MEOPAR/analysis/Susan/'
-    filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
-    tfile = path+name+filename
-    ttide,msl= stormtools.load_tidal_predictions(tfile)
-
-    #identify grid point of location of interest
-    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=True)
-
-    #load variables for plotting
-    ssh = grid_T.variables['sossheig'][:,j,i]
-    count=grid_T.variables['time_counter'][:]
-    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
-    #convert times to datetimes because that is what the plot wants
-    for i in range(len(t)):
-        t[i]=t[i].datetime
-
-    #plotting
-    fig,ax =plt.subplots(1,1,figsize=figsize)
-    ax.plot(t,ssh,label='model')
-    ax.plot(ttide.time,ttide.pred_8,label='tidal predictions')
-    ax.set_xlim(t_orig,t_final)
-    ax.set_ylim([-3,3])
-    ax.legend(loc=0)
-    ax.set_title(name)
-    ax.set_ylabel('Water levels wrt MSL (m)')
-    ax.set_xlabel('time [UTC]')
 
     return fig
 
@@ -255,7 +197,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     return tides
 
 
-#
+####################
 def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
@@ -298,9 +240,9 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
         t[i]=t[i].datetime
 
     fig,ax =plt.subplots(1,1,figsize=figsize)
-    ax.plot(t,ssh,label='model')
-    ax.plot(obs.time,obs.wlev,label='observed water levels')
-    ax.plot(tides.time,tides.pred,label='tidal predictions')
+    ax.plot(t,ssh,c=model_c,linewidth=2,label='model')
+    ax.plot(obs.time,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
+    ax.plot(tides.time,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
     ax.set_xlim(t_orig,t_final)
     ax.set_ylim([-2,2])
     ax.legend(loc=0)
@@ -310,11 +252,19 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
 
     return fig
 
-#
-def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
-    """Function that plots the water level at every hour throughout the day and identifies the maximum.
+#########################
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
+    """Function that compares modelled water levels to tidal predictions at a station over one day.
+    It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
+    Tidal predictions were calculated with the eight consituents used in the model.
+    Tidal predictions were calculated with ttide based on a time series from 2013.
+    
+    Function also plots the water level at every hour throughout the day and identifies the maximum.
     It also plots the sea surface height throughout the region for the time when the sea surface height
     was at its maximum at Point Atkinson.
+
+    :arg name: Name of station (e.g Point Atkinson).
+    :type name: string
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -345,6 +295,16 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     #sea surface height when there is a maximum at Point Atkinson
     ssh_max = np.ma.masked_values(ssh[index], 0)
 
+    #time stamp of simulation
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
+
+    #loading the tidal predictions
+    path='/data/nsoontie/MEOPAR/analysis/Susan/'
+    filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    tfile = path+name+filename
+    ttide,msl= stormtools.load_tidal_predictions(tfile)
+
     #time for curve
     count=grid_T.variables['time_counter'][:]
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
@@ -362,15 +322,17 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     fig,(ax1,ax2) =plt.subplots(1,2,figsize=figsize)
 
     #curve plot
-    ax1.plot(t,ssh_loc,label='Model')
-    ax1.plot(t[index],ssh_loc[index],color='Indigo',marker='D',markersize=12,label='Maximum SSH')
+    ax1.plot(t,ssh_loc,c=model_c,linewidth=2,label='model')
+    ax1.plot(ttide.time,ttide.pred_8,c=predictions_c,linewidth=2,label='tidal predictions')
+    ax1.plot(t[index],ssh_loc[index],color='DarkOrchid',marker='D',markersize=8,label='Maximum SSH')
     ax1.set_xlim(t_orig,t_final)
     ax1.set_ylim([-3,3])
-    ax1.set_title('Point Atkinson')
-    ax1.set_xlabel(timestamp.strftime('%d-%b-%Y'))
+    ax1.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
+    ax1.set_xlabel('time [UTC]')
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
     ax1.set_position((0, 0.3, 0.55, 0.4))
+    ax1.grid()
 
     #ssh profile
     viz_tools.set_aspect(ax2)
@@ -387,7 +349,7 @@ def PA_max_ssh(grid_T, gridB, figsize=(15,10)):
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
     ax2.set_title('Sea Suface Height: ' + timestamp.strftime('%d-%b-%Y, %H:%M'))
-    ax2.plot(i,j,marker='D',color='Indigo',ms=8)
+    ax2.plot(i,j,marker='D',color='DarkOrchid',ms=8)
 
     return fig
 
