@@ -278,7 +278,7 @@ def get_EC_observations(station, start_day, end_day):
                 t.to('utc')
                 times.append(t.datetime)
             except TypeError:
-                wind_spd.append(0)
+                wind_spd.append('NaN')
                 t.to('utc')
                 times.append(t.datetime)
 	    try:
