@@ -20,11 +20,10 @@ from __future__ import division
 import datetime
 import netCDF4 as NC
 import numpy as np
-import pytz
 import arrow
 import cStringIO
 import requests
-from pytz import timezone as tz
+from dateutil import tz
 from xml.etree import cElementTree as ElementTree
 import pandas as pd
 from salishsea_tools import tidetools
@@ -238,6 +237,7 @@ def get_EC_observations(station, start_day, end_day):
 
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
+    PST=tz.tzoffset("PST",-28800)
 
     wind_spd= []; wind_dir=[]; temp=[];
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
@@ -264,7 +264,7 @@ def get_EC_observations(station, start_day, end_day):
         hour = int(record.get('hour'))
         year = int(record.get('year'))
         month = int(record.get('month'))
-        t = arrow.Arrow(year, month,day,hour,tzinfo=tz('US/Pacific'))
+        t = arrow.Arrow(year, month,day,hour,tzinfo=PST)
         selectors = (
             (day == st_ar.day - 1 and hour >= 16)
             or
@@ -294,7 +294,7 @@ def get_EC_observations(station, start_day, end_day):
     wind_dir=wind_dir + 360 * (wind_dir<0)
     temp=np.array(temp)
     for i in np.arange(len(times)):
-    	times[i] = times[i].astimezone(pytz.timezone('utc'))
+    	times[i] = times[i].astimezone(tz.tzutc())
 
     return wind_spd, wind_dir, temp, times, lat, lon
 
@@ -331,23 +331,25 @@ def dateParserMeasured2(s):
     """
     converts string in %d-%b-%Y %H:%M:%S format Pacific time to a datetime object UTC time.
     """
+    PST=tz.tzoffset("PST",-28800)
     #convert the string to a datetime object
     unaware = datetime.datetime.strptime(s, "%d-%b-%Y %H:%M:%S ")
     #add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    aware = unaware.replace(tzinfo=PST)
     #convert to UTC
-    return aware.astimezone(pytz.timezone('UTC'))
+    return aware.astimezone(tz.tzutc())
 
 def dateParserMeasured(s):
     """
     converts string in %Y/%m/%d %H:%M format Pacific time to a datetime object UTC time.
     """
+    PST=tz.tzoffset("PST",-28800)
     #convert the string to a datetime object
     unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
     #add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    aware = unaware.replace(tzinfo=PST)
     #convert to UTC
-    return aware.astimezone(pytz.timezone('UTC'))
+    return aware.astimezone(tz.tzutc())
 
 def load_tidal_predictions(filename):
     """
@@ -573,6 +575,7 @@ def truncate(data,time,sdt,edt):
     """
     inds = np.where(time==sdt)[0]
     inde = np.where(time==edt)[0]
+
     data_t=np.array(data[inds:inde+1])
     time_t = np.array(time[inds:inde+1])
 
