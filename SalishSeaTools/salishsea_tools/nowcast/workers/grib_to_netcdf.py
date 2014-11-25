@@ -55,6 +55,8 @@ context = zmq.Context()
 # available for it.
 IST, IEN = 110, 365
 JST, JEN = 20, 285
+# Position of Sandheads
+SandI, SandJ = 151, 136
 
 
 def main():
@@ -80,9 +82,12 @@ def main():
         logger.critical('NEMO-atmos forcing file creation failed')
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
     except:
         logger.critical('unhandled exception:')
-        for line in traceback.format_exc():
+        for line in traceback.format_exc().splitlines():
             logger.error(line)
         # Exchange crash messages with the nowcast manager process
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
@@ -401,7 +406,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     data0.close()
     os.remove(out0netcdf)
 
-    axs[1, 0].plot(acc_values['acc']['APCP_surface'][:, 200, 200], 'o-')
+    axs[1, 0].plot(acc_values['acc']['APCP_surface'][:, SandI, SandJ], 'o-')
 
     for var in acc_vars:
         acc_values['inst'][var][0] = (
@@ -416,7 +421,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
                     - acc_values['acc'][var][realhour-1]) / 3600
 
     axs[1, 1].plot(
-        acc_values['inst']['APCP_surface'][:, 200, 200], 'o-',
+        acc_values['inst']['APCP_surface'][:, SandI, SandJ], 'o-',
         label=ymd)
 
     for var in acc_vars:
@@ -449,7 +454,7 @@ def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     axs[0, ip].pcolormesh(Temp[0])
     axs[0, ip].set_xlim([0, Temp.shape[2]])
     axs[0, ip].set_ylim([0, Temp.shape[1]])
-    axs[0, ip].plot(200, 200, 'wo')
+    axs[0, ip].plot(SandI, SandJ, 'wo')
 
     if ip == 0:
         label = "day 1"
@@ -458,19 +463,19 @@ def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     else:
         label = "day 3"
     humid = data.variables['qair'][:]
-    axs[1, 2].plot(humid[:, 200, 200], '-o')
+    axs[1, 2].plot(humid[:, SandI, SandJ], '-o')
     solar = data.variables['solar'][:]
-    axs[2, 0].plot(solar[:, 200, 200], '-o', label=label)
+    axs[2, 0].plot(solar[:, SandI, SandJ], '-o', label=label)
     longwave = data.variables['therm_rad'][:]
-    axs[2, 1].plot(longwave[:, 200, 200], '-o')
+    axs[2, 1].plot(longwave[:, SandI, SandJ], '-o')
     pres = data.variables['atmpres'][:]
-    axs[2, 2].plot(pres[:, 200, 200], '-o')
+    axs[2, 2].plot(pres[:, SandI, SandJ], '-o')
     uwind = data.variables['u_wind'][:]
-    axs[3, 0].plot(uwind[:, 200, 200], '-o')
+    axs[3, 0].plot(uwind[:, SandI, SandJ], '-o')
     vwind = data.variables['v_wind'][:]
-    axs[3, 1].plot(vwind[:, 200, 200], '-o')
+    axs[3, 1].plot(vwind[:, SandI, SandJ], '-o')
     axs[3, 2].plot(np.sqrt(
-        uwind[:, 200, 200]**2 + vwind[:, 200, 200]**2), '-o')
+        uwind[:, SandI, SandJ]**2 + vwind[:, SandI, SandJ]**2), '-o')
 
     data.close()
 

@@ -445,3 +445,19 @@ def run_in_subprocess(cmd, output_logger, error_logger):
             if line:
                 error_logger(line)
         raise WorkerError
+
+
+def get_nova_credentials_v2():
+    """Return an OpenStack compute API credentials dict containing credential
+    values from the environment.
+
+    :returns: OpenStack nova API credentials dict
+    """
+    credentials = {
+        'version': '2',
+        'username': os.environ['OS_USERNAME'],
+        'api_key': os.environ['OS_PASSWORD'],
+        'auth_url': os.environ['OS_AUTH_URL'],
+        'project_id': os.environ['OS_TENANT_NAME'],
+    }
+    return credentials

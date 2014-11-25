@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that uploads the forcing files
-for a nowcast run to the HPC/cloud facility where the run will be
-executed.
+"""Salish Sea NEMO nowcast worker that initiates the setup of an
+OpenStack cloud to run NEMO by collecting the names and cloud subnet
+IP addresses of any existing nodes.
 """
 import logging
 import os
 import traceback
 
+import novaclient.client
 import zmq
 
 from salishsea_tools.nowcast import lib
@@ -46,15 +47,18 @@ def main():
     # Do the work
     checklist = {}
     try:
-        cmd = ['bash', config['upload forcing']]
-        lib.run_in_subprocess(cmd, logger.debug, logger.error)
-        checklist['success'] = True
-        logger.info('forcing files upload to HPC/cloud completed')
+        init_cloud(config, checklist)
         # Exchange success messages with the nowcast manager process
+        logger.info(
+            'names and addresses collected from existing nodes in {} cloud'
+            .format(config['run']['host']))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
-        logger.critical('forcing files upload to HPC/cloud failed')
+        logger.critical(
+            'collection of names and addresses from existing nodes '
+            'in {} cloud failed'
+            .format(config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -69,6 +73,23 @@ def main():
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
+
+
+def init_cloud(config, checklist):
+    # Authenticate
+    credentials = lib.get_nova_credentials_v2()
+    nova = novaclient.client.Client(**credentials)
+    logger.debug(
+        'authenticated nova client on {}'.format(config['run']['host']))
+    network_label = config['run']['network label']
+    for node in nova.servers.list():
+        try:
+            node_addr = [a['addr'] for a in node.addresses[network_label]
+                         if a['OS-EXT-IPS:type'] == u'fixed'][0]
+        except IndexError:
+            logger.warning('node {.name} exists but lacks an ip address')
+        logger.debug('node {.name} found with ip {}'.format(node, node_addr))
+        checklist[node.name.encode('ascii')] = node_addr.encode('ascii')
 
 
 if __name__ == '__main__':

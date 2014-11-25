@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that downloads the results files
-from a nowcast run on the HPC/cloud facility to archival storage.
+"""Salish Sea NEMO nowcast worker that creates an instance (node) in an
+OpenStack cloud to run NEMO.
 """
 import argparse
-import glob
 import logging
 import os
+import time
 import traceback
 
-import arrow
+import novaclient.client
 import zmq
 
 from salishsea_tools.nowcast import lib
@@ -54,17 +54,17 @@ def main():
     # Do the work
     checklist = {}
     try:
-        download_results(parsed_args.run_date, config, checklist)
-        logger.info(
-            'results files from {} downloaded'.format(config['run']['host']))
+        create_compute_node(config, checklist, parsed_args.node_name)
         # Exchange success messages with the nowcast manager process
+        logger.info(
+            '{0.node_name} node creation on {host} cloud completed'
+            .format(parsed_args, host=config['run']['host']))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
-        lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical(
-            'results files download from {} failed'
-            .format(config['run']['host']))
+            '{0.node_name} node creation on {host} cloud failed'
+            .format(parsed_args, host=config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -84,44 +84,40 @@ def main():
 def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
-    parser.add_argument(
-        '--run-date', type=arrow_date,
-        default=arrow.now().date(),
-        help='''
-        Date of the run to download results files from;
-        defaults to %(default)s.
-        ''',
-    )
+    parser.add_argument('node_name', help='Name to use for the node')
     return parser
 
 
-def arrow_date(string):
-    """Convert a YYYY-MM-DD string to an arrow object or raise
-    :py:exc:`argparse.ArgumentTypeError`.
-    """
-    try:
-        return arrow.get(string, 'YYYY-MM-DD')
-    except arrow.parser.ParserError:
-        msg = (
-            'unrecognized date format: {} - '
-            'please use YYYY-MM-DD'.format(string))
-        raise argparse.ArgumentTypeError(msg)
-
-
-def download_results(run_date, config, checklist):
-    results_dir = run_date.strftime('%d%b%y').lower()
-    src_dir = os.path.join(config['run']['results'], results_dir)
-    src = (
-        '{host}:{src_dir}'.format(host=config['run']['host'], src_dir=src_dir))
-    dest = os.path.join(config['run']['results archive'])
-    cmd = ['scp', '-Cpr', src, dest]
-    lib.run_in_subprocess(cmd, logger.debug, logger.error)
-    for freq in '1h 1d'.split():
-        checklist[freq] = glob.glob(
-            os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
-    for filename in 'stdout stderr'.split():
-        filepath = os.path.join(dest, results_dir, filename)
-        os.chmod(filepath, lib.PERMS_RW_RW_R)
+def create_compute_node(config, checklist, node_name):
+    # Authenticate
+    credentials = lib.get_nova_credentials_v2()
+    nova = novaclient.client.Client(**credentials)
+    logger.debug(
+        'authenticated nova client on {}'.format(config['run']['host']))
+    # Prepare node configuration
+    image = nova.images.find(name=config['run']['image name'])
+    flavor = nova.flavors.find(name=config['run']['flavor name'])
+    network_label = config['run']['network label']
+    network = nova.networks.find(label=network_label)
+    nics = [{'net-id': network.id}]
+    key_name = config['run']['ssh key name']
+    # Create node
+    nova.servers.create(
+        name=node_name, image=image, flavor=flavor, nics=nics,
+        key_name=key_name)
+    logger.debug(
+        'creating {flavor} node {name} based on {image} image '
+        'with {key} key loaded'
+        .format(flavor=flavor.name, name=node_name, image=image.name,
+                key=key_name))
+    time.sleep(5)
+    while nova.servers.find(name=node_name).status != u'ACTIVE':
+        time.sleep(5)
+    logger.debug('{} node is active'.format(node_name))
+    # Get node's private IP address
+    node = nova.servers.find(name=node_name)
+    node_addr = node.addresses[network_label][0]['addr']
+    checklist[node_name] = node_addr.encode('ascii')
 
 
 if __name__ == '__main__':

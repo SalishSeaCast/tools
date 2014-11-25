@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that uploads the forcing files
-for a nowcast run to the HPC/cloud facility where the run will be
-executed.
+"""Salish Sea NEMO nowcast worker that associates a public IP address
+from a floating IP address pool with the instance (node) designated as
+the head node for running NEMO in an OpenStack cloud.
 """
 import logging
 import os
 import traceback
 
+import novaclient.client
 import zmq
 
 from salishsea_tools.nowcast import lib
@@ -46,15 +47,17 @@ def main():
     # Do the work
     checklist = {}
     try:
-        cmd = ['bash', config['upload forcing']]
-        lib.run_in_subprocess(cmd, logger.debug, logger.error)
-        checklist['success'] = True
-        logger.info('forcing files upload to HPC/cloud completed')
+        set_head_node_ip(config, checklist)
         # Exchange success messages with the nowcast manager process
+        logger.info(
+            'public IP address associated with nowcast0 node in {} cloud'
+            .format(config['run']['host']))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
-        logger.critical('forcing files upload to HPC/cloud failed')
+        logger.critical(
+            'public IP address association with nowcast0 in {} cloud failed'
+            .format(config['run']['host']))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -69,6 +72,43 @@ def main():
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')
+
+
+def set_head_node_ip(config, checklist):
+    # Authenticate
+    credentials = lib.get_nova_credentials_v2()
+    nova = novaclient.client.Client(**credentials)
+    logger.debug(
+        'authenticated nova client on {}'.format(config['run']['host']))
+    # Check for public IP already associated
+    network_label = config['run']['network label']
+    nowcast0 = nova.servers.find(name='nowcast0')
+    ip = get_ip(nowcast0, network_label)
+    if ip is not None:
+        logger.info('{} already associated with nowcast0 node'.format(ip))
+        checklist['ip'] = ip.encode('ascii')
+        return
+    # Associate a floating IP
+    fip = nova.floating_ips.find(pool=config['run']['floating ip pool'])
+    nowcast0 = nova.servers.find(name='nowcast0')
+    nowcast0.add_floating_ip(fip)
+    nowcast0 = nova.servers.find(name='nowcast0')
+    ip = get_ip(nowcast0, network_label)
+    if ip is None:
+        logger.error('public IP address associateion with nowcast0 failed')
+        raise lib.WorkerError
+        return
+    logger.info('{} associated with nowcast0 node'.format(ip))
+    checklist['ip'] = ip.encode('ascii')
+
+
+def get_ip(node, network_label):
+    try:
+        ip = [a['addr'] for a in node.addresses[network_label]
+              if a['OS-EXT-IPS:type'] == u'floating'][0]
+    except IndexError:
+        ip = None
+    return ip
 
 
 if __name__ == '__main__':

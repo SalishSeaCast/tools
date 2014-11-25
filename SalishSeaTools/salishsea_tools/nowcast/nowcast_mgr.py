@@ -50,11 +50,19 @@ def main():
             message = socket.recv()
             reply, next_steps = parse_message(config, message)
             socket.send(reply)
-            for next_step, next_step_args in next_steps:
-                next_step(*next_step_args)
+            if next_steps is not None:
+                for next_step, next_step_args in next_steps:
+                    next_step(*next_step_args)
+        except zmq.ZMQError as e:
+            # Fatal ZeroMQ problem
+            logger.critical('ZMQError: {}'.format(e))
+            break
+        except SystemExit:
+            # Termination by signal
+            break
         except:
             logger.critical('unhandled exception:')
-            for line in traceback.format_exc():
+            for line in traceback.format_exc().splitlines():
                 logger.error(line)
 
 
@@ -76,11 +84,13 @@ def parse_message(config, message):
     # Lookup table of functions to return next step function and its
     # arguments for the message types that we know how to handle
     actions = {
-        'undefined message': undefined_message,
         'download_weather': after_download_weather,
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
         'grib_to_netcdf': after_grib_to_netcdf,
+        'init_cloud': after_init_cloud,
+        'create_compute_node': after_create_compute_node,
+        'set_head_node_ip': after_set_head_node_ip,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
@@ -92,8 +102,7 @@ def parse_message(config, message):
             'undefined message type received from {worker}: {msg_type}'
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
-        next_steps = actions['undefined message']()
-        return reply, next_steps
+        return reply, None
     # Recongnized message type
     logger.info(
         'received message from {worker}: ({msg_type}) {msg_words}'
@@ -110,30 +119,14 @@ def parse_message(config, message):
     return reply_ack, next_steps
 
 
-def do_nothing(*args):
-    pass
-
-
-def undefined_message():
-    next_step = do_nothing
-    next_step_args = []
-    return [(next_step, next_step_args)]
-
-
-def the_end(config):
-    next_step = finish_automation
-    next_step_args = [config]
-    return [(next_step, next_step_args)]
-
-
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success 06': [(do_nothing, [])],
-        'failure 06': [(do_nothing, [])],
+        'success 06': None,
+        'failure 06': None,
         'success 18': [(launch_worker, ['grib_to_netcdf', config])],
-        'failure 18': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure 18': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -142,8 +135,8 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'sshNeahBay', payload])],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -152,8 +145,8 @@ def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
         'success': [(update_checklist, [worker, 'rivers', payload])],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -165,8 +158,55 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker, ['upload_forcing', config]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_init_cloud(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'nodes', payload]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    if msg_type == 'success':
+        existing_nodes = [
+            int(node.lstrip('nowcast')) for node in payload.keys()]
+        for i in range(config['run']['nodes']):
+            if i not in existing_nodes:
+                node_name = 'nowcast{}'.format(i)
+                actions['success'].append(
+                    (launch_worker,
+                     ['create_compute_node', config, [node_name]]))
+        actions['success'].append([is_cloud_ready, [config]])
+    return actions[msg_type]
+
+
+def after_create_compute_node(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'nodes', payload]),
+            (is_cloud_ready, [config]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_set_head_node_ip(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'cloud addr', payload]),
+        ],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -178,8 +218,8 @@ def after_upload_forcing(worker, msg_type, payload, config):
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker, ['make_forcing_links', config]),
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -190,8 +230,8 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'forcing links', payload])
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
@@ -202,29 +242,58 @@ def after_download_results(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'results files', payload])
         ],
-        'failure': [(do_nothing, [])],
-        'crash': [(do_nothing, [])],
+        'failure': None,
+        'crash': None,
     }
     return actions[msg_type]
 
 
 def update_checklist(worker, key, worker_checklist):
-    checklist.update({key: worker_checklist})
+    try:
+        checklist[key].update(worker_checklist)
+    except KeyError:
+        checklist[key] = worker_checklist
+    logger.debug('checklist: {}'.format(checklist))
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
 
 
-def launch_worker(worker, config):
+def launch_worker(worker, config, cmd_line_args=[]):
     cmd = [
         config['python'], '-m',
         'salishsea_tools.nowcast.workers.{}'.format(worker),
         config['config_file'],
     ]
+    if cmd_line_args:
+        cmd.extend(cmd_line_args)
     logger.info('launching {} worker'.format(worker))
     subprocess.Popen(cmd)
 
 
+def is_cloud_ready(config):
+    global checklist
+    if 'nowcast0' in checklist['nodes']:
+        if 'cloud addr' not in checklist:
+            # Add an empty address so that worker only gets launched once
+            checklist['cloud addr'] = {}
+            launch_worker('set_head_node_ip', config, ['--debug'])
+        if len(checklist['nodes']) == config['run']['nodes']:
+            checklist['cloud ready'] = True
+            logger.info(
+                '{node_count} nodes in {host} cloud ready for run provisioning'
+                .format(node_count=config['run']['nodes'],
+                        host=config['run']['host']))
+            # launch_worker('set_ssh_config', config)
+
+
+def the_end(config):
+    next_step = finish_automation
+    next_step_args = [config]
+    return [(next_step, next_step_args)]
+
+
 def finish_automation(config):
+    global checklist
     checklist = {}
     logger.info('checklist cleared')
     rotate_log_file(config)
