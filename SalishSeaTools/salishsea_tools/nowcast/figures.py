@@ -29,6 +29,7 @@ import pandas as pd
 import pytz
 import requests
 from scipy import interpolate as interp
+import matplotlib.gridspec as gridspec
 
 from salishsea_tools import (
     nc_tools,
@@ -198,7 +199,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
 
 
 ####################
-def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
+def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
     """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
 
@@ -228,27 +229,53 @@ def compare_water_levels(name, grid_T, gridB, figsize=(20,5) ):
     start_date = t_orig.strftime('%d-%b-%Y')
     end_date = t_final.strftime('%d-%b-%Y')
 
-    obs=get_NOAA_wlevels(stations[name],start_date,end_date)
-    tides=get_NOAA_tides(stations[name],start_date,end_date)
+    m = np.arange(3)
+    names = ['CherryPoint', 'FridayHarbor', 'NeahBay']
+
+    fig = plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
+    gs.update(wspace=0.1)
+
+    ax0 = plt.subplot(gs[:,1])
+    plt.axis((-124.8,-122.2,48,50))
+    viz_tools.set_aspect(ax0)
+    land_colour = 'burlywood'
+    viz_tools.plot_land_mask(ax0,gridB,coords='map', color=land_colour)
+    ax0.set_title('Station Locations')
+    ax0.set_xlabel('longitude')
+    ax0.set_ylabel('latitude')
+   
+    for name, M in zip(names, m):
+
+	ax0.plot(lons[name],lats[name],marker='D',color='DarkOrchid')
+        ax0.annotate(name,(lons[name],lats[name]),fontsize=15,color='black')
+
+    	obs=get_NOAA_wlevels(stations[name],start_date,end_date)
+        tides=get_NOAA_tides(stations[name],start_date,end_date)
     
-    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+        [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
 
-    ssh = grid_T.variables['sossheig'][:,j,i]
-    count=grid_T.variables['time_counter'][:]
-    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
-    for i in range(len(t)):
-        t[i]=t[i].datetime
+        ssh = grid_T.variables['sossheig'][:,j,i]
+        count=grid_T.variables['time_counter'][:]
+        t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
+        for i in range(len(t)):
+            t[i]=t[i].datetime
 
-    fig,ax =plt.subplots(1,1,figsize=figsize)
-    ax.plot(t,ssh,c=model_c,linewidth=2,label='model')
-    ax.plot(obs.time,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
-    ax.plot(tides.time,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax.set_xlim(t_orig,t_final)
-    ax.set_ylim([-2,2])
-    ax.legend(loc=0)
-    ax.set_title(name)
-    ax.grid()
-    ax.set_ylabel('Water levels wrt MSL (m)')
+	ax = plt.subplot(gs[M,0])
+        ax.plot(t,ssh,c=model_c,linewidth=2,label='model')
+        ax.plot(obs.time,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
+        ax.plot(tides.time,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
+	ax.set_xlim(t_orig,t_final)
+    	ax.set_ylim([-3,3])
+        timestamp = nc_tools.timestamp(grid_T,0)
+    	ax.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
+    	ax.grid()
+    	ax.set_ylabel('Water levels wrt MSL (m)')
+	ax.set_xlabel('time [UTC]')
+	if M == 0:
+	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'$\bf{Legend}$')
+	   legend.get_title().set_fontsize('20')
+
 
     return fig
 
