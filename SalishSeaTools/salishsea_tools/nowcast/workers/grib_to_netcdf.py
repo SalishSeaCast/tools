@@ -151,10 +151,10 @@ def grib_to_netcdf(config, checklist):
     logger.info('next day forecast section: {}'.format(p1))
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
-        ('section 1', (p1, -1, 24+24-18-1, 24+24+12-18)),
+        ('section 1', (p1, -1, 24+24-18-1, 24+24+18-18)),
     ])
     zerostart.extend([[]])
-    length.extend([13])
+    length.extend([19])
     subdirectory.extend(['fcst'])
     yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
 
