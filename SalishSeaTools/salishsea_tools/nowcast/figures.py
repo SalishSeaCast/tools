@@ -199,7 +199,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     return tides
 
 def dateparse_NOAA(s):
-    """Parse the dates from the VENUS files"""
+    """Parse the dates from the NOAA files"""
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
