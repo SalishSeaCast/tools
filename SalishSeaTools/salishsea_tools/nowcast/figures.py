@@ -363,7 +363,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     ax1.plot(t,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     ax1.plot(t,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
     ax1.plot(ttide.time,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax1.plot(t[index],ssh_corr[index],color='DarkOrchid',marker='D',markersize=8,label='Maximum SSH')
+    ax1.plot(t[index],ssh_corr[index],color='Yellow',marker='D',markersize=8,label='Maximum SSH')
     ax1.set_xlim(t_orig,t_final)
     ax1.set_ylim([-3,3])
     ax1.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
