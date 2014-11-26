@@ -26,7 +26,7 @@ import arrow
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pytz
+from dateutil import tz
 import requests
 from scipy import interpolate as interp
 import matplotlib.gridspec as gridspec
@@ -600,7 +600,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
 def dateparse(s):
     """Parse the dates from the VENUS files"""
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
-    aware = unaware.replace(tzinfo=pytz.timezone('utc'))
+    aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
 
 #
