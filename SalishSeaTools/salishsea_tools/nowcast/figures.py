@@ -286,7 +286,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
     Corrected model takes into account errors resulting in using only 8 constituents.
-    Residual calculated as model - tides (with 8 constituents)
+    Residual calculated as corrected model - tides (with all constituents)
     
     Function also plots the water level at every hour throughout the day and identifies the maximum.
     It also plots the sea surface height throughout the region for the time when the sea surface height
@@ -332,7 +332,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     sdt=t_orig.replace(minute=0)
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
-    res = compute_residual(ssh_loc,ttide,sdt,edt)
+    res = compute_residual(ssh_corr,ttide,sdt,edt)
 
     #index when corrected sea surface height is at its maximum at Point Atkinson
     m = np.max(ssh_corr)
