@@ -38,10 +38,11 @@ from salishsea_tools import (
     tidetools,
 )
 
-#Defining colours
+#Defining constants
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'OrangeRed'
+time_shift = datetime.timedelta(hours=-8) #time shift for plottin in PST
 
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
@@ -230,9 +231,6 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     lons={'CherryPoint': -122.766667, 'NeahBay':-124.6, 'FridayHarbor': -123.016667}
 
     bathy, X, Y = tidetools.get_bathy_data(gridB)
-    
-    #time shift fot PST
-    time_shift = datetime.timedelta(hours=-8)*PST
 
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
     t_final=(nc_tools.timestamp(grid_T,-1)).datetime
@@ -273,10 +271,10 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
         t=np.array(t)
 
 	ax = plt.subplot(gs[M,0])
-        ax.plot(t[:]+time_shift,ssh,c=model_c,linewidth=2,label='model')
-        ax.plot(obs.time[:]+time_shift,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
-        ax.plot(tides.time+time_shift,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
-	ax.set_xlim(t_orig+time_shift,t_final+time_shift)
+        ax.plot(t[:]+time_shift*PST,ssh,c=model_c,linewidth=2,label='model')
+        ax.plot(obs.time[:]+time_shift*PST,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
+        ax.plot(tides.time+time_shift*PST,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
+	ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
     	ax.set_ylim([-3,3])
         timestamp = nc_tools.timestamp(grid_T,0)
     	ax.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
