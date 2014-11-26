@@ -54,7 +54,7 @@ URL_TEMPLATE = (
 FILENAME_TEMPLATE = (
     'CMC_hrdps_west_{variable}ps2.5km_{date}{forecast}_P{hour}-00.grib2'
 )
-FORECAST_DURATION = 42  # hours
+FORECAST_DURATION = 48  # hours
 
 
 def main():
