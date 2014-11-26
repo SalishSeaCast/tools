@@ -152,7 +152,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
 
     fakefile = StringIO(response.content)
 
-    obs = pd.read_csv(fakefile)
+    obs = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
     obs=obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
 
     return obs
@@ -193,14 +193,20 @@ def get_NOAA_tides(station_no, start_date, end_date):
 
     fakefile = StringIO(response.content)
     
-    tides = pd.read_csv(fakefile)
+    tides = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
     tides=tides.rename(columns={'Date Time': 'time', ' Prediction': 'pred'})
     
     return tides
 
+def dateparse_NOAA(s):
+    """Parse the dates from the VENUS files"""
+    unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
+    aware = unaware.replace(tzinfo=tz.tzutc())
+    return  aware
+
 
 ####################
-def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
+def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
 
@@ -212,6 +218,9 @@ def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
 
     :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
     :type gridB: :class:`netCDF4.Dataset`
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches
     :type figsize: 2-tuple
@@ -224,6 +233,9 @@ def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
     lons={'CherryPoint': -122.766667, 'NeahBay':-124.6, 'FridayHarbor': -123.016667}
 
     bathy, X, Y = tidetools.get_bathy_data(gridB)
+    
+    #time shift fot PST
+    time_shift = datetime.timedelta(hours=-8)*PST
 
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
     t_final=(nc_tools.timestamp(grid_T,-1)).datetime
@@ -255,24 +267,25 @@ def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
         tides=get_NOAA_tides(stations[name],start_date,end_date)
     
         [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
-
+      
         ssh = grid_T.variables['sossheig'][:,j,i]
         count=grid_T.variables['time_counter'][:]
         t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
         for i in range(len(t)):
             t[i]=t[i].datetime
+        t=np.array(t)
 
 	ax = plt.subplot(gs[M,0])
-        ax.plot(t,ssh,c=model_c,linewidth=2,label='model')
-        ax.plot(obs.time,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
-        ax.plot(tides.time,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
-	ax.set_xlim(t_orig,t_final)
+        ax.plot(t[:]+time_shift,ssh,c=model_c,linewidth=2,label='model')
+        ax.plot(obs.time[:]+time_shift,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
+        ax.plot(tides.time+time_shift,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
+	ax.set_xlim(t_orig+time_shift,t_final+time_shift)
     	ax.set_ylim([-3,3])
         timestamp = nc_tools.timestamp(grid_T,0)
     	ax.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
     	ax.grid()
     	ax.set_ylabel('Water levels wrt MSL (m)')
-	ax.set_xlabel('time [UTC]')
+	ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
 	if M == 0:
 	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'$\bf{Legend}$')
 	   legend.get_title().set_fontsize('20')
