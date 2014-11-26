@@ -327,10 +327,11 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
     
-    #correct model for extra tidal constituents
+    #correct model for extra tidal constituents and compute residual
     sdt=t_orig.replace(minute=0)
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
+    res = compute_residual(ssh_loc,ttide,sdt,edt)
 
     #index when corrected sea surface height is at its maximum at Point Atkinson
     m = np.max(ssh_corr)
@@ -350,7 +351,12 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     timestamp = nc_tools.timestamp(grid_T,index)
 
     #figure
-    fig,(ax1,ax2) =plt.subplots(1,2,figsize=figsize)
+    fig=plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(2, 2,width_ratios=[1.5,1])
+    gs.update(wspace=0.1)
+    ax1=plt.subplot(gs[0,0]) #sshs
+    ax2=plt.subplot(gs[:,1]) #map
+    ax3=plt.subplot(gs[1,0]) #residual
 
     #curve plot
     ax1.plot(t,ssh_loc,'--',c=model_c,linewidth=1,label='model')
@@ -363,8 +369,18 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     ax1.set_xlabel('time [UTC]')
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
-    ax1.set_position((0, 0.3, 0.55, 0.4))
+    #ax1.set_position((0, 0.3, 0.55, 0.4))
     ax1.grid()
+    
+    #residual
+    ax3.plot(t,res,'-k',linewidth=2,label='Residual')
+    ax3.set_xlim(t_orig,t_final)
+    ax3.set_ylim([-1,1])
+    ax3.set_xlabel('time [UTC]')
+    ax3.set_ylabel('Residual (m)')
+    ax3.legend(loc = 0, numpoints = 1)
+    #ax1.set_position((0, 0.3, 0.55, 0.4))
+    ax3.grid()
 
     #ssh profile
     viz_tools.set_aspect(ax2)
@@ -385,6 +401,38 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
 
     return fig
 
+def compute_residual(ssh,ttide,sdt,edt):
+    """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
+    Both modelled ssh and tidal predictions use eight tidal constituents.
+    
+    :arg ssh: The modelled ssh (no corrections)
+    :type ssh: numpy array
+    
+    :arg ttide: The tidal predictions
+    :type ttide: DateFrame object with columns time, pred_all and pred_8
+    
+    :arg sdt: The start of the date range.
+    :type sdt: datetime object
+    
+    :arg edt: The end of the date range.
+    :type edt: datetime object
+    
+    :returns: res, a numpy array
+    """
+    
+    #find index of ttide.time at start and end
+    inds = ttide.time[ttide.time==sdt].index[0]
+    inde = ttide.time[ttide.time==edt].index[0]
+    
+    tides=np.array(ttide.pred_all)
+    #average tides over two times to shift to the model 1/2 outputs
+    shift = 0.5*(tides[inds:inde] + tides[inds+1:inde+1])
+    
+    res=ssh-shift
+    
+    return res
+
+    
 #
 def Sandheads_winds(grid_T, figsize=(20,10)):
     """ Plot the observed winds at Sandheads during the simulation.
