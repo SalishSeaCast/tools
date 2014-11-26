@@ -85,6 +85,9 @@ def set_ssh_config(config, socket, checklist):
     )
     ssh_client, sftp_client = lib.sftp(config)
     with sftp_client.open('.ssh/config', 'wt') as f:
+        f.write('Host {}\n'.config['run']['sshfs storage']['host alias'])
+        f.write('  HostName {}\n'.config['run']['sshfs storage']['host name'])
+        f.write('  User {}\n'.config['run']['sshfs storage']['user name'])
         for name, ip in nodes.items():
             f.write(tmpl.format(node_name=name, ip_addr=ip))
             logger.debug(

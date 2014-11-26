@@ -36,6 +36,12 @@ run:
   network label: NEMO-network
   ssh key name: doug-nefos
   floating ip pool: VLAN3337
+  sshfs storage:
+    host alias: sshfs-host
+    host name: ncnfs1.neptune.uvic.ca
+    user name: nemo
+    host path: /gss_onc/NEMO
+    mount point: /mnt/MEOPAR
   make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
   results: /home/dlatorne/MEOPAR/SalishSea/nowcast/
   results archive: /data/dlatorne/MEOPAR/SalishSea/nowcast/
@@ -90,7 +96,7 @@ msg_types:
   set_ssh_config:
     need: node names and ip addresses requested
     success: cloud .ssh/config installed
-    failure: cloud .ssh/config installed
+    failure: cloud .ssh/config installation failed
     crash: set_ssh_config worker crashed
   upload_forcing:
     success: forcing files uploaded
