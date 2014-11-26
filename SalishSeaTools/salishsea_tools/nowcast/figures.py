@@ -284,8 +284,9 @@ def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
 def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
-    Tidal predictions were calculated with the eight consituents used in the model.
-    Tidal predictions were calculated with ttide based on a time series from 2013.
+    Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
+    Corrected model takes into account errors resulting in using only 8 constituents.
+    Residual calculated as model - tides (with 8 constituents)
     
     Function also plots the water level at every hour throughout the day and identifies the maximum.
     It also plots the sea surface height throughout the region for the time when the sea surface height
