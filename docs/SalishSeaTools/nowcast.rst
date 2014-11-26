@@ -385,6 +385,12 @@ and the Python bindings for the `OpenStack compute API`_
 
 .. _OpenStack compute API: http://docs.openstack.org/user-guide/content/sdk_compute_apis.html
 
+Install the paramiko package that provides a Python implementation of the SSH2 protocol:
+
+.. code-block:: bash
+
+    (nowcast)$ conda install paramiko
+
 Finally,
 install Sphinx and the sphinx-rtd-theme ReadTheDocs theme,
 IPython and IPython Notebook,
