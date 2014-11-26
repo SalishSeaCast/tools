@@ -387,8 +387,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     viz_tools.set_aspect(ax2)
     land_colour = 'burlywood'
     ax2.set_axis_bgcolor(land_colour)
-    cmap = plt.get_cmap('RdYlGn_r')
-    cs = [-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.4,2.8,3]
+    cmap = plt.get_cmap('hsv')
+    cs = [-1.5,-0.5,0.5,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.6]
     mesh=ax2.contourf(ssh_max,cs,cmap=cmap,extend='both')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
@@ -397,8 +397,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     ax2.set_xlabel('x Index')
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
-    ax2.set_title('Sea Suface Height: ' + timestamp.strftime('%d-%b-%Y, %H:%M'))
-    ax2.plot(i,j,marker='D',color='DarkOrchid',ms=8)
+    ax2.set_title('Sea Surface Height: ' + timestamp.strftime('%d-%b-%Y, %H:%M'))
+    ax2.plot(i,j,marker='D',color='Yellow',ms=8)
 
     return fig
 
