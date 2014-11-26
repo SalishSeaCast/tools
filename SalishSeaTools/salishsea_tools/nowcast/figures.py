@@ -230,7 +230,7 @@ def compare_water_levels(grid_T, gridB, figsize=(20,15) ):
     end_date = t_final.strftime('%d-%b-%Y')
 
     m = np.arange(3)
-    names = ['CherryPoint', 'FridayHarbor', 'NeahBay']
+    names = ['NeahBay', 'FridayHarbor', 'CherryPoint']
 
     fig = plt.figure(figsize=figsize)
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
