@@ -48,7 +48,7 @@ def main():
         logger.info('listening...')
         try:
             message = socket.recv()
-            reply, next_steps = parse_message(config, message)
+            reply, next_steps = message_processor(config, message)
             socket.send(reply)
             if next_steps is not None:
                 for next_step, next_step_args in next_steps:
@@ -73,7 +73,7 @@ def init_req_rep(port, context):
     return socket
 
 
-def parse_message(config, message):
+def message_processor(config, message):
     msg = lib.deserialize_message(message)
     # Unpack message items
     worker = msg['source']
@@ -83,7 +83,7 @@ def parse_message(config, message):
     reply_ack = lib.serialize_message(mgr_name, 'ack')
     # Lookup table of functions to return next step function and its
     # arguments for the message types that we know how to handle
-    actions = {
+    after_actions = {
         'download_weather': after_download_weather,
         'get_NeahBay_ssh': after_get_NeahBay_ssh,
         'make_runoff_file': after_make_runoff_file,
@@ -91,6 +91,7 @@ def parse_message(config, message):
         'init_cloud': after_init_cloud,
         'create_compute_node': after_create_compute_node,
         'set_head_node_ip': after_set_head_node_ip,
+        'set_ssh_config': after_set_ssh_config,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
@@ -112,10 +113,14 @@ def parse_message(config, message):
     # Handle end of automation message
     if msg_type == 'the end':
         logger.info('worker-automated parts of nowcast completed for today')
-        next_steps = actions['the end'](config)
+        next_steps = after_actions['the end'](config)
         return reply_ack, next_steps
-    # Handle success and failure messages from workers
-    next_steps = actions[worker](worker, msg_type, payload, config)
+    # Handle need messages from workers
+    if msg_type == 'need':
+        reply = lib.serialize_message(mgr_name, 'ack', checklist[payload])
+        return reply, None
+    # Handle success, failure, and crash messages from workers
+    next_steps = after_actions[worker](worker, msg_type, payload, config)
     return reply_ack, next_steps
 
 
@@ -211,6 +216,18 @@ def after_set_head_node_ip(worker, msg_type, payload, config):
     return actions[msg_type]
 
 
+def after_set_ssh_config(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'ssh config', payload]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
@@ -283,6 +300,7 @@ def is_cloud_ready(config):
                 '{node_count} nodes in {host} cloud ready for run provisioning'
                 .format(node_count=config['run']['nodes'],
                         host=config['run']['host']))
+            launch_worker('set_ssh_config', config)
 
 
 def the_end(config):

@@ -25,6 +25,7 @@ import subprocess
 import sys
 import time
 
+import paramiko
 import requests
 import yaml
 import zmq
@@ -224,12 +225,13 @@ def init_zmq_req_rep_worker(context, config, logger):
 
 
 def tell_manager(
-    worker_name, msg_type, config, logger, socket, checklist=None,
+    worker_name, msg_type, config, logger, socket, payload=None,
 ):
     """Exchange messages with the nowcast manager process.
 
-    msg_type is sent with checklist as payload.
-    Acknowledgement message from manager process is logged.
+    Message is composed of workers name, msg_type, and payload.
+    Acknowledgement message from manager process is logged,
+    and payload of that message is returned.
 
     :arg worker_name: Name of the worker sending the message.
     :arg worker_name: str
@@ -248,11 +250,14 @@ def tell_manager(
                  process.
     :type socket: :py:class:`zmq.Socket`
 
-    :arg checklist: Worker's checklist of accomplishments.
-    :type checklist: dict
+    :arg payload: Data object to send in the message;
+                  e.g. dict containing worker's checklist of accomplishments.
+
+    :returns: Payload included in acknowledgement message from manager
+              process.
     """
     # Send message to nowcast manager
-    message = serialize_message(worker_name, msg_type, checklist)
+    message = serialize_message(worker_name, msg_type, payload)
     socket.send(message)
     logger.info(
         'sent message: ({msg_type}) {msg_words}'
@@ -269,6 +274,7 @@ def tell_manager(
         .format(source=source,
                 msg_type=message['msg_type'],
                 msg_words=config['msg_types'][source][msg_type]))
+    return message['payload']
 
 
 def serialize_message(source, msg_type, payload=None):
@@ -461,3 +467,34 @@ def get_nova_credentials_v2():
         'project_id': os.environ['OS_TENANT_NAME'],
     }
     return credentials
+
+
+def sftp(config, ssh_config='~/.ssh/config'):
+    """Return an SFTP client and the SSH client on which it is based.
+
+    It is assumed that ssh_config contains an entry for the host named
+    in :data:`config['run']['host']` and that the corresponding identity
+    is loaded and active in the user's ssh agent.
+
+    The clients' close() methods should be called when their usefulness
+    had ended.
+
+    :arg config: Configuration data structure.
+    :type config: dict
+
+    :arg ssh_config: File path/name of the SSH2 config file to obtain
+                     the hostname and username values.
+    :type ssh_config: str
+
+    :returns: 2-tuple containing a :class:`paramiko.client.SSHClient`
+              object and a :class:`paramiko.sftp_client.SFTPClient` object.
+    """
+    ssh_client = paramiko.client.SSHClient()
+    ssh_client.load_system_host_keys()
+    ssh_config = paramiko.config.SSHConfig()
+    with open(os.path.expanduser(ssh_config)) as f:
+        ssh_config.parse(f)
+    host = ssh_config.lookup(config['run']['host'])
+    ssh_client.connect(host['hostname'], username=host['user'])
+    sftp_client = ssh_client.open_sftp()
+    return ssh_client, sftp_client

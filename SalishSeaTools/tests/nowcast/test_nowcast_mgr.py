@@ -30,8 +30,8 @@ def nowcast_mgr_module():
 
 
 @pytest.mark.use_fixtures(['nowcast_mgr_module'])
-class TestParseMessage(object):
-    """Unit tests for parse_message() function.
+class TestMessageProcesor(object):
+    """Unit tests for message_processor() function.
     """
     def test_undefined_msg_type_reply(self, nowcast_mgr_module):
         nowcast_mgr_module.mgr_name = 'nowcast_mgr'
@@ -43,7 +43,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        reply, next_steps = nowcast_mgr_module.message_processor(
+            config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'undefined msg',
@@ -60,7 +61,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: bar, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        reply, next_steps = nowcast_mgr_module.message_processor(
+            config, message)
         assert next_steps is None
 
     @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
@@ -73,7 +75,7 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        nowcast_mgr_module.parse_message(config, message)
+        nowcast_mgr_module.message_processor(config, message)
         m_logger.assert_any_call('received message from worker: (the end) foo')
 
     def test_valid_msg_reply(self, nowcast_mgr_module):
@@ -88,7 +90,8 @@ class TestParseMessage(object):
         message = (
             '{source: download_weather, '
             'msg_type: success 06, payload: null}\n')
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        reply, next_steps = nowcast_mgr_module.message_processor(
+            config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'ack',
@@ -106,7 +109,7 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        nowcast_mgr_module.parse_message(config, message)
+        nowcast_mgr_module.message_processor(config, message)
         m_logger.assert_any_call(
             'worker-automated parts of nowcast completed for today')
 
@@ -120,7 +123,8 @@ class TestParseMessage(object):
             },
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        reply, next_steps = nowcast_mgr_module.message_processor(
+            config, message)
         expected = {
             'source': 'nowcast_mgr',
             'msg_type': 'ack',
@@ -137,7 +141,8 @@ class TestParseMessage(object):
             }
         }
         message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.parse_message(config, message)
+        reply, next_steps = nowcast_mgr_module.message_processor(
+            config, message)
         assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
@@ -317,6 +322,8 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_create_compute_node', 'crash'),
     ('after_set_head_node_ip', 'failure'),
     ('after_set_head_node_ip', 'crash'),
+    ('after_set_ssh_config', 'failure'),
+    ('after_set_ssh_config', 'crash'),
     ('after_upload_forcing', 'failure'),
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
@@ -380,7 +387,7 @@ def test_create_compute_node_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['create_compute_node', 'nodes', payload]),
-        (nowcast_mgr_module.is_cloud_ready, [config])
+        (nowcast_mgr_module.is_cloud_ready, [config]),
     ]
     assert next_steps == expected
 
@@ -393,6 +400,18 @@ def test_set_head_node_ip_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['set_head_node_ip', 'cloud addr', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_set_ssh_config_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_set_ssh_config(
+        'set_ssh_config', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['set_ssh_config', 'ssh config', payload]),
     ]
     assert next_steps == expected
 
