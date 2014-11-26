@@ -77,6 +77,7 @@ def PA_tidal_predictions(grid_T, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
+    Plots predictions caluclated with all consituents.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -315,12 +316,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     ssh = grid_T.variables['sossheig']
     #loading sea surface height at Point Atkinson
     ssh_loc = ssh[:,j,i]
-    #index when sea surface height is at its maximum at Point Atkinson
-    m = max(ssh_loc)
-    index = [k for k, l in enumerate(ssh_loc) if l == m]
-    index = index[0]
-    #sea surface height when there is a maximum at Point Atkinson
-    ssh_max = np.ma.masked_values(ssh[index], 0)
 
     #time stamp of simulation
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
@@ -331,14 +326,23 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
+    
+    #correct model for extra tidal constituents
+    sdt=t_orig.replace(minute=0)
+    edt=t_final +datetime.timedelta(minutes=30)
+    ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
 
+    #index when corrected sea surface height is at its maximum at Point Atkinson
+    m = np.max(ssh_corr)
+    index = np.argmax(ssh_corr)
+    #sea surface height when there is a maximum at Point Atkinson
+    ssh_max = np.ma.masked_values(ssh[index], 0)
+    
     #time for curve
     count=grid_T.variables['time_counter'][:]
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
-    t_orig = (nc_tools.timestamp(grid_T,0)).datetime
-    t_final = (nc_tools.timestamp(grid_T,-1)).datetime
     start_date = t_orig.strftime('%d-%b-%Y')
     end_date = t_final.strftime('%d-%b-%Y')
 
@@ -349,9 +353,10 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     fig,(ax1,ax2) =plt.subplots(1,2,figsize=figsize)
 
     #curve plot
-    ax1.plot(t,ssh_loc,c=model_c,linewidth=2,label='model')
-    ax1.plot(ttide.time,ttide.pred_8,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax1.plot(t[index],ssh_loc[index],color='DarkOrchid',marker='D',markersize=8,label='Maximum SSH')
+    ax1.plot(t,ssh_loc,'--',c=model_c,linewidth=1,label='model')
+    ax1.plot(t,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
+    ax1.plot(ttide.time,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
+    ax1.plot(t[index],ssh_corr[index],color='DarkOrchid',marker='D',markersize=8,label='Maximum SSH')
     ax1.set_xlim(t_orig,t_final)
     ax1.set_ylim([-3,3])
     ax1.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
