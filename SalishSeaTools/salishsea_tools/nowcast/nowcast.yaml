@@ -87,6 +87,11 @@ msg_types:
     success: head node IP address assigned
     failure: head node IP address assignment failed
     crash: set_head_node_ip worker crashed
+  set_ssh_config:
+    need: node names and ip addresses requested
+    success: cloud .ssh/config installed
+    failure: cloud .ssh/config installed
+    crash: set_ssh_config worker crashed
   upload_forcing:
     success: forcing files uploaded
     failure: forcing files upload failed
