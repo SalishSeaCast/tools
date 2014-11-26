@@ -210,9 +210,6 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     NOAA water levels from: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
 
-    :arg name: Name of the NOAA station (e.g NeahBay, CherryPoint, FridayHarbor).
-    :type name: string
-
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
 
