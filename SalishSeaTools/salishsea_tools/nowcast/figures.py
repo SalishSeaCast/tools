@@ -466,8 +466,8 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     #plotting wind speed
     ax1 = plt.subplot(gs[0,0])
     ax1.set_title('Winds at Sandheads ' + start )
-    ax1.plot(time +PST*time_shift,winds,lw=2,label='Observations')
-    ax1.plot(t+PST*time_shift,wind,lw=2,label='Model')
+    ax1.plot(time +PST*time_shift,winds,color=observations_c,lw=2,label='Observations')
+    ax1.plot(t+PST*time_shift,wind,lw=2,color=model_c,label='Model')
     ax1.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
     ax1.set_ylim([0,20])
     ax1.set_ylabel('Wind speed (m/s)')
@@ -478,8 +478,8 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
 
     #plotting wind direction
     ax2 = plt.subplot(gs[1,0])
-    ax2.plot(time+PST*time_shift,dirs,lw=2,label='Observations')
-    ax2.plot(t+PST*time_shift,direc,lw=2,label='Model')
+    ax2.plot(time+PST*time_shift,dirs,lw=2,color=observations_c,label='Observations')
+    ax2.plot(t+PST*time_shift,direc,lw=2,color=model_c,label='Model')
     ax2.set_ylabel('Wind direction \n (degress CCW of East)')
     ax2.set_ylim([0,360])
     ax2.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
