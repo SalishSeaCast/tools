@@ -30,6 +30,9 @@ from dateutil import tz
 import requests
 from scipy import interpolate as interp
 import matplotlib.gridspec as gridspec
+import glob
+import os
+import netCDF4 as nc
 
 from salishsea_tools import (
     nc_tools,
@@ -468,22 +471,28 @@ def Sandheads_winds(grid_T, figsize=(20,10)):
     end=t_end.strftime('%d-%b-%Y')
 
     [winds,dirs,temps,time, lat,lon] = stormtools.get_EC_observations('Sandheads',start,end)
+    #get modelled winds
+    #wind, direc, t, pr, tem, sol, the, qr, pre=get_model_winds(lon,lat,t_orig,t_end)
 
     fig,axs=plt.subplots(2,1,figsize=figsize)
     #plotting wind speed
     ax=axs[0]
     ax.set_title('Winds at Sandheads ' + start )
-    ax.plot(time,winds)
+    ax.plot(time,winds,lw=2,label='Observations')
+    #ax.plot(t,wind,lw=2,label='Model')
     ax.set_xlim([time[0],time[-1]])
     ax.set_ylim([0,20])
     ax.set_ylabel('Wind speed (m/s)')
+    ax.legend(loc=0)
     #plotting wind direction
     ax=axs[1]
-    ax.plot(time,dirs)
+    ax.plot(time,dirs,lw=2,label='Observations')
+    #ax.plot(t,direc,lw=2,label='Model')
     ax.set_ylabel('Wind direction \n (degress CCW of East)')
     ax.set_ylim([0,360])
     ax.set_xlim([time[0],time[-1]])
     ax.set_xlabel('Time [UTC]')
+    ax.legend(loc=0)
 
     return fig
 
@@ -831,6 +840,127 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
 
     return fig
 
+    
+def get_weather_filenames(t_orig,t_final):
+   """ Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
+ 
+   :arg t_orig: The beginning of the date range of interest
+   :type t_orig: datetime object
+   
+   :arg t_end: The end of the date range of interest
+   :type t_end: datetime object
+   
+   :returns: a list of files names from the Operational model
+   """
+   path='/ocean/sallen/allen/research/MEOPAR/Operational/'
+   numdays=(t_final-t_orig).days
+
+   dates = [ t_orig + datetime.timedelta(days=num) for num in range(0,numdays+1)]
+   dates.sort();
+  
+   allfiles=glob.glob(path+'ops_y*')
+   
+   sstr =path+'ops_y'+dates[0].strftime('%Y')+'m'+dates[0].strftime('%m')+'d'+dates[0].strftime('%d')+'.nc'
+   estr =path+'ops_y'+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'   
+   
+   files=[]
+   for filename in allfiles:
+      if filename >= sstr:
+	 if filename <= estr:
+	   files.append(filename)
+
+   files.sort(key=os.path.basename)
+
+   return files
 #
+def get_model_winds(lon,lat,t_orig,t_final):
+   """ Returns meteorological fields for the "Operational" model at a given longitde and latitude 
+   over a date range.
+   
+   :arg lon: The specified longitude
+   :type lon: float
+   
+   :arg lat: The specified latitude
+   :type lat: float
+   
+   :arg t_orig: The beginning of the date range of interest
+   :type t_orig: datetime object
+   
+   :arg t_end: The end of the date range of interest
+   :type t_end: datetime object
+   
+   :returns: wind speed, wind direction, time, pressure, solar radiation, thermal radiation, precipitation,
+   temperature, humidity
+   """
+   #file names of weather
+   files=get_weather_filenames(t_orig,t_final)
+   weather=nc.Dataset(files[0])
+   Y=weather.variables['nav_lat'][:]
+   X=weather.variables['nav_lon'][:]-360
+  
+   [j,i]=find_model_point(lon,lat,X,Y)
+   
+   wind=[]; direc=[]; t=[]; pr=[]; sol=[]; the=[]; pre=[]; tem=[]; qr=[];
+   for f in files:
+        G = nc.Dataset(f)
+        u = G.variables['u_wind'][:,j,i]; v=G.variables['v_wind'][:,j,i];
+        pr.append(G.variables['atmpres'][:,j,i]); sol.append(G.variables['solar'][:,j,i]); 
+        qr.append(G.variables['qair'][:,j,i]); the.append(G.variables['therm_rad'][:,j,i]); 
+        pre.append(G.variables['precip'][:,j,i]);
+        tem.append(G.variables['tair'][:,j,i])
+        speed = np.sqrt(u**2 + v**2)
+        wind.append(speed)
+        
+        d = np.arctan2(v, u)
+        d = np.rad2deg(d + (d<0)*2*np.pi);
+        direc.append(d)
+        
+	ts=G.variables['time_counter']	
+        torig = datetime.datetime(1970,1,1) #there is no time_origin attriubte in OP files, so I hard coded this
+        for ind in np.arange(ts.shape[0]):
+            t.append(torig + datetime.timedelta(seconds=ts[ind]))
+
+   wind = np.array(wind).reshape(len(files)*24,)
+   direc = np.array(direc,'double').reshape(len(files)*24,)
+   t = np.array(t).reshape(len(files)*24,)
+   pr = np.array(pr).reshape(len(files)*24,)
+   tem = np.array(tem).reshape(len(files)*24,)
+   sol = np.array(sol).reshape(len(files)*24,)
+   the = np.array(the).reshape(len(files)*24,)
+   qr = np.array(qr).reshape(len(files)*24,)
+   pre = np.array(pre).reshape(len(files)*24,)
+    
+   return wind, direc, t, pr, tem, sol, the, qr, pre
+  
+  
+def find_model_point(lon,lat,X,Y):
+    """ Finds a model grid point close to a specified latitude and longitude.
+    
+    :arg lon: The longitude we are trying to match
+    :type lon: float
+    
+    :arg lat: The latitude we are trying to match
+    :type lat: float
+    
+    :arg X: The model longitude grid
+    :type X: numpy array
+    
+    :arg Y: The model latitude grid
+    :type Y: numpy array
+    
+    :returns: The y-index, x-index of the closest model grid point 
+    """  
+    # Tolerance for searching for grid points
+    # (approx. distances between adjacent grid points)
+    tol1 = 0.015 # lon
+    tol2 = 0.015# lat
+
+    # Search for a grid point with lon/lat within tolerance of
+    # measured location
+    x1, y1 = np.where(
+        np.logical_and(
+            (np.logical_and(X > lon-tol1, X < lon+tol1)),
+            (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
+    return x1[0], y1[0]
 
 
