@@ -95,7 +95,10 @@ def create_compute_node(config, checklist, node_name):
     logger.debug(
         'authenticated nova client on {}'.format(config['run']['host']))
     # Prepare node configuration
-    image = nova.images.find(name=config['run']['image name'])
+    if node_name == 'nowcast0':
+        image = nova.images.find(name=config['run']['images']['head node'])
+    else:
+        image = nova.images.find(name=config['run']['images']['compute node'])
     flavor = nova.flavors.find(name=config['run']['flavor name'])
     network_label = config['run']['network label']
     network = nova.networks.find(label=network_label)
