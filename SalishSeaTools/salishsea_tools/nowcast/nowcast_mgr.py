@@ -92,6 +92,7 @@ def message_processor(config, message):
         'create_compute_node': after_create_compute_node,
         'set_head_node_ip': after_set_head_node_ip,
         'set_ssh_config': after_set_ssh_config,
+        'mount_sshfs': after_mount_sshfs,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
@@ -221,6 +222,19 @@ def after_set_ssh_config(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'ssh config', payload]),
+            (launch_worker, ['mount_sshfs', config]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_mount_sshfs(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'sshfs mount', payload]),
         ],
         'failure': None,
         'crash': None,

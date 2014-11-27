@@ -37,7 +37,6 @@ run:
   ssh key name: doug-nefos
   floating ip pool: VLAN3337
   sshfs storage:
-    host alias: sshfs-host
     host name: ncnfs1.neptune.uvic.ca
     user name: nemo
     host path: /gss_onc/NEMO
@@ -98,6 +97,11 @@ msg_types:
     success: cloud .ssh/config installed
     failure: cloud .ssh/config installation failed
     crash: set_ssh_config worker crashed
+  mount_sshfs:
+    need: node names and ip addresses requested
+    success: sshfs filesystem mounted on cloud nodes
+    failure: mounting sshfs filesystem on cloud nodes failed
+    crash: mount_sshfs worker crashed
   upload_forcing:
     success: forcing files uploaded
     failure: forcing files upload failed

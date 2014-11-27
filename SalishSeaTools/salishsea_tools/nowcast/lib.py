@@ -469,10 +469,39 @@ def get_nova_credentials_v2():
     return credentials
 
 
-def sftp(config, ssh_config='~/.ssh/config'):
+def ssh(config, ssh_config_file='~/.ssh/config'):
+    """Return an SSH client.
+
+    It is assumed that ssh_config_file contains an entry for the host named
+    in :data:`config['run']['host']` and that the corresponding identity
+    is loaded and active in the user's ssh agent.
+
+    The client's close() method should be called when its usefulness
+    had ended.
+
+    :arg config: Configuration data structure.
+    :type config: dict
+
+    :arg ssh_config_file: File path/name of the SSH2 config file to obtain
+                     the hostname and username values.
+    :type ssh_config_file: str
+
+    :returns: :class:`paramiko.client.SSHClient` object
+    """
+    ssh_client = paramiko.client.SSHClient()
+    ssh_client.load_system_host_keys()
+    ssh_config = paramiko.config.SSHConfig()
+    with open(os.path.expanduser(ssh_config_file)) as f:
+        ssh_config.parse(f)
+    host = ssh_config.lookup(config['run']['host'])
+    ssh_client.connect(host['hostname'], username=host['user'])
+    return ssh_client
+
+
+def sftp(config, ssh_config_file='~/.ssh/config'):
     """Return an SFTP client and the SSH client on which it is based.
 
-    It is assumed that ssh_config contains an entry for the host named
+    It is assumed that ssh_config_file contains an entry for the host named
     in :data:`config['run']['host']` and that the corresponding identity
     is loaded and active in the user's ssh agent.
 
@@ -482,19 +511,13 @@ def sftp(config, ssh_config='~/.ssh/config'):
     :arg config: Configuration data structure.
     :type config: dict
 
-    :arg ssh_config: File path/name of the SSH2 config file to obtain
+    :arg ssh_config_file: File path/name of the SSH2 config file to obtain
                      the hostname and username values.
-    :type ssh_config: str
+    :type ssh_config_file: str
 
     :returns: 2-tuple containing a :class:`paramiko.client.SSHClient`
               object and a :class:`paramiko.sftp_client.SFTPClient` object.
     """
-    ssh_client = paramiko.client.SSHClient()
-    ssh_client.load_system_host_keys()
-    ssh_config = paramiko.config.SSHConfig()
-    with open(os.path.expanduser(ssh_config)) as f:
-        ssh_config.parse(f)
-    host = ssh_config.lookup(config['run']['host'])
-    ssh_client.connect(host['hostname'], username=host['user'])
+    ssh_client = ssh(config, ssh_config_file)
     sftp_client = ssh_client.open_sftp()
     return ssh_client, sftp_client

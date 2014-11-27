@@ -373,8 +373,7 @@ def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['grib_to_netcdf', 'weather forcing', payload]),
-        (nowcast_mgr_module.launch_worker,
-         ['upload_forcing', config]),
+        (nowcast_mgr_module.launch_worker, ['upload_forcing', config]),
     ]
     assert next_steps == expected
 
@@ -412,6 +411,19 @@ def test_set_ssh_config_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['set_ssh_config', 'ssh config', payload]),
+        (nowcast_mgr_module.launch_worker, ['mount_sshfs', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_mount_sshfs_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_mount_sshfs(
+        'mount_sshfs', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['mount_sshfs', 'sshfs mount', payload]),
     ]
     assert next_steps == expected
 
@@ -424,8 +436,7 @@ def test_upload_forcing_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['upload_forcing', 'forcing upload', payload]),
-        (nowcast_mgr_module.launch_worker,
-         ['make_forcing_links', config]),
+        (nowcast_mgr_module.launch_worker, ['make_forcing_links', config]),
     ]
     assert next_steps == expected
 
