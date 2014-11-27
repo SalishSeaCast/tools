@@ -33,6 +33,7 @@ import matplotlib.gridspec as gridspec
 import glob
 import os
 import netCDF4 as nc
+from pylab import *
 
 from salishsea_tools import (
     nc_tools,
@@ -41,6 +42,19 @@ from salishsea_tools import (
     tidetools,
 )
 
+
+ssh_cmap =['#0003a5','#020aa3','#05179e','#061d9c','#0e3e90','#0f458e','#125289','#145886',
+          '#155c85','#166283','#196f7e','#1b767c','#229770','#239a6f','#249d6e','#27ab69',
+          '#30d25b','#31d459','#34d458','#41d352','#65cf41','#68cf40','#6bcf3f','#77ce39',
+          '#80cd35','#83cd33','#86cc32','#92cb2c','#b7c81b','#bac71a','#bdc719','#c9c613',
+          '#d2c50f','#d5c50d','#d8c40c','#dbc40b','#edc202','#f0c201','#f2c001','#f2bd04',
+          '#f4ab16','#f4a819','#f4a51c','#f4a21f','#FF7519','#f7744c','#CC6699','#A047A0',
+	  '#fa536c','#f86b55','#f86858','#f9655b','#fa5669','#FF4D4D','#FF1919','#FF4719',
+	  '#FF3300','#CC0000','#A30000','#7A0000']
+
+ssh_cm = matplotlib.colors.ListedColormap(ssh_cmap)
+ 
+ 
 #Defining constants
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
@@ -378,9 +392,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     viz_tools.set_aspect(ax2)
     land_colour = 'burlywood'
     ax2.set_axis_bgcolor(land_colour)
-    cmap = plt.get_cmap('hsv')
-    cs = [-1.5,-0.5,0.5,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.6]
-    mesh=ax2.contourf(ssh_max,cs,cmap=cmap,extend='both')
+   #cmap = plt.get_cmap('ssh_cmap')
+    cs = [-1.5,-0.5,0.5,1.0,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.6]
+    mesh=ax2.contourf(ssh_max,cs,cmap=ssh_cm,extend='both')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
     cbar.set_label('[m]')
@@ -579,7 +593,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
     #for loop
     tracers = [sal_d, tem_d]
     titles = ['Average Salinity: ','Average Temperature: ']
-    cmaps = ['ocean','jet']
+    cmaps = ['ocean_r','jet']
     units = ['[psu]','[degC]']
 
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
