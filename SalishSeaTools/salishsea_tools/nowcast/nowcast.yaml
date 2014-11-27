@@ -31,7 +31,9 @@ upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowca
 run:
   host: orcinus
   nodes: 5
-  image name: nowcast-no-mntMEOPAR
+  images:
+    head node: nowcast-head-node
+    compute node: nowcast-compute-node
   flavor name: m1.xlarge
   network label: NEMO-network
   ssh key name: doug-nefos
