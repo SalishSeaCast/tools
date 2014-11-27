@@ -33,6 +33,7 @@ import matplotlib.gridspec as gridspec
 import glob
 import os
 import netCDF4 as nc
+import matplotlib.dates as mdates
 
 from salishsea_tools import (
     nc_tools,
@@ -46,6 +47,7 @@ model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'OrangeRed'
 time_shift = datetime.timedelta(hours=-8) #time shift for plottin in PST
+hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 
 def PA_tidal_predictions(grid_T, figsize=(20,5)):
@@ -426,12 +428,19 @@ def compute_residual(ssh,ttide,sdt,edt):
     
 #
 
-def Sandheads_winds(grid_T, gridB, figsize=(20,10)):
-    """ Plot the observed winds at Sandheads during the simulation.
+def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
+    """ Plot the observed and modelled winds at Sandheads during the simulation.
      Observations are from Environment Canada data: http://climate.weather.gc.ca/
+     Modelled winds are the HRDPS nested model from Environment Canada.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
+   
+    :arg model_path: directory where the model files are stored
+    :type model_path: string
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches
     :type figsize: 2-tuple
@@ -447,34 +456,42 @@ def Sandheads_winds(grid_T, gridB, figsize=(20,10)):
     end=t_end.strftime('%d-%b-%Y')
 
     [winds,dirs,temps,time, lat,lon] = stormtools.get_EC_observations('Sandheads',start,end)
+    time=np.array(time)
     #get modelled winds
-    #wind, direc, t, pr, tem, sol, the, qr, pre=get_model_winds(lon,lat,t_orig,t_end)
+    [wind, direc, t, pr, tem, sol, the, qr, pre]=get_model_winds(lon,lat,t_orig,t_end,model_path)
     gs = gridspec.GridSpec(2, 2,width_ratios=[1.5,1])
+    
     fig = plt.figure(figsize=figsize)
-    #fig,axs=plt.subplots(2,1,figsize=figsize)
+
     #plotting wind speed
-    #ax=axs[0]
     ax1 = plt.subplot(gs[0,0])
     ax1.set_title('Winds at Sandheads ' + start )
-    ax1.plot(time,winds,lw=2,label='Observations')
-    #ax.plot(t,wind,lw=2,label='Model')
-    ax1.set_xlim([time[0],time[-1]])
+    ax1.plot(time +PST*time_shift,winds,lw=2,label='Observations')
+    ax1.plot(t+PST*time_shift,wind,lw=2,label='Model')
+    ax1.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
     ax1.set_ylim([0,20])
     ax1.set_ylabel('Wind speed (m/s)')
-    ax1.set_xlabel('Time [UTC]')
+    ax1.set_xlabel('Time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax1.legend(loc=0)
+    ax1.grid()
+    ax1.xaxis.set_major_formatter(hfmt)
+
     #plotting wind direction
     ax2 = plt.subplot(gs[1,0])
-    ax2.plot(time,dirs,lw=2,label='Observations')
-    #ax.plot(t,direc,lw=2,label='Model')
+    ax2.plot(time+PST*time_shift,dirs,lw=2,label='Observations')
+    ax2.plot(t+PST*time_shift,direc,lw=2,label='Model')
     ax2.set_ylabel('Wind direction \n (degress CCW of East)')
     ax2.set_ylim([0,360])
-    ax2.set_xlim([time[0],time[-1]])
-    ax2.set_xlabel('Time [UTC]')
+    ax2.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
+    ax2.set_xlabel('Time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax2.legend(loc=0)
+    ax2.grid()
+    ax2.xaxis.set_major_formatter(hfmt)
+    fig.autofmt_xdate()
     
     ax0 = plt.subplot(gs[:,1])
-    plt.axis((-124.8,-122.2,48,50))
+    ax0.set_xlim([-124.8,-122.2])
+    ax0.set_ylim([48,50])
     viz_tools.set_aspect(ax0)
     land_colour = 'burlywood'
     viz_tools.plot_coastline(ax0,gridB,coords='map')
@@ -482,9 +499,9 @@ def Sandheads_winds(grid_T, gridB, figsize=(20,10)):
     ax0.set_title('Station Locations')
     ax0.set_xlabel('longitude')
     ax0.set_ylabel('latitude')
-    ax0.plot(-123.3,49.1,marker='D',color='Indigo',markersize=8)
+    ax0.plot(lon,lat,marker='D',color='Indigo',markersize=8)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
-    ax0.annotate('Sandheads',(-123.3-0.05,49.1-0.15),fontsize=15,color='black',bbox=bbox_args)
+    ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
     ax0.grid()
 
     return fig
@@ -836,7 +853,7 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
 
     return fig
     
-def get_weather_filenames(t_orig,t_final):
+def get_weather_filenames(t_orig,t_final,model_path):
    """ Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
  
    :arg t_orig: The beginning of the date range of interest
@@ -845,18 +862,20 @@ def get_weather_filenames(t_orig,t_final):
    :arg t_end: The end of the date range of interest
    :type t_end: datetime object
    
+   :arg model_path: directory where the model files are stored
+   :type model_path: string
+   
    :returns: a list of files names from the Operational model
    """
-   path='/ocean/sallen/allen/research/MEOPAR/Operational/'
    numdays=(t_final-t_orig).days
 
    dates = [ t_orig + datetime.timedelta(days=num) for num in range(0,numdays+1)]
    dates.sort();
   
-   allfiles=glob.glob(path+'ops_y*')
+   allfiles=glob.glob(model_path+'ops_y*')
    
-   sstr =path+'ops_y'+dates[0].strftime('%Y')+'m'+dates[0].strftime('%m')+'d'+dates[0].strftime('%d')+'.nc'
-   estr =path+'ops_y'+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'   
+   sstr =model_path+'ops_y'+dates[0].strftime('%Y')+'m'+dates[0].strftime('%m')+'d'+dates[0].strftime('%d')+'.nc'
+   estr =model_path+'ops_y'+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'   
    
    files=[]
    for filename in allfiles:
@@ -868,7 +887,7 @@ def get_weather_filenames(t_orig,t_final):
 
    return files
 #
-def get_model_winds(lon,lat,t_orig,t_final):
+def get_model_winds(lon,lat,t_orig,t_final,model_path):
    """ Returns meteorological fields for the "Operational" model at a given longitde and latitude 
    over a date range.
    
@@ -884,46 +903,40 @@ def get_model_winds(lon,lat,t_orig,t_final):
    :arg t_end: The end of the date range of interest
    :type t_end: datetime object
    
+   :arg model_path: directory where the model files are stored
+   :type model_path: string
+   
    :returns: wind speed, wind direction, time, pressure, solar radiation, thermal radiation, precipitation,
    temperature, humidity
    """
    #file names of weather
-   files=get_weather_filenames(t_orig,t_final)
+   files=get_weather_filenames(t_orig,t_final,model_path)
    weather=nc.Dataset(files[0])
    Y=weather.variables['nav_lat'][:]
    X=weather.variables['nav_lon'][:]-360
   
    [j,i]=find_model_point(lon,lat,X,Y)
    
-   wind=[]; direc=[]; t=[]; pr=[]; sol=[]; the=[]; pre=[]; tem=[]; qr=[];
+   wind=np.array([]); direc=np.array([],'double'); t=np.array([]); pr=np.array([]); 
+   sol=np.array([]); the=np.array([]); pre=np.array([]); tem=np.array([]); qr=np.array([]);
    for f in files:
         G = nc.Dataset(f)
         u = G.variables['u_wind'][:,j,i]; v=G.variables['v_wind'][:,j,i];
-        pr.append(G.variables['atmpres'][:,j,i]); sol.append(G.variables['solar'][:,j,i]); 
-        qr.append(G.variables['qair'][:,j,i]); the.append(G.variables['therm_rad'][:,j,i]); 
-        pre.append(G.variables['precip'][:,j,i]);
-        tem.append(G.variables['tair'][:,j,i])
+        pr=np.append(pr,G.variables['atmpres'][:,j,i]); sol=np.append(sol,G.variables['solar'][:,j,i]); 
+        qr=np.append(qr,G.variables['qair'][:,j,i]); the=np.append(the,G.variables['therm_rad'][:,j,i]); 
+        pre=np.append(pre,G.variables['precip'][:,j,i]);
+        tem=np.append(tem,G.variables['tair'][:,j,i])
         speed = np.sqrt(u**2 + v**2)
-        wind.append(speed)
+        wind=np.append(wind,speed)
         
         d = np.arctan2(v, u)
         d = np.rad2deg(d + (d<0)*2*np.pi);
-        direc.append(d)
+        direc=np.append(direc,d)
         
 	ts=G.variables['time_counter']	
         torig = datetime.datetime(1970,1,1) #there is no time_origin attriubte in OP files, so I hard coded this
         for ind in np.arange(ts.shape[0]):
-            t.append(torig + datetime.timedelta(seconds=ts[ind]))
-
-   wind = np.array(wind).reshape(len(files)*24,)
-   direc = np.array(direc,'double').reshape(len(files)*24,)
-   t = np.array(t).reshape(len(files)*24,)
-   pr = np.array(pr).reshape(len(files)*24,)
-   tem = np.array(tem).reshape(len(files)*24,)
-   sol = np.array(sol).reshape(len(files)*24,)
-   the = np.array(the).reshape(len(files)*24,)
-   qr = np.array(qr).reshape(len(files)*24,)
-   pre = np.array(pre).reshape(len(files)*24,)
+            t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
     
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
