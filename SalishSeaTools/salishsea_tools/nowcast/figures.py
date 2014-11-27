@@ -289,7 +289,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     return fig
 
 #########################
-def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -308,6 +308,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
 
     :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
     :type gridB: :class:`netCDF4.Dataset`
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches
     :type figsize: 2-tuple
@@ -353,11 +356,12 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
+    t=np.array(t)
     start_date = t_orig.strftime('%d-%b-%Y')
     end_date = t_final.strftime('%d-%b-%Y')
 
     #timestamp
-    timestamp = nc_tools.timestamp(grid_T,index)
+    timestamp = nc_tools.timestamp(grid_T,index).datetime +PST*time_shift
 
     #figure
     fig=plt.figure(figsize=figsize)
@@ -368,24 +372,24 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, figsize=(15,10)):
     ax3=plt.subplot(gs[1,0]) #residual
 
     #curve plot
-    ax1.plot(t,ssh_loc,'--',c=model_c,linewidth=1,label='model')
-    ax1.plot(t,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
-    ax1.plot(ttide.time,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax1.plot(t[index],ssh_corr[index],color='Yellow',marker='D',markersize=8,label='Maximum SSH')
-    ax1.set_xlim(t_orig,t_final)
+    ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
+    ax1.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
+    ax1.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
+    ax1.plot(t[index]+PST*time_shift,ssh_corr[index],color='Yellow',marker='D',markersize=8,label='Maximum SSH')
+    ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
     ax1.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
-    ax1.set_xlabel('time [UTC]')
+    ax1.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
     #ax1.set_position((0, 0.3, 0.55, 0.4))
     ax1.grid()
     
     #residual
-    ax3.plot(t,res,'-k',linewidth=2,label='Residual')
-    ax3.set_xlim(t_orig,t_final)
+    ax3.plot(t +PST*time_shift,res,'-k',linewidth=2,label='Residual')
+    ax3.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax3.set_ylim([-1,1])
-    ax3.set_xlabel('time [UTC]')
+    ax3.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax3.set_ylabel('Residual (m)')
     ax3.legend(loc = 0, numpoints = 1)
     #ax1.set_position((0, 0.3, 0.55, 0.4))
