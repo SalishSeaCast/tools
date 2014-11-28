@@ -335,6 +335,14 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
     res = compute_residual(ssh_corr,ttide,sdt,edt)
+
+    #index when corrected sea surface height is at its maximum at Point Atkinson
+    m = np.max(ssh_corr)
+    index = np.argmax(ssh_corr)
+    #sea surface height when there is a maximum at Point Atkinson
+    ssh_max = np.ma.masked_values(ssh[index], 0)
+
+    print 'Maximum: {:.2f} m. Residual at Maximum: {:.2f} m.'.format(ssh_corr[index],res[index])
     
     #time for curve
     count=grid_T.variables['time_counter'][:]
