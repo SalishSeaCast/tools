@@ -103,7 +103,8 @@ def PA_tidal_predictions(grid_T, figsize=(20,5)):
     #axis limits and labels
     ax.set_xlim([ax_start,ax_end])
     ax.set_ylim(ylims)
-    ax.set_title('Tidal Predictions at Point Atkinson')
+    timestamp = nc_tools.timestamp(grid_T,0)
+    ax.set_title('Tidal Predictions at Point Atkinson: ' + timestamp.strftime('%d-%b-%Y'))
     ax.set_ylabel('Sea Surface Height [m]')
 
     return fig
@@ -228,7 +229,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     fig = plt.figure(figsize=figsize)
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
-    gs.update(wspace=0.1)
+    gs.update(wspace=0.1, hspace=0.2)
 
     ax0 = plt.subplot(gs[:,1]) #map
     plt.axis((-124.8,-122.2,48,50))
@@ -259,18 +260,20 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
             t[i]=t[i].datetime
         t=np.array(t)
 
-	ax = plt.subplot(gs[M,0]) #ssh
+        ax = plt.subplot(gs[M,0]) #ssh
         ax.plot(t[:]+time_shift*PST,ssh,c=model_c,linewidth=2,label='model')
         ax.plot(obs.time[:]+time_shift*PST,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
         ax.plot(tides.time+time_shift*PST,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
-	ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
-    	ax.set_ylim([-3,3])
+        ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
+        ax.set_ylim([-3,3])
         timestamp = nc_tools.timestamp(grid_T,0)
-    	ax.set_title(name + ': ' + timestamp.strftime('%d-%b-%Y'))
-    	ax.grid()
-    	ax.set_ylabel('Water levels wrt MSL (m)')
-	ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
-	if M == 0:
+        ax.set_title('Hourly Sea Surface Height at '+name + ': ' + timestamp.strftime('%d-%b-%Y'))
+        ax.grid()
+        ax.set_ylabel('Water levels wrt MSL (m)')
+        ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+        ax.xaxis.set_major_formatter(hfmt)
+        fig.autofmt_xdate()
+        if M == 0:
 	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
 
@@ -278,6 +281,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     return fig
 
 def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(15,10)):
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -349,8 +353,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
 
     #figure
     fig=plt.figure(figsize=figsize)
-    gs = gridspec.GridSpec(2, 2,width_ratios=[1.5,1])
-    gs.update(wspace=0.1)
+    gs = gridspec.GridSpec(2,2,width_ratios=[1.5,1])
+    gs.update(wspace=0.1,hspace=0.2)
     ax1=plt.subplot(gs[0,0]) #sshs
     ax2=plt.subplot(gs[:,1]) #map
     ax3=plt.subplot(gs[1,0]) #residual
@@ -366,7 +370,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax1.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
-    #ax1.set_position((0, 0.3, 0.55, 0.4))
+    ax1.xaxis.set_major_formatter(hfmt)
     ax1.grid()
     
     #residual
@@ -376,8 +380,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax3.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax3.set_ylabel('Residual (m)')
     ax3.legend(loc = 0, numpoints = 1)
-    #ax1.set_position((0, 0.3, 0.55, 0.4))
     ax3.grid()
+    ax3.xaxis.set_major_formatter(hfmt)
+    fig.autofmt_xdate()
 
     #ssh profile
     viz_tools.set_aspect(ax2)
@@ -396,7 +401,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     viz_tools.plot_coastline(ax2,gridB)
     ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'))
     ax2.plot(i,j,marker='D',color='Yellow',ms=8)
-
+    
     return fig
     
 def print_maxes(ssh,t,res,lon,lat,model_path,PST):
@@ -514,7 +519,7 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
 
     #plotting wind speed
     ax1 = plt.subplot(gs[0,0])
-    ax1.set_title('Winds at Sandheads ' + start )
+    ax1.set_title('Winds at Sandheads:  ' + start )
     ax1.plot(time +PST*time_shift,winds,color=observations_c,lw=2,label='Observations')
     ax1.plot(t+PST*time_shift,wind,lw=2,color=model_c,label='Model')
     ax1.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
@@ -538,6 +543,7 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     ax2.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
     
+    #map
     ax0 = plt.subplot(gs[:,1])
     ax0.set_xlim([-124.8,-122.2])
     ax0.set_ylim([48,50])
