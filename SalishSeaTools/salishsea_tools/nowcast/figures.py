@@ -336,14 +336,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
     res = compute_residual(ssh_corr,ttide,sdt,edt)
 
-    #index when corrected sea surface height is at its maximum at Point Atkinson
-    m = np.max(ssh_corr)
-    index = np.argmax(ssh_corr)
-    #sea surface height when there is a maximum at Point Atkinson
-    ssh_max = np.ma.masked_values(ssh[index], 0)
-
-    print 'Maximum: {:.2f} m. Residual at Maximum: {:.2f} m.'.format(ssh_corr[index],res[index])
-    
     #time for curve
     count=grid_T.variables['time_counter'][:]
     t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
@@ -354,7 +346,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     #Look up maximim ssh and timing
     max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lon_PA,lat_PA,model_path,PST)
     ssh_max_field = np.ma.masked_values(ssh[index], 0)
-    
 
     #figure
     fig=plt.figure(figsize=figsize)
@@ -448,10 +439,10 @@ def print_maxes(ssh,t,res,lon,lat,model_path,PST):
     ind_w=np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
     max_wind=wind[ind_w]
    
-    print 'Max SSH:', max_ssh, 'metres above mean sea level'
+    print 'Max SSH: {:.2f} metres above mean sea level'.format(max_ssh)
     print 'Time of max:', tmax +PST*time_shift, PST*'[PST]' + abs((PST-1))*'[UTC]'
-    print 'Residual:', max_res, 'metres'
-    print 'Wind speed:', max_wind, 'm/s'
+    print 'Residual: {:.2f} metres'.format(max_res)
+    print 'Wind speed: {:.1f} m/s'.format(float(max_wind))
    
     return max_ssh,index_ssh,tmax,max_res,max_wind 
     
