@@ -183,7 +183,7 @@ def get_watershed_prop_dict(watershedname):
 		prop_dict = {'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood':{'prop':Jervis*0.60,'i':648,'j':318,'di':1,'dj':1,'depth':3},\
 		'Glacial':{'prop':Jervis*0.05,'i':647,'j':317,'di':1,'dj':1,'depth':3},\
 		'Seshal':{'prop':Jervis*0.05,'i':650,'j':317,'di':1,'dj':1,'depth':3},\
-		'Brittain':{'prop':Jervis*0.10,'i':350,'j':301,'di':1,'dj':1,'depth':3},\
+		'Brittain':{'prop':Jervis*0.10,'i':650,'j':301,'di':1,'dj':1,'depth':3},\
 		'VancouverHigh':{'prop':Jervis*0.10,'i':626,'j':311,'di':1,'dj':1,'depth':3},\
 		'Perketts':{'prop':Jervis*0.05,'i':619,'j':307,'di':1,'dj':1,'depth':3},\
 		'Treat':{'prop':Jervis*0.05,'i':612,'j':301,'di':1,'dj':1,'depth':3},\
