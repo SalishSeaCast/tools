@@ -46,19 +46,20 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['cloud host']
     try:
-        init_cloud(config, checklist)
+        init_cloud(host_name, config, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'names and addresses collected from existing nodes in {} cloud'
-            .format(config['run']['host']))
+            .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             'collection of names and addresses from existing nodes '
             'in {} cloud failed'
-            .format(config['run']['host']))
+            .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -75,13 +76,12 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def init_cloud(config, checklist):
+def init_cloud(host_name, config, checklist):
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
     nova = novaclient.client.Client(**credentials)
-    logger.debug(
-        'authenticated nova client on {}'.format(config['run']['host']))
-    network_label = config['run']['network label']
+    logger.debug('authenticated nova client on {}'.format(host_name))
+    network_label = config['run'][host_name]['network label']
     for node in nova.servers.list():
         try:
             node_addr = [a['addr'] for a in node.addresses[network_label]

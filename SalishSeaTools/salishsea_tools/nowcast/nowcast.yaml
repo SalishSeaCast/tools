@@ -28,24 +28,45 @@ weather:
 
 upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/upload.sh
 
+
 run:
-  host: orcinus
-  nodes: 5
-  images:
-    head node: nowcast-head-node
-    compute node: nowcast-compute-node
-  flavor name: m1.xlarge
-  network label: NEMO-network
-  ssh key name: doug-nefos
-  floating ip pool: VLAN3337
-  sshfs storage:
-    host name: ncnfs1.neptune.uvic.ca
-    user name: nemo
-    host path: /gss_onc/NEMO
-    mount point: /mnt/MEOPAR
+  cloud host: nefos
+  nefos:
+    nodes: 5
+    images:
+      head node: nowcast-head-node
+      compute node: nowcast-compute-node
+    flavor name: m1.xlarge
+    network label: NEMO-network
+    ssh key name: doug-nefos
+    floating ip pool: VLAN3337
+    sshfs storage:
+      host name: ncnfs1.neptune.uvic.ca
+      user name: nemo
+      host path: /gss_onc/NEMO
+      mount point: /mnt/MEOPAR
+    rivers: /mnt/MEOPAR/rivers/
+    ssh: /mnt/MEOPAR/sshNeahBay/
+    weather: /mnt/MEOPAR/GEM2.5/ops/NEMO-atmos/
+    results:
+      nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
+      forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
+
+  hpc host: orcinus
+  orcinus:
+    rivers: /home/sallen/MEOPAR/rivers/
+    ssh: /home/sallen/MEOPAR/sshNeahBay/
+    weather: /home/sallen/MEOPAR/GEM2.5/ops/NEMO-atmos/
+    results:
+      nowcast: /home/dlatorne/MEOPAR/SalishSea/nowcast/
+      forecast: /home/dlatorne/MEOPAR/SalishSea/forecast/
+
   make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
-  results: /home/dlatorne/MEOPAR/SalishSea/nowcast/
-  results archive: /data/dlatorne/MEOPAR/SalishSea/nowcast/
+
+  results archive:
+    nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
+    forecast: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/
+
 
 logging:
   log_file: /home/dlatorne/public_html/MEOPAR/nowcast/nowcast.log

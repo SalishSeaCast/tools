@@ -46,18 +46,19 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['cloud host']
     try:
-        set_ssh_config(config, socket, checklist)
+        set_ssh_config(host_name, config, socket, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
             '.ssh/config for nodes in {} cloud installed on nowcast0 node'
-            .format(config['run']['host']))
+            .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             'installation of .ssh/config for nodes in {} cloud failed'
-            .format(config['run']['host']))
+            .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -74,7 +75,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def set_ssh_config(config, socket, checklist):
+def set_ssh_config(host_name, config, socket, checklist):
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
     tmpl = (
@@ -82,13 +83,13 @@ def set_ssh_config(config, socket, checklist):
         '  HostName {ip_addr}\n'
         '  StrictHostKeyChecking no\n'
     )
-    ssh_client, sftp_client = lib.sftp(config)
+    ssh_client, sftp_client = lib.sftp(host_name)
     with sftp_client.open('.ssh/config', 'wt') as f:
         for name, ip in nodes.items():
             f.write(tmpl.format(node_name=name, ip_addr=ip))
             logger.debug(
                 'node {} at {} added to {} .ssh/config'
-                .format(name, ip, config['run']['host']))
+                .format(name, ip, host_name))
     sftp_client.close()
     ssh_client.close()
     checklist['success'] = True

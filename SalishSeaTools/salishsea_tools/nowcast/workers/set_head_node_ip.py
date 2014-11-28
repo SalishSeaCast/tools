@@ -46,18 +46,19 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['cloud host']
     try:
-        set_head_node_ip(config, checklist)
+        set_head_node_ip(host_name, config, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'public IP address associated with nowcast0 node in {} cloud'
-            .format(config['run']['host']))
+            .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             'public IP address association with nowcast0 in {} cloud failed'
-            .format(config['run']['host']))
+            .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -74,14 +75,14 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def set_head_node_ip(config, checklist):
+def set_head_node_ip(host_name, config, checklist):
+    host = config['run'][host_name]
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
     nova = novaclient.client.Client(**credentials)
-    logger.debug(
-        'authenticated nova client on {}'.format(config['run']['host']))
+    logger.debug('authenticated nova client on {}'.format(host_name))
     # Check for public IP already associated
-    network_label = config['run']['network label']
+    network_label = host['network label']
     nowcast0 = nova.servers.find(name='nowcast0')
     ip = get_ip(nowcast0, network_label)
     if ip is not None:
@@ -89,13 +90,13 @@ def set_head_node_ip(config, checklist):
         checklist['ip'] = ip.encode('ascii')
         return
     # Associate a floating IP
-    fip = nova.floating_ips.find(pool=config['run']['floating ip pool'])
+    fip = nova.floating_ips.find(pool=host['floating ip pool'])
     nowcast0 = nova.servers.find(name='nowcast0')
     nowcast0.add_floating_ip(fip)
     nowcast0 = nova.servers.find(name='nowcast0')
     ip = get_ip(nowcast0, network_label)
     if ip is None:
-        logger.error('public IP address associateion with nowcast0 failed')
+        logger.error('public IP address association with nowcast0 failed')
         raise lib.WorkerError
         return
     logger.info('{} associated with nowcast0 node'.format(ip))

@@ -47,7 +47,7 @@ def main():
     checklist = {}
     try:
         cmd = [
-            'ssh', '-C', config['run']['host'],
+            'ssh', '-C', config['run']['hpc host'],
             'bash', config['run']['make forcing links']
         ]
         lib.run_in_subprocess(cmd, logger.debug, logger.error)

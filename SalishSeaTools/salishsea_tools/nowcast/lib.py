@@ -469,18 +469,18 @@ def get_nova_credentials_v2():
     return credentials
 
 
-def ssh(config, ssh_config_file='~/.ssh/config'):
-    """Return an SSH client.
+def ssh(host, ssh_config_file='~/.ssh/config'):
+    """Return an SSH client connected to host.
 
-    It is assumed that ssh_config_file contains an entry for the host named
-    in :data:`config['run']['host']` and that the corresponding identity
-    is loaded and active in the user's ssh agent.
+    It is assumed that ssh_config_file contains an entry for host,
+    and that the corresponding identity is loaded and active in the
+    user's ssh agent.
 
     The client's close() method should be called when its usefulness
     had ended.
 
-    :arg config: Configuration data structure.
-    :type config: dict
+    :arg host: Name of the host to connect the client to.
+    :type config: str
 
     :arg ssh_config_file: File path/name of the SSH2 config file to obtain
                      the hostname and username values.
@@ -493,23 +493,24 @@ def ssh(config, ssh_config_file='~/.ssh/config'):
     ssh_config = paramiko.config.SSHConfig()
     with open(os.path.expanduser(ssh_config_file)) as f:
         ssh_config.parse(f)
-    host = ssh_config.lookup(config['run']['host'])
+    host = ssh_config.lookup(host)
     ssh_client.connect(host['hostname'], username=host['user'])
     return ssh_client
 
 
-def sftp(config, ssh_config_file='~/.ssh/config'):
-    """Return an SFTP client and the SSH client on which it is based.
+def sftp(host, ssh_config_file='~/.ssh/config'):
+    """Return an SFTP client connected to host, and the SSH client on
+    which it is based.
 
-    It is assumed that ssh_config_file contains an entry for the host named
-    in :data:`config['run']['host']` and that the corresponding identity
-    is loaded and active in the user's ssh agent.
+    It is assumed that ssh_config_file contains an entry for host,
+    and that the corresponding identity is loaded and active in the
+    user's ssh agent.
 
     The clients' close() methods should be called when their usefulness
     had ended.
 
-    :arg config: Configuration data structure.
-    :type config: dict
+    :arg host: Name of the host to connect the client to.
+    :type config: str
 
     :arg ssh_config_file: File path/name of the SSH2 config file to obtain
                      the hostname and username values.
@@ -518,6 +519,6 @@ def sftp(config, ssh_config_file='~/.ssh/config'):
     :returns: 2-tuple containing a :class:`paramiko.client.SSHClient`
               object and a :class:`paramiko.sftp_client.SFTPClient` object.
     """
-    ssh_client = ssh(config, ssh_config_file)
+    ssh_client = ssh(host, ssh_config_file)
     sftp_client = ssh_client.open_sftp()
     return ssh_client, sftp_client

@@ -53,18 +53,20 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['cloud host']
     try:
-        create_compute_node(config, checklist, parsed_args.node_name)
+        create_compute_node(
+            host_name, config, checklist, parsed_args.node_name)
         # Exchange success messages with the nowcast manager process
         logger.info(
             '{0.node_name} node creation on {host} cloud completed'
-            .format(parsed_args, host=config['run']['host']))
+            .format(parsed_args, host=host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             '{0.node_name} node creation on {host} cloud failed'
-            .format(parsed_args, host=config['run']['host']))
+            .format(parsed_args, host=host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -88,22 +90,22 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def create_compute_node(config, checklist, node_name):
+def create_compute_node(host_name, config, checklist, node_name):
+    host = config['run'][host_name]
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
     nova = novaclient.client.Client(**credentials)
-    logger.debug(
-        'authenticated nova client on {}'.format(config['run']['host']))
+    logger.debug('authenticated nova client on {}'.format(host_name))
     # Prepare node configuration
     if node_name == 'nowcast0':
-        image = nova.images.find(name=config['run']['images']['head node'])
+        image = nova.images.find(name=host['images']['head node'])
     else:
-        image = nova.images.find(name=config['run']['images']['compute node'])
-    flavor = nova.flavors.find(name=config['run']['flavor name'])
-    network_label = config['run']['network label']
+        image = nova.images.find(name=host['images']['compute node'])
+    flavor = nova.flavors.find(name=host['flavor name'])
+    network_label = host['network label']
     network = nova.networks.find(label=network_label)
     nics = [{'net-id': network.id}]
-    key_name = config['run']['ssh key name']
+    key_name = host['ssh key name']
     # Create node
     nova.servers.create(
         name=node_name, image=image, flavor=flavor, nics=nics,

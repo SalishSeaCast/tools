@@ -53,18 +53,17 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['hpc host']
     try:
-        download_results(parsed_args.run_date, config, checklist)
-        logger.info(
-            'results files from {} downloaded'.format(config['run']['host']))
+        download_results(host_name, parsed_args.run_date, config, checklist)
+        logger.info('results files from {} downloaded'.format(host_name))
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
         lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical(
-            'results files download from {} failed'
-            .format(config['run']['host']))
+            'results files download from {} failed'.format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -108,12 +107,13 @@ def arrow_date(string):
         raise argparse.ArgumentTypeError(msg)
 
 
-def download_results(run_date, config, checklist):
+def download_results(host_name, run_date, config, checklist):
+    host = config['run'][host_name]
     results_dir = run_date.strftime('%d%b%y').lower()
-    src_dir = os.path.join(config['run']['results'], results_dir)
+    src_dir = os.path.join(host['results']['nowcast'], results_dir)
     src = (
-        '{host}:{src_dir}'.format(host=config['run']['host'], src_dir=src_dir))
-    dest = os.path.join(config['run']['results archive'])
+        '{host}:{src_dir}'.format(host=host_name, src_dir=src_dir))
+    dest = os.path.join(config['run']['results archive']['nowcast'])
     cmd = ['scp', '-Cpr', src, dest]
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
     for freq in '1h 1d'.split():
