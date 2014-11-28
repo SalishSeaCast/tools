@@ -43,19 +43,6 @@ from salishsea_tools import (
     tidetools,
 )
 
-
-ssh_cmap =['#0003a5','#020aa3','#05179e','#061d9c','#0e3e90','#0f458e','#125289','#145886',
-          '#155c85','#166283','#196f7e','#1b767c','#229770','#239a6f','#249d6e','#27ab69',
-          '#30d25b','#31d459','#34d458','#41d352','#65cf41','#68cf40','#6bcf3f','#77ce39',
-          '#80cd35','#83cd33','#86cc32','#92cb2c','#b7c81b','#bac71a','#bdc719','#c9c613',
-          '#d2c50f','#d5c50d','#d8c40c','#dbc40b','#edc202','#f0c201','#f2c001','#f2bd04',
-          '#f4ab16','#f4a819','#f4a51c','#f4a21f','#FF7519','#f7744c','#CC6699','#A047A0',
-	  '#fa536c','#f86b55','#f86858','#f9655b','#fa5669','#FF4D4D','#FF1919','#FF4719',
-	  '#FF3300','#CC0000','#A30000','#7A0000']
-
-ssh_cm = matplotlib.colors.ListedColormap(ssh_cmap)
- 
- 
 #Defining constants
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
@@ -280,7 +267,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     return fig
 
-def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(15,10)):
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(20,12)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -380,6 +367,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax3.set_ylabel('Residual (m)')
     ax3.legend(loc = 0, numpoints = 1)
     ax3.grid()
+    ax3.set_yticks(np.arange(-1.0,1.0,0.25))
     ax3.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
 
@@ -387,10 +375,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     viz_tools.set_aspect(ax2)
     land_colour = 'burlywood'
     ax2.set_axis_bgcolor(land_colour)
-   #cmap = plt.get_cmap('ssh_cmap')
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
     mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both')
-    ax2.contour(ssh_max_field,cs,colors='k')
+    ax2.contour(ssh_max_field,cs,colors='MidnightBlue')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
     cbar.set_label('[m]')
