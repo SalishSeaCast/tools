@@ -22,7 +22,7 @@ from __future__ import division
 from cStringIO import StringIO
 import datetime
 
-from pylab import *
+import matplotlib
 import arrow
 import matplotlib.pyplot as plt
 import numpy as np
