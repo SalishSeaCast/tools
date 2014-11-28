@@ -51,7 +51,7 @@ time_shift = datetime.timedelta(hours=-8) #time shift for plottin in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 
-def PA_tidal_predictions(grid_T, figsize=(20,5)):
+def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
@@ -83,16 +83,17 @@ def PA_tidal_predictions(grid_T, figsize=(20,5)):
     #plotting
     fig,ax=plt.subplots(1,1,figsize=figsize)
     fig.autofmt_xdate()
-    ax.plot(ttide.time,ttide.pred_all,'-k')
+    ax.plot(ttide.time+time_shift*PST,ttide.pred_all,'-k')
     #line indicating current date
     ax.plot([t_orig,t_orig],ylims,'-r')
     ax.plot([t_end,t_end],ylims,'-r')
     #axis limits and labels
-    ax.set_xlim([ax_start,ax_end])
+    ax.set_xlim([ax_start+time_shift*PST,ax_end+time_shift*PST])
     ax.set_ylim(ylims)
     timestamp = nc_tools.timestamp(grid_T,0)
     ax.set_title('Tidal Predictions at Point Atkinson: ' + timestamp.strftime('%d-%b-%Y'))
     ax.set_ylabel('Sea Surface Height [m]')
+    ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
 
     return fig
 
@@ -299,11 +300,12 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     :returns: Matplotlib figure object instance
     """
 
-    #defining Point Atkinson
-    lon_PA=-123.26
-    lat_PA= 49.33
+    #defining stations
+    lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41}
+    lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36}
+    
     bathy, X, Y = tidetools.get_bathy_data(gridB)
-    [j,i]=tidetools.find_closest_model_point(lon_PA,lat_PA,X,Y,bathy,allow_land=True)
+    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=True)
 
     #loading sea surface height
     ssh = grid_T.variables['sossheig']
@@ -334,7 +336,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     t=np.array(t)
     
     #Look up maximim ssh and timing
-    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lon_PA,lat_PA,model_path,PST)
+    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lons[name],lats[name],model_path,PST)
     ssh_max_field = np.ma.masked_values(ssh[index], 0)
 
     #figure
@@ -377,7 +379,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax2.set_axis_bgcolor(land_colour)
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
     mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both')
-    ax2.contour(ssh_max_field,cs,colors='MidnightBlue')
+    ax2.contour(ssh_max_field,cs,colors='k',linestyles='--')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
     cbar.set_label('[m]')
