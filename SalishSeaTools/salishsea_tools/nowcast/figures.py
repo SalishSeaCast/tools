@@ -342,8 +342,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
     t=np.array(t)
-    start_date = t_orig.strftime('%d-%b-%Y')
-    end_date = t_final.strftime('%d-%b-%Y')
     
     #Look up maximim ssh and timing
     max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lon_PA,lat_PA,model_path,PST)
