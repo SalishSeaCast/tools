@@ -303,17 +303,19 @@ def launch_worker(worker, config, cmd_line_args=[]):
 
 def is_cloud_ready(config):
     global checklist
+    host_name = config['run']['cloud host']
+    host = config['run'][host_name]
     if 'nowcast0' in checklist['nodes']:
         if 'cloud addr' not in checklist:
             # Add an empty address so that worker only gets launched once
             checklist['cloud addr'] = {}
             launch_worker('set_head_node_ip', config)
-        if len(checklist['nodes']) == config['run']['nodes']:
+        if len(checklist['nodes']) == host['nodes']:
             checklist['cloud ready'] = True
             logger.info(
-                '{node_count} nodes in {host} cloud ready for run provisioning'
-                .format(node_count=config['run']['nodes'],
-                        host=config['run']['host']))
+                '{node_count} nodes in {host} cloud ready for '
+                'run provisioning'
+                .format(node_count=host['nodes'], host=host_name))
             launch_worker('set_ssh_config', config)
 
 

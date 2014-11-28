@@ -44,19 +44,19 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
+    host_name = config['run']['cloud host']
+    host = config['run'][host_name]
     try:
-        mount_sshfs(config, socket, checklist)
+        mount_sshfs(host_name, config, socket, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'SSHFS mounted at {} on all nodes in {} cloud'
-            .format(config['run']['sshfs storage']['mount point'],
-                    config['run']['host']))
+            .format(host['sshfs storage']['mount point'], host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'SSHFS mount on nodes in {} cloud failed'
-            .format(config['run']['host']))
+            'SSHFS mount on nodes in {} cloud failed'.format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -73,14 +73,14 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def mount_sshfs(config, socket, checklist):
+def mount_sshfs(host_name, config, socket, checklist):
+    host = config['run'][host_name]
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
-    sshfs_storage = config['run']['sshfs storage']
     mount_cmd = (
         'sshfs {user name}@{host name}:{host path} {mount point}'
-        .format(**sshfs_storage))
-    ssh_client = lib.ssh(config)
+        .format(**host['sshfs storage']))
+    ssh_client = lib.ssh(host_name)
     ssh_client.exec_command(mount_cmd)
     logger.debug('"{}" executed on nowcast0'.format(mount_cmd))
     nodes.pop('nowcast0')
@@ -93,7 +93,7 @@ def mount_sshfs(config, socket, checklist):
             logger.debug('stdout: {}'.format(line))
         for line in stderr:
             logger.debug('stderr: {}'.format(line))
-        logger.debug('"{}" executed on nowcast0'.format(cmd))
+        logger.debug('"{}" executed on {}'.format(cmd, node_name))
     ssh_client.close()
     checklist['success'] = True
 

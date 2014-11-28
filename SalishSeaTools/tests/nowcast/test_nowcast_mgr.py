@@ -245,7 +245,11 @@ class TestIsCloudReady(object):
     """Unit tests for is_cloud_ready() function.
     """
     def test_no_nowcast0(self, nowcast_mgr_module):
-        config = Mock(name='config')
+        config = {
+            'run':
+                {'cloud host': 'nefos',
+                 'nefos':
+                    {'nodes': 5}}}
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
             {'nodes': {'nowcast1': '192.168.0.11'}})
@@ -254,7 +258,11 @@ class TestIsCloudReady(object):
             assert 'cloud ready' not in nowcast_mgr_module.checklist
 
     def test_no_cloud_addr_sets_empty_addr(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 5}}
+        config = {
+            'run':
+                {'cloud host': 'nefos',
+                 'nefos':
+                    {'nodes': 5}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
@@ -264,7 +272,11 @@ class TestIsCloudReady(object):
             assert nowcast_mgr_module.checklist['cloud addr'] == {}
 
     def test_no_cloud_addr_launches_set_head_node_ip(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 5}}
+        config = {
+            'run':
+                {'cloud host': 'nefos',
+                 'nefos':
+                    {'nodes': 5}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
@@ -275,7 +287,11 @@ class TestIsCloudReady(object):
                 'set_head_node_ip', config)
 
     def test_cloud_ready(self, nowcast_mgr_module):
-        config = {'run': {'host': 'nefos', 'nodes': 2}}
+        config = {
+            'run':
+                {'cloud host': 'nefos',
+                 'nefos':
+                    {'nodes': 2}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
@@ -286,7 +302,11 @@ class TestIsCloudReady(object):
             assert nowcast_mgr_module.checklist['cloud ready']
 
     def test_cloud_ready_launches_set_ssh_config(self, nowcast_mgr_module):
-        config = {'run': {'host': 'nefos', 'nodes': 2}}
+        config = {
+            'run':
+                {'cloud host': 'nefos',
+                 'nefos':
+                    {'nodes': 2}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
