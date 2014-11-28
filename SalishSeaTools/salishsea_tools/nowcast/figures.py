@@ -285,7 +285,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
 ####################
 
-def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(15,10)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -340,12 +340,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
     res = compute_residual(ssh_corr,ttide,sdt,edt)
-
-    #index when corrected sea surface height is at its maximum at Point Atkinson
-    m = np.max(ssh_corr)
-    index = np.argmax(ssh_corr)
-    #sea surface height when there is a maximum at Point Atkinson
-    ssh_max = np.ma.masked_values(ssh[index], 0)
     
     #time for curve
     count=grid_T.variables['time_counter'][:]
@@ -355,9 +349,11 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     t=np.array(t)
     start_date = t_orig.strftime('%d-%b-%Y')
     end_date = t_final.strftime('%d-%b-%Y')
-
-    #timestamp
-    timestamp = nc_tools.timestamp(grid_T,index).datetime +PST*time_shift
+    
+    #Look up maximim ssh and timing
+    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lon_PA,lat_PA,model_path,PST)
+    ssh_max_field = np.ma.masked_values(ssh[index], 0)
+    
 
     #figure
     fig=plt.figure(figsize=figsize)
@@ -371,10 +367,10 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     ax1.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
     ax1.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax1.plot(t[index]+PST*time_shift,ssh_corr[index],color='Yellow',marker='D',markersize=8,label='Maximum SSH')
+    ax1.plot(tmax+PST*time_shift,max_ssh,color='Yellow',marker='D',markersize=8,label='Maximum SSH')
     ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
-    ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + timestamp.strftime('%d-%b-%Y'))
+    ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
     ax1.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
@@ -397,8 +393,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     ax2.set_axis_bgcolor(land_colour)
    #cmap = plt.get_cmap('ssh_cmap')
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
-    mesh=ax2.contourf(ssh_max,cs,cmap='nipy_spectral',extend='both')
-    ax2.contour(ssh_max,cs,colors='k')
+    mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both')
+    ax2.contour(ssh_max_field,cs,colors='k')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
     cbar.set_label('[m]')
@@ -406,10 +402,57 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     ax2.set_xlabel('x Index')
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
-    ax2.set_title('Sea Surface Height: ' + timestamp.strftime('%d-%b-%Y, %H:%M'))
+    ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'))
     ax2.plot(i,j,marker='D',color='Yellow',ms=8)
 
     return fig
+    
+def print_maxes(ssh,t,res,lon,lat,model_path,PST):
+    """ Look up the maximum ssh and other important features such as the timing, residual, and wind speed.
+    
+    :arg ssh: The ssh field to be maximized
+    :type ssh: numpy array
+    
+    :arg t: The times corresponding to the ssh.
+    :type t: numpy array
+    
+    :arg res: The residual
+    :type res: numpy array
+    
+    :arg lon: The longitude of the station for looking up model winds. 
+    :type lon: float
+    
+    :arg lat: The latitude of the station for looking up model winds.
+    :type lat: float
+    
+    :arg model_path: directory where the model files are stored
+    :type model_path: string
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
+    
+    :returns: The maxmimum ssh, the index of maximum ssh, the time of maximum ssh, the residual at that time and the wind speed at that time.
+    """
+    
+    #index when sea surface height is at its maximum at Point Atkinson
+    max_ssh = np.max(ssh)
+    index_ssh = np.argmax(ssh)
+    tmax=t[index_ssh] 
+    max_res=res[index_ssh]
+    
+    #get model winds
+    t_orig=t[0]; t_final = t[-1]
+    [wind, direc, t_wind, pr, tem, sol, the, qr, pre]=get_model_winds(lon,lat,t_orig,t_final,model_path)
+    #find index where t_wind=tmax. Just find a match between the year, month, day and hour
+    ind_w=np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
+    max_wind=wind[ind_w]
+   
+    print 'Max SSH:', max_ssh, 'metres above mean sea level'
+    print 'Time of max:', tmax +PST*time_shift, PST*'[PST]' + abs((PST-1))*'[UTC]'
+    print 'Residual:', max_res, 'metres'
+    print 'Wind speed:', max_wind, 'm/s'
+   
+    return max_ssh,index_ssh,tmax,max_res,max_wind 
     
 def compute_residual(ssh,ttide,sdt,edt):
     """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
