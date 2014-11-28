@@ -108,8 +108,6 @@ def PA_tidal_predictions(grid_T, figsize=(20,5)):
 
     return fig
 
-#
-
 def get_NOAA_wlevels(station_no, start_date, end_date):
     """ Retrieves recent, 6 minute interval, NOAA water levels relative to mean sea level
     from a station in a given date range.
@@ -149,7 +147,6 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
 
     return obs
 
-#
 def get_NOAA_tides(station_no, start_date, end_date):
     """ Retrieves NOAA predicted tides on 6-minute intervals, relative to mean sea level
     from a station in a given date range.
@@ -195,9 +192,6 @@ def dateparse_NOAA(s):
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
-
-
-####################
 
 def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
@@ -283,8 +277,6 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     return fig
 
-####################
-
 def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(15,10)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
@@ -304,6 +296,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
 
     :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
     :type gridB: :class:`netCDF4.Dataset`
+    
+    :arg model_path: directory where the model wind files are stored
+    :type model_path: string
     
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
@@ -425,7 +420,7 @@ def print_maxes(ssh,t,res,lon,lat,model_path,PST):
     :arg lat: The latitude of the station for looking up model winds.
     :type lat: float
     
-    :arg model_path: directory where the model files are stored
+    :arg model_path: directory where the model wind files are stored
     :type model_path: string
     
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
@@ -484,9 +479,6 @@ def compute_residual(ssh,ttide,sdt,edt):
     res=ssh-shift
     
     return res
-
-    
-#
 
 def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     """ Plot the observed and modelled winds at Sandheads during the simulation.
@@ -566,8 +558,6 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
 
     return fig
 
-#
-
 def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
     """ Plot the daily averaged salinity field along the thalweg.
 
@@ -615,8 +605,6 @@ def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6
     ax.set_xlabel('position along thalweg')
 
     return fig
-
-#
 
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
     """Function that plots the daily average surface salinity, temperature and currents.
@@ -741,17 +729,12 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
 
     return fig
 
-    #***VENUS
-
-#
-
 def dateparse(s):
     """Parse the dates from the VENUS files"""
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
 
-#
 def load_VENUS(station):
     """
     Loads the most recent State of the Ocean data from the VENUS node indicated by station. T
@@ -790,7 +773,6 @@ def load_VENUS(station):
 
     return data, lon, lat, depth
 
-#
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
     """
     Plot a time series of the VENUS data between start and end.
@@ -821,7 +803,6 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
 
     return lon, lat, depth
 
-#
 def interpolate_depth(data, depth_array, depth_new):
     """
     Interpolates data field to a desired depth.
@@ -847,7 +828,6 @@ def interpolate_depth(data, depth_array, depth_new):
     data_interp = f(depth_new)
     return data_interp
 
-#
 def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
     """
     Compare the model's temperature and salinity with observations VENUS station (either Central or East).
@@ -946,7 +926,7 @@ def get_weather_filenames(t_orig,t_final,model_path):
    files.sort(key=os.path.basename)
 
    return files
-#
+
 def get_model_winds(lon,lat,t_orig,t_final,model_path):
    """ Returns meteorological fields for the "Operational" model at a given longitde and latitude 
    over a date range.
@@ -1029,7 +1009,6 @@ def find_model_point(lon,lat,X,Y):
             (np.logical_and(X > lon-tol1, X < lon+tol1)),
             (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
     return x1[0], y1[0]
-
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
     """Return a figure containing a plot of hourly sea surface height at
