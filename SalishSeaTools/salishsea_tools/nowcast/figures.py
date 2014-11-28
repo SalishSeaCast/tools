@@ -189,6 +189,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     tides=tides.rename(columns={'Date Time': 'time', ' Prediction': 'pred'})
     
     return tides
+    
 def dateparse_NOAA(s):
     """Parse the dates from the NOAA files"""
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
@@ -395,8 +396,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     land_colour = 'burlywood'
     ax2.set_axis_bgcolor(land_colour)
    #cmap = plt.get_cmap('ssh_cmap')
-    cs = [-1.5,-0.5,0.5,1.0,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.6]
-    mesh=ax2.contourf(ssh_max,cs,cmap=ssh_cm,extend='both')
+    cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
+    mesh=ax2.contourf(ssh_max,cs,cmap='nipy_spectral',extend='both')
+    ax2.contour(ssh_max,cs,colors='k')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
     cbar.set_label('[m]')
@@ -408,6 +410,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, PST=1,figsize=(15,10)):
     ax2.plot(i,j,marker='D',color='Yellow',ms=8)
 
     return fig
+    
 def compute_residual(ssh,ttide,sdt,edt):
     """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
     Both modelled ssh and tidal predictions use eight tidal constituents.
