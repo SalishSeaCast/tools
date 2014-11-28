@@ -238,7 +238,7 @@ def get_bathy_cell_size():
 def init_runoff_array():
 	"""define a function to initialise the runoff array"""
 
-	fB = NC.Dataset('../../../nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+	fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
 	D = fB.variables['Bathymetry'][:]
 	ymax, xmax = D.shape
 	runoff = np.zeros((ymax,xmax))
@@ -248,7 +248,7 @@ def init_runoff_array():
 
 def init_runoff_array_monthly():
 	"""define a function to initialise the runoff array for each month"""
-	fB = NC.Dataset('../../../nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+	fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
 	D = fB.variables['Bathymetry'][:]
 	ymax, xmax = D.shape
 	runoff = np.zeros((12,ymax,xmax))
