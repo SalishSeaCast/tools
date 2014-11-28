@@ -22,6 +22,7 @@ from __future__ import division
 from cStringIO import StringIO
 import datetime
 
+from pylab import *
 import arrow
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,7 +34,6 @@ import matplotlib.gridspec as gridspec
 import glob
 import os
 import netCDF4 as nc
-from pylab import *
 import matplotlib.dates as mdates
 
 from salishsea_tools import (
