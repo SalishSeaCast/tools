@@ -151,7 +151,11 @@ class TestAfterInitCloudSuccess(object):
     """Unit tests for after_init_cloud() function actions for success message.
     """
     def test_launch_n_nodes(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 3}}
+        config = {
+            'run':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
+                    {'nodes': 3}}}
         payload = {}
         next_steps = nowcast_mgr_module.after_init_cloud(
             'init_cloud', 'success', payload, config)
@@ -169,7 +173,11 @@ class TestAfterInitCloudSuccess(object):
         assert next_steps == expected
 
     def test_launch_missing_0_node(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 3}}
+        config = {
+            'run':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
+                    {'nodes': 3}}}
         payload = {
             'nowcast1': '192.168.0.10',
             'nowcast2': '192.168.0.11',
@@ -186,7 +194,11 @@ class TestAfterInitCloudSuccess(object):
         assert next_steps == expected
 
     def test_launch_missing_last_node(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 3}}
+        config = {
+            'run':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
+                    {'nodes': 3}}}
         payload = {
             'nowcast0': '192.168.0.10',
             'nowcast1': '192.168.0.11',
@@ -203,7 +215,11 @@ class TestAfterInitCloudSuccess(object):
         assert next_steps == expected
 
     def test_launch_missing_misc_node(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 5}}
+        config = {
+            'run':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
+                    {'nodes': 5}}}
         payload = {
             'nowcast0': '192.168.0.10',
             'nowcast1': '192.168.0.11',
@@ -222,7 +238,11 @@ class TestAfterInitCloudSuccess(object):
         assert next_steps == expected
 
     def test_launch_no_nodes(self, nowcast_mgr_module):
-        config = {'run': {'nodes': 5}}
+        config = {
+            'run':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
+                    {'nodes': 5}}}
         payload = {
             'nowcast0': '192.168.0.10',
             'nowcast1': '192.168.0.11',
@@ -247,8 +267,8 @@ class TestIsCloudReady(object):
     def test_no_nowcast0(self, nowcast_mgr_module):
         config = {
             'run':
-                {'cloud host': 'nefos',
-                 'nefos':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
                     {'nodes': 5}}}
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
@@ -260,8 +280,8 @@ class TestIsCloudReady(object):
     def test_no_cloud_addr_sets_empty_addr(self, nowcast_mgr_module):
         config = {
             'run':
-                {'cloud host': 'nefos',
-                 'nefos':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
                     {'nodes': 5}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
@@ -274,8 +294,8 @@ class TestIsCloudReady(object):
     def test_no_cloud_addr_launches_set_head_node_ip(self, nowcast_mgr_module):
         config = {
             'run':
-                {'cloud host': 'nefos',
-                 'nefos':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
                     {'nodes': 5}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
@@ -289,8 +309,8 @@ class TestIsCloudReady(object):
     def test_cloud_ready(self, nowcast_mgr_module):
         config = {
             'run':
-                {'cloud host': 'nefos',
-                 'nefos':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
                     {'nodes': 2}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
@@ -304,8 +324,8 @@ class TestIsCloudReady(object):
     def test_cloud_ready_launches_set_ssh_config(self, nowcast_mgr_module):
         config = {
             'run':
-                {'cloud host': 'nefos',
-                 'nefos':
+                {'cloud host': 'west.cloud',
+                 'west.cloud':
                     {'nodes': 2}}}
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(

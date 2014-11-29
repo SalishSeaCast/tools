@@ -59,13 +59,13 @@ def main():
             host_name, config, checklist, parsed_args.node_name)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            '{0.node_name} node creation on {host} cloud completed'
+            '{0.node_name} node creation on {host} completed'
             .format(parsed_args, host=host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            '{0.node_name} node creation on {host} cloud failed'
+            '{0.node_name} node creation on {host} failed'
             .format(parsed_args, host=host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)

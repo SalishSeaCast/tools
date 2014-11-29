@@ -37,8 +37,8 @@ weather:
 
 
 run:
-  cloud host: nefos
-  nefos:
+  cloud host: west.cloud
+  west.cloud:
     nodes: 5
     images:
       head node: nowcast-head-node

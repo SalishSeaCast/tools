@@ -50,13 +50,13 @@ def main():
         mount_sshfs(host_name, config, socket, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            'SSHFS mounted at {} on all nodes in {} cloud'
+            'SSHFS mounted at {} on all nodes in {}'
             .format(host['sshfs storage']['mount point'], host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'SSHFS mount on nodes in {} cloud failed'.format(host_name))
+            'SSHFS mount on nodes in {} failed'.format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
