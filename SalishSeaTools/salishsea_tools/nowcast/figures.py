@@ -232,11 +232,11 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
    
     for name, M in zip(names, m):
 
-	ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=8) #map
-	bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
+        ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=8) #map
+        bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
         ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args) 
 
-    	obs=get_NOAA_wlevels(stations[name],start_date,end_date)
+        obs=get_NOAA_wlevels(stations[name],start_date,end_date)
         tides=get_NOAA_tides(stations[name],start_date,end_date)
     
         [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
@@ -317,8 +317,10 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     t_final=(nc_tools.timestamp(grid_T,-1)).datetime
 
     #loading the tidal predictions
-    path='/data/nsoontie/MEOPAR/analysis/Susan/'
-    filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    #path='/data/nsoontie/MEOPAR/analysis/Susan/'
+    #filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    path='/data/nsoontie/MEOPAR/analysis/Nancy/tides/'
+    filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
     
@@ -341,7 +343,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
 
     #figure
     fig=plt.figure(figsize=figsize)
-    gs = gridspec.GridSpec(2,2,width_ratios=[1.5,1])
+    gs = gridspec.GridSpec(2,2,width_ratios=[2,1])
     gs.update(wspace=0.1,hspace=0.2)
     ax1=plt.subplot(gs[0,0]) #sshs
     ax2=plt.subplot(gs[:,1]) #map
@@ -351,7 +353,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     ax1.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
     ax1.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
-    ax1.plot(tmax+PST*time_shift,max_ssh,color='Yellow',marker='D',markersize=8,label='Maximum SSH')
+    ax1.plot(tmax+PST*time_shift,max_ssh,color='yellow',marker='D',markersize=8,label='Maximum SSH')
     ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
     ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
@@ -378,7 +380,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     land_colour = 'burlywood'
     ax2.set_axis_bgcolor(land_colour)
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
-    mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both')
+    mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both',alpha=0.6)
     ax2.contour(ssh_max_field,cs,colors='k',linestyles='--')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
@@ -388,7 +390,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
     ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'))
-    ax2.plot(i,j,marker='D',color='Yellow',ms=8)
+    ax2.plot(i,j,marker='D',color='yellow',ms=8)
+    bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.7)
+    ax2.annotate(name,(i-120,j+25),fontsize=15,color='black',bbox=bbox_args) 
     
     return fig
     
