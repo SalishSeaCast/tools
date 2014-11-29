@@ -925,7 +925,7 @@ def get_weather_filenames(t_orig,t_final,model_path):
    return files
 
 def get_model_winds(lon,lat,t_orig,t_final,model_path):
-   """ Returns meteorological fields for the "Operational" model at a given longitde and latitude 
+   """ Returns meteorological fields for the "Operational" model at a given longitude and latitude 
    over a date range.
    
    :arg lon: The specified longitude
@@ -943,9 +943,9 @@ def get_model_winds(lon,lat,t_orig,t_final,model_path):
    :arg model_path: directory where the model files are stored
    :type model_path: string
    
-   :returns: wind speed, wind direction, time, pressure, solar radiation, thermal radiation, precipitation,
-   temperature, humidity
+   :returns: wind speed, wind direction, time, pressure, solar radiation, thermal radiation, precipitation, temperature, humidity
    """
+   
    #file names of weather
    files=get_weather_filenames(t_orig,t_final,model_path)
    weather=nc.Dataset(files[0])
