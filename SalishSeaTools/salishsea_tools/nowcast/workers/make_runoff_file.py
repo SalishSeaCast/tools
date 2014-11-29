@@ -87,26 +87,26 @@ def make_runoff_file(config, checklist):
     now = utc.floor('day')
     yesterday = now.replace(days=-1)
     # Find history of fraser flow
-    fraserflow = getFraserAtHope()
+    fraserflow = get_fraser_at_hope()
     # Select yesterday's value
     step1 = fraserflow[fraserflow[:, 0] == yesterday.year]
     step2 = step1[step1[:, 1] == yesterday.month]
     step3 = step2[step2[:, 2] == yesterday.day]
     FlowAtHope = step3[0, 3]
     # Get climatology
-    criverflow, lat, lon, riverdepth = getRiverClimatology()
+    criverflow, lat, lon, riverdepth = get_river_climatology()
     # Interpolate to today
     driverflow = calculate_daily_flow(yesterday, criverflow)
     logger.debug('Getting file for {yesterday}'.format(yesterday=yesterday))
     # Get Fraser Watershed Climatology without Fraser
-    otherratio, fraserratio, nonFraser, afterHope = FraserClimatology()
+    otherratio, fraserratio, nonFraser, afterHope = fraser_climatology(config)
     # Calculate combined runoff
     pd = rivertools.get_watershed_prop_dict('fraser')
     runoff = fraser_correction(
         pd, FlowAtHope, yesterday, afterHope, nonFraser, fraserratio,
         otherratio, driverflow)
     # and make the file
-    directory = '/ocean/sallen/allen/research/MEOPAR/Rivers'
+    directory = config['rivers']['rivers_dir']
     # set up filename to follow NEMO conventions
     filename = (
         'RFraserCElse_y{.year}m{.month:02d}d{.day:02d}.nc'.format(yesterday))
@@ -117,31 +117,31 @@ def make_runoff_file(config, checklist):
         .format(directory=directory, filename=filename))
 
 
-def FraserClimatology():
+def fraser_climatology(config):
     """Read in the Fraser climatology separated from Hope flow.
     """
-    with open('/ocean/sallen/allen/research/MEOPAR/Tools/I_ForcingFiles/Rivers/FraserClimatologySeparation.yaml') as f:
-        FraserClimatologySeparation = yaml.safe_load(f)
-    otherratio = FraserClimatologySeparation['Ratio that is not Fraser']
-    fraserratio = FraserClimatologySeparation['Ratio that is Fraser']
-    nonFraser = np.array(FraserClimatologySeparation['non Fraser by Month'])
-    afterHope = np.array(FraserClimatologySeparation['after Hope by Month'])
+    with open(config['rivers']['Fraser_climatology']) as f:
+        fraser_climatology_separation = yaml.safe_load(f)
+    otherratio = fraser_climatology_separation['Ratio that is not Fraser']
+    fraserratio = fraser_climatology_separation['Ratio that is Fraser']
+    nonFraser = np.array(fraser_climatology_separation['non Fraser by Month'])
+    afterHope = np.array(fraser_climatology_separation['after Hope by Month'])
     return otherratio, fraserratio, nonFraser, afterHope
 
 
-def getFraserAtHope():
+def get_fraser_at_hope(config):
     """Read Fraser Flow data at Hope from ECget file
     """
-    filename = '/data/dlatorne/SOG-projects/SOG-forcing/ECget/Fraser_flow'
+    filename = config['rivers']['Ecget Fraser flow']
     fraserflow = np.loadtxt(filename)
     return fraserflow
 
 
-def getRiverClimatology():
+def get_river_climatology(config):
     """Read the monthly climatology that we will use for all the other rivers.
     """
     # Open monthly climatology
-    filename = '/ocean/sallen/allen/research/MEOPAR/nemo-forcing/rivers/rivers_month.nc'
+    filename = config['rivers']['monthly climatology']
     clim_rivers = NC.Dataset(filename)
     criverflow = clim_rivers.variables['rorunoff']
     # Get other variables so we can put them in new files
