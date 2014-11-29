@@ -35,8 +35,6 @@ weather:
   # Location of Pramod Thupaki's grid_defn.pl script
   grid_defn.pl: /ocean/sallen/allen/research/MEOPAR/private-tools/PThupaki/grid_defn.pl
 
-upload forcing: /data/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/upload.sh
-
 
 run:
   cloud host: nefos
@@ -135,8 +133,6 @@ msg_types:
     failure: mounting sshfs filesystem on cloud nodes failed
     crash: mount_sshfs worker crashed
   upload_forcing:
-    need_ssh: Neah Bay sea surface height forcing files dict requested
-    need_rivers: Rivers runoff forcing file name requested
     success: forcing files uploaded
     failure: forcing files upload failed
     crash: upload_forcing worker crashed

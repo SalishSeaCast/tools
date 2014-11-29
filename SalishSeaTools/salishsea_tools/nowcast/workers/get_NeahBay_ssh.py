@@ -38,6 +38,9 @@ logger = logging.getLogger(worker_name)
 
 context = zmq.Context()
 
+#: Neah Bay sea surface height forcing file name template
+FILENAME_TMPL = 'ssh_{:y%Ym%md%d}.nc'
+
 
 URL = (
     'http://www.nws.noaa.gov/mdl/etsurge/index.php'
@@ -172,7 +175,7 @@ def save_netcdf(
     lengthj = endj-startj
 
     # netCDF4 file setup
-    filename = 'ssh_{:y%Ym%md%d}.nc'.format(day)
+    filename = FILENAME_TMPL.format(day)
     if forecast_flag:
         filepath = os.path.join(save_path, 'fcst', filename)
         comment = 'Prediction from Neah Bay storm surge website'

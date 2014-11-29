@@ -17,6 +17,7 @@
 """
 import logging
 import os
+import pprint
 import subprocess
 import traceback
 
@@ -117,7 +118,7 @@ def message_processor(config, message):
         next_steps = after_actions['the end'](config)
         return reply_ack, next_steps
     # Handle need messages from workers
-    if msg_type == 'need':
+    if msg_type.startswith('need'):
         reply = lib.serialize_message(mgr_name, 'ack', checklist[payload])
         return reply, None
     # Handle success, failure, and crash messages from workers
@@ -182,7 +183,9 @@ def after_init_cloud(worker, msg_type, payload, config):
     if msg_type == 'success':
         existing_nodes = [
             int(node.lstrip('nowcast')) for node in payload.keys()]
-        for i in range(config['run']['nodes']):
+        host_name = config['run']['cloud host']
+        host = config['run'][host_name]
+        for i in range(host['nodes']):
             if i not in existing_nodes:
                 node_name = 'nowcast{}'.format(i)
                 actions['success'].append(
@@ -282,9 +285,9 @@ def after_download_results(worker, msg_type, payload, config):
 def update_checklist(worker, key, worker_checklist):
     try:
         checklist[key].update(worker_checklist)
-    except KeyError:
+    except (KeyError, ValueError, AttributeError):
         checklist[key] = worker_checklist
-    logger.debug('checklist: {}'.format(checklist))
+    logger.debug('checklist:\n{}'.format(pprint.pformat(checklist)))
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
 
