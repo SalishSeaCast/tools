@@ -51,13 +51,13 @@ def main():
         set_ssh_config(host_name, config, socket, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            '.ssh/config for nodes in {} cloud installed on nowcast0 node'
+            '.ssh/config for nodes in {} installed on nowcast0 node'
             .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'installation of .ssh/config for nodes in {} cloud failed'
+            'installation of .ssh/config for nodes in {} failed'
             .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)

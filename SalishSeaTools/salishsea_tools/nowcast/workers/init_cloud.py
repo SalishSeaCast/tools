@@ -51,14 +51,14 @@ def main():
         init_cloud(host_name, config, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            'names and addresses collected from existing nodes in {} cloud'
+            'names and addresses collected from existing nodes in {}'
             .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             'collection of names and addresses from existing nodes '
-            'in {} cloud failed'
+            'in {} failed'
             .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)

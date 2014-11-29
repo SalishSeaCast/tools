@@ -51,13 +51,13 @@ def main():
         set_head_node_ip(host_name, config, checklist)
         # Exchange success messages with the nowcast manager process
         logger.info(
-            'public IP address associated with nowcast0 node in {} cloud'
+            'public IP address associated with nowcast0 node in {}'
             .format(host_name))
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'public IP address association with nowcast0 in {} cloud failed'
+            'public IP address association with nowcast0 in {} failed'
             .format(host_name))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)

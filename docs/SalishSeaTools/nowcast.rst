@@ -330,13 +330,13 @@ Python Package Environment
 
 The nowcast workers that do pre- and post-processing for the runs can be run in a default :ref:`AnacondaPythonDistro` environment with the :ref:`SalishSeaTools` installed.
 However,
-the workers that interact with the `Ocean Networks Canada`_ private cloud `nefos`_ computing facility
-(see :ref:`WorkingOnNefos`)
+the workers that interact with the `Ocean Networks Canada`_ private cloud `west.cloud`_ computing facility
+(see :ref:`WorkingOnWestCloud`)
 require additional Python packages to use the `OpenStack`_ APIs.
 To avoid adding complexity and potential undesirable interactions and/or side-effects to the default Anaconda Python environment we create an isolated environment for nowcast.
 
 .. _Ocean Networks Canada: http://www.oceannetworks.ca/
-.. _nefos: https://www.westgrid.ca/support/systems/Nefos
+.. _west.cloud: https://www.westgrid.ca/support/systems/Nefos
 .. _OpenStack: http://www.openstack.org/
 
 Create a new :program:`conda` environment with Python 2.7 and pip installed in it,
@@ -358,7 +358,7 @@ not all of the packages that we need are available in the :program:`conda` repos
 
 Install the packages that the :ref:`SalishSeaTools` depends on,
 the package itself,
-and its companion package :ref:`SalishSeaCmd`:
+and its companion package :ref:`SalishSeaCmdProcessor`:
 
 .. code-block:: bash
 

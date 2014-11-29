@@ -316,7 +316,7 @@ def is_cloud_ready(config):
         if len(checklist['nodes']) == host['nodes']:
             checklist['cloud ready'] = True
             logger.info(
-                '{node_count} nodes in {host} cloud ready for '
+                '{node_count} nodes in {host} ready for '
                 'run provisioning'
                 .format(node_count=host['nodes'], host=host_name))
             launch_worker('set_ssh_config', config)
