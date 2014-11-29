@@ -21,20 +21,20 @@ from __future__ import division
 
 from cStringIO import StringIO
 import datetime
-
-import matplotlib
-import arrow
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from dateutil import tz
-import requests
-from scipy import interpolate as interp
-import matplotlib.gridspec as gridspec
 import glob
 import os
-import netCDF4 as nc
+
+import arrow
+from dateutil import tz
+import matplotlib
 import matplotlib.dates as mdates
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import netCDF4 as nc
+import numpy as np
+import pandas as pd
+import requests
+from scipy import interpolate as interp
 
 from salishsea_tools import (
     nc_tools,
@@ -47,7 +47,7 @@ from salishsea_tools import (
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'OrangeRed'
-time_shift = datetime.timedelta(hours=-8) #time shift for plottin in PST
+time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 
@@ -311,26 +311,12 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
 
     #loading sea surface height
     ssh = grid_T.variables['sossheig']
-    #loading sea surface height at Point Atkinson
+    #loading sea surface height at location
     ssh_loc = ssh[:,j,i]
 
     #time stamp of simulation
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
     t_final=(nc_tools.timestamp(grid_T,-1)).datetime
-
-    #loading the tidal predictions
-    #path='/data/nsoontie/MEOPAR/analysis/Susan/'
-    #filename='_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
-    path='/data/nsoontie/MEOPAR/analysis/Nancy/tides/'
-    filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
-    tfile = path+name+filename
-    ttide,msl= stormtools.load_tidal_predictions(tfile)
-    
-    #correct model for extra tidal constituents and compute residual
-    sdt=t_orig.replace(minute=0)
-    edt=t_final +datetime.timedelta(minutes=30)
-    ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
-    res = compute_residual(ssh_corr,ttide,sdt,edt)
 
     #time for curve
     count=grid_T.variables['time_counter'][:]
@@ -338,10 +324,6 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
     t=np.array(t)
-    
-    #Look up maximim ssh and timing
-    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lons[name],lats[name],model_path,PST)
-    ssh_max_field = np.ma.masked_values(ssh[index], 0)
 
     #figure
     fig=plt.figure(figsize=figsize)
@@ -351,11 +333,16 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax2=plt.subplot(gs[:,1]) #map
     ax3=plt.subplot(gs[1,0]) #residual
 
-    #curve plot
+    #Plot tides, corrected model and original model
+    ttide=plot_tides(ax1,name,t_orig,PST)
+    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST)
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
-    ax1.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
-    ax1.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
+    #compute residuals
+    res = compute_residual(ssh_loc,ttide,t_orig,t_final)
+    #Look up maximim ssh and timing and plot
+    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lons[name],lats[name],model_path,PST)
     ax1.plot(tmax+PST*time_shift,max_ssh,color='yellow',marker='D',markersize=8,label='Maximum SSH')
+    #Make the plot nicer
     ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
     ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
@@ -378,10 +365,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     fig.autofmt_xdate()
 
     #ssh profile
-    viz_tools.set_aspect(ax2)
-    land_colour = 'burlywood'
-    ax2.set_axis_bgcolor(land_colour)
+    viz_tools.plot_land_mask(ax2,gridB,color='burlywood')
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
+    ssh_max_field = np.ma.masked_values(ssh[index], 0)
     mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both',alpha=0.6)
     ax2.contour(ssh_max_field,cs,colors='k',linestyles='--')
     cbar = fig.colorbar(mesh,ax=ax2)
@@ -445,30 +431,34 @@ def print_maxes(ssh,t,res,lon,lat,model_path,PST):
    
     return max_ssh,index_ssh,tmax,max_res,max_wind 
     
-def compute_residual(ssh,ttide,sdt,edt):
+def compute_residual(ssh,ttide,t_orig,t_final):
     """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
     Both modelled ssh and tidal predictions use eight tidal constituents.
     
-    :arg ssh: The modelled ssh (no corrections)
+    :arg ssh: The modelled ssh (without corrections)
     :type ssh: numpy array
     
     :arg ttide: The tidal predictions
     :type ttide: DateFrame object with columns time, pred_all and pred_8
     
-    :arg sdt: The start of the date range.
-    :type sdt: datetime object
+    :arg t_orig: The start of the date range.
+    :type t_orig: datetime object
     
-    :arg edt: The end of the date range.
-    :type edt: datetime object
+    :arg t_final: The end of the date range.
+    :type t_final: datetime object
     
     :returns: res, a numpy array
     """
+
+    #date times for matching
+    sdt=t_orig.replace(minute=0)
+    edt=t_final +datetime.timedelta(minutes=30)
     
     #find index of ttide.time at start and end
     inds = ttide.time[ttide.time==sdt].index[0]
     inde = ttide.time[ttide.time==edt].index[0]
     
-    tides=np.array(ttide.pred_all)
+    tides=np.array(ttide.pred_8)
     #average tides over two times to shift to the model 1/2 outputs
     shift = 0.5*(tides[inds:inde] + tides[inds+1:inde+1])
     
@@ -1035,4 +1025,28 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
         'Hourly Sea Surface Height at Point Atkinson on {}'.format(results_date))
     return fig
 
-#
+#Plan for new functions:
+
+def plot_tides(ax,name,t_orig,PST):
+    """returns tides and plots them"""
+  
+    path='/data/nsoontie/MEOPAR/analysis/Nancy/tides/'
+    filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    tfile = path+name+filename
+    ttide,msl= stormtools.load_tidal_predictions(tfile)
+    ax.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
+    
+    return ttide
+    
+def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST):
+    """ plots and returns corrected model
+    """
+    sdt=t_orig.replace(minute=0)
+    edt=t_final +datetime.timedelta(minutes=30)
+    ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
+    
+    ax.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
+    
+    return ssh_corr
+    
+
