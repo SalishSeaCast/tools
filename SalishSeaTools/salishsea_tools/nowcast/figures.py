@@ -305,7 +305,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36}
     
     bathy, X, Y = tidetools.get_bathy_data(gridB)
-    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=True)
+    [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
 
     #loading sea surface height
     ssh = grid_T.variables['sossheig']
