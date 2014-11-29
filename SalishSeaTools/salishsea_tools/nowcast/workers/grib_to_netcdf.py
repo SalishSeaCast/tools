@@ -58,6 +58,9 @@ JST, JEN = 20, 285
 # Position of Sandheads
 SandI, SandJ = 151, 136
 
+#: Weather forcing file name template
+FILENAME_TMPL = 'ops_{:y%Ym%md%d}.nc'
+
 
 def main():
     # Prepare the worker
@@ -177,8 +180,7 @@ def grib_to_netcdf(config, checklist):
         ip += 1
 
         netCDF4_deflate(outnetcdf)
-        checklist.update(
-            {today.format('YYYY-MM-DD'): os.path.basename(outnetcdf)})
+        checklist.update({subdirectory: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
     fig.savefig('wg.png')
 

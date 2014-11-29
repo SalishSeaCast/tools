@@ -39,6 +39,10 @@ logger = logging.getLogger(worker_name)
 context = zmq.Context()
 
 
+#: Rivers runoff forcing file name template
+FILENAME_TMPL = 'RFraserCElse_{:y%Ym%md%d}.nc'
+
+
 def main():
     # Prepare the worker
     parser = lib.basic_arg_parser(worker_name, description=__doc__)
@@ -50,9 +54,8 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        make_runoff_file(config, checklist)
+        checklist = make_runoff_file(config)
         logger.info(
             'Creation of runoff file from Fraser at Hope '
             'and climatology elsewhere completed')
@@ -77,7 +80,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def make_runoff_file(config, checklist):
+def make_runoff_file(config):
     """Create a rivers runoff file from real-time Fraser River at Hope
     average flow yesterday and climatology for all of the other rivers.
     """
@@ -108,13 +111,13 @@ def make_runoff_file(config, checklist):
     # and make the file
     directory = config['rivers']['rivers_dir']
     # set up filename to follow NEMO conventions
-    filename = (
-        'RFraserCElse_y{.year}m{.month:02d}d{.day:02d}.nc'.format(yesterday))
+    filename = FILENAME_TMPL.format(yesterday.date())
     filepath = os.path.join(directory, filename)
     write_file(filepath, yesterday, runoff, lat, lon, riverdepth)
     logger.debug(
         'File written to {directory} as {filename}'
         .format(directory=directory, filename=filename))
+    return filepath
 
 
 def fraser_climatology(config):
