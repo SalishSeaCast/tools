@@ -363,7 +363,7 @@ and its companion package :ref:`SalishSeaCmd`:
 .. code-block:: bash
 
     (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml mock
-    (nowcast)$ pip install arrow angles
+    (nowcast)$ pip install arrow angles BeautifulSoup4
     (nowcast)$ cd MEOPAR/tools
     (nowcast)$ pip install --editable SalishSeaTools
     (nowcast)$ pip install --editable SalishSeaCmd
