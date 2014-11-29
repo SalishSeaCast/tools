@@ -165,6 +165,7 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker,
              ['upload_forcing', config, [config['run']['hps host']]]),
+            (launch_worker, ['init_cloud', config]),
         ],
         'failure': None,
         'crash': None,
@@ -239,6 +240,8 @@ def after_mount_sshfs(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'sshfs mount', payload]),
+            (launch_worker,
+             ['upload_forcing', config, [config['run']['cloud host']]]),
         ],
         'failure': None,
         'crash': None,
