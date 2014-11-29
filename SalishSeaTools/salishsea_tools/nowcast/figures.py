@@ -85,13 +85,12 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     fig.autofmt_xdate()
     ax.plot(ttide.time+time_shift*PST,ttide.pred_all,'-k')
     #line indicating current date
-    ax.plot([t_orig,t_orig],ylims,'-r')
-    ax.plot([t_end,t_end],ylims,'-r')
+    ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r')
+    ax.plot([t_end+time_shift*PST,t_end+time_shift*PST],ylims,'-r')
     #axis limits and labels
     ax.set_xlim([ax_start+time_shift*PST,ax_end+time_shift*PST])
     ax.set_ylim(ylims)
-    timestamp = nc_tools.timestamp(grid_T,0)
-    ax.set_title('Tidal Predictions at Point Atkinson: ' + timestamp.strftime('%d-%b-%Y'))
+    ax.set_title('Tidal Predictions at Point Atkinson: ' + t_orig.strftime('%d-%b-%Y'))
     ax.set_ylabel('Sea Surface Height [m]')
     ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
 
