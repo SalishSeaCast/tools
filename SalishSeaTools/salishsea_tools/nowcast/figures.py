@@ -77,25 +77,20 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     ax_end = t_orig + datetime.timedelta(weeks=2)
     ylims=[-3,3]
 
-    #load the tidal prediciton file
-    path='/data/nsoontie/MEOPAR/analysis/Susan/'
-    filename='Point Atkinson_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
-    tfile = path+filename
-    ttide,msl= stormtools.load_tidal_predictions(tfile)
-
     #plotting
     fig,ax=plt.subplots(1,1,figsize=figsize)
     fig.autofmt_xdate()
-    ax.plot(ttide.time+time_shift*PST,ttide.pred_all,'-k')
+    ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,'black')
     #line indicating current date
-    ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r')
-    ax.plot([t_end+time_shift*PST,t_end+time_shift*PST],ylims,'-r')
+    ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r',lw=2)
+    ax.plot([t_end+time_shift*PST,t_end+time_shift*PST],ylims,'-r',lw=2)
     #axis limits and labels
     ax.set_xlim([ax_start+time_shift*PST,ax_end+time_shift*PST])
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson: ' + t_orig.strftime('%d-%b-%Y'))
     ax.set_ylabel('Sea Surface Height [m]')
     ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+    ax.grid()
 
     return fig
 
@@ -886,8 +881,8 @@ def get_weather_filenames(t_orig,t_final,model_path):
    :arg t_orig: The beginning of the date range of interest
    :type t_orig: datetime object
    
-   :arg t_end: The end of the date range of interest
-   :type t_end: datetime object
+   :arg t_final: The end of the date range of interest
+   :type t_final: datetime object
    
    :arg model_path: directory where the model files are stored
    :type model_path: string
@@ -1027,20 +1022,62 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 
 #Plan for new functions:
 
-def plot_tides(ax,name,t_orig,PST):
-    """returns tides and plots them"""
+def plot_tides(ax,name,t_orig,PST,color=predictions_c):
+    """Plots and returns the tidal predictions at a given station during the year of t_orig. Only for Victoria, Campbell River, Point Atkinson and Patricia Bay. Tidal predictions are stored in a specific location.
+    
+    :arg ax: The axis where the tides are plotted.
+    :type ax: axis object
+
+    :arg name: The name of the station
+    :type name: string ('Point Atkinson', 'Victoria', 'Campbell River', or 'Patricia Bay'
+
+    :arg t_orig: The date of a simulation.
+    :type t_orig: datetime object
+
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
+
+    :arg color: The color for the plot
+    :type color: string
+
+    :returns: ttide, a DataFrame object with tidal predictions an columns time, pred_all, pred_8
+    """
   
     path='/data/nsoontie/MEOPAR/analysis/Nancy/tides/'
     filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
-    ax.plot(ttide.time+PST*time_shift,ttide.pred_all,c=predictions_c,linewidth=2,label='tidal predictions')
+    ax.plot(ttide.time+PST*time_shift,ttide.pred_all,c=color,linewidth=2,label='tidal predictions')
     
     return ttide
     
 def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST):
-    """ plots and returns corrected model
+    """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
+
+    :arg ax: The axis where the corrected model is plotted.
+    :type ax: axis object
+
+    :arg t: The time of model output
+    :type t: numpy array
+
+    :arg ssh_loc: The model sea surface height to be corrected (1 dimensional)
+    :type ssh_loc: numpy array
+
+    :arg ttide: The tidal predictions with columns time, pred_all, pred_8.
+    :type ttide: DataFrame object
+
+    :arg t_orig: The start time of the simulation.
+    :type t_orig: datetime object
+
+    :arg t_final: The end time of the simulation.
+    :type t_final: datetime object
+
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
+
+    :returns: ssh_corr, the model output but corrected for missing tidal constituents
     """
+    #Adjust dates for matching with tides dates. 
     sdt=t_orig.replace(minute=0)
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
