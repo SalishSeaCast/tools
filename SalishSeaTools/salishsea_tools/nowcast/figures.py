@@ -59,6 +59,9 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
