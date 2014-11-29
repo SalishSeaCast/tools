@@ -25,6 +25,7 @@ import subprocess
 import sys
 import time
 
+import arrow
 import paramiko
 import requests
 import yaml
@@ -114,6 +115,26 @@ def basic_arg_parser(worker_name, description=None, add_help=True):
         ''',
     )
     return parser
+
+
+def arrow_date(string):
+    """Convert a YYYY-MM-DD string to an arrow object or raise
+    :py:exc:`argparse.ArgumentTypeError`.
+
+    :arg string: YYYY-MM-DD string to convert.
+    :type string: str
+
+    :returns: Date string converted to an :py:class:`arrow.Arrow` object.
+
+    :raises: :py:exc:`argparse.ArgumentTypeError`
+    """
+    try:
+        return arrow.get(string, 'YYYY-MM-DD')
+    except arrow.parser.ParserError:
+        msg = (
+            'unrecognized date format: {} - '
+            'please use YYYY-MM-DD'.format(string))
+        raise argparse.ArgumentTypeError(msg)
 
 
 def load_config(config_file):

@@ -84,7 +84,7 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        '--run-date', type=arrow_date,
+        '--run-date', type=lib.arrow_date,
         default=arrow.now().date(),
         help='''
         Date of the run to download results files from;
@@ -92,19 +92,6 @@ def configure_argparser(prog, description, parents):
         ''',
     )
     return parser
-
-
-def arrow_date(string):
-    """Convert a YYYY-MM-DD string to an arrow object or raise
-    :py:exc:`argparse.ArgumentTypeError`.
-    """
-    try:
-        return arrow.get(string, 'YYYY-MM-DD')
-    except arrow.parser.ParserError:
-        msg = (
-            'unrecognized date format: {} - '
-            'please use YYYY-MM-DD'.format(string))
-        raise argparse.ArgumentTypeError(msg)
 
 
 def download_results(host_name, run_date, config, checklist):
