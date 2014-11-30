@@ -375,7 +375,7 @@ def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
 ):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {'hpc host': 'orcinus'}}
     after_worker_func = getattr(nowcast_mgr_module, worker)
     next_steps = after_worker_func(worker, msg_type, payload, config)
     assert next_steps is None
@@ -407,13 +407,15 @@ def test_make_runoff_file_success_next_steps(nowcast_mgr_module):
 
 def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {'hpc host': 'orcinus'}}
     next_steps = nowcast_mgr_module.after_grib_to_netcdf(
         'grib_to_netcdf', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['grib_to_netcdf', 'weather forcing', payload]),
-        (nowcast_mgr_module.launch_worker, ['upload_forcing', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['upload_forcing', config, ['orcinus']]),
+        (nowcast_mgr_module.launch_worker, ['init_cloud', config]),
     ]
     assert next_steps == expected
 
@@ -458,12 +460,14 @@ def test_set_ssh_config_success_next_steps(nowcast_mgr_module):
 
 def test_mount_sshfs_success_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {'cloud host': 'west.cloud'}}
     next_steps = nowcast_mgr_module.after_mount_sshfs(
         'mount_sshfs', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['mount_sshfs', 'sshfs mount', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['upload_forcing', config, ['west.cloud']])
     ]
     assert next_steps == expected
 
