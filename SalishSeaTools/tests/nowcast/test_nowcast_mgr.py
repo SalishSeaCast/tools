@@ -364,6 +364,8 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_set_head_node_ip', 'crash'),
     ('after_set_ssh_config', 'failure'),
     ('after_set_ssh_config', 'crash'),
+    ('after_set_mpi_hosts', 'failure'),
+    ('after_set_mpi_hosts', 'crash'),
     ('after_upload_forcing', 'failure'),
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
@@ -374,7 +376,7 @@ def test_the_end_next_step(nowcast_mgr_module):
 def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
 ):
-    payload = Mock(name='payload')
+    payload = {'orcinus': True}
     config = {'run': {'hpc host': 'orcinus'}}
     after_worker_func = getattr(nowcast_mgr_module, worker)
     next_steps = after_worker_func(worker, msg_type, payload, config)
@@ -453,6 +455,19 @@ def test_set_ssh_config_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['set_ssh_config', 'ssh config', payload]),
+        (nowcast_mgr_module.launch_worker, ['set_mpi_hosts', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_set_mpi_hosts_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_set_mpi_hosts(
+        'set_mpi_hosts', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['set_mpi_hosts', 'mpi_hosts', payload]),
         (nowcast_mgr_module.launch_worker, ['mount_sshfs', config]),
     ]
     assert next_steps == expected
@@ -473,14 +488,15 @@ def test_mount_sshfs_success_next_steps(nowcast_mgr_module):
 
 
 def test_upload_forcing_success_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
+    payload = {'west.cloud': True}
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_upload_forcing(
         'upload_forcing', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['upload_forcing', 'forcing upload', payload]),
-        (nowcast_mgr_module.launch_worker, ['make_forcing_links', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_forcing_links', config, ['west.cloud']]),
     ]
     assert next_steps == expected
 
