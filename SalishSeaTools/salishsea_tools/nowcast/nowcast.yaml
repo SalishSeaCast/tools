@@ -139,6 +139,11 @@ msg_types:
     success: cloud .ssh/config installed
     failure: cloud .ssh/config installation failed
     crash: set_ssh_config worker crashed
+  set_mpi_hosts:
+    need: node names and ip addresses requested
+    success: cloud mpi_hosts installed
+    failure: cloud mpi_hosts installation failed
+    crash: set_mpi_hosts worker crashed
   mount_sshfs:
     need: node names and ip addresses requested
     success: sshfs filesystem mounted on cloud nodes

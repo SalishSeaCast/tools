@@ -94,6 +94,7 @@ def message_processor(config, message):
         'create_compute_node': after_create_compute_node,
         'set_head_node_ip': after_set_head_node_ip,
         'set_ssh_config': after_set_ssh_config,
+        'set_mpi_hosts': after_set_mpi_hosts,
         'mount_sshfs': after_mount_sshfs,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
@@ -228,6 +229,19 @@ def after_set_ssh_config(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'ssh config', payload]),
+            (launch_worker, ['set_mpi_hosts', config]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_set_mpi_hosts(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args])]
+        'success': [
+            (update_checklist, [worker, 'mpi_hosts', payload]),
             (launch_worker, ['mount_sshfs', config]),
         ],
         'failure': None,
