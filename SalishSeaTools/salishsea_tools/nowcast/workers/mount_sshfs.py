@@ -78,7 +78,7 @@ def mount_sshfs(host_name, config, socket, checklist):
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
     mount_cmd = (
-        'sshfs {user name}@{host name}:{host path} {mount point}'
+        'sshfs -o idmap=user {user name}@{host name}:{host path} {mount point}'
         .format(**host['sshfs storage']))
     ssh_client = lib.ssh(host_name)
     ssh_client.exec_command(mount_cmd)
