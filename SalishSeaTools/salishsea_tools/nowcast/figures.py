@@ -91,6 +91,11 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     ax.set_ylabel('Sea Surface Height [m]')
     ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
     ax.grid()
+    ax.text(1., -0.2, 
+            'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
+        horizontalalignment='right',
+        verticalalignment='top',
+        transform=ax.transAxes)
 
     return fig
 

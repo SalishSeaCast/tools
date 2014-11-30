@@ -103,7 +103,7 @@ def configure_argparser(prog, description, parents):
 def upload_forcing(host_name, run_date, config):
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(host_name)
-    # Neah Bay sea sureface height
+    # Neah Bay sea surface height
     for day in range(-1, 3):
         filename = get_NeahBay_ssh.FILENAME_TMPL.format(
             run_date.replace(days=day).date())
