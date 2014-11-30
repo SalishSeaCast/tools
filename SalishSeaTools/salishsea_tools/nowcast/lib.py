@@ -509,13 +509,13 @@ def ssh(host, ssh_config_file='~/.ssh/config'):
 
     :returns: :class:`paramiko.client.SSHClient` object
     """
-    ssh_client = paramiko.client.SSHClient(compress=True)
+    ssh_client = paramiko.client.SSHClient()
     ssh_client.load_system_host_keys()
     ssh_config = paramiko.config.SSHConfig()
     with open(os.path.expanduser(ssh_config_file)) as f:
         ssh_config.parse(f)
     host = ssh_config.lookup(host)
-    ssh_client.connect(host['hostname'], username=host['user'])
+    ssh_client.connect(host['hostname'], username=host['user'], compress=True)
     return ssh_client
 
 
