@@ -91,8 +91,7 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to upload forcing files to')
     parser.add_argument(
-        '--run-date', type=lib.arrow_date,
-        default=arrow.now().date(),
+        '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
         Date of the run to download results files from;
         defaults to %(default)s.
