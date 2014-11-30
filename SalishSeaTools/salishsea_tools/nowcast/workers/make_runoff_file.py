@@ -170,7 +170,7 @@ def calculate_daily_flow(yesterday, criverflow):
 def fraser_climatology(config):
     """Read in the Fraser climatology separated from Hope flow.
     """
-    with open(config['rivers']['Fraser_climatology']) as f:
+    with open(config['rivers']['Fraser climatology']) as f:
         fraser_climatology_separation = yaml.safe_load(f)
     otherratio = fraser_climatology_separation['Ratio that is not Fraser']
     fraserratio = fraser_climatology_separation['Ratio that is Fraser']
