@@ -164,7 +164,7 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker,
-             ['upload_forcing', config, [config['run']['hps host']]]),
+             ['upload_forcing', config, [config['run']['hpc host']]]),
             (launch_worker, ['init_cloud', config]),
         ],
         'failure': None,
