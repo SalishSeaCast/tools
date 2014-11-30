@@ -57,6 +57,7 @@ def main():
         except zmq.ZMQError as e:
             # Fatal ZeroMQ problem
             logger.critical('ZMQError: {}'.format(e))
+            logger.critical('shutting down')
             break
         except SystemExit:
             # Termination by signal
@@ -254,7 +255,8 @@ def after_upload_forcing(worker, msg_type, payload, config):
         # msg type: [(step, [step_args])]
         'success': [
             (update_checklist, [worker, 'forcing upload', payload]),
-            (launch_worker, ['make_forcing_links', config]),
+            (launch_worker,
+             ['make_forcing_links', config, [payload.keys()[0]]]),
         ],
         'failure': None,
         'crash': None,

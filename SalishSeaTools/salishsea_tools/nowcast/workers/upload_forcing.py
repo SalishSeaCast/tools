@@ -59,7 +59,7 @@ def main():
     # Do the work
     try:
         checklist = upload_forcing(
-            parsed_args.host_name, parsed_args.run_date, config, socket)
+            parsed_args.host_name, parsed_args.run_date, config)
         logger.info(
             'forcing files upload to {.host_name} completed'
             .format(parsed_args))
@@ -100,7 +100,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def upload_forcing(host_name, run_date, config, socket):
+def upload_forcing(host_name, run_date, config):
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(host_name)
     # Neah Bay sea sureface height
@@ -117,7 +117,7 @@ def upload_forcing(host_name, run_date, config, socket):
     localpath = os.path.join(config['rivers']['rivers_dir'], filename)
     remotepath = os.path.join(host['rivers_dir'], filename)
     upload_file(sftp_client, host_name, localpath, remotepath)
-    # # Weather
+    # Weather
     for day in range(3):
         filename = grib_to_netcdf.FILENAME_TMPL.format(
             run_date.replace(days=day).date())
@@ -128,7 +128,7 @@ def upload_forcing(host_name, run_date, config, socket):
         upload_file(sftp_client, host_name, localpath, remotepath)
     sftp_client.close()
     ssh_client.close()
-    return True
+    return {host_name: True}
 
 
 def upload_file(sftp_client, host_name, localpath, remotepath):
