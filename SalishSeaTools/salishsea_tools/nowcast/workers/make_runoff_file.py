@@ -90,14 +90,14 @@ def make_runoff_file(config):
     now = utc.floor('day')
     yesterday = now.replace(days=-1)
     # Find history of fraser flow
-    fraserflow = get_fraser_at_hope()
+    fraserflow = get_fraser_at_hope(config)
     # Select yesterday's value
     step1 = fraserflow[fraserflow[:, 0] == yesterday.year]
     step2 = step1[step1[:, 1] == yesterday.month]
     step3 = step2[step2[:, 2] == yesterday.day]
     FlowAtHope = step3[0, 3]
     # Get climatology
-    criverflow, lat, lon, riverdepth = get_river_climatology()
+    criverflow, lat, lon, riverdepth = get_river_climatology(config)
     # Interpolate to today
     driverflow = calculate_daily_flow(yesterday, criverflow)
     logger.debug('Getting file for {yesterday}'.format(yesterday=yesterday))
@@ -118,18 +118,6 @@ def make_runoff_file(config):
         'File written to {directory} as {filename}'
         .format(directory=directory, filename=filename))
     return filepath
-
-
-def fraser_climatology(config):
-    """Read in the Fraser climatology separated from Hope flow.
-    """
-    with open(config['rivers']['Fraser_climatology']) as f:
-        fraser_climatology_separation = yaml.safe_load(f)
-    otherratio = fraser_climatology_separation['Ratio that is not Fraser']
-    fraserratio = fraser_climatology_separation['Ratio that is Fraser']
-    nonFraser = np.array(fraser_climatology_separation['non Fraser by Month'])
-    afterHope = np.array(fraser_climatology_separation['after Hope by Month'])
-    return otherratio, fraserratio, nonFraser, afterHope
 
 
 def get_fraser_at_hope(config):
@@ -179,6 +167,41 @@ def calculate_daily_flow(yesterday, criverflow):
     return driverflow
 
 
+def fraser_climatology(config):
+    """Read in the Fraser climatology separated from Hope flow.
+    """
+    with open(config['rivers']['Fraser_climatology']) as f:
+        fraser_climatology_separation = yaml.safe_load(f)
+    otherratio = fraser_climatology_separation['Ratio that is not Fraser']
+    fraserratio = fraser_climatology_separation['Ratio that is Fraser']
+    nonFraser = np.array(fraser_climatology_separation['non Fraser by Month'])
+    afterHope = np.array(fraser_climatology_separation['after Hope by Month'])
+    return otherratio, fraserratio, nonFraser, afterHope
+
+
+def fraser_correction(
+    pd, fraserflux, yesterday, afterHope, NonFraser, fraserratio, otherratio,
+    runoff
+):
+    """For the Fraser Basin only, replace basic values with the new
+    climatology after Hope and the observed values for Hope.
+    Note, we are changing runoff only and not using/changing river depth.
+    """
+    for key, river in pd.items():
+        if "Fraser" in key:
+            flux = calculate_daily_flow(yesterday, afterHope) + fraserflux
+            subarea = fraserratio
+        else:
+            flux = calculate_daily_flow(yesterday, NonFraser)
+            subarea = otherratio
+        runoff = rivertools.fill_runoff_array(
+            flux*river['prop']/subarea,
+            river['i'], river['di'],
+            river['j'], river['dj'],
+            river['depth'], runoff, np.empty_like(runoff))[0]
+    return runoff
+
+
 def write_file(filepath, yesterday, flow, lat, lon, riverdepth):
     """Create the rivers runoff netCDF4 file.
     """
@@ -214,29 +237,6 @@ def write_file(filepath, yesterday, flow, lat, lon, riverdepth):
     rodepth.units = 'm'
     rodepth = riverdepth
     nemo.close()
-
-
-def fraser_correction(
-    pd, fraserflux, yesterday, afterHope, NonFraser, fraserratio, otherratio,
-    runoff
-):
-    """For the Fraser Basin only, replace basic values with the new
-    climatology after Hope and the observed values for Hope.
-    Note, we are changing runoff only and not using/changing river depth.
-    """
-    for key, river in pd.items():
-        if "Fraser" in key:
-            flux = calculate_daily_flow(yesterday, afterHope) + fraserflux
-            subarea = fraserratio
-        else:
-            flux = calculate_daily_flow(yesterday, NonFraser)
-            subarea = otherratio
-        runoff = rivertools.fill_runoff_array(
-            flux*river['prop']/subarea,
-            river['i'], river['di'],
-            river['j'], river['dj'],
-            river['depth'], runoff, np.empty_like(runoff))[0]
-    return runoff
 
 
 if __name__ == '__main__':
