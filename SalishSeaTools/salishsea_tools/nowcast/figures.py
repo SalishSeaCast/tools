@@ -336,7 +336,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
     #Look up maximim ssh and timing and plot
     max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lons[name],lats[name],model_path,PST)
-    ax1.plot(tmax+PST*time_shift,max_ssh,color='yellow',marker='D',markersize=8,label='Maximum SSH')
+    ax1.plot(tmax+PST*time_shift, max_ssh, color='white', marker='o',
+             markersize=8, markeredgewidth=3, label='Maximum SSH')
     #Make the plot nicer
     ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
@@ -373,9 +374,10 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
     ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'))
-    ax2.plot(i,j,marker='D',color='yellow',ms=8)
+    ax2.plot(i, j, marker='o', color='white', ms=8,
+             markeredgewidth=3)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.7)
-    ax2.annotate(name,(i-120,j+25),fontsize=15,color='black',bbox=bbox_args) 
+    ax2.annotate(name,(20, 500),fontsize=15,color='black',bbox=bbox_args) 
     
     return fig
     
