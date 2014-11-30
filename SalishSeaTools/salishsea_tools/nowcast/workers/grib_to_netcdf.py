@@ -180,7 +180,13 @@ def grib_to_netcdf(config, checklist):
         ip += 1
 
         netCDF4_deflate(outnetcdf)
-        checklist.update({subdirectory: os.path.basename(outnetcdf)})
+        if subdir in checklist:
+            checklist[subdir].append(os.path.basename(outnetcdf))
+        else:
+            if subdir:
+                checklist[subdir] = [os.path.basename(outnetcdf)]
+            else:
+                checklist.update({subdir: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
     fig.savefig('wg.png')
 
