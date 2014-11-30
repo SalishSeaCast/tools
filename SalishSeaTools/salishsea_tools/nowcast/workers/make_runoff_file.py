@@ -123,7 +123,7 @@ def make_runoff_file(config):
 def get_fraser_at_hope(config):
     """Read Fraser Flow data at Hope from ECget file
     """
-    filename = config['rivers']['Ecget Fraser flow']
+    filename = config['rivers']['ECget Fraser flow']
     fraserflow = np.loadtxt(filename)
     return fraserflow
 
