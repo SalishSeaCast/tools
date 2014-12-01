@@ -117,6 +117,9 @@ def make_forcing_links(host_name, run_date, config):
         create_symlink(sftp_client, host_name, src, dest)
     # Rivers runoff
     clear_links(sftp_client, host, 'rivers/')
+    src = host['rivers_month.nc']
+    dest = os.path.join(host['nowcast_dir'], 'rivers/', os.path.basename(src))
+    create_symlink(sftp_client, host_name, src, dest)
     src = os.path.join(
         host['rivers_dir'],
         make_runoff_file.FILENAME_TMPL.format(run_date.replace(days=-1).date())
