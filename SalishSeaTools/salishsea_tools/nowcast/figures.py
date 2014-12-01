@@ -26,7 +26,6 @@ import os
 
 import arrow
 from dateutil import tz
-import matplotlib
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
