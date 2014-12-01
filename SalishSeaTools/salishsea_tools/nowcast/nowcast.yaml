@@ -55,6 +55,8 @@ run:
       host path: /gss_onc/NEMO
       mount point: /mnt/MEOPAR
     rivers_dir: /mnt/MEOPAR/rivers/
+    # Location of rivers runoff monthly climatology file
+    rivers_month.nc: /mnt/MEOPAR/NEMO-forcing/rivers/rivers_month.nc
     ssh_dir: /mnt/MEOPAR/sshNeahBay/
     weather_dir: /mnt/MEOPAR/GEM2.5/ops/NEMO-atmos/
     nowcast_dir: /mnt/MEOPAR/nowcast/
@@ -70,6 +72,8 @@ run:
   hpc host: orcinus-nowcast
   orcinus-nowcast:
     rivers_dir: /home/sallen/MEOPAR/rivers/
+    # Location of rivers runoff monthly climatology file
+    rivers_month.nc: /home/dlatorne/MEOPAR/NEMO-forcing/rivers/rivers_month.nc
     ssh_dir: /home/sallen/MEOPAR/sshNeahBay/
     weather_dir: /home/sallen/MEOPAR/GEM2.5/ops/NEMO-atmos/
     nowcast_dir: /home/sallen/MEOPAR/nowcast/
@@ -81,8 +85,6 @@ run:
     results:
       nowcast: /home/dlatorne/MEOPAR/SalishSea/nowcast/
       forecast: /home/dlatorne/MEOPAR/SalishSea/forecast/
-
-  make forcing links: /home/dlatorne/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/makelinks.sh
 
   results archive:
     nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
