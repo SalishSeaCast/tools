@@ -511,6 +511,7 @@ def ssh(host, ssh_config_file='~/.ssh/config'):
     """
     ssh_client = paramiko.client.SSHClient()
     ssh_client.load_system_host_keys()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_config = paramiko.config.SSHConfig()
     with open(os.path.expanduser(ssh_config_file)) as f:
         ssh_config.parse(f)
