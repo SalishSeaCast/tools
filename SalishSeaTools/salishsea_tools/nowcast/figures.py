@@ -67,9 +67,9 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
 
     :returns: Matplotlib figure object instance
     """
-    #beginning and end time of the simulation file.
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_end =((nc_tools.timestamp(grid_T,-1)).datetime)
+    #beginning and end time of the simulation file.   
+    t_orig,t_end,t_nemo=get_model_time_variables(grid_T)
+    timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     #set axis limits 2 weeks before and after start date
     ax_start = t_orig - datetime.timedelta(weeks=2)
@@ -88,7 +88,7 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson: ' + t_orig.strftime('%d-%b-%Y'))
     ax.set_ylabel('Sea Surface Height [m]')
-    ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+    ax.set_xlabel('Time {}'.format(timezone))
     ax.grid()
     ax.text(1., -0.2, 
             'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
@@ -208,10 +208,10 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     bathy, X, Y = tidetools.get_bathy_data(gridB)
 
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
+    t_orig,t_final,t=get_model_time_variables(grid_T)
     start_date = t_orig.strftime('%d-%b-%Y')
     end_date = t_final.strftime('%d-%b-%Y')
+    timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     m = np.arange(3)
     names = ['NeahBay', 'FridayHarbor', 'CherryPoint']
@@ -252,11 +252,6 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
         [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
       
         ssh = grid_T.variables['sossheig'][:,j,i]
-        count=grid_T.variables['time_counter'][:]
-        t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
-        for i in range(len(t)):
-            t[i]=t[i].datetime
-        t=np.array(t)
 
         ax = plt.subplot(gs[M,0]) #ssh
         ax.plot(t[:]+time_shift*PST,ssh,c=model_c,linewidth=2,label='model')
@@ -264,11 +259,10 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
         ax.plot(tides.time+time_shift*PST,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
         ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
         ax.set_ylim([-3,3])
-        timestamp = nc_tools.timestamp(grid_T,0)
-        ax.set_title('Hourly Sea Surface Height at '+name + ': ' + timestamp.strftime('%d-%b-%Y'))
+        ax.set_title('Hourly Sea Surface Height at '+name + ': ' + t_orig.strftime('%d-%b-%Y'))
         ax.grid()
         ax.set_ylabel('Water levels wrt MSL (m)')
-        ax.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+        ax.set_xlabel('Time {}'.format(timezone))
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
         if M == 0:
@@ -322,16 +316,9 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     #loading sea surface height at location
     ssh_loc = ssh[:,j,i]
 
-    #time stamp of simulation
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
-
-    #time for curve
-    count=grid_T.variables['time_counter'][:]
-    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
-    for ind in range(len(t)):
-        t[ind]=t[ind].datetime
-    t=np.array(t)
+    #time variables of simulation
+    t_orig,t_final,t=get_model_time_variables(grid_T)
+    tzone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     #figure
     fig=plt.figure(figsize=figsize)
@@ -383,7 +370,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax1.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax1.set_ylim([-3,3])
     ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
-    ax1.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+    ax1.set_xlabel('Time {}'.format(tzone))
     ax1.set_ylabel('Water levels wrt MSL (m)')
     ax1.legend(loc = 0, numpoints = 1)
     ax1.xaxis.set_major_formatter(hfmt)
@@ -393,7 +380,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax3.plot(t +PST*time_shift,res,'-k',linewidth=2,label='Residual')
     ax3.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
     ax3.set_ylim([-1,1])
-    ax3.set_xlabel('time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+    ax3.set_xlabel('Time {}'.format(tzone))
     ax3.set_ylabel('Residual (m)')
     ax3.legend(loc = 0, numpoints = 1)
     ax3.grid()
@@ -520,8 +507,8 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     """
 
     #simulation date range.
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_end=(nc_tools.timestamp(grid_T,-1)).datetime
+    t_orig,t_end,t_nemo=get_model_time_variables(grid_T)
+    timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
     #strings for timetamps of EC data
     start=t_orig.strftime('%d-%b-%Y')
     end=t_end.strftime('%d-%b-%Y')
@@ -542,7 +529,7 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     ax1.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
     ax1.set_ylim([0,20])
     ax1.set_ylabel('Wind speed (m/s)')
-    ax1.set_xlabel('Time '+ PST*'[PST]' + abs((PST-1))*'[UTC]')
+    ax1.set_xlabel('Time {}'.format(timezone))
     ax1.legend(loc=0)
     ax1.grid()
     ax1.xaxis.set_major_formatter(hfmt)
@@ -876,8 +863,7 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
     """
 
     #set date of this simulation
-    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
-    t_end =((nc_tools.timestamp(grid_T,-1)).datetime)
+    t_orig,t_end,t=get_model_time_variables(grid_T)
 
     #load bathymetry
     bathy, X, Y = tidetools.get_bathy_data(gridB)
@@ -893,11 +879,6 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
     sal = grid_T.variables['vosaline'][:,:,j,i]
     temp = grid_T.variables['votemper'][:,:,j,i]
     ds = grid_T.variables['deptht']
-    count=grid_T.variables['time_counter'][:]
-    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
-    #convert times to datetimes because that is what the plot wants
-    for i in range(len(t)):
-        t[i]=t[i].datetime
 
     #interpolating data
     salc=[]
@@ -1132,4 +1113,23 @@ def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST):
     
     return ssh_corr
     
+def get_model_time_variables(grid_T):
+    """ Function to return important model time variables, like start time, end time and an array of times.
+    
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+    
+    :returns: The simulation startime (t_orig), the simulation end time (t_end) and an array of output times all as datetime objects.
+    """
 
+    t_orig=(nc_tools.timestamp(grid_T,0)).datetime
+    t_final=(nc_tools.timestamp(grid_T,-1)).datetime
+
+    #time for curve
+    count=grid_T.variables['time_counter'][:]
+    t = nc_tools.timestamp(grid_T,np.arange(count.shape[0]))
+    for ind in range(len(t)):
+        t[ind]=t[ind].datetime
+    t=np.array(t)
+    
+    return t_orig,t_final,t
