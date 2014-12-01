@@ -234,7 +234,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     # citation
     ax0.text(0.15 , -0.2, 
-        'Observed water levels from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
+        'Observed water levels and tidal predictions from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax0.transAxes)
