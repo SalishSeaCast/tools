@@ -37,8 +37,8 @@ weather:
 
 
 run:
-  cloud host: west.cloud
-  west.cloud:
+  cloud host: west.cloud-nowcast
+  west.cloud-nowcast:
     nodes: 5
     images:
       head node: nowcast-head-node
@@ -65,8 +65,8 @@ run:
       nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
       forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
 
-  hpc host: orcinus
-  orcinus:
+  hpc host: orcinus-nowcast
+  orcinus-nowcast:
     rivers_dir: /home/sallen/MEOPAR/rivers/
     ssh_dir: /home/sallen/MEOPAR/sshNeahBay/
     weather_dir: /home/sallen/MEOPAR/GEM2.5/ops/NEMO-atmos/
