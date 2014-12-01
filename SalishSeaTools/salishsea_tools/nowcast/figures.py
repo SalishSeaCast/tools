@@ -398,7 +398,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax3.set_ylabel('Residual (m)')
     ax3.legend(loc = 0, numpoints = 1)
     ax3.grid()
-    ax3.set_yticks(np.arange(-1.0,1.0,0.25))
+    ax3.set_yticks(np.arange(-1.0,1.25,0.25))
     ax3.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
 
