@@ -327,11 +327,14 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
 
     #figure
     fig=plt.figure(figsize=figsize)
-    gs = gridspec.GridSpec(2,2,width_ratios=[2,1])
-    gs.update(wspace=0.1,hspace=0.2)
-    ax1=plt.subplot(gs[0,0]) #sshs
-    ax2=plt.subplot(gs[:,1]) #map
-    ax3=plt.subplot(gs[1,0]) #residual
+    gs = gridspec.GridSpec(3, 2, width_ratios=[2,1])
+    gs.update(wspace=0.1, hspace=0.2)
+    ax0=plt.subplot(gs[0, 0]) #info box
+    plt.setp(ax0.spines.values(), visible=False) # hide axes for info box
+    ax0.xaxis.set_visible(False); ax0.yaxis.set_visible(False)
+    ax1=plt.subplot(gs[1, 0]) #sshs
+    ax2=plt.subplot(gs[:, 1]) #map
+    ax3=plt.subplot(gs[2, 0]) #residual
 
     #Plot tides, corrected model and original model
     ttide=plot_tides(ax1,name,t_orig,PST)
@@ -340,7 +343,32 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     #compute residuals
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
     #Look up maximim ssh and timing and plot
-    max_ssh,index,tmax,max_res,max_wind =print_maxes(ssh_corr,t,res,lons[name],lats[name],model_path,PST)
+    max_ssh,index,tmax,max_res,max_wind = get_maxes(ssh_corr, t, res, 
+                            lons[name], lats[name], model_path, PST)
+    ax0.text(0.05, 0.9, name, fontsize=20,
+             horizontalalignment='left',
+             verticalalignment='top')
+    ax0.text(0.05, 0.75,  
+         'Max SSH: {:.2f} metres above mean sea level'.format(max_ssh),
+             fontsize=15, horizontalalignment='left',
+             verticalalignment='top')
+    ax0.text(0.05, 0.6,
+      'Time of max: {time} {timezone}'.format(time=tmax +PST*time_shift, 
+           timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'),
+             fontsize=15, horizontalalignment='left',
+             verticalalignment='top')
+    ax0.text(0.05, 0.45,
+         'Residual: {:.2f} metres'.format(max_res),
+             fontsize=15, horizontalalignment='left',
+             verticalalignment='top')
+    ax0.text(0.05, 0.3,
+         'Wind speed: {:.1f} m/s'.format(float(max_wind)),
+             fontsize=15, horizontalalignment='left',
+             verticalalignment='top')
+
+
+
+
     ax1.plot(tmax+PST*time_shift, max_ssh, color='white', marker='o',
              markersize=8, markeredgewidth=3, label='Maximum SSH')
     #Make the plot nicer
@@ -386,7 +414,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     
     return fig
     
-def print_maxes(ssh,t,res,lon,lat,model_path,PST):
+def get_maxes(ssh,t,res,lon,lat,model_path,PST):
     """ Look up the maximum ssh and other important features such as the timing, residual, and wind speed.
     
     :arg ssh: The ssh field to be maximized
@@ -425,11 +453,6 @@ def print_maxes(ssh,t,res,lon,lat,model_path,PST):
     #find index where t_wind=tmax. Just find a match between the year, month, day and hour
     ind_w=np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
     max_wind=wind[ind_w]
-   
-    print 'Max SSH: {:.2f} metres above mean sea level'.format(max_ssh)
-    print 'Time of max:', tmax +PST*time_shift, PST*'[PST]' + abs((PST-1))*'[UTC]'
-    print 'Residual: {:.2f} metres'.format(max_res)
-    print 'Wind speed: {:.1f} m/s'.format(float(max_wind))
    
     return max_ssh,index_ssh,tmax,max_res,max_wind 
     
