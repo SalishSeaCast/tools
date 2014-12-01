@@ -231,6 +231,15 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     ax0.set_xlabel('longitude')
     ax0.set_ylabel('latitude')
     ax0.grid()
+
+    # citation
+    ax0.text(0.15 , -0.2, 
+        'Observed water levels from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax0.transAxes)
+             
+
    
     for name, M in zip(names, m):
 
@@ -567,6 +576,14 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
     ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
     ax0.grid()
+
+    # citation
+    ax0.text(0.0, -0.15,
+        'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax0.transAxes)
+
 
     return fig
 
