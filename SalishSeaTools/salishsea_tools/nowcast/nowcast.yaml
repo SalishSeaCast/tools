@@ -45,7 +45,9 @@ run:
       compute node: nowcast-compute-node
     flavor name: m1.xlarge
     network label: NEMO-network
-    ssh key name: doug-nefos
+    ssh key name:
+      image: doug-nefos
+      nowcast: /home/dlatorne/.ssh/SalishSeaNEMO-nowcast_id_rsa
     floating ip pool: VLAN3337
     sshfs storage:
       host name: ncnfs1.neptune.uvic.ca
