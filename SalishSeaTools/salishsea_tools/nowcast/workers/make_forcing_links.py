@@ -103,7 +103,8 @@ def configure_argparser(prog, description, parents):
 
 def make_forcing_links(host_name, run_date, config):
     host = config['run'][host_name]
-    ssh_client, sftp_client = lib.sftp(host_name)
+    ssh_client, sftp_client = lib.sftp(
+        host_name, host['ssh key name']['nowcast'])
     # Neah Bay sea surface height
     clear_links(sftp_client, host, 'open_boundaries/west/ssh/')
     for day in range(-1, 3):

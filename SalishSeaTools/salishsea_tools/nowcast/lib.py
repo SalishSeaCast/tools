@@ -490,7 +490,7 @@ def get_nova_credentials_v2():
     return credentials
 
 
-def ssh(host, ssh_config_file='~/.ssh/config'):
+def ssh(host, key_filename, ssh_config_file='~/.ssh/config'):
     """Return an SSH client connected to host.
 
     It is assumed that ssh_config_file contains an entry for host,
@@ -516,11 +516,15 @@ def ssh(host, ssh_config_file='~/.ssh/config'):
     with open(os.path.expanduser(ssh_config_file)) as f:
         ssh_config.parse(f)
     host = ssh_config.lookup(host)
-    ssh_client.connect(host['hostname'], username=host['user'], compress=True)
+    ssh_client.connect(
+        host['hostname'], username=host['user'],
+        key_filename=key_filename,
+        compress=True,
+    )
     return ssh_client
 
 
-def sftp(host, ssh_config_file='~/.ssh/config'):
+def sftp(host, key_filename, ssh_config_file='~/.ssh/config'):
     """Return an SFTP client connected to host, and the SSH client on
     which it is based.
 
@@ -541,6 +545,6 @@ def sftp(host, ssh_config_file='~/.ssh/config'):
     :returns: 2-tuple containing a :class:`paramiko.client.SSHClient`
               object and a :class:`paramiko.sftp_client.SFTPClient` object.
     """
-    ssh_client = ssh(host, ssh_config_file)
+    ssh_client = ssh(host, key_filename, ssh_config_file)
     sftp_client = ssh_client.open_sftp()
     return ssh_client, sftp_client

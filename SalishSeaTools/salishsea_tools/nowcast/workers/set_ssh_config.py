@@ -76,6 +76,7 @@ def main():
 
 
 def set_ssh_config(host_name, config, socket, checklist):
+    host = config['run'][host_name]
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
     tmpl = (
@@ -83,7 +84,8 @@ def set_ssh_config(host_name, config, socket, checklist):
         '  HostName {ip_addr}\n'
         '  StrictHostKeyChecking no\n'
     )
-    ssh_client, sftp_client = lib.sftp(host_name)
+    ssh_client, sftp_client = lib.sftp(
+        host_name, host['ssh key name']['nowcast'])
     with sftp_client.open('.ssh/config', 'wt') as f:
         for name, ip in nodes.items():
             f.write(tmpl.format(node_name=name, ip_addr=ip))

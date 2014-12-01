@@ -105,7 +105,7 @@ def create_compute_node(host_name, config, checklist, node_name):
     network_label = host['network label']
     network = nova.networks.find(label=network_label)
     nics = [{'net-id': network.id}]
-    key_name = host['ssh key name']
+    key_name = host['ssh key name']['image']
     # Create node
     nova.servers.create(
         name=node_name, image=image, flavor=flavor, nics=nics,
