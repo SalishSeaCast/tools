@@ -45,7 +45,7 @@ from salishsea_tools import (
 #Defining constants
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
-predictions_c = 'OrangeRed'
+predictions_c = 'MediumVioletRed'
 time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
@@ -242,7 +242,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
    
     for name, M in zip(names, m):
 
-        ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=8) #map
+        ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=10) #map
         bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
         ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args) 
 
@@ -402,7 +402,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1, MSL=
     ax2.set_ylabel('y Index')
     viz_tools.plot_coastline(ax2,gridB)
     ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'))
-    ax2.plot(i, j, marker='o', color='white', ms=8,
+    ax2.plot(i, j, marker='o', color='white', markersize=10,
              markeredgewidth=3)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.7)
     ax2.annotate(name,(20, 500),fontsize=15,color='black',bbox=bbox_args) 
@@ -539,35 +539,40 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      ax.set_ylim([-1,6])
      ax.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
      ax.set_xlabel('Time {}'.format(tzone))
-     ax.set_ylabel('Water levels wrt MSL (m)')
+     ax.set_ylabel('Water Level above Chart Datum (m)')
      ax.xaxis.set_major_formatter(hfmt)
      ax.grid()
-     
-     if M == 0:
-	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
-	   legend.get_title().set_fontsize('20')
-	   
+        
      #map
      bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
-     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args)
-     
-     print name, max(ttide.pred_all) +msl
+     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.18),fontsize=15,color='black',bbox=bbox_args)
      
      #threshold colours
-     #---extreme_ssh = 5.61
-     #---max_tides=max(ttide.pred_all) +msl
-     #---max_ssh +msl= np.max(ssh)
-     #---if max_ssh +msl < (max_tides):
-     #---  threshold_c = 'green'
-     #---elif max_ssh +msl > 0.5*(extreme_ssh + max_tides):
-     #--- threshold_c = 'red'
-     #---else:
-     #--- threshold_c = 'yellow'
-       
-     #map with coloured points
-     threshold_c = 'Indigo'
-     ax0.plot(lons[name],lats[name],marker='D',color=threshold_c,markersize=8)
+     extreme_ssh = 5.61
+     max_tides=max(ttide.pred_all) + msl*MSL
+     mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
+     max_ssh = np.max(ssh) + msl*MSL
      
+     if max_ssh < (max_tides):
+       threshold_c = 'green'
+     elif max_ssh > (mid_tides):
+       threshold_c = 'red'
+     else:
+       threshold_c = 'Gold'
+       
+    #map with coloured points
+     ax0.plot(lons[name],lats[name],marker='D',color=threshold_c,markersize=10)
+     
+     #threshold lines in plots
+     ax.axhline(y=max_tides,color='Gold',linewidth=2,ls='solid',label='max_tides')
+     ax.axhline(y=mid_tides,color='red',linewidth=2,ls='solid',label='mid_tides')
+     ax.axhline(y=extreme_ssh,color='Silver',linewidth=1,ls='dashed',label='extreme_ssh')
+     
+     
+     if M == 0:
+	   legend = ax.legend(bbox_to_anchor=(1.2, 0.9), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
+	   legend.get_title().set_fontsize('20')
+	   
   return fig
 
 def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
@@ -642,7 +647,7 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     ax0.set_title('Station Locations')
     ax0.set_xlabel('longitude')
     ax0.set_ylabel('latitude')
-    ax0.plot(lon,lat,marker='D',color='Indigo',markersize=8)
+    ax0.plot(lon,lat,marker='D',color='Indigo',markersize=10)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
     ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
     ax0.grid()
