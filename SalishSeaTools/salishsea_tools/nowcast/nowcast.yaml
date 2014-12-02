@@ -71,6 +71,8 @@ run:
 
   hpc host: orcinus-nowcast
   orcinus-nowcast:
+    ssh key name:
+      nowcast: /home/dlatorne/.ssh/SalishSeaNEMO-nowcast_id_rsa
     rivers_dir: /home/sallen/MEOPAR/rivers/
     # Location of rivers runoff monthly climatology file
     rivers_month.nc: /home/dlatorne/MEOPAR/NEMO-forcing/rivers/rivers_month.nc
