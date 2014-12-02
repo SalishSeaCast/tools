@@ -485,6 +485,74 @@ def compute_residual(ssh,ttide,t_orig,t_final):
     res=ssh-shift
     
     return res
+    
+def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
+  """Figure"""
+  
+  fig=plt.figure(figsize=figsize)
+  gs = gridspec.GridSpec(3, 2, width_ratios=[1.5,1])
+  gs.update(wspace=0.1, hspace=0.2)
+  
+  #map
+  ax0=plt.subplot(gs[:, 1]) 
+  plt.axis((-125.4,-122.2,48,50.3))
+  viz_tools.set_aspect(ax0)
+  land_colour = 'burlywood'  
+  viz_tools.plot_coastline(ax0,gridB,coords='map')
+  viz_tools.plot_land_mask(ax0,gridB,coords='map', color=land_colour)
+  ax0.set_title('Station Locations')
+  ax0.set_xlabel('longitude')
+  ax0.set_ylabel('latitude')
+  ax0.grid()
+ 
+  #defining stations
+  lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41}
+  lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36}
+  
+  bathy, X, Y = tidetools.get_bathy_data(gridB)
+     
+  m = np.arange(3)
+  names = ['Point Atkinson', 'Campbell River', 'Victoria']
+   
+  for M, name in zip(m, names):
+    
+    #map
+     ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=8)
+     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
+     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args) 
+     
+     [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+     
+     #loading sea surface height
+     ssh = grid_T.variables['sossheig']
+     #loading sea surface height at location
+     ssh_loc = ssh[:,j,i]
+  
+     #time variables of simulation
+     t_orig,t_final,t=get_model_time_variables(grid_T)
+     tzone=PST*'[PST]' + abs((PST-1))*'[UTC]'
+     
+     #Plots
+     ax = plt.subplot(gs[M,0])
+          
+     #Plot tides, corrected model and original model
+     ttide,msl=plot_tides(ax,name,t_orig,PST,MSL)
+     ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl)
+     ax.plot(t+PST*time_shift,ssh_loc+msl*MSL,'--',c=model_c,linewidth=1,label='model')
+     
+     ax.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
+     ax.set_ylim([-3,3])
+     ax.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
+     ax.set_xlabel('Time {}'.format(tzone))
+     ax.set_ylabel('Water levels wrt MSL (m)')
+     ax.xaxis.set_major_formatter(hfmt)
+     ax.grid()
+     
+     if M == 0:
+	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
+	   legend.get_title().set_fontsize('20')
+     
+     return fig
 
 def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     """ Plot the observed and modelled winds at Sandheads during the simulation.
@@ -1049,7 +1117,7 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 
 #Plan for new functions:
 
-def plot_tides(ax,name,t_orig,PST,color=predictions_c):
+def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
     """Plots and returns the tidal predictions at a given station during the year of t_orig. Only for Victoria, Campbell River, Point Atkinson and Patricia Bay. Tidal predictions are stored in a specific location.
     
     :arg ax: The axis where the tides are plotted.
@@ -1074,11 +1142,11 @@ def plot_tides(ax,name,t_orig,PST,color=predictions_c):
     filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
-    ax.plot(ttide.time+PST*time_shift,ttide.pred_all,c=color,linewidth=2,label='tidal predictions')
+    ax.plot(ttide.time+PST*time_shift,ttide.pred_all+msl*MSL,c=color,linewidth=2,label='tidal predictions')
     
-    return ttide
+    return ttide,msl
     
-def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST):
+def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl):
     """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
 
     :arg ax: The axis where the corrected model is plotted.
@@ -1109,7 +1177,7 @@ def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST):
     edt=t_final +datetime.timedelta(minutes=30)
     ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
     
-    ax.plot(t+PST*time_shift,ssh_corr,'-',c=model_c,linewidth=2,label='corrected model')
+    ax.plot(t+PST*time_shift,ssh_corr+msl*MSL,'-',c=model_c,linewidth=2,label='corrected model')
     
     return ssh_corr
     
