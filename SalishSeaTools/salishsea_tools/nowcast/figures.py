@@ -551,7 +551,7 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      extreme_ssh = 5.61
      max_tides=max(ttide.pred_all) + msl*MSL
      mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
-     max_ssh = np.max(ssh) + msl*MSL
+     max_ssh = np.max(ssh_corr) + msl*MSL
      
      if max_ssh < (max_tides):
        threshold_c = 'green'
