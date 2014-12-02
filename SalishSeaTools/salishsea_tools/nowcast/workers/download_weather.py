@@ -176,7 +176,7 @@ def get_grib(forecast, config, checklist):
             os.chmod(filename, lib.PERMS_RW_RW_R)
         os.chdir('..')
     os.chdir('..')
-    checklist.update({'{} forecast'.forecast: True})
+    checklist.update({'{} forecast'.format(forecast): True})
 
 
 if __name__ == '__main__':
