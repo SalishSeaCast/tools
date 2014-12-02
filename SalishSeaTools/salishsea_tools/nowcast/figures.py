@@ -343,7 +343,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1, MSL=
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
     #Look up maximim ssh and timing and plot
     max_ssh,index,tmax,max_res,max_wind = get_maxes(ssh_corr, t, res, 
-                            lons[name], lats[name], model_path, PST)
+                            lons[name], lats[name], model_path)
     ax0.text(0.05, 0.9, name, fontsize=20,
              horizontalalignment='left',
              verticalalignment='top')
@@ -411,7 +411,7 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1, MSL=
     
     return fig
     
-def get_maxes(ssh,t,res,lon,lat,model_path,PST):
+def get_maxes(ssh,t,res,lon,lat,model_path):
     """ Look up the maximum ssh and other important features such as the timing, residual, and wind speed.
     
     :arg ssh: The ssh field to be maximized
@@ -431,9 +431,6 @@ def get_maxes(ssh,t,res,lon,lat,model_path,PST):
     
     :arg model_path: directory where the model wind files are stored
     :type model_path: string
-    
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
-    :type PST: 0 or 1
     
     :returns: The maxmimum ssh, the index of maximum ssh, the time of maximum ssh, the residual at that time and the wind speed at that time.
     """
