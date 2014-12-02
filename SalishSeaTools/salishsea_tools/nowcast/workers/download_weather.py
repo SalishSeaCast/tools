@@ -76,7 +76,7 @@ def main():
     # Do the work
     checklist = {}
     try:
-        get_grib(parsed_args.forecast, config)
+        get_grib(parsed_args.forecast, config, checklist)
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
@@ -115,7 +115,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def get_grib(forecast, config):
+def get_grib(forecast, config, checklist):
     utc = arrow.utcnow()
     now = utc.to('Canada/Pacific')
     date = now.format('YYYYMMDD')
@@ -176,6 +176,7 @@ def get_grib(forecast, config):
             os.chmod(filename, lib.PERMS_RW_RW_R)
         os.chdir('..')
     os.chdir('..')
+    checklist.update({'{} forecast'.forecast: True})
 
 
 if __name__ == '__main__':

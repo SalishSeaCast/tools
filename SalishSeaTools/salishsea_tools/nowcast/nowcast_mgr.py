@@ -131,9 +131,14 @@ def message_processor(config, message):
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success 06': None,
+        'success 06': [
+            (update_checklist, [worker, 'weather', payload]),
+        ],
         'failure 06': None,
-        'success 18': [(launch_worker, ['grib_to_netcdf', config])],
+        'success 18': [
+            (update_checklist, [worker, 'weather', payload]),
+            (launch_worker, ['grib_to_netcdf', config]),
+        ],
         'failure 18': None,
         'crash': None,
     }
@@ -143,7 +148,9 @@ def after_download_weather(worker, msg_type, payload, config):
 def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success': [(update_checklist, [worker, 'sshNeahBay', payload])],
+        'success': [
+            (update_checklist, [worker, 'sshNeahBay', payload]),
+        ],
         'failure': None,
         'crash': None,
     }
@@ -153,7 +160,9 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
 def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success': [(update_checklist, [worker, 'rivers', payload])],
+        'success': [
+            (update_checklist, [worker, 'rivers', payload]),
+        ],
         'failure': None,
         'crash': None,
     }
