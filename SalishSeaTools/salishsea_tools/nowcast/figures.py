@@ -552,7 +552,7 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
 	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
      
-     return fig
+  return fig
 
 def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,10)):
     """ Plot the observed and modelled winds at Sandheads during the simulation.
