@@ -50,7 +50,7 @@ time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 
-def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
+def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
@@ -79,7 +79,7 @@ def PA_tidal_predictions(grid_T,  PST=1, figsize=(20,5)):
     #plotting
     fig,ax=plt.subplots(1,1,figsize=figsize)
     fig.autofmt_xdate()
-    ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,'black')
+    ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,MSL,'black')
     #line indicating current date
     ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r',lw=2)
     ax.plot([t_end+time_shift*PST,t_end+time_shift*PST],ylims,'-r',lw=2)
@@ -272,7 +272,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     return fig
 
-def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsize=(20,12)):
+def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1, MSL=0, figsize=(20,12)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -332,8 +332,8 @@ def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1,figsi
     ax3=plt.subplot(gs[2, 0]) #residual
 
     #Plot tides, corrected model and original model
-    ttide=plot_tides(ax1,name,t_orig,PST)
-    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST)
+    ttide,msl=plot_tides(ax1,name,t_orig,PST,MSL)
+    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl)
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     #compute residuals
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
@@ -515,12 +515,7 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
   names = ['Point Atkinson', 'Campbell River', 'Victoria']
    
   for M, name in zip(m, names):
-    
-    #map
-     ax0.plot(lons[name],lats[name],marker='D',color='Indigo',markersize=8)
-     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
-     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args) 
-     
+       
      [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
      
      #loading sea surface height
@@ -541,7 +536,7 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      ax.plot(t+PST*time_shift,ssh_loc+msl*MSL,'--',c=model_c,linewidth=1,label='model')
      
      ax.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
-     ax.set_ylim([-3,3])
+     ax.set_ylim([-1,6])
      ax.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'))
      ax.set_xlabel('Time {}'.format(tzone))
      ax.set_ylabel('Water levels wrt MSL (m)')
@@ -551,6 +546,24 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      if M == 0:
 	   legend = ax.legend(bbox_to_anchor=(1.2, 0.7), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
+	   
+     #map
+     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
+     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args)
+     
+     #threshold colours
+     #---extreme_ssh = 5.61
+     #---max_ssh = np.max(ssh)
+     #---if max_ssh < (max(ttide.pred_all)):
+     #---  threshold_c = 'green'
+     #---elif max_ssh > (extreme_ssh):
+     #--- threshold_c = 'red'
+     #---else:
+     #--- threshold_c = 'yellow'
+       
+     #map with coloured points
+     threshold_c = 'Indigo'
+     ax0.plot(lons[name],lats[name],marker='D',color=threshold_c,markersize=8)
      
   return fig
 
