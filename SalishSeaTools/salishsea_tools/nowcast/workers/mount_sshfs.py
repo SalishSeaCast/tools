@@ -43,11 +43,10 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     host_name = config['run']['cloud host']
     host = config['run'][host_name]
     try:
-        mount_sshfs(host_name, config, socket, checklist)
+        checklist = mount_sshfs(host_name, config, socket)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'SSHFS mounted at {} on all nodes in {}'
@@ -95,7 +94,7 @@ def mount_sshfs(host_name, config, socket, checklist):
             logger.debug('stderr: {}'.format(line))
         logger.debug('"{}" executed on {}'.format(cmd, node_name))
     ssh_client.close()
-    checklist['success'] = True
+    return True
 
 
 if __name__ == '__main__':

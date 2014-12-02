@@ -289,7 +289,7 @@ class TestIsCloudReady(object):
             {'nodes': {'nowcast0': '192.168.0.10'}})
         with p_checklist:
             nowcast_mgr_module.is_cloud_ready(config)
-            assert nowcast_mgr_module.checklist['cloud addr'] == {}
+            assert nowcast_mgr_module.checklist['cloud addr'] == ''
 
     def test_no_cloud_addr_launches_set_head_node_ip(self, nowcast_mgr_module):
         config = {
@@ -330,7 +330,7 @@ class TestIsCloudReady(object):
         nowcast_mgr_module.launch_worker = Mock(name='launch_worker')
         p_checklist = patch.dict(
             nowcast_mgr_module.checklist,
-            {'cloud addr': {'ip': '206.12.48.112'},
+            {'cloud addr': '206.12.48.112',
              'nodes': {'nowcast0': '192.168.0.10',
                        'nowcast1': '192.168.0.11'}})
         with p_checklist:
