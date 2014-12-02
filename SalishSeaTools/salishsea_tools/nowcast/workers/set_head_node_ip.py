@@ -74,7 +74,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def set_head_node_ip(host_name, config, checklist):
+def set_head_node_ip(host_name, config):
     host = config['run'][host_name]
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
@@ -86,8 +86,7 @@ def set_head_node_ip(host_name, config, checklist):
     ip = get_ip(nowcast0, network_label)
     if ip is not None:
         logger.info('{} already associated with nowcast0 node'.format(ip))
-        checklist['ip'] = ip.encode('ascii')
-        return
+        return ip.encode('ascii')
     # Associate a floating IP
     fip = nova.floating_ips.find(pool=host['floating ip pool'])
     nowcast0 = nova.servers.find(name='nowcast0')
