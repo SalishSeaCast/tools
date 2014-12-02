@@ -551,12 +551,15 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
      ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args)
      
+     print name, max(ttide.pred_all) +msl
+     
      #threshold colours
      #---extreme_ssh = 5.61
-     #---max_ssh = np.max(ssh)
-     #---if max_ssh < (max(ttide.pred_all)):
+     #---max_tides=max(ttide.pred_all) +msl
+     #---max_ssh +msl= np.max(ssh)
+     #---if max_ssh +msl < (max_tides):
      #---  threshold_c = 'green'
-     #---elif max_ssh > (extreme_ssh):
+     #---elif max_ssh +msl > 0.5*(extreme_ssh + max_tides):
      #--- threshold_c = 'red'
      #---else:
      #--- threshold_c = 'yellow'
