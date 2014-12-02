@@ -331,7 +331,7 @@ def is_cloud_ready(config):
     if 'nowcast0' in checklist['nodes']:
         if 'cloud addr' not in checklist:
             # Add an empty address so that worker only gets launched once
-            checklist['cloud addr'] = {}
+            checklist['cloud addr'] = ''
             launch_worker('set_head_node_ip', config)
         if len(checklist['nodes']) == host['nodes']:
             checklist['cloud ready'] = True

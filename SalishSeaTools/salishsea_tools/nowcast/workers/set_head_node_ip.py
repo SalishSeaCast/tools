@@ -45,10 +45,9 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     host_name = config['run']['cloud host']
     try:
-        set_head_node_ip(host_name, config, checklist)
+        checklist = set_head_node_ip(host_name, config)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'public IP address associated with nowcast0 node in {}'
@@ -100,7 +99,7 @@ def set_head_node_ip(host_name, config, checklist):
         raise lib.WorkerError
         return
     logger.info('{} associated with nowcast0 node'.format(ip))
-    checklist['ip'] = ip.encode('ascii')
+    return ip.encode('ascii')
 
 
 def get_ip(node, network_label):

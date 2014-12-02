@@ -45,10 +45,9 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     host_name = config['run']['cloud host']
     try:
-        set_ssh_config(host_name, config, socket, checklist)
+        checklist = set_ssh_config(host_name, config, socket)
         # Exchange success messages with the nowcast manager process
         logger.info(
             '.ssh/config for nodes in {} installed on nowcast0 node'
@@ -94,7 +93,7 @@ def set_ssh_config(host_name, config, socket, checklist):
                 .format(name, ip, host_name))
     sftp_client.close()
     ssh_client.close()
-    checklist['success'] = True
+    return True
 
 
 if __name__ == '__main__':
