@@ -706,16 +706,16 @@ def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6
 
     cbar=fig.colorbar(mesh,ax=ax)
     cbar.set_ticks(cs)
-    cbar.set_label('Practical Salinity [psu]')
+    cbar.set_label('Practical Salinity [psu]',**axis_font)
 
     timestamp = nc_tools.timestamp(grid_T_d,0)
-    ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'))
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel('position along thalweg')
+    ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'),**title_font)
+    ax.set_ylabel('Depth [m]',**axis_font)
+    ax.set_xlabel('position along thalweg',**axis_font)
 
     return fig
 
-def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
+def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB,xmin,xmax,ymin,ymax, figsize=(20,12)):
     """Function that plots the daily average surface salinity, temperature and currents.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -764,7 +764,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
 
     for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
         #general set up
-        viz_tools.set_aspect(ax)
+        #viz_tools.set_aspect(ax)
         land_colour = 'burlywood'
         ax.set_axis_bgcolor(land_colour)
         cmap = plt.get_cmap(cmap)
@@ -776,7 +776,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
             cs = [0,2,4,6,8,10,12,14,16,18,20]
 
         #plotting tracers
-        mesh=ax.contourf(tracer,cs,cmap=cmap,extend='both')
+        #mesh=ax.contourf(tracer,cs,cmap=cmap,extend='both')
+        mesh=ax.pcolormesh(tracer,cmap=cmap,vmin=0,vmax=cs[-1])
 
         #colour bars
         cbar = fig.colorbar(mesh,ax=ax)
@@ -784,11 +785,15 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
 
         #labels
         ax.grid()
-        ax.set_xlabel('x Index')
-        ax.set_ylabel('y Index')
+        ax.set_xlabel('x Index',**axis_font)
+        ax.set_ylabel('y Index',**axis_font)
         timestamp = nc_tools.timestamp(grid_T_d,0)
-        ax.set_title(title + timestamp.format('DD-MMM-YYYY'))
-        cbar.set_label(unit)
+        ax.set_title(title + timestamp.format('DD-MMM-YYYY'),**title_font)
+        cbar.set_label(unit,**axis_font)
+        
+        #limits
+        ax.set_xlim(xmin,xmax)
+        ax.set_ylim(ymin,ymax)
 
     #loading velocity components
     ugrid = grid_U_d.variables['vozocrtx']
@@ -816,7 +821,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
     speeds = np.sqrt(np.square(u_tzyx) + np.square(v_tzyx))
 
     #***velocity plot
-    viz_tools.set_aspect(ax3)
+    #viz_tools.set_aspect(ax3)
     cs = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 
     quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds, pivot='mid', cmap='gnuplot_r', width=0.015)
@@ -824,16 +829,17 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, figsize=(20,10)):
 
     cbar = fig.colorbar(quiver,ax=ax3)
     cbar.set_ticks(cs)
-    cbar.set_label('[m / s]')
+    cbar.set_label('[m / s]',**axis_font)
 
     ax3.set_xlim(x_slice[0], x_slice[-1])
     ax3.set_ylim(y_slice[0], y_slice[-1])
+    plt.axis((xmin, xmax, ymin, ymax))
     ax3.grid()
 
-    ax3.set_xlabel('x Index')
-    ax3.set_ylabel('y Index')
+    ax3.set_xlabel('x Index',**axis_font)
+    ax3.set_ylabel('y Index',**axis_font)
     ax3.set_title('Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY') +
-                  u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels))
+                  u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels),**title_font)
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', color='Indigo', labelcolor='black')
 
     return fig
@@ -986,12 +992,12 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
     ax_temp.plot(t,tempc,'-b',label='model')
 
     #pretty the plot
-    ax_sal.set_ylabel('Practical Salinity [psu]')
+    ax_sal.set_ylabel('Practical Salinity [psu]',**axis_font)
     ax_sal.legend(loc=0)
-    ax_sal.set_title('VENUS - {}'.format(station) )
+    ax_sal.set_title('VENUS - {}'.format(station) ,**title_font)
     ax_sal.set_ylim([30,32])
-    ax_temp.set_ylabel('Temperature [deg C]')
-    ax_temp.set_xlabel('Time [UTC]')
+    ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
+    ax_temp.set_xlabel('Time [UTC]',**axis_font)
     ax_temp.set_ylim([7,11])
 
     return fig
