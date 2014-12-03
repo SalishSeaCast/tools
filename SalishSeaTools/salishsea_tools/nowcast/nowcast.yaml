@@ -111,8 +111,12 @@ msg_types:
     ack: message acknowledged
     undefined msg: ERROR - message type is not defined
   download_weather:
+    success 00: 00 weather forecast ready
+    failure 00: 00 weather forecast download failed
     success 06: 06 weather forecast ready
     failure 06: 06 weather forecast download failed
+    success 12: 12 weather forecast ready
+    failure 12: 12 weather forecast download failed
     success 18: 18 weather forecast ready
     failure 18: 18 weather forecast download failed
     crash: download_weather worker crashed

@@ -131,10 +131,18 @@ def message_processor(config, message):
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
+        'success 00': [
+            (update_checklist, [worker, 'weather', payload]),
+        ],
+        'failure 00': None,
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
         ],
         'failure 06': None,
+        'success 12': [
+            (update_checklist, [worker, 'weather', payload]),
+        ],
+        'failure 12': None,
         'success 18': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['grib_to_netcdf', config]),
