@@ -109,7 +109,7 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'forecast', choices=set(('06', '18')),
+        'forecast', choices=set(('00', '06', '12', '18')),
         help='Name of forecast to download files from.',
     )
     return parser
