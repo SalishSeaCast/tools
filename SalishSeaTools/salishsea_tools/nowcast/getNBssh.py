@@ -21,8 +21,11 @@ def getNBssh():
    lon = fB.variables['nav_lon'][:]
    fB.close()
 
-   YEAR=2014; #year of data. Need to change this when we hit 2015.
-   SAVE_PATH = '/ocean/nsoontie/MEOPAR/sshNeahBay/'
+   YEAR=datetime.date.today().year; #year of data. 
+   switch_year=0;
+   if datetime.date.today().month ==12:
+     switch_year =1;
+   SAVE_PATH = '/ocean/nsoontie/MEOPAR/sshNeahBay/test/'
 
    #load surge data
    textfile = read_website(SAVE_PATH)
@@ -31,7 +34,7 @@ def getNBssh():
    #Process the dates to find days with a full prediction
    dates=np.array(data.date.values)
    for i in range(dates.shape[0]):
-      dates[i]=to_datetime(dates[i],YEAR)
+      dates[i]=to_datetime(dates[i],YEAR,switch_year)
    dates_list=list_full_days(dates)
 
    #loop through full days and save netcdf
@@ -225,13 +228,16 @@ def list_full_days(dates):
     dates_list = [start +datetime.timedelta(days=i) for i in range((end-start).days+1)]
     return dates_list
 
-def to_datetime(datestr,year):
+def to_datetime(datestr,year,switch):
     """ converts the string given by datestr to a datetime object.
     The year is an argument because the datestr in the NOAA data doesn't have a year.
     Times are in UTC/GMT.
     returns a datetime representation of datestr"""
     dt = datetime.datetime.strptime(datestr,'%m/%d %HZ')
-    dt =dt.replace(year=year)
+    if switch and dt.month ==1:
+          dt =dt.replace(year=year+1)
+    else:
+       dt=dt.replace(year=year)
     dt=dt.replace(tzinfo=pytz.timezone('UTC'))
     return dt
 
