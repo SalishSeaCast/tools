@@ -15,6 +15,7 @@
 
 """Salish Sea NEMO nowcast manager.
 """
+from copy import copy
 import logging
 import os
 import pprint
@@ -203,12 +204,12 @@ def after_init_cloud(worker, msg_type, payload, config):
     }
     if msg_type == 'success':
         existing_nodes = []
-        for node in payload.keys():
+        for node in copy(payload.keys()):
             try:
                 existing_nodes.append(int(node.lstrip('nowcast')))
             except ValueError:
                 # ignore nodes whose names aren't of the form nowcasti
-                pass
+                payload.pop(node)
         host_name = config['run']['cloud host']
         host = config['run'][host_name]
         for i in range(host['nodes']):
@@ -355,7 +356,7 @@ def is_cloud_ready(config):
             # Add an empty address so that worker only gets launched once
             checklist['cloud addr'] = ''
             launch_worker('set_head_node_ip', config)
-        if len(checklist['nodes']) == host['nodes']:
+        if len(checklist['nodes']) >= host['nodes']:
             checklist['cloud ready'] = True
             logger.info(
                 '{node_count} nodes in {host} ready for '
