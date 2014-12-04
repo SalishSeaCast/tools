@@ -72,7 +72,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def mount_sshfs(host_name, config, socket, checklist):
+def mount_sshfs(host_name, config, socket):
     host = config['run'][host_name]
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
