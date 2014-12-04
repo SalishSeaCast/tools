@@ -123,26 +123,26 @@ def grib_to_netcdf(config, checklist):
 
     # today
     p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
-    p2 = os.path.join(today.format('YYYYMMDD'), '06')
-    p3 = os.path.join(today.format('YYYYMMDD'), '18')
+    p2 = os.path.join(today.format('YYYYMMDD'), '00')
+    p3 = os.path.join(today.format('YYYYMMDD'), '12')
     logger.info('forecast sections: {} {} {}'.format(p1, p2, p3))
     fcst_section_hrs_arr[0] = OrderedDict([
         # (part, (dir, real start hr, forecast start hr, end hr))
-        ('section 1', (p1, -1, 24-18-1, 24+6-18)),
-        ('section 2', (p2, 7, 7-6, 18-6)),
-        ('section 3', (p3, 19, 19-18, 23-18)),
+        ('section 1', (p1, -1, 24-18-1, 24-18+0)),
+        ('section 2', (p2, 1, 1-0, 12-0)),
+        ('section 3', (p3, 13, 13-12, 23-12)),
     ])
-    zerostart = [[7, 19]]
+    zerostart = [[1, 13]]
     length = [24]
     subdirectory = ['']
     yearmonthday = [today.strftime('y%Ym%md%d')]
 
     # tomorrow (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '18')
+    p1 = os.path.join(today.format('YYYYMMDD'), '12')
     logger.info('tomorrow forecast section: {}'.format(p1))
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
-        ('section 1', (p1, -1, 24-18-1, 24+23-18)),
+        ('section 1', (p1, -1, 24-12-1, 24+23-12)),
     ])
     zerostart.extend([[]])
     length.extend([24])
@@ -150,14 +150,14 @@ def grib_to_netcdf(config, checklist):
     yearmonthday.extend([tomorrow.strftime('y%Ym%md%d')])
 
     # next day (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '18')
+    p1 = os.path.join(today.format('YYYYMMDD'), '12')
     logger.info('next day forecast section: {}'.format(p1))
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
-        ('section 1', (p1, -1, 24+24-18-1, 24+24+18-18)),
+        ('section 1', (p1, -1, 24+24-12-1, 24+24+12-12)),
     ])
     zerostart.extend([[]])
-    length.extend([19])
+    length.extend([13])
     subdirectory.extend(['fcst'])
     yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
 
