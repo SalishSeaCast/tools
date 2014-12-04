@@ -74,7 +74,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def set_ssh_config(host_name, config, socket, checklist):
+def set_ssh_config(host_name, config, socket):
     host = config['run'][host_name]
     nodes = lib.tell_manager(
         worker_name, 'need', config, logger, socket, 'nodes')
