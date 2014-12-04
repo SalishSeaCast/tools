@@ -227,7 +227,8 @@ def get_EC_observations(station, start_day, end_day):
 	'SistersIsland': 6813,
 	'EntranceIsland': 29411,
         'Sandheads': 6831,
-        'YVR': 51442, #note, I think YVR station name changed in 2013. Older data use 889
+        'YVR':51442, #note, I think YVR station name changed in 2013. Older data use 889
+        'YVR_old': 889,
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
