@@ -141,11 +141,11 @@ def after_download_weather(worker, msg_type, payload, config):
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
+            (launch_worker, ['grib_to_netcdf', config]),
         ],
         'failure 12': None,
         'success 18': [
             (update_checklist, [worker, 'weather', payload]),
-            (launch_worker, ['grib_to_netcdf', config]),
         ],
         'failure 18': None,
         'crash': None,
