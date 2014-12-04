@@ -202,8 +202,13 @@ def after_init_cloud(worker, msg_type, payload, config):
         'crash': None,
     }
     if msg_type == 'success':
-        existing_nodes = [
-            int(node.lstrip('nowcast')) for node in payload.keys()]
+        existing_nodes = []
+        for node in payload.keys():
+            try:
+                existing_nodes.append(int(node.lstrip('nowcast')))
+            except ValueError:
+                # ignore nodes whose names aren't of the form nowcasti
+                pass
         host_name = config['run']['cloud host']
         host = config['run'][host_name]
         for i in range(host['nodes']):
