@@ -163,6 +163,9 @@ def grib_to_netcdf(config, checklist):
 
     # set-up plotting
     fig, axs, ip = set_up_plotting()
+    # define group
+    gid = grp.getgrnam(config['file group']).gr_gid
+
 
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
             fcst_section_hrs_arr, zerostart, length, subdirectory,
@@ -173,13 +176,19 @@ def grib_to_netcdf(config, checklist):
         outgrib, outzeros = crop_to_watersheds(
             config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
         outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
-                                                  outgrib, outzeros)
+                                                  outgrib, outzeros, gid)
         calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
                            axs)
         change_to_NEMO_variable_names(outnetcdf, axs, ip)
         ip += 1
 
         netCDF4_deflate(outnetcdf)
+        try:
+            os.chown(outnetcdf, -1, gid)
+            os.chmod(outnetcdf, lib.PERMS_RWX_RWX_R_W)
+        except:
+            # don't own file so permissions are correct already
+            pass
         if subdir in checklist:
             checklist[subdir].append(os.path.basename(outnetcdf))
         else:
@@ -365,7 +374,7 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib,
     return newgrib, newzeros
 
 
-def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
+def make_netCDF_files(config, ymd, subdir, outgrib, outzeros, gid):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
@@ -378,7 +387,6 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     logger.info(
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
-    gid = grp.getgrnam(config['file group']).gr_gid
     try:
         os.chown(outnetcdf, -1, gid)
         os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
