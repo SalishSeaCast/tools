@@ -117,8 +117,8 @@ def configure_argparser(prog, description, parents):
 
 def get_grib(forecast, config, checklist):
     utc = arrow.utcnow()
-    now = utc.to('Canada/Pacific')
-    date = now.format('YYYYMMDD')
+    utc = utc.replace(hours=-int(forecast))
+    date = utc.format('YYYYMMDD')
     logger.info(
         'downloading {forecast} forecast GRIB2 files for {date}'
         .format(forecast=forecast, date=date))
@@ -128,11 +128,11 @@ def get_grib(forecast, config, checklist):
     os.chdir(dest_dir_root)
     try:
         os.mkdir(date)
+        os.chown(date, -1, gid)
+        os.chmod(date, lib.PERMS_RWX_RWX_R_X)
     except OSError:
         # Directory already exists
         pass
-    os.chown(date, -1, gid)
-    os.chmod(date, lib.PERMS_RWX_RWX_R_X)
     os.chdir(date)
     try:
         os.mkdir(forecast)
