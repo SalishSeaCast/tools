@@ -2,17 +2,23 @@ import numpy as np
 import netCDF4 as NC
 
 
-def put_watershed_into_runoff(rivertype,watershedname,flux,runoff,run_depth):
-	"""define a function to fill the river file with the rivers of one watershed"""
-	#get the proportion that each river occupies in the watershed
-	pd = get_watershed_prop_dict(watershedname)
-	for key in pd:
-		river = pd[key]		
-		if rivertype == 'constant':
-			fill_runoff_array(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
-		if rivertype == 'monthly':
-			fill_runoff_array_monthly(flux*river['prop'],river['i'],river['di'],river['j'],river['dj'],river['depth'],runoff,run_depth)
-	return runoff, run_depth
+def put_watershed_into_runoff(rivertype, watershedname, flux,
+			      runoff, run_depth, run_temp):
+    """define a function to fill the river file with the rivers of one watershed"""
+    #get the proportion that each river occupies in the watershed
+    pd = get_watershed_prop_dict(watershedname)
+    for key in pd:
+        river = pd[key]		
+	if rivertype == 'constant':
+            fill_runoff_array(flux*river['prop'], river['i'],
+			      river['di'], river['j'], river['dj'],
+			      river['depth'], runoff, run_depth)
+	if rivertype == 'monthly':
+            fill_runoff_array_monthly(flux*river['prop'], river['i'],
+				      river['di'], river['j'], river['dj'],
+				      river['depth'], runoff, run_depth, 
+				      run_temp)
+    return runoff, run_depth, run_temp
 
 def get_watershed_prop_dict(watershedname):
 	"""define a function to get the proportion that each river occupies in the watershed"""
@@ -236,25 +242,27 @@ def get_bathy_cell_size():
 	return e1t, e2t
 
 def init_runoff_array():
-	"""define a function to initialise the runoff array"""
+    """define a function to initialise the runoff array"""
 
-	fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
-	D = fB.variables['Bathymetry'][:]
-	ymax, xmax = D.shape
-	runoff = np.zeros((ymax,xmax))
-	run_depth = -np.ones((ymax,xmax))
-	return runoff, run_depth
+    fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+    D = fB.variables['Bathymetry'][:]
+    ymax, xmax = D.shape
+    runoff = np.zeros((ymax, xmax))
+    run_depth = -np.ones((ymax, xmax))
+    run_temp = -99*np.ones((ymax, xmax))
+    return runoff, run_depth, run_temp
 
 
 def init_runoff_array_monthly():
-	"""define a function to initialise the runoff array for each month"""
-	fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
-	D = fB.variables['Bathymetry'][:]
-	ymax, xmax = D.shape
-	runoff = np.zeros((12,ymax,xmax))
-	run_depth = -np.ones((12,ymax,xmax))
-	print runoff.shape
-	return runoff, run_depth
+    """define a function to initialise the runoff array for each month"""
+
+    fB = NC.Dataset('/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc','r')
+    D = fB.variables['Bathymetry'][:]
+    ymax, xmax = D.shape
+    runoff = np.zeros((12, ymax, xmax))
+    run_depth = -np.ones((12, ymax, xmax))
+    run_temp = -99*np.ones((12, ymax, xmax))
+    return runoff, run_depth, run_temp
 
 def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
 	"""define a function to fill the runoff array"""
@@ -267,7 +275,8 @@ def fill_runoff_array(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
 	run_depth[istart:istart+di,jstart:jstart+dj] = depth_of_flux
 	return runoff, run_depth
 
-def fill_runoff_array_monthly(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_depth):
+def fill_runoff_array_monthly(Flux, istart, di, jstart, dj,
+			      depth_of_flux, runoff, run_depth, run_temp):
 	"""define a function to fill the runoff array"""
 	e1t, e2t = get_bathy_cell_size()
 	number_cells = di*dj
@@ -276,7 +285,8 @@ def fill_runoff_array_monthly(Flux,istart,di,jstart,dj,depth_of_flux,runoff,run_
 		w = Flux[month-1]/area * 1000.   # w is in kg/s not m/s
 		runoff[(month-1),istart:istart+di,jstart:jstart+dj] = w
 		run_depth[(month-1),istart:istart+di,jstart:jstart+dj] = depth_of_flux
-	return runoff, run_depth
+		run_temp[(month-1),istart:istart+di,jstart:jstart+dj] = rivertemp(month)
+	return runoff, run_depth, run_temp
 
 def check_sum(runoff_orig, runoff_new, Flux):
 	"""define a function to check the runoff adds up to what it should"""
@@ -289,3 +299,21 @@ def check_sum_monthly(runoff_orig, runoff_new, Flux):
 	e1t, e2t = get_bathy_cell_size()
 	print (np.sum(runoff_new)/12-runoff_orig.sum()/12)*e1t[0,450,200]*e2t[0,450,200]/1000., np.mean(Flux)
 
+def rivertemp(month):
+    '''River temperature, based on Fraser River, see Allen and Wolfe (2013)
+    Temperature in NEMO is Celcius
+    '''
+    centerday = [15.5, 31+14, 31+28+15.5, 31+28+31+15, 31+28+31+30+15.5,
+		 31+28+31+30+31+15, 31+28+31+30+31+30+15.5, 
+		 31+28+31+30+31+30+31+15.5, 31+28+31+30+31+30+31+31+15,
+		 31+28+31+30+31+30+31+31+30+15.5, 
+		 31+28+31+30+31+30+31+31+30+31+15,
+		 31+28+31+30+31+30+31+31+30+31+30+15.5]
+    yearday = centerday[month-1]
+    if (yearday < 52.8 or yearday > 334.4):
+        RiverTemp = 2.5
+    elif (yearday < 232.9):
+        RiverTemp = 2.5 + (yearday - 52.8) * (19.3 - 2.5)/(232.9 - 52.8)
+    else:
+        RiverTemp = 19.3 + (yearday - 232.9) * (2.5 - 19.3)/(334.4 - 232.9)
+    return RiverTemp
