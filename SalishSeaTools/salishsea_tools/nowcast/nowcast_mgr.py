@@ -144,7 +144,7 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['get_NeahBay_ssh', config]),
-            (launch_worker, ['grib_to_netcdf', config, 'nowcast+']),
+            (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
         ],
         'failure 12': None,
         'success 18': [
@@ -193,7 +193,7 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         'success forecast2': [
             (update_checklist, [worker, 'weather forcing', payload]),
         ],
-        'sucess forecast2': None,
+        'failure forecast2': None,
         'crash': None,
     }
     return actions[msg_type]
