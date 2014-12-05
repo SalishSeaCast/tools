@@ -109,7 +109,7 @@ def message_processor(config, message):
             .format(worker=worker, msg_type=msg_type))
         reply = lib.serialize_message(mgr_name, 'undefined msg')
         return reply, None
-    # Recongnized message type
+    # Recognized message type
     logger.info(
         'received message from {worker}: ({msg_type}) {msg_words}'
         .format(worker=worker,
@@ -144,7 +144,7 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['get_NeahBay_ssh', config]),
-            (launch_worker, ['grib_to_netcdf', config]),
+            (launch_worker, ['grib_to_netcdf', config, 'nowcast+']),
         ],
         'failure 12': None,
         'success 18': [
@@ -183,13 +183,17 @@ def after_make_runoff_file(worker, msg_type, payload, config):
 def after_grib_to_netcdf(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success': [
+        'success nowcast+': [
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker,
              ['upload_forcing', config, [config['run']['hpc host']]]),
             (launch_worker, ['init_cloud', config]),
         ],
-        'failure': None,
+        'failure nowcast+': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'weather forcing', payload]),
+        ],
+        'sucess forecast2': None,
         'crash': None,
     }
     return actions[msg_type]
