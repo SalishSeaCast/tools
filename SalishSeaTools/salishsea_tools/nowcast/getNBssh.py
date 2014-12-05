@@ -21,10 +21,13 @@ def getNBssh():
    lon = fB.variables['nav_lon'][:]
    fB.close()
 
-   YEAR=datetime.date.today().year; #year of data. 
-   switch_year=0;
-   if datetime.date.today().month ==12:
-     switch_year =1;
+   utc_now = datetime.datetime.now(pytz.timezone('UTC'))
+   YEAR=utc_now.year; #year of data. 
+   isDec=False; isJan=False
+   if utc_now.month ==12:
+     isDec =True;
+   if utc_now.month ==1:
+     isJan =True;
    SAVE_PATH = '/ocean/nsoontie/MEOPAR/sshNeahBay/test/'
 
    #load surge data
@@ -34,7 +37,7 @@ def getNBssh():
    #Process the dates to find days with a full prediction
    dates=np.array(data.date.values)
    for i in range(dates.shape[0]):
-      dates[i]=to_datetime(dates[i],YEAR,switch_year)
+      dates[i]=to_datetime(dates[i],YEAR,isDec,isJan)
    dates_list=list_full_days(dates)
 
    #loop through full days and save netcdf
@@ -70,7 +73,7 @@ def read_website(save_path):
     table=table.replace(']','')
     
     #save the table as a text file. Use the date the table was generated as a file name?
-    today=datetime.datetime.strftime(datetime.datetime.now(pytz.timezone('UTC')),'%Y-%m-%d')
+    today=datetime.datetime.strftime(datetime.datetime.now(pytz.timezone('UTC')),'%Y-%m-%d_%H')
     filename = os.path.join(save_path,'txt','sshNB_{}.txt'.format(today))
     text_file = open(filename, "w")
     text_file.write(table)
@@ -228,14 +231,16 @@ def list_full_days(dates):
     dates_list = [start +datetime.timedelta(days=i) for i in range((end-start).days+1)]
     return dates_list
 
-def to_datetime(datestr,year,switch):
+def to_datetime(datestr,year,isDec,isJan):
     """ converts the string given by datestr to a datetime object.
     The year is an argument because the datestr in the NOAA data doesn't have a year.
     Times are in UTC/GMT.
     returns a datetime representation of datestr"""
     dt = datetime.datetime.strptime(datestr,'%m/%d %HZ')
-    if switch and dt.month ==1:
+    if isDec and dt.month ==1:
           dt =dt.replace(year=year+1)
+    elif isJan and dt.month==12:
+          dt =dt.replace(year=year-1)
     else:
        dt=dt.replace(year=year)
     dt=dt.replace(tzinfo=pytz.timezone('UTC'))
