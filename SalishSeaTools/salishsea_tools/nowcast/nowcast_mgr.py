@@ -138,6 +138,7 @@ def after_download_weather(worker, msg_type, payload, config):
         'failure 00': None,
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
+            (launch_worker, ['make_runoff_file', config]),
         ],
         'failure 06': None,
         'success 12': [
