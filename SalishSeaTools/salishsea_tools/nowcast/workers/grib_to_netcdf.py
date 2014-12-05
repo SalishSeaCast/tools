@@ -115,7 +115,7 @@ def configure_argparser(prog, description, parents):
         prog=prog, description=description, parents=parents)
     parser.add_argument(
         'runtype', choices=set(('nowcast+', 'forecast2')),
-        help='Runtype: nowcast+first forecast or second forecast.',
+        help="Type of run to produce netCDF files for: 'nowcast+' means nowcast & 1st forecast runs, 'forecast2' means 2nd forecast run.",
     )
     return parser
 
@@ -167,7 +167,7 @@ def grib_to_netcdf(runtype, config, checklist):
         try:
             os.chown(outnetcdf, -1, gid)
             os.chmod(outnetcdf, lib.PERMS_RW_RW_R)
-        except:
+        except OSError:
             # don't own file so permissions are correct already
             pass
         if subdir in checklist:
@@ -234,9 +234,45 @@ def define_forecast_segments_nowcast():
          yearmonthday)
 
 def define_forecast_segments_forecast2():
-    """Life is good
+    """Define segments of forecasts to build into working weather files 
+    for the extend forecast i.e. forecast2
     """
-    x = y
+    
+    # today is the day after this nowcast/forecast sequence started
+    today = arrow.utcnow() 
+    tomorrow = today.replace(days=+1)
+    nextday = today.replace(days+2)
+
+    fcst_section_hrs_arr = [OrderedDict() for x in range(2)]
+
+    # tomorrow
+    p1 = os.path.join(today.format('YYYYMMDD'), '06')
+    logger.info('forecast section: {}'.format(p1))
+    fcst_section_hrs_arr[0] = OrderedDict([
+            ('section 1', (p1, -1, 24-6-1, 24+24-6)),
+    ])
+    zerostart = [[]]
+    length = [24]
+    subdirectory = ['fcst']
+    yearmonthday = [tomorrow.strftime('y%Ym%md%d')]
+
+    # nextday
+    p1 = os.path.join(today.format('YYYYMMDD'), '06')
+    logger.info('next day forecast section: {}'.format(p1))
+    fcst_section_hrs_arr[1] = OrderedDict([
+        # (part, (dir, start hr, end hr))
+        ('section 1', (p1, -1, 24+24-6-1, 24+24+6-6)),
+    ])
+    zerostart.append([])
+    length.append(7)
+    subdirectory.append('fcst')
+    yearmonthday.append(nextday.strftime('y%Ym%md%d'))
+
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+         yearmonthday)
+
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+         yearmonthday)
 
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
