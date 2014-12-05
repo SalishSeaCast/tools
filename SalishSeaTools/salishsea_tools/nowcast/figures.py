@@ -768,7 +768,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB,xmin,xmax,ymin,ymax, figsiz
     #for loop
     tracers = [sal_d, tem_d]
     titles = ['Average Salinity: ','Average Temperature: ']
-    cmaps = ['ocean_r','jet']
+    cmaps = ['gist_ncar_r','jet']
     units = ['[psu]','[degC]']
 
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
