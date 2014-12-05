@@ -20,6 +20,7 @@ netCDF files.
 from __future__ import division
 
 from collections import OrderedDict
+import argparse
 import glob
 import grp
 import logging
@@ -64,7 +65,13 @@ FILENAME_TMPL = 'ops_{:y%Ym%md%d}.nc'
 
 def main():
     # Prepare the worker
-    parser = lib.basic_arg_parser(worker_name, description=__doc__)
+    base_parser = lib.basic_arg_parser(
+        worker_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
+        parents=[base_parser],
+    )
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
@@ -76,15 +83,20 @@ def main():
     # Do the work
     checklist = {}
     try:
-        grib_to_netcdf(config, checklist)
-        logger.info('NEMO-atmos forcing file creation completed')
+        grib_to_netcdf(parsed_args.runtype, config, checklist)
+        logger.info('NEMO-atmos forcing file completed for run type {.runtype}'
+                    .format(parsed_args))
         # Exchange success messages with the nowcast manager process
+        msg_type = '{} {}'.format('success', parsed_args.runtype)
         lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
-        logger.critical('NEMO-atmos forcing file creation failed')
+        logger.critical(
+            'NEMO-atmos forcing file failed for run type {.runtype}'
+            .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        msg_type = '{} {}'.format('failure', parsed_args.runtype)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
@@ -98,6 +110,14 @@ def main():
     context.destroy()
     logger.info('task completed; shutting down')
 
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        'runtype', choices=set(('nowcast+', 'forecast2')),
+        help='Runtype: nowcast+first forecast or second forecast.',
+    )
+    return parser
 
 def configure_wgrib2_logging(config):
     wgrib2_logger.setLevel(logging.DEBUG)
@@ -111,10 +131,60 @@ def configure_wgrib2_logging(config):
     wgrib2_logger.addHandler(handler)
 
 
-def grib_to_netcdf(config, checklist):
+def grib_to_netcdf(runtype, config, checklist):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
+
+    if runtype == 'nowcast+':
+        (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+         yearmonthday) = define_forecast_segments_nowcast()
+    elif runtype == 'forecast2':
+        (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+         yearmonthday) = define_forecast_segments_forecast2()
+
+    # set-up plotting
+    fig, axs, ip = set_up_plotting()
+    # define group
+    gid = grp.getgrnam(config['file group']).gr_gid
+
+    for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
+            fcst_section_hrs_arr, zerostart, length, subdirectory,
+            yearmonthday):
+        rotate_grib_wind(config, fcst_section_hrs)
+        collect_grib_scalars(config, fcst_section_hrs)
+        outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
+        outgrib, outzeros = crop_to_watersheds(
+            config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
+        outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
+                                                  outgrib, outzeros, gid)
+        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
+                           axs)
+        change_to_NEMO_variable_names(outnetcdf, axs, ip)
+        ip += 1
+
+        netCDF4_deflate(outnetcdf)
+        try:
+            os.chown(outnetcdf, -1, gid)
+            os.chmod(outnetcdf, lib.PERMS_RW_RW_R)
+        except:
+            # don't own file so permissions are correct already
+            pass
+        if subdir in checklist:
+            checklist[subdir].append(os.path.basename(outnetcdf))
+        else:
+            if subdir:
+                checklist[subdir] = [os.path.basename(outnetcdf)]
+            else:
+                checklist.update({subdir: os.path.basename(outnetcdf)})
+    axs[2, 0].legend(loc='upper left')
+    fig.savefig('wg.png')
+
+def define_forecast_segments_nowcast():
+    """Define segments of forecasts to build into working weather files
+    for nowcast and a following forecast
+    """
+
     today = arrow.utcnow().to('Canada/Pacific')
     yesterday = today.replace(days=-1)
     tomorrow = today.replace(days=+1)
@@ -144,10 +214,10 @@ def grib_to_netcdf(config, checklist):
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24-12-1, 24+23-12)),
     ])
-    zerostart.extend([[]])
-    length.extend([24])
-    subdirectory.extend(['fcst'])
-    yearmonthday.extend([tomorrow.strftime('y%Ym%md%d')])
+    zerostart.append([])
+    length.append(24)
+    subdirectory.append('fcst')
+    yearmonthday.append(tomorrow.strftime('y%Ym%md%d'))
 
     # next day (forecast)
     p1 = os.path.join(today.format('YYYYMMDD'), '12')
@@ -156,49 +226,17 @@ def grib_to_netcdf(config, checklist):
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24+24-12-1, 24+24+12-12)),
     ])
-    zerostart.extend([[]])
-    length.extend([13])
-    subdirectory.extend(['fcst'])
-    yearmonthday.extend([nextday.strftime('y%Ym%md%d')])
+    zerostart.append([])
+    length.append(13)
+    subdirectory.append('fcst')
+    yearmonthday.append(nextday.strftime('y%Ym%md%d'))
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+         yearmonthday)
 
-    # set-up plotting
-    fig, axs, ip = set_up_plotting()
-    # define group
-    gid = grp.getgrnam(config['file group']).gr_gid
-
-
-    for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
-            fcst_section_hrs_arr, zerostart, length, subdirectory,
-            yearmonthday):
-        rotate_grib_wind(config, fcst_section_hrs)
-        collect_grib_scalars(config, fcst_section_hrs)
-        outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
-        outgrib, outzeros = crop_to_watersheds(
-            config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
-        outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
-                                                  outgrib, outzeros, gid)
-        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
-                           axs)
-        change_to_NEMO_variable_names(outnetcdf, axs, ip)
-        ip += 1
-
-        netCDF4_deflate(outnetcdf)
-        try:
-            os.chown(outnetcdf, -1, gid)
-            os.chmod(outnetcdf, lib.PERMS_RWX_RWX_R_W)
-        except:
-            # don't own file so permissions are correct already
-            pass
-        if subdir in checklist:
-            checklist[subdir].append(os.path.basename(outnetcdf))
-        else:
-            if subdir:
-                checklist[subdir] = [os.path.basename(outnetcdf)]
-            else:
-                checklist.update({subdir: os.path.basename(outnetcdf)})
-    axs[2, 0].legend(loc='upper left')
-    fig.savefig('wg.png')
-
+def define_forecast_segments_forecast2():
+    """Life is good
+    """
+    x = y
 
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
