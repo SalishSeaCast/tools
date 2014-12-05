@@ -143,6 +143,7 @@ def after_download_weather(worker, msg_type, payload, config):
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
+            (launch_worker, ['get_NeahBay_ssh', config]),
             (launch_worker, ['grib_to_netcdf', config]),
         ],
         'failure 12': None,
