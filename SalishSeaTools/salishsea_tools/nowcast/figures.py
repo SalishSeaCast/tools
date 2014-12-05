@@ -682,6 +682,54 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,12)):
 
     return fig
 
+def winds_at_station(station, gridB,gridW,figsize=(15,10)):
+        
+    lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
+          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
+          'Sandheads': 49.10}
+    lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
+          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
+          'Sandheads': -123.30}
+    
+    lat_wind=gridW.variables['nav_lat']
+    lon_wind=gridW.variables['nav_lon'][:]-360
+    uwind=gridW.variables['u_wind']
+    vwind=gridW.variables['v_wind']
+    uaverage = np.mean(uwind, axis=0)
+    vaverage = np.mean(vwind, axis=0)
+  
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    ax.grid()  
+    viz_tools.set_aspect(ax)
+    viz_tools.plot_land_mask(ax, gridB,color='burlywood',coords='map')
+    viz_tools.plot_coastline(ax,gridB,coords='map')  
+    ax.set_xlabel('longitude',**axis_font)
+    ax.set_ylabel('latitude',**axis_font)
+    #t_orig,t_final,t=get_model_time_variables(grid_T)
+        
+    def plot(name, uwind, vwind):
+        x,y = find_model_point(lons[name],lats[name],lon_wind[:],lat_wind[:])
+        speeds = np.sqrt(np.square(uaverage[x,y]) + np.square(vaverage[x,y]))
+        ax.plot(lons[name],lats[name],marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2)
+        ax.quiver(lon_wind[x,y], lat_wind[x,y], uaverage[x,y], vaverage[x,y], speeds, color='b', 
+                  pivot='tail', width=0.005, scale=40, headwidth=5)
+        return ax
+    
+    if station == 'all':
+        names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
+        m = np.arange(len(names))
+        for name, M in zip (names, m):
+            plot(name, uwind, vwind)
+            #ax.set_title('Daily average winds at all stations: ' + (t_orig).strftime('%d-%b-%Y'),**title_font)
+        
+    
+    if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
+        name = station
+        plot(name, uwind, vwind)
+        #ax.set_title('Daily average winds at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'),**title_font)
+        
+    return fig
+    
 def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
     """ Plot the daily averaged salinity field along the thalweg.
 
