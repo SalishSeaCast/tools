@@ -129,8 +129,10 @@ msg_types:
     failure: Neah Bay sea surface height file preparation failed
     crash: get_NeahBay_ssh worker crashed
   grib_to_netcdf:
-    success: atmospheric forcing ready
-    failure: atmospheric forcing files preparation failed
+    success nowcast+: atmospheric nowcast/forecast forcing ready
+    failure nowcast+: atmospheric nowcast forcing files preparation failed
+    success forecast2: atmospheric forecast2 forcing ready
+    failure forecast2: atmospheric forecast2 forcing files preparation failed
     crash: grib_to_netcdf worker crashed
   init_cloud:
     success: cloud nodes initialization underway
