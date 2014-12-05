@@ -209,8 +209,11 @@ def rotate_grib_wind(config, fcst_section_hrs):
     wgrib2 = config['weather']['wgrib2']
     grid_defn = config['weather']['grid_defn.pl']
     # grid_defn.pl expects to find wgrib2 in the pwd,
-    # create a symbolic link to keep it happy
-    os.symlink(wgrib2, 'wgrib2')
+    # create a symbolic link to keep it happy (if its not already there)
+    try:
+        os.symlink(wgrib2, 'wgrib2')
+    except OSError:
+        pass
     for day_fcst, realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
@@ -221,11 +224,11 @@ def rotate_grib_wind(config, fcst_section_hrs):
             # function can be re-run cleanly
             try:
                 os.remove(outuv)
-            except Exception:
+            except OSError:
                 pass
             try:
                 os.remove(outuvrot)
-            except Exception:
+            except OSError:
                 pass
             # Consolidate u and v wind component values into one file
             fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*UGRD*'))
@@ -269,11 +272,11 @@ def collect_grib_scalars(config, fcst_section_hrs):
             # function can be re-run cleanly
             try:
                 os.remove(outscalar)
-            except Exception:
+            except OSError:
                 pass
             try:
                 os.remove(outscalargrid)
-            except Exception:
+            except OSError:
                 pass
             # Consolidate scalar variables into one file
             for fn in glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*')):
@@ -311,11 +314,11 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     # function can be re-run cleanly
     try:
         os.remove(outgrib)
-    except Exception:
+    except OSError:
         pass
     try:
         os.remove(outzeros)
-    except Exception:
+    except OSError:
         pass
     for day_fcst,  realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
