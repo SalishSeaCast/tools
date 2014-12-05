@@ -486,7 +486,25 @@ def compute_residual(ssh,ttide,t_orig,t_final):
     return res
     
 def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
-  """Figure"""
+  """Figure
+  
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+    :type gridB: :class:`netCDF4.Dataset`
+        
+    :arg model_path: directory where the model wind files are stored
+    :type model_path: string
+    
+    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+    :type PST: 0 or 1
+    
+    :arg figsize:  Figure size (width, height) in inches
+    :type figsize: 2-tuple
+
+    :returns: Matplotlib figure object instance
+    """
   
   fig=plt.figure(figsize=figsize)
   gs = gridspec.GridSpec(3, 2, width_ratios=[1.5,1])
