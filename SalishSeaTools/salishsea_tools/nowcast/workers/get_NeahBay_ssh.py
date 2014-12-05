@@ -97,13 +97,20 @@ def getNBssh(config, checklist):
     fB.close()
     logger.debug('loaded lats & lons from {bathymetry}'.format(**config))
     # Load surge data
+    utc_now = datetime.datetime.now(pytz.timezone('UTC'))
     textfile = read_website(config['ssh']['ssh_dir'])
     checklist.update({'txt': os.path.basename(textfile)})
     data = load_surge_data(textfile)
     # Process the dates to find days with a full prediction
     dates = np.array(data.date.values)
+    #Check if today is Jan or Dec
+    isDec=False; isJan=False
+    if utc_now.month==1:
+      isJan=True;
+    if utc_now.month==12:
+      isDec=True;
     for i in range(dates.shape[0]):
-        dates[i] = to_datetime(dates[i], datetime.date.today().year)
+        dates[i] = to_datetime(dates[i], utc_now.year,isDec,isJan)
     dates_list = list_full_days(dates)
     # Loop through full days and save netcdf
     for d in dates_list:
@@ -144,7 +151,7 @@ def read_website(save_path):
     # Save the table as a text file with the date it was generated as its name
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
     filepath = os.path.join(
-        save_path, 'txt', 'sshNB_{:%Y-%m-%d}.txt'.format(utc_now))
+        save_path, 'txt', 'sshNB_{:%Y-%m-%d_%H}.txt'.format(utc_now))
     with open(filepath, 'wt') as f:
         f.writelines(table)
     os.chmod(filepath, 436)  # octial 664 = 'rw-rw-r--'
@@ -337,13 +344,19 @@ def list_full_days(dates):
     return dates_list
 
 
-def to_datetime(datestr,year):
+def to_datetime(datestr,year,isDec,isJan):
     """ converts the string given by datestr to a datetime object.
     The year is an argument because the datestr in the NOAA data doesn't have a year.
     Times are in UTC/GMT.
     returns a datetime representation of datestr"""
     dt = datetime.datetime.strptime(datestr,'%m/%d %HZ')
-    dt =dt.replace(year=year)
+    #dealing with year changes. 
+    if isDec and dt.month ==1:
+          dt =dt.replace(year=year+1)
+    elif isJan and dt.month==12:
+          dt =dt.replace(year=year-1)
+    else:
+       dt=dt.replace(year=year)
     dt=dt.replace(tzinfo=pytz.timezone('UTC'))
     return dt
 
