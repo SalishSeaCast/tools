@@ -276,7 +276,8 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     return fig
 
-def compare_tidalpredictions_maxSSH(name, grid_T, gridB, model_path, PST=1, MSL=0, figsize=(20,12)):
+def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0, 
+                                    name='Point Atkinson', figsize=(20,12)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.

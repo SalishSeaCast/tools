@@ -103,12 +103,16 @@ def make_out_plots(run_date, config, socket):
     # set-up, read from config file
     results_home = config['run']['results archive']['nowcast']
     results_dir = os.path.join(results_home, run_date.strftime('%d%b%y').lower())
-    model_path = config['weather']['ops']
+    model_path = config['weather']['ops_dir']
     bathy = nc.Dataset(config['bathymetry'])
 
     # configure plot directory for saving
     date_key = run_date.strftime('%d%b%y').lower()
     plots_dir = os.path.join(results_home, date_key, 'figures')
+    try:
+        os.mkdir(plots_dir)
+    except OSError:
+        pass
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
@@ -142,12 +146,17 @@ def make_out_plots(run_date, config, socket):
                         'NOAA_ssh_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
+    fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
+    filename = os.path.join(plot_dir,
+                 'WaterLevel_Thresholds_{date}.svg'.format(date=day_key))
+    plt.savefig(filename)
+
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
     filename = os.path.join(plots_dir, 
                         'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-
+    
 
 def results_dataset(period, grid, results_dir):
     """Return the results dataset for period (e.g. 1h or 1d)
