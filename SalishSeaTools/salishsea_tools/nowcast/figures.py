@@ -486,7 +486,9 @@ def compute_residual(ssh,ttide,t_orig,t_final):
     return res
     
 def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
-  """Figure
+  """Figure with the hourly sea surface height at Point Atkinson, Campbell River, and Victoria
+  and sections defined by water level thresholds. Also, a map showing the location of the stations,
+  colored according to the thresholds in which their water levels lie.
   
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -601,6 +603,9 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,12)):
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
+    
+    :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+    :type gridB: :class:`netCDF4.Dataset`
    
     :arg model_path: directory where the model files are stored
     :type model_path: string
@@ -683,6 +688,23 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,12)):
     return fig
 
 def winds_at_station(station, gridB,gridW,figsize=(15,10)):
+    """ Figure that plots winds at individual or all stations.
+
+      :arg station: Either the name of one of the seven defined stations or 'all' for all stations
+      :type station: string
+    
+      :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+      :type gridB: :class:`netCDF4.Dataset`
+    
+      :arg gridW: Winds dataset for the Salish Sea NEMO model.
+      :type gridW: :class:`netCDF4.Dataset`
+    
+      :arg figsize:  Figure size (width, height) in inches
+      :type figsize: 2-tuple
+
+      :returns: Matplotlib figure object instance
+  
+    """
         
     lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
           'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
@@ -705,7 +727,6 @@ def winds_at_station(station, gridB,gridW,figsize=(15,10)):
     viz_tools.plot_coastline(ax,gridB,coords='map')  
     ax.set_xlabel('longitude',**axis_font)
     ax.set_ylabel('latitude',**axis_font)
-    #t_orig,t_final,t=get_model_time_variables(grid_T)
         
     def plot(name, uwind, vwind):
         x,y = find_model_point(lons[name],lats[name],lon_wind[:],lat_wind[:])
@@ -720,13 +741,13 @@ def winds_at_station(station, gridB,gridW,figsize=(15,10)):
         m = np.arange(len(names))
         for name, M in zip (names, m):
             plot(name, uwind, vwind)
-            #ax.set_title('Daily average winds at all stations: ' + (t_orig).strftime('%d-%b-%Y'),**title_font)
+            ax.set_title('Daily average winds at all stations',**title_font)
         
     
     if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
         plot(name, uwind, vwind)
-        #ax.set_title('Daily average winds at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'),**title_font)
+        ax.set_title('Daily average winds at ' + name,**title_font)
         
     return fig
     
