@@ -439,10 +439,9 @@ def _handle_url_content(response, filepath=None):
 
 
 def run_in_subprocess(cmd, output_logger, error_logger):
-    """Run the wgrib2 command (cmd) in a subprocess and log its stdout
-    and stderr to the wgrib2 logger. Catch errors from the subprocess,
-    log them to the primary logger, and raise the exception for handling
-    somewhere higher in the call stack.
+    """Run cmd in a subprocess and log its stdout to output_logger.
+    Catch errors from the subprocess, log them to error_logger,
+    and raise the exception for handling somewhere higher in the call stack.
 
     :arg cmd: Command and its arguments/options to run in subprocess.
     :type cmd: list
