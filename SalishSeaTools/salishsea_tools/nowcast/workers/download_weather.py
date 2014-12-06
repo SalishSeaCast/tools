@@ -18,7 +18,6 @@ Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km operational
 model forecast.
 """
 import argparse
-import grp
 import logging
 import os
 import traceback
@@ -122,46 +121,17 @@ def get_grib(forecast, config, checklist):
     logger.info(
         'downloading {forecast} forecast GRIB2 files for {date}'
         .format(forecast=forecast, date=date))
-
     dest_dir_root = config['weather']['GRIB_dir']
-    gid = grp.getgrnam(config['file group']).gr_gid
     os.chdir(dest_dir_root)
-    try:
-        os.mkdir(date)
-        os.chown(date, -1, gid)
-        os.chmod(date, lib.PERMS_RWX_RWX_R_X)
-    except OSError:
-        # Directory already exists
-        pass
+    lib.mkdir(date, logger, grp_name=config['file group'])
     os.chdir(date)
-    try:
-        os.mkdir(forecast)
-    except OSError:
-        forecast_path = os.path.join(dest_dir_root, date, forecast)
-        msg = (
-            '{} directory already exists; not overwriting'
-            .format(forecast_path))
-        logger.error(msg)
-        raise lib.WorkerError
-    os.chown(forecast, -1, gid)
-    os.chmod(forecast, lib.PERMS_RWX_RWX_R_X)
+    lib.mkdir(forecast, logger, grp_name=config['file group'], exist_ok=False)
     os.chdir(forecast)
-
     for fhour in range(1, FORECAST_DURATION+1):
         sfhour = '{:0=3}'.format(fhour)
-        try:
-            os.mkdir(sfhour)
-        except OSError:
-            sfhour_path = os.path.join(dest_dir_root, date, forecast, sfhour)
-            msg = (
-                '{} directory already exists; not overwriting'
-                .format(sfhour_path))
-            logger.error(msg)
-            raise lib.WorkerError
-        os.chown(sfhour, -1, gid)
-        os.chmod(sfhour, lib.PERMS_RWX_RWX_R_X)
+        lib.mkdir(
+            sfhour, logger, grp_name=config['file group'], exist_ok=False)
         os.chdir(sfhour)
-
         for v in GRIB_VARIABLES:
             filename = FILENAME_TEMPLATE.format(
                 variable=v, date=date, forecast=forecast, hour=sfhour)
@@ -173,7 +143,7 @@ def get_grib(forecast, config, checklist):
                 'downloaded {bytes} bytes from {fileURL}'.format(
                     bytes=headers['Content-Length'],
                     fileURL=fileURL))
-            os.chmod(filename, lib.PERMS_RW_RW_R)
+            lib.fix_perms(filename)
         os.chdir('..')
     os.chdir('..')
     checklist.update({'{} forecast'.format(forecast): True})

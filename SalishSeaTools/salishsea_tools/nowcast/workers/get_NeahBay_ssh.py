@@ -154,7 +154,7 @@ def read_website(save_path):
         save_path, 'txt', 'sshNB_{:%Y-%m-%d_%H}.txt'.format(utc_now))
     with open(filepath, 'wt') as f:
         f.writelines(table)
-    os.chmod(filepath, 436)  # octial 664 = 'rw-rw-r--'
+    lib.fix_perms(filepath)
     logger.debug(
         'observations & predictions table saved to {}'.format(filepath))
     return filepath
@@ -270,7 +270,7 @@ def save_netcdf(
         vobtcrtx[:, 0, ib] = np.zeros(len(surges))
         vobtcrty[:, 0, ib] = np.zeros(len(surges))
     ssh_file.close()
-    os.chmod(filepath, lib.PERMS_RW_RW_R)
+    lib.fix_perms(filepath)
     logger.debug('saved western open boundary file {}'.format(filepath))
     return filepath
 
@@ -350,7 +350,7 @@ def to_datetime(datestr,year,isDec,isJan):
     Times are in UTC/GMT.
     returns a datetime representation of datestr"""
     dt = datetime.datetime.strptime(datestr,'%m/%d %HZ')
-    #dealing with year changes. 
+    #dealing with year changes.
     if isDec and dt.month ==1:
           dt =dt.replace(year=year+1)
     elif isJan and dt.month==12:

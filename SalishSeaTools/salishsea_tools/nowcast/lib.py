@@ -16,6 +16,7 @@
 """Salish Sea NEMO nowcast library functions for use by manager and workers.
 """
 import argparse
+import grp
 import logging
 import logging.handlers
 import os
@@ -436,6 +437,83 @@ def _handle_url_content(response, filepath=None):
                 break
             f.write(block)
     return response.headers
+
+
+def fix_perms(path, mode=PERMS_RW_RW_R, grp_name=None):
+    """Try to set the permissions and group ownership of the file
+    or directory at path.
+
+    The desired permissions are given by mode.
+    If grp_name is given,
+    set the directory's gid to that associated with the grp_name.
+
+    In the event that the file or directory at path is owned by another
+    user the gid or permissions changes fail silently because they are
+    probably correct already.
+
+    :arg path: Path to fix the permissions of.
+    :type path: str
+
+    :arg mode: Numeric mode to set the directory's permissions to.
+    :type mode: int
+
+    :arg grp_name: Group name to change the path's ownership to.
+                   Defaults to None meaning do nothing.
+    :type grp_name: str
+    """
+    try:
+        if grp_name is not None:
+            gid = grp.getgrnam(grp_name).gr_gid
+            os.chown(path, -1, gid)
+        os.chmod(path, mode)
+    except OSError:
+        # Can't change gid or mode of a directory we don't own
+        # but we just accept that
+        pass
+
+
+def mkdir(path, logger, mode=PERMS_RWX_RWX_R_X, grp_name=None, exist_ok=True):
+    """Create a directory at path with its permissions set to mode.
+    If grp_name is given,
+    set the directory's gid to that associated with the grp_name.
+    If path already exists and exist_ok is False,
+    log an error messages and raise an exception.
+
+    In the event that the directory already exists at path but is owned by
+    another user the gid or permissions changes fail silently because they
+    are probably correct already.
+
+    :arg path: Path to create the directory at.
+    :type path: str
+
+    :arg logger: Logger object.
+    :type logger: :class:`logging.Logger`
+
+    :arg mode: Numeric mode to set the directory's permissions to.
+    :type mode: int
+
+    :arg grp_name: Group name to change the directory's ownership to.
+                   Defaults to None meaning that the directory's group
+                   will be the same as its parent's.
+    :type grp_name: str
+
+    :arg exist_ok: Indicate whether or not to log and error message and
+                   raise an exception if path already exists.
+                   Defaults to True meaning that an existing path is
+                   accepted silently.
+    :type exist_ok: boolean
+
+    :raises: :py:exc:`lib.WorkerError`
+             if path already exists and exist_ok is False
+    """
+    try:
+        os.mkdir(path)
+    except OSError:
+        if not exist_ok:
+            msg = '{} directory already exists; not overwriting'.format(path)
+            logger.error(msg)
+            raise WorkerError
+    fix_perms(path, mode, grp_name)
 
 
 def run_in_subprocess(cmd, output_logger, error_logger):
