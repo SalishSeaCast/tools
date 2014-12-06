@@ -22,7 +22,6 @@ from __future__ import division
 from collections import OrderedDict
 import argparse
 import glob
-import grp
 import logging
 import os
 import subprocess
@@ -137,16 +136,14 @@ def grib_to_netcdf(runtype, config, checklist):
     """
 
     if runtype == 'nowcast+':
-        (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+        (fcst_section_hrs_arr, zerostart, length, subdirectory,
          yearmonthday) = define_forecast_segments_nowcast()
     elif runtype == 'forecast2':
-        (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+        (fcst_section_hrs_arr, zerostart, length, subdirectory,
          yearmonthday) = define_forecast_segments_forecast2()
 
     # set-up plotting
     fig, axs, ip = set_up_plotting()
-    # define group
-    gid = grp.getgrnam(config['file group']).gr_gid
 
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
             fcst_section_hrs_arr, zerostart, length, subdirectory,
@@ -156,20 +153,15 @@ def grib_to_netcdf(runtype, config, checklist):
         outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
         outgrib, outzeros = crop_to_watersheds(
             config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
-        outnetcdf, out0netcdf = make_netCDF_files(config, ymd, subdir,
-                                                  outgrib, outzeros, gid)
+        outnetcdf, out0netcdf = make_netCDF_files(
+            config, ymd, subdir, outgrib, outzeros)
         calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
                            axs)
         change_to_NEMO_variable_names(outnetcdf, axs, ip)
         ip += 1
 
         netCDF4_deflate(outnetcdf)
-        try:
-            os.chown(outnetcdf, -1, gid)
-            os.chmod(outnetcdf, lib.PERMS_RW_RW_R)
-        except OSError:
-            # don't own file so permissions are correct already
-            pass
+        lib.fix_perms(outnetcdf, grp_name=config['file group'])
         if subdir in checklist:
             checklist[subdir].append(os.path.basename(outnetcdf))
         else:
@@ -179,6 +171,7 @@ def grib_to_netcdf(runtype, config, checklist):
                 checklist.update({subdir: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
     fig.savefig('wg.png')
+
 
 def define_forecast_segments_nowcast():
     """Define segments of forecasts to build into working weather files
@@ -230,16 +223,16 @@ def define_forecast_segments_nowcast():
     length.append(13)
     subdirectory.append('fcst')
     yearmonthday.append(nextday.strftime('y%Ym%md%d'))
-    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory,
          yearmonthday)
 
 def define_forecast_segments_forecast2():
-    """Define segments of forecasts to build into working weather files 
+    """Define segments of forecasts to build into working weather files
     for the extend forecast i.e. forecast2
     """
-    
+
     # today is the day after this nowcast/forecast sequence started
-    today = arrow.utcnow() 
+    today = arrow.utcnow()
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days+2)
 
@@ -268,10 +261,10 @@ def define_forecast_segments_forecast2():
     subdirectory.append('fcst')
     yearmonthday.append(nextday.strftime('y%Ym%md%d'))
 
-    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory,
          yearmonthday)
 
-    return (fcst_section_hrs_arr, zerostart, length, subdirectory, 
+    return (fcst_section_hrs_arr, zerostart, length, subdirectory,
          yearmonthday)
 
 def rotate_grib_wind(config, fcst_section_hrs):
@@ -451,7 +444,7 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib,
     return newgrib, newzeros
 
 
-def make_netCDF_files(config, ymd, subdir, outgrib, outzeros, gid):
+def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
@@ -464,12 +457,7 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros, gid):
     logger.info(
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
-    try:
-        os.chown(outnetcdf, -1, gid)
-        os.chmod(outnetcdf, 436)  # octal 664 = 'rw-rw-r--'
-    except OSError:
-        # File isn't owned by current user, but that's okay
-        pass
+    lib.fix_perms(outnetcdf, grp_name=config['file group'])
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
     logger.info(
