@@ -234,7 +234,7 @@ def define_forecast_segments_forecast2():
     # today is the day after this nowcast/forecast sequence started
     today = arrow.utcnow()
     tomorrow = today.replace(days=+1)
-    nextday = today.replace(days+2)
+    nextday = today.replace(days=+2)
 
     fcst_section_hrs_arr = [OrderedDict() for x in range(2)]
 
