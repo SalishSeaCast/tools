@@ -105,7 +105,8 @@ def plot_coastline(
         lons = bathy.variables['nav_lon']
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
-                lons, lats, np.array(depths), [isobath], colors=color)
+                np.array(lons), np.array(lats), np.array(depths), 
+                [isobath], colors=color)
         else:
             contour_lines = axes.contour(
                 lons[yslice, xslice], lats[yslice, xslice],
@@ -192,7 +193,8 @@ def plot_land_mask(
         lons = bathy.variables['nav_lon']
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(
-                lons, lats, np.array(depths), contour_interval, colors=color)
+                np.array(lons), np.array(lats), np.array(depths), 
+                contour_interval, colors=color)
         else:
             contour_fills = axes.contourf(
                 lons[yslice, xslice], lats[yslice, xslice],
