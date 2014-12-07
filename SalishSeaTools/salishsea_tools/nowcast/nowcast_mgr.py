@@ -131,7 +131,7 @@ def message_processor(config, message):
 
 def after_download_weather(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success 00': [
             (update_checklist, [worker, 'weather', payload]),
         ],
@@ -159,7 +159,7 @@ def after_download_weather(worker, msg_type, payload, config):
 
 def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'sshNeahBay', payload]),
         ],
@@ -171,7 +171,7 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
 
 def after_make_runoff_file(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'rivers', payload]),
         ],
@@ -183,7 +183,7 @@ def after_make_runoff_file(worker, msg_type, payload, config):
 
 def after_grib_to_netcdf(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast+': [
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker,
@@ -202,7 +202,7 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
 
 def after_init_cloud(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'nodes', payload]),
         ],
@@ -231,7 +231,7 @@ def after_init_cloud(worker, msg_type, payload, config):
 
 def after_create_compute_node(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'nodes', payload]),
             (is_cloud_ready, [config]),
@@ -244,7 +244,7 @@ def after_create_compute_node(worker, msg_type, payload, config):
 
 def after_set_head_node_ip(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'cloud addr', payload]),
         ],
@@ -256,7 +256,7 @@ def after_set_head_node_ip(worker, msg_type, payload, config):
 
 def after_set_ssh_config(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'ssh config', payload]),
             (launch_worker, ['set_mpi_hosts', config]),
@@ -269,7 +269,7 @@ def after_set_ssh_config(worker, msg_type, payload, config):
 
 def after_set_mpi_hosts(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'mpi_hosts', payload]),
             (launch_worker, ['mount_sshfs', config]),
@@ -282,7 +282,7 @@ def after_set_mpi_hosts(worker, msg_type, payload, config):
 
 def after_mount_sshfs(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'sshfs mount', payload]),
             (launch_worker,
@@ -296,7 +296,7 @@ def after_mount_sshfs(worker, msg_type, payload, config):
 
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
@@ -310,7 +310,7 @@ def after_upload_forcing(worker, msg_type, payload, config):
 
 def after_make_forcing_links(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'forcing links', payload])
         ],
@@ -322,7 +322,7 @@ def after_make_forcing_links(worker, msg_type, payload, config):
 
 def after_download_results(worker, msg_type, payload, config):
     actions = {
-        # msg type: [(step, [step_args])]
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload])
         ],
