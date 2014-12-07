@@ -103,10 +103,7 @@ def make_out_plots(run_date, config, socket):
     # configure plot directory for saving
     date_key = run_date.strftime('%d%b%y').lower()
     plots_dir = os.path.join(results_home, date_key, 'figures')
-    try:
-        os.mkdir(plots_dir)
-    except OSError:
-        pass
+    lib.mkdir(plots_dir, logger, grp_name='sallen')
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
