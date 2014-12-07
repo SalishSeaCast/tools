@@ -346,15 +346,17 @@ def test_the_end_next_step(nowcast_mgr_module):
 
 
 @pytest.mark.parametrize('worker, msg_type', [
-    ('after_download_weather', 'success 06'),
+    ('after_download_weather', 'failure 00'),
     ('after_download_weather', 'failure 06'),
+    ('after_download_weather', 'failure 12'),
     ('after_download_weather', 'failure 18'),
     ('after_download_weather', 'crash'),
     ('after_get_NeahBay_ssh', 'failure'),
     ('after_get_NeahBay_ssh', 'crash'),
     ('after_make_runoff_file', 'failure'),
     ('after_make_runoff_file', 'crash'),
-    ('after_grib_to_netcdf', 'failure'),
+    ('after_grib_to_netcdf', 'failure nowcast+'),
+    ('after_grib_to_netcdf', 'failure forecast2'),
     ('after_grib_to_netcdf', 'crash'),
     ('after_init_cloud', 'failure'),
     ('after_init_cloud', 'crash'),
@@ -370,7 +372,8 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
     ('after_make_forcing_links', 'crash'),
-    ('after_download_results', 'failure'),
+    ('after_download_results', 'failure nowcast'),
+    ('after_download_results', 'failure forecast'),
     ('after_download_results', 'crash'),
 ])
 def test_after_worker_no_next_steps(
@@ -381,6 +384,54 @@ def test_after_worker_no_next_steps(
     after_worker_func = getattr(nowcast_mgr_module, worker)
     next_steps = after_worker_func(worker, msg_type, payload, config)
     assert next_steps is None
+
+
+@pytest.mark.parametrize('msg_type', [
+    'success 00',
+    'success 18',
+])
+def test_simple_download_weather_success_next_step_args(
+    msg_type, nowcast_mgr_module,
+):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_download_weather(
+        'download_weather', msg_type, payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_weather', 'weather', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_download_weather_success_06_next_step_args(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_download_weather(
+        'download_weather', 'success 06', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_weather', 'weather', payload]),
+        (nowcast_mgr_module.launch_worker, ['make_runoff_file', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['grib_to_netcdf', config, ['forecast2']]),
+    ]
+    assert next_steps == expected
+
+
+def test_download_weather_success_12_next_step_args(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_download_weather(
+        'download_weather', 'success 12', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_weather', 'weather', payload]),
+        (nowcast_mgr_module.launch_worker, ['get_NeahBay_ssh', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['grib_to_netcdf', config, ['nowcast+']]),
+    ]
+    assert next_steps == expected
 
 
 def test_get_NeahBay_ssh_success_next_step_args(nowcast_mgr_module):
@@ -407,17 +458,29 @@ def test_make_runoff_file_success_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_grib_to_netcdf_success_next_steps(nowcast_mgr_module):
+def test_grib_to_netcdf_success_nowcast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = {'run': {'hpc host': 'orcinus'}}
     next_steps = nowcast_mgr_module.after_grib_to_netcdf(
-        'grib_to_netcdf', 'success', payload, config)
+        'grib_to_netcdf', 'success nowcast+', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['grib_to_netcdf', 'weather forcing', payload]),
         (nowcast_mgr_module.launch_worker,
          ['upload_forcing', config, ['orcinus']]),
         (nowcast_mgr_module.launch_worker, ['init_cloud', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_grib_to_netcdf_success_forecast2_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'hpc host': 'orcinus'}}
+    next_steps = nowcast_mgr_module.after_grib_to_netcdf(
+        'grib_to_netcdf', 'success forecast2', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['grib_to_netcdf', 'weather forcing', payload]),
     ]
     assert next_steps == expected
 
@@ -513,11 +576,15 @@ def test_make_forcing_links_success_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_download_results_success_next_steps(nowcast_mgr_module):
+@pytest.mark.parametrize('msg_type', [
+    'success nowcast',
+    'success forecast',
+])
+def test_download_results_success_next_steps(msg_type, nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_download_results(
-        'download_results', 'success', payload, config)
+        'download_results', msg_type, payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
