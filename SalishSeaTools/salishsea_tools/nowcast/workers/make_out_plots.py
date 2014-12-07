@@ -28,9 +28,10 @@ import netCDF4 as nc
 import zmq
 
 from salishsea_tools.nowcast import (
-    figures, 
+    figures,
     lib,
 )
+
 
 worker_name = lib.get_module_name()
 
@@ -87,7 +88,8 @@ def configure_argparser(prog, description, parents):
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
         Date of the run to download results files from;
-        defaults to %(default)s.
+        use YYYY-MM-DD format.
+        Defaults to %(default)s.
         ''',
     )
     return parser
@@ -110,7 +112,7 @@ def make_out_plots(run_date, config, socket):
 
     # do the plots
     fig = figures.PA_tidal_predictions(grid_T_hr)
-    filename = os.path.join(plots_dir, 
+    filename = os.path.join(plots_dir,
                         'PA_tidal_predictions_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
@@ -122,7 +124,7 @@ def make_out_plots(run_date, config, socket):
     
     fig = figures.compare_tidalpredictions_maxSSH( 
                                              grid_T_hr, bathy, model_path)
-    filename = os.path.join(plots_dir, 
+    filename = os.path.join(plots_dir,
                         'PA_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
     
@@ -133,7 +135,7 @@ def make_out_plots(run_date, config, socket):
     plt.savefig(filename)
 
     fig = figures.compare_water_levels(grid_T_hr, bathy)
-    filename = os.path.join(plots_dir, 
+    filename = os.path.join(plots_dir,
                         'NOAA_ssh_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
@@ -143,18 +145,18 @@ def make_out_plots(run_date, config, socket):
     plt.savefig(filename)
 
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
-    filename = os.path.join(plots_dir, 
+    filename = os.path.join(plots_dir,
                         'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    
+
 
 def results_dataset(period, grid, results_dir):
     """Return the results dataset for period (e.g. 1h or 1d)
     and grid (e.g. grid_T, grid_U) from results_dir.
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
-    filepaths = glob(os.path.join(results_dir, 
+    filepaths = glob(os.path.join(results_dir,
                    filename_pattern.format(period=period, grid=grid)))
     return nc.Dataset(filepaths[0])
 

@@ -88,7 +88,8 @@ def configure_argparser(prog, description, parents):
         default=arrow.now().date(),
         help='''
         Date of the run to download results files from;
-        defaults to %(default)s.
+        use YYYY-MM-DD format.
+        Defaults to %(default)s.
         ''',
     )
     return parser
