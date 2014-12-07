@@ -55,7 +55,8 @@ def main():
     checklist = {}
     try:
         download_results(
-            parsed_args.host_name, parsed_args.run_date, config, checklist)
+            parsed_args.host_name, parsed_args.run_type, parsed_args.run_date,
+            config, checklist)
         logger.info(
             'results files from {.host_name} downloaded'
             .format(parsed_args))
@@ -89,6 +90,10 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to download results files from')
     parser.add_argument(
+        'run_type', choices=set(('nowcast', 'forecast')),
+        help='Type of run to download results files from.'
+    )
+    parser.add_argument(
         '--run-date', type=lib.arrow_date,
         default=arrow.now().date(),
         help='''
@@ -100,22 +105,23 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def download_results(host_name, run_date, config, checklist):
+def download_results(host_name, run_type, run_date, config, checklist):
     host = config['run'][host_name]
     results_dir = run_date.strftime('%d%b%y').lower()
-    src_dir = os.path.join(host['results']['nowcast'], results_dir)
+    src_dir = os.path.join(host['results'][run_type], results_dir)
     src = (
         '{host}:{src_dir}'.format(host=host_name, src_dir=src_dir))
-    dest = os.path.join(config['run']['results archive']['nowcast'])
+    dest = os.path.join(config['run']['results archive'][run_type])
     cmd = ['scp', '-Cpr', src, dest]
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
     lib.fix_perms(os.path.join(dest, results_dir))
-    for freq in '1h 1d'.split():
-        checklist[freq] = glob.glob(
-            os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
     for filename in 'stdout stderr'.split():
         filepath = os.path.join(dest, results_dir, filename)
         lib.fix_perms(filepath)
+    checklist[run_type] = {}
+    for freq in '1h 1d'.split():
+        checklist[run_type][freq] = glob.glob(
+            os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
 
 
 if __name__ == '__main__':

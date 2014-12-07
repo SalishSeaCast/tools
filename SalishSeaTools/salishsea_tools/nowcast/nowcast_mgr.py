@@ -323,10 +323,14 @@ def after_make_forcing_links(worker, msg_type, payload, config):
 def after_download_results(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args])]
-        'success': [
+        'success nowcast': [
             (update_checklist, [worker, 'results files', payload])
         ],
-        'failure': None,
+        'success forecast': [
+            (update_checklist, [worker, 'results files', payload])
+        ],
+        'failure nowcast': None,
+        'failure forecast': None,
         'crash': None,
     }
     return actions[msg_type]
