@@ -39,7 +39,7 @@ weather:
 run:
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
-    nodes: 5
+    nodes: 14
     images:
       head node: nowcast-head-node
       compute node: nowcast-compute-node
