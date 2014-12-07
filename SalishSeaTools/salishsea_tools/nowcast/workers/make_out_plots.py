@@ -31,12 +31,6 @@ from salishsea_tools.nowcast import (
     figures, 
     lib,
 )
-from salishsea_tools.nowcast.workers import (
-    get_NeahBay_ssh,
-    grib_to_netcdf,
-    make_runoff_file,
-)
-
 
 worker_name = lib.get_module_name()
 
@@ -123,20 +117,20 @@ def make_out_plots(run_date, config, socket):
                         'PA_tidal_predictions_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_tidalpredictions_maxSSH('Victoria', 
-                                             grid_T_hr, bathy, model_path)
+    fig = figures.compare_tidalpredictions_maxSSH( 
+                    grid_T_hr, bathy, model_path, name='Victoria')
     filename = os.path.join(plots_dir, 
                         'Vic_maxSSH__{date}.svg'.format(date=date_key))
     plt.savefig(filename)
     
-    fig = figures.compare_tidalpredictions_maxSSH('Point Atkinson', 
+    fig = figures.compare_tidalpredictions_maxSSH( 
                                              grid_T_hr, bathy, model_path)
     filename = os.path.join(plots_dir, 
                         'PA_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
     
-    fig = figures.compare_tidalpredictions_maxSSH('Campbell River', 
-                                             grid_T_hr, bathy, model_path)    
+    fig = figures.compare_tidalpredictions_maxSSH( 
+                         grid_T_hr, bathy, model_path, name='Campbell River') 
     filename = os.path.join(plots_dir, 
                         'CR_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
@@ -147,8 +141,8 @@ def make_out_plots(run_date, config, socket):
     plt.savefig(filename)
 
     fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
-    filename = os.path.join(plot_dir,
-                 'WaterLevel_Thresholds_{date}.svg'.format(date=day_key))
+    filename = os.path.join(plots_dir,
+                 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
