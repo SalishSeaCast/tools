@@ -53,17 +53,20 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     checklist = {}
-    host_name = config['run']['hpc host']
     try:
-        download_results(host_name, parsed_args.run_date, config, checklist)
-        logger.info('results files from {} downloaded'.format(host_name))
+        download_results(
+            parsed_args.host_name, parsed_args.run_date, config, checklist)
+        logger.info(
+            'results files from {.host_name} downloaded'
+            .format(parsed_args))
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
         lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical(
-            'results files download from {} failed'.format(host_name))
+            'results files download from {.host_name} failed'
+            .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -83,6 +86,8 @@ def main():
 def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        'host_name', help='Name of the host to download results files from')
     parser.add_argument(
         '--run-date', type=lib.arrow_date,
         default=arrow.now().date(),
