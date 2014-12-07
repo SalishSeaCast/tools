@@ -728,26 +728,35 @@ def winds_at_station(station, gridB,gridW,figsize=(15,10)):
     viz_tools.plot_coastline(ax,gridB,coords='map')  
     ax.set_xlabel('longitude',**axis_font)
     ax.set_ylabel('latitude',**axis_font)
+    scale = 0.1
         
-    def plot(name, uwind, vwind):
-        x,y = find_model_point(lons[name],lats[name],lon_wind[:],lat_wind[:])
+    def plot(name, uwind, vwind, scale):
+        x,y = find_model_point(lons[name], lats[name],  lon_wind[:],lat_wind[:])
         speeds = np.sqrt(np.square(uaverage[x,y]) + np.square(vaverage[x,y]))
-        ax.plot(lons[name],lats[name],marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2)
-        ax.quiver(lon_wind[x,y], lat_wind[x,y], uaverage[x,y], vaverage[x,y], speeds, color='b', 
-                  pivot='tail', width=0.005, scale=40, headwidth=5)
+        ax.plot(lons[name], lats[name], marker='D', color='MediumOrchid',
+                markersize=10, markeredgewidth=2)
+        # use arrow rather than quiver as we are plotting one at a time
+        ax.arrow(lon_wind[x,y], lat_wind[x,y], 
+                 scale*uaverage[x,y], scale*vaverage[x,y], 
+                 head_width=0.05, head_length=0.1, width=0.02, 
+                 color='b',fc='b', ec='b',)
         return ax
-    
+
+    ax.arrow(-123, 50., 5.*scale, 0.*scale,
+              head_width=0.05, head_length=0.1, width=0.02, 
+              color='b',fc='b', ec='b')
+    ax.text(-123, 50.1, "5 m/s")
     if station == 'all':
         names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
         m = np.arange(len(names))
         for name, M in zip (names, m):
-            plot(name, uwind, vwind)
+            plot(name, uwind, vwind, scale)
             ax.set_title('Daily average winds at all stations',**title_font)
         
     
     if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
-        plot(name, uwind, vwind)
+        plot(name, uwind, vwind, scale)
         ax.set_title('Daily average winds at ' + name,**title_font)
         
     return fig
