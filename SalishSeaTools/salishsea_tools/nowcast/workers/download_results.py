@@ -109,6 +109,7 @@ def download_results(host_name, run_date, config, checklist):
     dest = os.path.join(config['run']['results archive']['nowcast'])
     cmd = ['scp', '-Cpr', src, dest]
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
+    lib.fix_perms(os.path.join(dest, results_dir))
     for freq in '1h 1d'.split():
         checklist[freq] = glob.glob(
             os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
