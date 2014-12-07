@@ -88,9 +88,11 @@ def mount_sshfs(host_name, config, socket):
             'ssh {node_name} {mount_cmd}'
             .format(node_name=node_name, mount_cmd=mount_cmd))
         stdin, stdout, stderr = ssh_client.exec_command(cmd)
-        for line in stdout:
+        for line in stdout.splitlines():
             logger.debug('stdout: {}'.format(line))
-        for line in stderr:
+        for line in stderr.splitlines():
+            if line.startswith('fuse: mountpoint is not empty'):
+                break
             logger.debug('stderr: {}'.format(line))
         logger.debug('"{}" executed on {}'.format(cmd, node_name))
     ssh_client.close()
