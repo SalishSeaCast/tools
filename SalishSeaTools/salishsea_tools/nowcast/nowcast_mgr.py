@@ -325,7 +325,9 @@ def after_download_results(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
-            (update_checklist, [worker, 'results files', payload])
+            (update_checklist, [worker, 'results files', payload]),
+            (launch_worker,
+             ['make_out_plots', config]),
         ],
         'success forecast': [
             (update_checklist, [worker, 'results files', payload])
