@@ -57,8 +57,10 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
+    checklist = {}
     try:
-        checklist = make_out_plots(parsed_args.run_date, config, socket)
+        make_out_plots(
+            parsed_args.run_date, config, socket, checklist)
         logger.info('Made the "Out" plots completed')
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
@@ -94,7 +96,7 @@ def configure_argparser(prog, description, parents):
     )
     return parser
 
-def make_out_plots(run_date, config, socket):
+def make_out_plots(run_date, config, socket, checklist):
 
     # set-up, read from config file
     results_home = config['run']['results archive']['nowcast']
@@ -149,6 +151,7 @@ def make_out_plots(run_date, config, socket):
                         'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
+    checklist = glob.glob(plots_dir)
 
 
 def results_dataset(period, grid, results_dir):

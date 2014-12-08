@@ -176,3 +176,7 @@ msg_types:
     failure forecast: forecast results files download failed
     crash: download_results worker crashed
     the end: end of automation
+  make_out_plots:
+    success: nowcast OUT plots produced
+    failure: nowcast OUT plots failed
+    crash: make_out_plots worker crashed
