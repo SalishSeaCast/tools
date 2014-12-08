@@ -978,7 +978,7 @@ def load_VENUS(station):
     fakefile = StringIO(response.content)
     data = pd.read_csv(fakefile,delimiter=' ,',skiprows=17,
                    names=['date','pressure','pflag','temp','tflag','sal','sflag','sigmaT','stflag','oxygen','oflag'],
-                   parse_dates=['date'],date_parser=dateparse)
+                   parse_dates=['date'],date_parser=dateparse,engine='python')
 
     return data, lon, lat, depth
 
