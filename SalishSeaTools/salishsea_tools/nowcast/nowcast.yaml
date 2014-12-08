@@ -39,8 +39,8 @@ weather:
 run:
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
-    nodes: 14
-    mpi decomposition: 7x16
+    nodes: 18
+    mpi decomposition: 8x18
     images:
       head node: nowcast-head-node
       compute node: nowcast-compute-node
