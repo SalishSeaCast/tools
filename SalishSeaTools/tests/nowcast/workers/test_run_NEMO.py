@@ -28,7 +28,7 @@ import pytest
 
 @pytest.fixture()
 def run_NEMO_module():
-    from salishsea_tools.nowcast import run_NEMO
+    from salishsea_tools.nowcast.workers import run_NEMO
     return run_NEMO
 
 
@@ -51,7 +51,13 @@ def test_get_namelist_value_last_occurrence(run_NEMO_module):
 
 def test_run_description_init_conditions(run_NEMO_module):
     today = date(2014, 10, 28)
-    run_desc = run_NEMO_module.run_description('foo', today, 42)
+    host = {
+        'mpi decomposition': '7x16',
+        'results': {'nowcast': '~/MEOPAR/SalishSea/nowcast/'},
+        'run_prep_dirs': {'nowcast': '~/MEOPAR/nowcast/'},
+    }
+    run_desc = run_NEMO_module.run_description(
+        host, 'nowcast', today, 'run_id', 42)
     expected = os.path.join(
         'SalishSea/nowcast/',
         (today - timedelta(days=1)).strftime('%d%b%y').lower(),

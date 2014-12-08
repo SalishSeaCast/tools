@@ -99,6 +99,7 @@ def message_processor(config, message):
         'mount_sshfs': after_mount_sshfs,
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
+        'run_NEMO': after_run_NEMO,
         'download_results': after_download_results,
         'make_out_plots': after_make_out_plots
         'the end': the_end,
@@ -313,9 +314,25 @@ def after_make_forcing_links(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
-            (update_checklist, [worker, 'forcing links', payload])
+            (update_checklist, [worker, 'forcing links', payload]),
         ],
         'failure': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_run_NEMO(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
+        'success nowcast': [
+            (update_checklist, [worker, 'NEMO run', payload]),
+        ],
+        'failure nowcast': None,
+        'success forecast': [
+            (update_checklist, [worker, 'NEMO run', payload]),
+        ],
+        'failure forecast': None,
         'crash': None,
     }
     return actions[msg_type]
@@ -329,10 +346,10 @@ def after_download_results(worker, msg_type, payload, config):
             (launch_worker,
              ['make_out_plots', config]),
         ],
-        'success forecast': [
-            (update_checklist, [worker, 'results files', payload])
-        ],
         'failure nowcast': None,
+        'success forecast': [
+            (update_checklist, [worker, 'results files', payload]),
+        ],
         'failure forecast': None,
         'crash': None,
     }
