@@ -100,6 +100,7 @@ def message_processor(config, message):
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'download_results': after_download_results,
+        'make_out_plots': after_make_out_plots
         'the end': the_end,
     }
     # Handle undefined message type
@@ -334,6 +335,16 @@ def after_download_results(worker, msg_type, payload, config):
         'crash': None,
     }
     return actions[msg_type]
+
+def after_make_out_plots(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
+        'success': [
+            (update_checklist, [worker, 'plots', payload]),
+        ],
+        'failure': None,
+        'crash': None,
+    }
 
 
 def update_checklist(worker, key, worker_checklist):
