@@ -175,10 +175,10 @@ msg_types:
     failure: forcing file links creation failed
     crash: make_forcing_links worker crashed
   run_NEMO:
-    success nowcast: nowcast NEMO run completed
-    failure nowcast: nowcast NEMO run failed
-    success forecast: forecast NEMO run completed
-    failure forecast: forecast NEMO run failed
+    success nowcast: nowcast NEMO run prepared
+    failure nowcast: nowcast NEMO run preparation failed
+    success forecast: forecast NEMO run prepared
+    failure forecast: forecast NEMO run preparation failed
     crash: run_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded
