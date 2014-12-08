@@ -64,7 +64,8 @@ def main():
         msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
-        lib.tell_manager(worker_name, 'the end', config, logger, socket)
+        if parsed_args.run_type == 'forecast':
+            lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical(
             '{.run_type} results files download from {.host_name} failed'
