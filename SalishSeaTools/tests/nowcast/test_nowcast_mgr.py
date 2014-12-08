@@ -372,6 +372,9 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_upload_forcing', 'crash'),
     ('after_make_forcing_links', 'failure'),
     ('after_make_forcing_links', 'crash'),
+    ('after_run_NEMO', 'failure nowcast'),
+    ('after_run_NEMO', 'failure forecast'),
+    ('after_run_NEMO', 'crash'),
     ('after_download_results', 'failure nowcast'),
     ('after_download_results', 'failure forecast'),
     ('after_download_results', 'crash'),
@@ -572,6 +575,22 @@ def test_make_forcing_links_success_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['make_forcing_links', 'forcing links', payload]),
+    ]
+    assert next_steps == expected
+
+
+@pytest.mark.parametrize('msg_type', [
+    'success nowcast',
+    'success forecast',
+])
+def test_run_NEMO_success_next_steps(msg_type, nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_run_NEMO(
+        'run_NEMO', msg_type, payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['run_NEMO', 'NEMO run', payload]),
     ]
     assert next_steps == expected
 

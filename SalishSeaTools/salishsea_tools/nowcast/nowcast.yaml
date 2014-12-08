@@ -40,6 +40,7 @@ run:
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
     nodes: 14
+    mpi decomposition: 7x16
     images:
       head node: nowcast-head-node
       compute node: nowcast-compute-node
@@ -65,6 +66,9 @@ run:
     # Location of NEMO on-the-fly interpolation weights file
     # for GEM 2.5km operational forecast
     weights: /home/ubuntu/MEOPAR/NEMO-forcing/grid/weights-gem2.5-ops.nc
+    run_prep_dirs:
+      nowcast: /home/ubuntu/MEOPAR/nowcast/
+      forecast: /home/ubuntu/MEOPAR/forecast/
     results:
       nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
       forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
@@ -102,6 +106,7 @@ logging:
   datetime_format: '%Y-%m-%d %H:%M:%S'
 
 # Message system
+nowcast_mgr: salish.eos.ubc.ca
 ports:
   req_rep: 5555
 
@@ -169,6 +174,12 @@ msg_types:
     success: forcing file links created
     failure: forcing file links creation failed
     crash: make_forcing_links worker crashed
+  run_NEMO:
+    success nowcast: nowcast NEMO run completed
+    failure nowcast: nowcast NEMO run failed
+    success forecast: forecast NEMO run completed
+    failure forecast: forecast NEMO run failed
+    crash: run_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded
     failure nowcast: nowcast results files download failed
