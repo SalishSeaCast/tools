@@ -861,7 +861,8 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
     return fig
 
 def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
-  """ Figure that plots winds at individual stations at the time of their maximum sea surface height.
+  """ Figure that plots winds at individual stations 4 hours before the maxmimum sea surface height at Point Atkinson. 
+  If that data is not available then the plot is generated at the start of the simulation. 
   
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
@@ -906,14 +907,19 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
   #place holder res to make get_maxes work
   placeholder_res=np.zeros_like(ssh)
   [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[reference_name],lats[reference_name],model_path)
+  #plot 4 hours before max ssh if possible. If not, plot at beginning of file
+  if ind_w>4:
+    ind_wplot =ind_w[0]-4
+  else:
+    ind_wplot=0;
   
   def plot(name):
      [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
-     uwind = wind[ind_w]*np.cos(np.radians(direc[ind_w]))
-     vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))
+     uwind = wind[ind_wplot]*np.cos(np.radians(direc[ind_wplot]))
+     vwind=wind[ind_wplot]*np.sin(np.radians(direc[ind_wplot]))
      ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
-     tplot=t[ind_w]
+     tplot=t[ind_wplot]
      return tplot
   #reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
