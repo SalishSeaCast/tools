@@ -911,9 +911,8 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))
      ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
-     return ax
-  #plot time for title
-  plot_time=(tmax+time_shift).strftime('%d-%b-%Y %H:00')
+     tplot=t[ind_w]
+     return tplot
   #reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02, 
@@ -924,7 +923,9 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
         names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
-	  plot(name)
+	  plot_time=plot(name)
+	#plot time for title
+        plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
 	legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
 	legend.get_title().set_fontsize('20')
 	ax.set_title('Modelled winds at all stations \n {time} [PST]'.format(time=plot_time),**title_font)
@@ -932,7 +933,9 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
         station_c = 'MediumOrchid'
-        plot(name)
+        plot_time=plot(name)
+        #plot time for title
+        plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
         ax.set_title('Modelled winds at {name} \n {time} [PST]'.format(name=name,time=plot_time),**title_font)
         
   return fig
