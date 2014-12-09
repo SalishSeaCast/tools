@@ -564,6 +564,8 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      ax = plt.subplot(gs[M,0])
           
      #Plot tides, corrected model and original model
+     if name =='Point Atkinson':
+       plot_PA_observations(ax,PST)
      ttide,msl=plot_tides(ax,name,t_orig,PST,MSL)
      ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl)
      ax.plot(t+PST*time_shift,ssh_loc+msl*MSL,'--',c=model_c,linewidth=1,label='model')
@@ -1515,3 +1517,33 @@ def get_model_time_variables(grid_T):
     t=np.array(t)
     
     return t_orig,t_final,t
+
+def dateparse_PAObs(s1,s2,s3,s4):
+  """ Parse dates for Point Atkinson observations."""
+  s=s1+s2+s3+s4
+  unaware =datetime.datetime.strptime(s, '%Y%m%d%H:%M')
+  aware = unaware.replace(tzinfo=tz.tzutc())
+  return  aware
+  
+def load_PA_observations():
+  """Loads the recent water level observations at Point Atkinson. Times in UTC. Water level in metres wrt Chart Datum
+  :returns: obs, a DataFrame object with a time column and wlev column
+  """
+  filename = '/data/nsoontie/MEOPAR/analysis/Nancy/tides/PA_observations/ptatkin_rt.dat'
+
+  obs = pd.read_csv(filename, delimiter=' ',parse_dates=[[0,1,2,3]],header=None,date_parser=dateparse_PAObs)
+  obs=obs.rename(columns={'0_1_2_3':'time',4:'wlev'})
+  
+  return obs
+  
+def plot_PA_observations(ax,PST):
+  """plots the water level observations at Point Atkinson in an axis
+  :arg ax: the axis for the plot 
+  :type ax: an axis object
+  
+  :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
+  :type PST: 0 or 1
+  """
+  
+  obs=load_PA_observations()
+  ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')
