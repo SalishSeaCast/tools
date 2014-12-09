@@ -101,7 +101,7 @@ def message_processor(config, message):
         'make_forcing_links': after_make_forcing_links,
         'run_NEMO': after_run_NEMO,
         'download_results': after_download_results,
-        'make_out_plots': after_make_out_plots
+        'make_out_plots': after_make_out_plots,
         'the end': the_end,
     }
     # Handle undefined message type
@@ -141,13 +141,15 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['make_runoff_file', config]),
-            (launch_worker, ['grib_to_netcdf', config, ['forecast2']]),
+            (launch_worker,
+             ['grib_to_netcdf', config,  cmd_line_args=['forecast2']]),
         ],
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['get_NeahBay_ssh', config]),
-            (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
+            (launch_worker,
+             ['grib_to_netcdf', config,  cmd_line_args=['nowcast+']]),
         ],
         'failure 12': None,
         'success 18': [
@@ -189,7 +191,8 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         'success nowcast+': [
             (update_checklist, [worker, 'weather forcing', payload]),
             (launch_worker,
-             ['upload_forcing', config, [config['run']['hpc host']]]),
+             ['upload_forcing', config,
+              cmd_line_args=[config['run']['hpc host']]]),
             (launch_worker, ['init_cloud', config]),
         ],
         'failure nowcast+': None,
@@ -225,8 +228,8 @@ def after_init_cloud(worker, msg_type, payload, config):
             if i not in existing_nodes:
                 node_name = 'nowcast{}'.format(i)
                 actions['success'].append(
-                    (launch_worker,
-                     ['create_compute_node', config, [node_name]]))
+                    (launch_worker, ['create_compute_node', config,
+                     cmd_line_args=[node_name]]))
         actions['success'].append([is_cloud_ready, [config]])
     return actions[msg_type]
 
@@ -302,7 +305,8 @@ def after_upload_forcing(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config, [payload.keys()[0]]]),
+             ['make_forcing_links', config,
+              cmd_line_args=[payload.keys()[0]]]),
         ],
         'failure': None,
         'crash': None,
@@ -315,6 +319,9 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'forcing links', payload]),
+            (launch_worker,
+             ['run_NEMO', config,
+              cmd_line_args=['nowcast'], host=config['cloud host']]),
         ],
         'failure': None,
         'crash': None,
@@ -343,8 +350,7 @@ def after_download_results(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker,
-             ['make_out_plots', config]),
+            (launch_worker, ['make_out_plots', config]),
         ],
         'failure nowcast': None,
         'success forecast': [
@@ -354,6 +360,7 @@ def after_download_results(worker, msg_type, payload, config):
         'crash': None,
     }
     return actions[msg_type]
+
 
 def after_make_out_plots(worker, msg_type, payload, config):
     actions = {
@@ -376,15 +383,18 @@ def update_checklist(worker, key, worker_checklist):
         'checklist updated with {} items from {} worker'.format(key, worker))
 
 
-def launch_worker(worker, config, cmd_line_args=[]):
-    cmd = [
-        config['python'], '-m',
+def launch_worker(worker, config, cmd_line_args=[], host='localhost'):
+    if host == 'localhost':
+        cmd = [config['python'], '-m']
+    else:
+        cmd = ['ssh', config[host], 'python', '-m']
+    cmd.extend([
         'salishsea_tools.nowcast.workers.{}'.format(worker),
         config['config_file'],
-    ]
+    ])
     if cmd_line_args:
         cmd.extend(cmd_line_args)
-    logger.info('launching {} worker'.format(worker))
+    logger.info('launching {} worker on {}'.format(worker, host))
     subprocess.Popen(cmd)
 
 
