@@ -905,11 +905,13 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
 	  plot(name)
 	  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
 	  legend.get_title().set_fontsize('20')
+	  ax.set_title('Daily average winds at all stations' + ' when SSH at Point Atkinson is at its maximum',**title_font)
 	  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
         station_c = 'MediumOrchid'
         plot(name)
+        ax.set_title('Daily average winds at ' + name + ' when SSH at Point Atkinson is at its maximum',**title_font)
         
   return fig
     
