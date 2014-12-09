@@ -814,7 +814,7 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
     [t_orig,t_final,t] = get_model_time_variables(grid_T)
       
     def plot(name, scale):
-       [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
+       [wind, direc, twind, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
        uwind = wind*np.cos(np.radians(direc))
        vwind=wind*np.sin(np.radians(direc))
        uaverage = np.mean(uwind, axis=0)
@@ -829,20 +829,21 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
                  head_width=0.05, head_length=0.1, width=0.02, 
                  color='b',fc='b', ec='b',)
 
-       return ax, uwind, vwind
+       return twind
 
     ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02, 
               color='b',fc='b', ec='b')
     ax.text(-123, 50.1, "5 m/s")
-    #times of averaging
-    t1=(t[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
-    t2=(t[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
+
     if station == 'all':
         names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
-            plot(name, scale)
+            twind=plot(name, scale)
+                #times of averaging
+	t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
+	t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
         legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
         legend.get_title().set_fontsize('20')
         ax.set_title('Modelled winds at all stations averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
@@ -850,7 +851,9 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
     else:
         name=station
         station_c = 'MediumOrchid'
-        plot(name,scale)
+        twind=plot(name,scale)
+        t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
+	t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
         ax.set_title('Modelled winds at {name} averaged over \n {t1} [PST] to {t2} [PST]'.format(name=name,t1=t[0],t2=t[-1]),**title_font)
        
     return fig
@@ -910,7 +913,7 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
      return ax
   #plto time for title
-  plot_time=(tmax+time_shift).strftime('%d-%b-%Y %H:%M')
+  plot_time=(tmax+time_shift).strftime('%d-%b-%Y %H:00')
   #reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02, 
