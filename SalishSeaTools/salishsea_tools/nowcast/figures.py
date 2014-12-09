@@ -835,21 +835,23 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
               head_width=0.05, head_length=0.1, width=0.02, 
               color='b',fc='b', ec='b')
     ax.text(-123, 50.1, "5 m/s")
+    #times of averaging
+    t1=(t[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
+    t2=(t[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
     if station == 'all':
         names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
             plot(name, scale)
-            ax.set_title('Daily average winds at all stations',**title_font)
-            legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
-            legend.get_title().set_fontsize('20')
-        
+        legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+        legend.get_title().set_fontsize('20')
+        ax.set_title('Modelled winds at all stations averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
     
-    if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
-        name = station
+    else:
+        name=station
         station_c = 'MediumOrchid'
         plot(name,scale)
-        ax.set_title('Daily average winds at ' + name,**title_font)
+        ax.set_title('Modelled winds at {name} averaged over \n {t1} [PST] to {t2} [PST]'.format(name=name,t1=t[0],t2=t[-1]),**title_font)
        
     return fig
 
@@ -907,22 +909,28 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
      return ax
+  #plto time for title
+  plot_time=(tmax+time_shift).strftime('%d-%b-%Y %H:%M')
+  #reference arrow
+  ax.arrow(-123, 50., 5.*scale, 0.*scale,
+              head_width=0.05, head_length=0.1, width=0.02, 
+              color='b',fc='b', ec='b')
+  ax.text(-123, 50.1, "5 m/s")
   
   if station == 'all':
         names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
 	  plot(name)
-	  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
-	  legend.get_title().set_fontsize('20')
+	legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+	legend.get_title().set_fontsize('20')
+	ax.set_title('Modelled winds at all stations \n {time} [PST]'.format(time=plot_time),**title_font)
 	  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
         station_c = 'MediumOrchid'
         plot(name)
-  #title
-  plot_time=tmax+time_shift
-  ax.set_title('Modelled winds at {} [PST]'.format(plot_time),**title_font)
+        ax.set_title('Modelled winds at {name} \n {time} [PST]'.format(name=name,time=plot_time),**title_font)
         
   return fig
     
