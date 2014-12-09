@@ -68,6 +68,9 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
+    
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
+    :type MSL: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
@@ -305,6 +308,9 @@ def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0,
     
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
+    
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
+    :type MSL: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches
     :type figsize: 2-tuple
@@ -505,6 +511,9 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
     
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
+    
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
+    :type MSL: 0 or 1
     
     :arg figsize:  Figure size (width, height) in inches
     :type figsize: 2-tuple
@@ -1411,6 +1420,9 @@ def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
 
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
+    
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
+    :type MSL: 0 or 
 
     :arg color: The color for the plot
     :type color: string
@@ -1449,6 +1461,12 @@ def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl):
 
     :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC
     :type PST: 0 or 1
+    
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
+    :type MSL: 0 or 1
+    
+    :arg msl: the mean sea level
+    :type msl: float
 
     :returns: ssh_corr, the model output but corrected for missing tidal constituents
     """
