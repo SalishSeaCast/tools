@@ -436,7 +436,7 @@ def get_maxes(ssh,t,res,lon,lat,model_path):
     :arg model_path: directory where the model wind files are stored
     :type model_path: string
     
-    :returns: The maxmimum ssh, the index of maximum ssh, the time of maximum ssh, the residual at that time and the wind speed at that time.
+    :returns: The maxmimum ssh, the index of maximum ssh, the time of maximum ssh, the residual at that time and the wind speed at that time and the index of that wind speed.
     """
     
     #index when sea surface height is at its maximum at Point Atkinson
@@ -1286,7 +1286,7 @@ def get_weather_filenames(t_orig,t_final,model_path):
 
 def get_model_winds(lon,lat,t_orig,t_final,model_path):
    """ Returns meteorological fields for the "Operational" model at a given longitude and latitude 
-   over a date range.
+   over a date range. 
    
    :arg lon: The specified longitude
    :type lon: float
@@ -1303,7 +1303,7 @@ def get_model_winds(lon,lat,t_orig,t_final,model_path):
    :arg model_path: directory where the model files are stored
    :type model_path: string
    
-   :returns: wind speed, wind direction, time, pressure, solar radiation, thermal radiation, precipitation, temperature, humidity
+   :returns: wind speed, wind direction, time, pressure, temperature, solar radiation, thermal radiation,humidity, precipitation
    """
    
    #file names of weather
