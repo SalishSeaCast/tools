@@ -117,10 +117,12 @@ def download_results(host_name, run_type, run_date, config, checklist):
     dest = os.path.join(config['run']['results archive'][run_type])
     cmd = ['scp', '-Cpr', src, dest]
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
-    lib.fix_perms(os.path.join(dest, results_dir))
+    lib.fix_perms(
+        os.path.join(dest, results_dir),
+        mode=lib.PERMS_RWX_RWX_R_X, grp_name='sallen')
     for filename in 'stdout stderr'.split():
         filepath = os.path.join(dest, results_dir, filename)
-        lib.fix_perms(filepath, mode=lib.PERMS_RWX_RWX_R_X, grp_name='sallen')
+        lib.fix_perms(filepath, grp_name='sallen')
     checklist[run_type] = {}
     for freq in '1h 1d'.split():
         checklist[run_type][freq] = glob.glob(
