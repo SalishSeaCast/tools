@@ -59,7 +59,8 @@ def main():
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
-    socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    socket = lib.init_zmq_req_rep_worker(
+        context, config, logger, config['nowcast_mgr'])
     # Do the work
     host_name = config['run']['cloud host']
     try:
@@ -69,15 +70,15 @@ def main():
             .format(parsed_args, host_name=host_name))
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.run_type}'.format(parsed_args)
-        # lib.tell_manager(
-        #     worker_name, msg_type, config, logger, socket, checklist)
+        lib.tell_manager(
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             '{.run_type} NEMO run in {host_name} failed'
             .format(parsed_args, host_name=host_name))
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.run_type}'.format(parsed_args)
-        # lib.tell_manager(worker_name, msg_type, config, logger, socket)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
@@ -86,7 +87,7 @@ def main():
         for line in traceback.format_exc().splitlines():
             logger.error(line)
         # Exchange crash messages with the nowcast manager process
-        # lib.tell_manager(worker_name, 'crash', config, logger, socket)
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
     logger.info('task completed; shutting down')

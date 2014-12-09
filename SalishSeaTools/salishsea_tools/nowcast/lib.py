@@ -225,7 +225,7 @@ def install_signal_handlers(logger, context):
     signal.signal(signal.SIGTERM, sigterm_handler)
 
 
-def init_zmq_req_rep_worker(context, config, logger):
+def init_zmq_req_rep_worker(context, config, logger, mgr_host='localhost'):
     """Initialize a ZeroMQ request/reply (REQ/REP) worker.
 
     :arg context: ZeroMQ context object.
@@ -237,12 +237,20 @@ def init_zmq_req_rep_worker(context, config, logger):
     :arg logger: Logger object.
     :type logger: :class:`logging.Logger`
 
+    :arg mgr_host: Host name or IP address of the nost that the nowcast
+                   manager process runs on.
+                   Defaults to 'localhost'.
+    :type mgr_host: str
+
     :returns: ZeroMQ socket for communication with nowcast manager process.
     """
     socket = context.socket(zmq.REQ)
     port = config['ports']['req_rep']
-    socket.connect('tcp://localhost:{}'.format(port))
-    logger.info('connected to port {}'.format(port))
+    socket.connect(
+        'tcp://{mgr_host}:{port}'.format(mgr_host=mgr_host, port=port))
+    logger.info(
+        'connected to {mgr_host} port {port}'
+        .format(mgr_host=mgr_host, port=port))
     return socket
 
 
