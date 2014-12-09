@@ -29,6 +29,7 @@ from dateutil import tz
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -46,7 +47,8 @@ from salishsea_tools import (
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'MediumVioletRed'
-stations_c = ['DeepSkyBlue', 'DarkViolet', 'DeepPink', 'Violet', 'DarkOrange', 'Gold', 'Olive']
+stations_c = cm.summer(np.linspace(0, 1, 7))
+
 time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
@@ -825,12 +827,13 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
               color='b',fc='b', ec='b')
     ax.text(-123, 50.1, "5 m/s")
     if station == 'all':
-        names=['Campbell River','Point Atkinson','Sandheads','Cherry Point','Friday Harbor','Victoria','Neah Bay']
+        names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
             plot(name, scale)
             ax.set_title('Daily average winds at all stations',**title_font)
-            ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15})
+            legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+            legend.get_title().set_fontsize('20')
         
     
     if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
@@ -896,11 +899,12 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      return ax
   
   if station == 'all':
-        names=['Campbell River','Point Atkinson','Sandheads','Cherry Point','Friday Harbor','Victoria','Neah Bay']
+        names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
 	  plot(name)
-	  ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15})
+	  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+	  legend.get_title().set_fontsize('20')
 	  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
