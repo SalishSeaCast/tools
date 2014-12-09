@@ -908,11 +908,11 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
   def plot(name):
      [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
      uwind = wind[ind_w]*np.cos(np.radians(direc[ind_w]))
-     vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))	  
+     vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))
      ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
      return ax
-  #plto time for title
+  #plot time for title
   plot_time=(tmax+time_shift).strftime('%d-%b-%Y %H:00')
   #reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
@@ -1356,7 +1356,7 @@ def get_model_winds(lon,lat,t_orig,t_final,model_path):
         torig = datetime.datetime(1970,1,1) #there is no time_origin attriubte in OP files, so I hard coded this
         for ind in np.arange(ts.shape[0]):
             t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
-    
+     
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
 def find_model_point(lon,lat,X,Y):
