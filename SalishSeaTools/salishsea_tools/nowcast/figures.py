@@ -896,6 +896,7 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
   
   [j,i]=tidetools.find_closest_model_point(lons[reference_name],lats[reference_name],X,Y,bathy,allow_land=False)
   ssh = grid_T.variables['sossheig'][:,j,i]
+  #place holder res to make get_maxes work
   placeholder_res=np.zeros_like(ssh)
   [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[reference_name],lats[reference_name],model_path)
   
@@ -914,13 +915,14 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
 	  plot(name)
 	  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
 	  legend.get_title().set_fontsize('20')
-	  ax.set_title('Daily average winds at all stations' + ' when SSH at Point Atkinson is at its maximum',**title_font)
 	  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
         station_c = 'MediumOrchid'
         plot(name)
-        ax.set_title('Daily average winds at ' + name + ' when SSH at Point Atkinson is at its maximum',**title_font)
+  #title
+  plot_time=tmax+time_shift
+  ax.set_title('Modelled winds at {} [PST]'.format(plot_time),**title_font)
         
   return fig
     
