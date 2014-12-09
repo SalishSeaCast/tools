@@ -113,6 +113,7 @@ def run_NEMO(host_name, run_type, config):
     results_dir = os.path.join(host['results'][run_type], dmy)
     salishsea_cmd.api.run_in_subprocess(
         run_id, run_desc, 'iodef.xml', os.path.abspath(results_dir))
+    return {run_type: True}
 
 
 def update_time_namelist(
