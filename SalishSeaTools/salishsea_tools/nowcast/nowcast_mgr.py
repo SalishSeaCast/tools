@@ -141,15 +141,13 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['make_runoff_file', config]),
-            (launch_worker,
-             ['grib_to_netcdf', config,  cmd_line_args=['forecast2']]),
+            (launch_worker, ['grib_to_netcdf', config, ['forecast2']]),
         ],
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['get_NeahBay_ssh', config]),
-            (launch_worker,
-             ['grib_to_netcdf', config,  cmd_line_args=['nowcast+']]),
+            (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
         ],
         'failure 12': None,
         'success 18': [
@@ -190,10 +188,6 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast+': [
             (update_checklist, [worker, 'weather forcing', payload]),
-            (launch_worker,
-             ['upload_forcing', config,
-              cmd_line_args=[config['run']['hpc host']]]),
-            (launch_worker, ['init_cloud', config]),
         ],
         'failure nowcast+': None,
         'success forecast2': [
@@ -202,6 +196,13 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         'failure forecast2': None,
         'crash': None,
     }
+    if 'hpc host' in config['run']:
+        actions['success nowcast+'].append(
+            (launch_worker,
+             ['upload_forcing', config, [config['run']['hpc host']]]))
+    if 'cloud host' in config['run']:
+        actions['success nowcast+'].append(
+            (launch_worker, ['init_cloud', config]))
     return actions[msg_type]
 
 
@@ -228,8 +229,8 @@ def after_init_cloud(worker, msg_type, payload, config):
             if i not in existing_nodes:
                 node_name = 'nowcast{}'.format(i)
                 actions['success'].append(
-                    (launch_worker, ['create_compute_node', config,
-                     cmd_line_args=[node_name]]))
+                    (launch_worker,
+                     ['create_compute_node', config, [node_name]]))
         actions['success'].append([is_cloud_ready, [config]])
     return actions[msg_type]
 
@@ -305,8 +306,7 @@ def after_upload_forcing(worker, msg_type, payload, config):
         'success': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config,
-              cmd_line_args=[payload.keys()[0]]]),
+             ['make_forcing_links', config, [payload.keys()[0]]]),
         ],
         'failure': None,
         'crash': None,
@@ -319,13 +319,14 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'forcing links', payload]),
-            (launch_worker,
-             ['run_NEMO', config,
-              cmd_line_args=['nowcast'], host=config['cloud host']]),
         ],
         'failure': None,
         'crash': None,
     }
+    if 'cloud host' in config['run']:
+        actions['success'].append(
+            (launch_worker,
+             ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
     return actions[msg_type]
 
 
@@ -371,6 +372,7 @@ def after_make_out_plots(worker, msg_type, payload, config):
         'failure': None,
         'crash': None,
     }
+    return actions[msg_type]
 
 
 def update_checklist(worker, key, worker_checklist):

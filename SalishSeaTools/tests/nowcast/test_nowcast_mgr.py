@@ -463,14 +463,38 @@ def test_make_runoff_file_success_next_steps(nowcast_mgr_module):
 
 def test_grib_to_netcdf_success_nowcast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = {'run': {'hpc host': 'orcinus'}}
+    config = {'run': {}}
+    next_steps = nowcast_mgr_module.after_grib_to_netcdf(
+        'grib_to_netcdf', 'success nowcast+', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['grib_to_netcdf', 'weather forcing', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_grib_to_netcdf_success_nowcast_hpc_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'hpc host': 'orcinus-nowcast'}}
     next_steps = nowcast_mgr_module.after_grib_to_netcdf(
         'grib_to_netcdf', 'success nowcast+', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['grib_to_netcdf', 'weather forcing', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['upload_forcing', config, ['orcinus']]),
+         ['upload_forcing', config, ['orcinus-nowcast']]),
+    ]
+    assert next_steps == expected
+
+
+def test_grib_to_netcdf_success_nowcast_cloud_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'cloud host': 'west.cloud-nowcast'}}
+    next_steps = nowcast_mgr_module.after_grib_to_netcdf(
+        'grib_to_netcdf', 'success nowcast+', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['grib_to_netcdf', 'weather forcing', payload]),
         (nowcast_mgr_module.launch_worker, ['init_cloud', config]),
     ]
     assert next_steps == expected
@@ -478,7 +502,7 @@ def test_grib_to_netcdf_success_nowcast_next_steps(nowcast_mgr_module):
 
 def test_grib_to_netcdf_success_forecast2_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = {'run': {'hpc host': 'orcinus'}}
+    config = {'run': {'hpc host': 'orcinus-nowcast'}}
     next_steps = nowcast_mgr_module.after_grib_to_netcdf(
         'grib_to_netcdf', 'success forecast2', payload, config)
     expected = [
@@ -567,14 +591,28 @@ def test_upload_forcing_success_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_make_forcing_links_success_next_steps(nowcast_mgr_module):
+def test_make_forcing_links_success_no_cloud_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {}}
     next_steps = nowcast_mgr_module.after_make_forcing_links(
         'make_forcing_links', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['make_forcing_links', 'forcing links', payload]),
+    ]
+    assert next_steps == expected
+
+
+def test_make_forcing_links_success_cloud_host_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'cloud host': 'west.cloud'}}
+    next_steps = nowcast_mgr_module.after_make_forcing_links(
+        'make_forcing_links', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['make_forcing_links', 'forcing links', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['run_NEMO', config, ['nowcast'], 'west.cloud'])
     ]
     assert next_steps == expected
 
@@ -595,15 +633,25 @@ def test_run_NEMO_success_next_steps(msg_type, nowcast_mgr_module):
     assert next_steps == expected
 
 
-@pytest.mark.parametrize('msg_type', [
-    'success nowcast',
-    'success forecast',
-])
-def test_download_results_success_next_steps(msg_type, nowcast_mgr_module):
+def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_download_results(
-        'download_results', msg_type, payload, config)
+        'download_results', 'success nowcast', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_results', 'results files', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_out_plots', config]),
+    ]
+    assert next_steps == expected
+
+
+def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_download_results(
+        'download_results', 'success forecast', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
