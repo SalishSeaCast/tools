@@ -343,7 +343,7 @@ def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0,
     #compute residuals
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
     #Look up maximim ssh and timing and plot
-    max_ssh,index,tmax,max_res,max_wind = get_maxes(ssh_corr, t, res, 
+    max_ssh,index,tmax,max_res,max_wind,ind_w = get_maxes(ssh_corr, t, res, 
                             lons[name], lats[name], model_path)
     ax0.text(0.05, 0.9, name, fontsize=20,
              horizontalalignment='left',
@@ -449,7 +449,7 @@ def get_maxes(ssh,t,res,lon,lat,model_path):
     ind_w=np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
     max_wind=wind[ind_w]
    
-    return max_ssh,index_ssh,tmax,max_res,max_wind 
+    return max_ssh,index_ssh,tmax,max_res,max_wind,ind_w 
     
 def compute_residual(ssh,ttide,t_orig,t_final):
     """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
@@ -688,7 +688,7 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,12)):
 
     return fig
 
-def winds_at_station(station, gridB,gridW,figsize=(15,10)):
+def winds_at_station(station, gridB, gridW, figsize=(15,10)):
     """ Figure that plots winds at individual or all stations.
 
       :arg station: Either the name of one of the seven defined stations or 'all' for all stations
@@ -816,6 +816,7 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
                  scale*uaverage, scale*vaverage, 
                  head_width=0.05, head_length=0.1, width=0.02, 
                  color='b',fc='b', ec='b',)
+
        return ax, uwind, vwind
 
     ax.arrow(-123, 50., 5.*scale, 0.*scale,
@@ -834,8 +835,74 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
         name = station
         plot(name,scale)
         ax.set_title('Daily average winds at ' + name,**title_font)
-        
+       
     return fig
+
+def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
+  """ Figure that plots winds at individual stations at the time of their maximum sea surface height.
+  
+  :arg grid_T: Hourly tracer results dataset from NEMO.
+  :type grid_T: :class:`netCDF4.Dataset`
+      
+  :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
+  :type gridB: :class:`netCDF4.Dataset`
+  
+  :arg model_path: directory where the model files are stored
+  :type model_path: string
+  
+  :arg station: The name of the station
+  :type station: string (Point Atkinson, Campbell River, Victoria, Cherry Point, Neah Bay, Friday Harbor, Sandheads)
+  
+  :arg figsize:  Figure size (width, height) in inches
+  :type figsize: 2-tuple
+  
+  """
+  
+  lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
+          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
+          'Sandheads': 49.10}
+  lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
+          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
+          'Sandheads': -123.30}
+          
+  fig, ax = plt.subplots(1, 1, figsize=figsize)
+  ax.grid()  
+  viz_tools.set_aspect(ax)
+  viz_tools.plot_land_mask(ax, gridB,color='burlywood',coords='map')
+  viz_tools.plot_coastline(ax,gridB,coords='map')  
+  ax.set_xlabel('longitude',**axis_font)
+  ax.set_ylabel('latitude',**axis_font)
+  scale = 0.1
+  
+  [t_orig,t_final,t] = get_model_time_variables(grid_T)
+  bathy, X, Y = tidetools.get_bathy_data(gridB)
+  
+  reference_name = 'Point Atkinson'
+  
+  [j,i]=tidetools.find_closest_model_point(lons[reference_name],lats[reference_name],X,Y,bathy,allow_land=False)
+  ssh = grid_T.variables['sossheig'][:,j,i]
+  placeholder_res=np.zeros_like(ssh)
+  [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[reference_name],lats[reference_name],model_path)
+  
+  def plot(name):
+     [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
+     uwind = wind[ind_w]*np.cos(np.radians(direc[ind_w]))
+     vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))	  
+     ax.plot(lons[name], lats[name], marker='D', color='MediumOrchid', markersize=10, markeredgewidth=2)
+     ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
+     return ax
+  
+  if station == 'all':
+        names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
+        m = np.arange(len(names))
+        for name, M in zip (names, m):
+	  plot(name)
+	  
+  if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
+        name = station
+        plot(name)
+        
+  return fig
     
 def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
     """ Plot the daily averaged salinity field along the thalweg.
