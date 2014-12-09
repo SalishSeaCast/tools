@@ -46,6 +46,7 @@ from salishsea_tools import (
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'MediumVioletRed'
+stations_c = ['DarkViolet','DeepSkyBlue', 'Gold','DeepPink' , 'Olive','DarkOrange' , 'Violet']
 time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
@@ -809,8 +810,8 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
        vaverage = np.mean(vwind, axis=0)
        speeds = wind
         
-       ax.plot(lons[name], lats[name], marker='D', color='MediumOrchid',
-                markersize=10, markeredgewidth=2)
+       ax.plot(lons[name], lats[name], marker='D', color=station_c,
+                markersize=10, markeredgewidth=2,label=name)
          #use arrow rather than quiver as we are plotting one at a time
        ax.arrow(lons[name],  lats[name], 
                  scale*uaverage, scale*vaverage, 
@@ -826,13 +827,15 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
     if station == 'all':
         names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
         m = np.arange(len(names))
-        for name, M in zip (names, m):
+        for name, station_c, M in zip (names, stations_c, m):
             plot(name, scale)
             ax.set_title('Daily average winds at all stations',**title_font)
+            ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15})
         
     
     if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
+        station_c = 'MediumOrchid'
         plot(name,scale)
         ax.set_title('Daily average winds at ' + name,**title_font)
        
@@ -888,18 +891,20 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
      uwind = wind[ind_w]*np.cos(np.radians(direc[ind_w]))
      vwind=wind[ind_w]*np.sin(np.radians(direc[ind_w]))	  
-     ax.plot(lons[name], lats[name], marker='D', color='MediumOrchid', markersize=10, markeredgewidth=2)
+     ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
      return ax
   
   if station == 'all':
         names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
         m = np.arange(len(names))
-        for name, M in zip (names, m):
+        for name, station_c, M in zip (names, stations_c, m):
 	  plot(name)
+	  ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15})
 	  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
         name = station
+        station_c = 'MediumOrchid'
         plot(name)
         
   return fig
