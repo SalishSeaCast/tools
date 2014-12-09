@@ -46,7 +46,7 @@ from salishsea_tools import (
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'MediumVioletRed'
-stations_c = ['DarkViolet','DeepSkyBlue', 'Gold','DeepPink' , 'Olive','DarkOrange' , 'Violet']
+stations_c = ['DeepSkyBlue', 'DarkViolet', 'DeepPink', 'Violet', 'DarkOrange', 'Gold', 'Olive']
 time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
@@ -784,10 +784,10 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
   
     """
         
-    lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
+    lats={'Campbell River': 50.04, 'Point Atkinson': 49.33,'Victoria': 48.41, 
           'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
           'Sandheads': 49.10}
-    lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
+    lons={'Campbell River':-125.24, 'Point Atkinson': -123.25, 'Victoria': -123.36, 
           'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
           'Sandheads': -123.30}
     
@@ -825,7 +825,7 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
               color='b',fc='b', ec='b')
     ax.text(-123, 50.1, "5 m/s")
     if station == 'all':
-        names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
+        names=['Campbell River','Point Atkinson','Sandheads','Cherry Point','Friday Harbor','Victoria','Neah Bay']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
             plot(name, scale)
@@ -896,7 +896,7 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
      return ax
   
   if station == 'all':
-        names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
+        names=['Campbell River','Point Atkinson','Sandheads','Cherry Point','Friday Harbor','Victoria','Neah Bay']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
 	  plot(name)
