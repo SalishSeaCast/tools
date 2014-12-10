@@ -356,7 +356,8 @@ def after_download_results(worker, msg_type, payload, config):
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_out_plots', config, ['--results-type forecast1']]),
+            (launch_worker, ['make_out_plots', config, 
+                             ['--results-type', 'forecast1']]),
         ],
         'failure forecast': None,
         'crash': None,
