@@ -104,6 +104,7 @@ run:
   results archive:
     nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
     forecast: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/
+    forecast2: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/
 
 
 logging:
@@ -197,6 +198,10 @@ msg_types:
     crash: download_results worker crashed
     the end: end of automation
   make_out_plots:
-    success: nowcast OUT plots produced
-    failure: nowcast OUT plots failed
+    success nowcast: nowcast OUT plots produced
+    failure nowcast: nowcast OUT plots failed
+    success forecast1: forecast1 OUT plots produced
+    failure forecast1: forecast1 OUT plots failed
+    success forecast2: forecast2 OUT plots produced
+    failure forecast2: forecast2 OUT plots failed
     crash: make_out_plots worker crashed
