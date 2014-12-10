@@ -124,14 +124,12 @@ below.
         socket = lib.init_zmq_req_rep_worker(context, config, logger)
 
         # Do the work
-        checklist = {}
         try:
-            worker_function(config, checklist, ...)
+            checklist = worker_function(config, ...)
             logger.info('success message')
             # Exchange success messages with the nowcast manager process
             lib.tell_manager(
                 worker_name, 'success', config, logger, socket, checklist)
-            lib.tell_manager(worker_name, 'the end', config, logger, socket)
         except lib.WorkerError:
             # Exchange failure messages with nowcast manager process
             logger.critical('failure message')
@@ -150,6 +148,11 @@ below.
         # Finish up
         context.destroy()
         logger.info('task completed; shutting down')
+
+
+    def worker_function(config, ...):
+        ...
+        return checklist
 
 
     if __name__ == '__main__':
@@ -215,7 +218,7 @@ It is called when the worker is run from the command line by virtue of the
     if __name__ == '__main__':
         main()
 
-block at the end of the module.
+stanza at the end of the module.
 
 
 Prepare The Worker
@@ -228,7 +231,7 @@ Lines 36 and 37 set up the worker's command-line interface and parse the command
     parser = lib.basic_arg_parser(worker_name, description=__doc__)
     parsed_args = parser.parse_args()
 
-The :py:func:`lib.basic_arg_parser` returns a command-line parser instance with the file path/name of the :ref:`NowcastConfigFile` as a required argument,
+The :py:func:`lib.basic_arg_parser` returns a command-line parser object with the file path/name of the :ref:`NowcastConfigFile` as a required argument,
 and :option:`--debug` and :option:`--help` option flags.
 The value of :py:data:`worker_name` is used to construct the parser's usage message.
 Passing :py:data:`__doc__` as the value of :kbd:`description` causes the worker's module docstring to be used as the parser's descriptive text;
@@ -277,7 +280,7 @@ We mostly use :py:meth:`logging.info` for generally informative methods,
 and :py:meth:`logging.error` for error message.
 
 Here,
-we log the id of the operating system process that the worker is running in,
+we log the id number of the operating system process that the worker is running in,
 and the file path/name of the configuration file that it is using.
 
 Line 42:
@@ -304,6 +307,74 @@ or
     kill -9 <pid>
 
 it will shutdown cleanly.
+
+The worker's ZeroMQ connection with the nowcast manager process is initialized in line 43 with:
+
+.. code-block:: python
+
+    socket = lib.init_zmq_req_rep_worker(context, config, logger)
+
+The ZeroMQ socket object returned by :py:func:`~salishsea_tools.nowcast.lib.init_zmq_req_rep_worker` provides the communication channel for messages to be exchanged between the worker and the manager.
+We are using a request/reply messaging pattern,
+meaning that the manager is always listening for messages and the workers initiate exchanges by sending a message to the manager,
+then waiting for an acknowledgement from the manager.
+
+As we'll see below,
+the :py:func:`salishsea_tools.nowcast.lib.tell_manager` function handles the details of the message exchanges with the manager;
+all we have to do it pass the socket object into it.
+
+
+Doing the Work
+--------------
+
+The block of code from line 46 through line 65 calls the function that does the actual work,
+communicates with the nowcast manager,
+and handles the exceptions that are raised when things go wrong.
+
+First,
+lets look at the exception handling:
+
+.. code-block:: python
+
+    try:
+        checklist = worker_function(config, ...)
+        logger.info('success message')
+        # Exchange success messages with the nowcast manager process
+        lib.tell_manager(
+            worker_name, 'success', config, logger, socket, checklist)
+    except lib.WorkerError:
+        # Exchange failure messages with nowcast manager process
+        logger.critical('failure message')
+        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
+    except:
+        logger.critical('unhandled exception:')
+        # Log the traceback from any unhandled exception
+        for line in traceback.format_exc().splitlines():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
+
+If everything goes according to plan,
+only the code in the :kbd:`try:` stanza will be executed.
+
+If the worker function encounters an expected error condition
+(a file download failure or timeout, for example)
+it should raise a :py:exc:`salishsea_tools.nowcast.lib.WorkerError` exception.
+The :kbd:`except lib.WorkerError:` stanza catches that exception,
+logs it at the critical level,
+and tells the manager that the worker has failed.
+
+The :py:exc:`SystemExit` exception is raised by the signal handler that we installed at line 42 when the worker is terminated by an interrupt or kill signal.
+This is the normal termination path,
+so we let that exception pass.
+
+Finally,
+the bare :kbd:`except:` stanza catches any unhandled exceptions,
+logs their traceback at the error level so that we can diagnose the error,
+and tells the manager that the worker crashed.
 
 
 .. _ExtendingTheCommandLineParser:
