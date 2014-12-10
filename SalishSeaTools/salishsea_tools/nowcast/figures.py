@@ -495,7 +495,7 @@ def compute_residual(ssh,ttide,t_orig,t_final):
     
     return res
     
-def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
+def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15.5)):
   """Figure with the hourly sea surface height at Point Atkinson, Campbell River, and Victoria
   and sections defined by water level thresholds. Also, a map showing the location of the stations,
   colored according to the thresholds in which their water levels lie.
@@ -600,8 +600,8 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15)):
      ax0.plot(lons[name],lats[name],marker='D',color=threshold_c,markersize=10,markeredgewidth=2)
      
      #threshold lines in plots
-     ax.axhline(y=max_tides,color='Gold',linewidth=2,ls='solid',label='predicted maximum')
-     ax.axhline(y=mid_tides,color='Red',linewidth=2,ls='solid',label='mid maximum')
+     ax.axhline(y=max_tides,color='Gold',linewidth=2,ls='solid',label='maximum tides')
+     ax.axhline(y=mid_tides,color='Red',linewidth=2,ls='solid',label='extreme water')
      ax.axhline(y=extreme_ssh,color='DarkRed',linewidth=2,ls='solid',label='historical maximum')
      
      
@@ -855,9 +855,16 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
         station_c = 'MediumOrchid'
         twind=plot(name,scale)
         t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
-	t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
+        t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
         ax.set_title('Modelled winds at {name} averaged over \n {t1} [PST] to {t2} [PST]'.format(name=name,t1=t[0],t2=t[-1]),**title_font)
-       
+    
+    # citation
+    ax.text(1.07,0.1,
+        'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax.transAxes)
+    
     return fig
 
 def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
@@ -945,7 +952,14 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
         #plot time for title
         plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
         ax.set_title('Modelled winds at {name} \n {time} [PST]'.format(name=name,time=plot_time),**title_font)
-        
+   
+  # citation
+  ax.text(1.07,0.1, 
+    'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax.transAxes)
+   
   return fig
     
 def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
