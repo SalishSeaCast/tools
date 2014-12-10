@@ -356,6 +356,7 @@ def after_download_results(worker, msg_type, payload, config):
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
+            (launch_worker, ['make_out_plots', config, ['--results-type forecast1']]),
         ],
         'failure forecast': None,
         'crash': None,
@@ -366,10 +367,18 @@ def after_download_results(worker, msg_type, payload, config):
 def after_make_out_plots(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success': [
+        'success nowcast': [
             (update_checklist, [worker, 'plots', payload]),
         ],
-        'failure': None,
+        'failure nowcast': None,
+        'success forecast1': [
+            (update_checklist, [worker, 'plots', payload]),
+        ],
+        'failure forecast1': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'plots', payload]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
     return actions[msg_type]

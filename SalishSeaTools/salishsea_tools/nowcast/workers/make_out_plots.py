@@ -60,16 +60,21 @@ def main():
     checklist = {}
     try:
         make_out_plots(
-            parsed_args.run_date, config, socket, checklist)
-        logger.info('Made the "Out" plots completed')
+            parsed_args.run_date, parsed_args.resultstype, config,
+            socket, checklist)
+        logger.info('Make the "Out" plots for {.resultstype} completed'
+                    .format(parsed_args))
         # Exchange success messages with the nowcast manager process
+        msg_type = '{} {}'.format('success', parsed_args.resultstype)
         lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'Made the "Out" plots failed')
+            'Made the "Out" plots failed for results type {.resultstype}'
+            .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        msg_type = '{} {}'.format('failure', parsed_args.resultstype)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
@@ -87,6 +92,13 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
+        '--results-type', choices=set(('nowcast','forecast1','forecast2')),
+        default='nowcast',
+        help='''Which results set to produce plots for:
+                "nowcast" means nowcast,
+                "forecast1" means forecast directly following nowcast,
+                "forecast2" means the second forecast, following forecast1''')
+    parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
         Date of the run to download results files from;
@@ -96,12 +108,14 @@ def configure_argparser(prog, description, parents):
     )
     return parser
 
-def make_out_plots(run_date, config, socket, checklist):
+def make_out_plots(run_date, resultstype, config, socket, checklist):
 
     # set-up, read from config file
-    results_home = config['run']['results archive']['nowcast']
+    results_home = config['run']['results archive'][resultstype]
     results_dir = os.path.join(results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
+    if resultstype in ['forecast1','forecast2']:
+        model_path = os.path.join(model_path,'fcst')
     bathy = nc.Dataset(config['bathymetry'])
 
     # configure plot directory for saving
