@@ -56,6 +56,9 @@ hfmt = mdates.DateFormatter('%m/%d %H:%M')
 title_font = {'fontname':'Arial', 'size':'15', 'color':'black', 'weight':'medium'}
 axis_font = {'fontname':'Arial', 'size':'13'}
 
+#average mean sea level calculated over 1983-2001. To be used to centre model output about mean sea level
+MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 'Patricia Bay': 2.30}
+
 
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
@@ -282,8 +285,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     return fig
 
-def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0, 
-                                    name='Point Atkinson', figsize=(20,12)):
+def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0, name='Point Atkinson', figsize=(20,12)):
     """Function that compares modelled water levels to tidal predictions at a station over one day.
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
     Tidal predictions were calculated with all consitunts using ttide based on a time series from 2013.
@@ -346,8 +348,8 @@ def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0,
     ax3=plt.subplot(gs[2, 0]) #residual
 
     #Plot tides, corrected model and original model
-    ttide,msl=plot_tides(ax1,name,t_orig,PST,MSL)
-    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl)
+    ttide=plot_tides(ax1,name,t_orig,PST,MSL)
+    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,MSL_DATUMS[name])
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     #compute residuals
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
@@ -566,9 +568,9 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15.5)
      #Plot tides, corrected model and original model
      if name =='Point Atkinson':
        plot_PA_observations(ax,PST)
-     ttide,msl=plot_tides(ax,name,t_orig,PST,MSL)
-     ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl)
-     ax.plot(t+PST*time_shift,ssh_loc+msl*MSL,'--',c=model_c,linewidth=1,label='model')
+     ttide=plot_tides(ax,name,t_orig,PST,MSL)
+     ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,MSL_DATUMS[name])
+     ax.plot(t+PST*time_shift,ssh_loc+MSL_DATUMS[name]*MSL,'--',c=model_c,linewidth=1,label='model')
       
      ax.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
      ax.set_ylim([-1,6])
@@ -585,9 +587,9 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15.5)
      
      #threshold colours
      extreme_ssh = extreme_ssh
-     max_tides=max(ttide.pred_all) + msl*MSL
+     max_tides=max(ttide.pred_all) + MSL_DATUMS[name]*MSL
      mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
-     max_ssh = np.max(ssh_corr) + msl*MSL
+     max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]*MSL
      
      if max_ssh < (max_tides):
        threshold_c = 'green'
@@ -1476,9 +1478,9 @@ def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
     filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
-    ax.plot(ttide.time+PST*time_shift,ttide.pred_all+msl*MSL,c=color,linewidth=2,label='tidal predictions')
+    ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,linewidth=2,label='tidal predictions')
     
-    return ttide,msl
+    return ttide
     
 def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl):
     """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
@@ -1507,7 +1509,7 @@ def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl):
     :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0
     :type MSL: 0 or 1
     
-    :arg msl: the mean sea level
+    :arg msl: The mean sea level for centring the plot
     :type msl: float
 
     :returns: ssh_corr, the model output but corrected for missing tidal constituents
