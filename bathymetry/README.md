@@ -20,11 +20,15 @@ Descriptions below the links are from the first cell of the notebooks
     and boundary conditions temperature and salinity values that do not  
     induce spurious transient flows at the topographic edges of the domain.  
 
-* ##[netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
+* ##[More Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
-    **Explore Changing Bathymetry Data Format**  
-    **netCDF4 Instead of netCDF3_CLASSIC**  
+    Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
+    We show below that this makes the Thalweg more rugged as it pulls shallow areas from the sides across the channel.  
 
+* ##[Untitled0.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Untitled0.ipynb)  
+    
+* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
+    
 * ##[SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
     
     **Salish Sea NEMO Bathymetry**  
@@ -50,8 +54,15 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
 
-* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
+* ##[netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
     
+    **Explore Changing Bathymetry Data Format**  
+    **netCDF4 Instead of netCDF3_CLASSIC**  
+
+* ##[Thalweg Work.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
+    
+    Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more  
+
 
 ##License
 
