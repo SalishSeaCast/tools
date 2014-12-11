@@ -3,11 +3,11 @@ from __future__ import division
 import arrow
 import netCDF4 as NC
 import numpy as np
-import rivertools
+from salishsea_tools import rivertools
 import yaml
 
 def RealFraserClimateElse():
-    '''Driver Routine to read Fraser River at Hope flow and insert in 
+    '''Driver Routine to read Fraser River at Hope flow and insert in
     climatology for everything else'''
 
     # find yesterday
@@ -34,7 +34,7 @@ def RealFraserClimateElse():
 
     # calculate combined runoff
     pd = rivertools.get_watershed_prop_dict('fraser')
-    runoff = fraser_correction(pd, FlowAtHope , yesterday, afterHope, 
+    runoff = fraser_correction(pd, FlowAtHope , yesterday, afterHope,
                                nonFraser, fraserratio, otherratio,
                                driverflow)
 
@@ -108,14 +108,14 @@ def write_file(r, flow, lat, lon, riverdepth):
     # set up filename to follow NEMO conventions
     filename = 'RFraserCElse_y'+str(r.year)+'m'+'{:0=2}'.format(r.month)+'d'+'{:0=2}'.format(r.day)+'.nc'
     nemo = NC.Dataset(directory+'/'+filename, 'w')
-    nemo.description = 'Real Fraser Values, Daily Climatology for Other Rivers' 
-    
+    nemo.description = 'Real Fraser Values, Daily Climatology for Other Rivers'
+
     # dimensions
     ymax, xmax = lat.shape
     nemo.createDimension('x', xmax)
     nemo.createDimension('y', ymax)
     nemo.createDimension('time_counter', None)
-    
+
     # variables
     # latitude and longitude
     nav_lat = nemo.createVariable('nav_lat','float32',('y','x'),zlib=True)
@@ -152,7 +152,7 @@ def fraser_correction(pd, fraserflux, r, afterHope, NonFraser, fraserratio, othe
         else:
             flux = calculate_daily_flow(r,NonFraser)
             subarea = otherratio
-        
+
         river = pd[key]
         runoff = rivertools.fill_runoff_array(flux*river['prop']/subarea,river['i'],
                           river['di'],river['j'],river['dj'],river['depth'],
