@@ -860,7 +860,7 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
     
     # citation
     ax.text(1.07,0.1,
-        'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+        'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes)
@@ -955,7 +955,7 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
    
   # citation
   ax.text(1.07,0.1, 
-    'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+    'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes)
