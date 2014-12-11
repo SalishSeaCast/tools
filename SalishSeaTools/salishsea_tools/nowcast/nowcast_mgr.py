@@ -351,13 +351,13 @@ def after_download_results(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_out_plots', config]),
+            (launch_worker, ['make_out_plots', config, ['nowcast']]),
         ],
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
             (launch_worker,
-             ['make_out_plots', config, ['--results-type', 'forecast1']]),
+             ['make_out_plots', config, ['forecast1']]),
         ],
         'failure forecast': None,
         'crash': None,

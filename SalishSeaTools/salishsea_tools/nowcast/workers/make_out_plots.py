@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """Salish Sea NEMO nowcast worker that produces the ssh and weather
-plots for a nowcast run
+plot files from run results.
 """
 import argparse
 from glob import glob
@@ -60,20 +60,20 @@ def main():
     checklist = {}
     try:
         make_out_plots(
-            parsed_args.run_date, parsed_args.resultstype, config,
+            parsed_args.run_date, parsed_args.run_type, config,
             socket, checklist)
-        logger.info('Make the "Out" plots for {.resultstype} completed'
+        logger.info('Make the "Out" plots for {.run_type} completed'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
-        msg_type = '{} {}'.format('success', parsed_args.resultstype)
+        msg_type = '{} {}'.format('success', parsed_args.run_type)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'Made the "Out" plots failed for results type {.resultstype}'
+            'Made the "Out" plots failed for results type {.run_type}'
             .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        msg_type = '{} {}'.format('failure', parsed_args.resultstype)
+        msg_type = '{} {}'.format('failure', parsed_args.run_type)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
@@ -92,9 +92,8 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        '--results-type', choices=set(('nowcast','forecast1','forecast2')),
-        default='nowcast',
-        help='''Which results set to produce plots for:
+        'run_type', choices=set(('nowcast','forecast1','forecast2')),
+        help='''Which results set to produce plot files for:
                 "nowcast" means nowcast,
                 "forecast1" means forecast directly following nowcast,
                 "forecast2" means the second forecast, following forecast1''')
@@ -108,13 +107,13 @@ def configure_argparser(prog, description, parents):
     )
     return parser
 
-def make_out_plots(run_date, resultstype, config, socket, checklist):
+def make_out_plots(run_date, run_type, config, socket, checklist):
 
     # set-up, read from config file
-    results_home = config['run']['results archive'][resultstype]
+    results_home = config['run']['results archive'][run_type]
     results_dir = os.path.join(results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
-    if resultstype in ['forecast1','forecast2']:
+    if run_type in ['forecast1','forecast2']:
         model_path = os.path.join(model_path,'fcst')
     bathy = nc.Dataset(config['bathymetry'])
 
@@ -132,21 +131,21 @@ def make_out_plots(run_date, resultstype, config, socket, checklist):
                         'PA_tidal_predictions_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_tidalpredictions_maxSSH( 
+    fig = figures.compare_tidalpredictions_maxSSH(
                     grid_T_hr, bathy, model_path, name='Victoria')
-    filename = os.path.join(plots_dir, 
+    filename = os.path.join(plots_dir,
                         'Vic_maxSSH__{date}.svg'.format(date=date_key))
     plt.savefig(filename)
-    
-    fig = figures.compare_tidalpredictions_maxSSH( 
+
+    fig = figures.compare_tidalpredictions_maxSSH(
                                              grid_T_hr, bathy, model_path)
     filename = os.path.join(plots_dir,
                         'PA_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
-    
-    fig = figures.compare_tidalpredictions_maxSSH( 
-                         grid_T_hr, bathy, model_path, name='Campbell River') 
-    filename = os.path.join(plots_dir, 
+
+    fig = figures.compare_tidalpredictions_maxSSH(
+                         grid_T_hr, bathy, model_path, name='Campbell River')
+    filename = os.path.join(plots_dir,
                         'CR_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
