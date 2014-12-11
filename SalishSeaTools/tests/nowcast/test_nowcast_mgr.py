@@ -642,7 +642,7 @@ def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['make_out_plots', config]),
+         ['make_out_plots', config, ['nowcast']]),
     ]
     assert next_steps == expected
 
@@ -656,6 +656,6 @@ def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['make_out_plots', config, ['--results-type', 'forecast1']]),
+         ['make_out_plots', config, ['forecast1']]),
     ]
     assert next_steps == expected
