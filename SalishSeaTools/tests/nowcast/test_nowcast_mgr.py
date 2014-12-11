@@ -655,5 +655,7 @@ def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_out_plots', config, ['--results-type', 'forecast1']]),
     ]
     assert next_steps == expected
