@@ -817,11 +817,15 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
       
     def plot(name, scale):
        [wind, direc, twind, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
+       #truncate so that overage is only over sim time
+       indices = np.where(np.logical_and(twind >= t_orig.replace(minute=0,tzinfo=None), 
+                                         twind <= t_final.replace(tzinfo=None)))
+       wind=wind[indices]; direc=direc[indices]; twind=twind[indices]
+       #calculate u,v and averages.
        uwind = wind*np.cos(np.radians(direc))
        vwind=wind*np.sin(np.radians(direc))
        uaverage = np.mean(uwind, axis=0)
        vaverage = np.mean(vwind, axis=0)
-       speeds = wind
         
        ax.plot(lons[name], lats[name], marker='D', color=station_c,
                 markersize=10, markeredgewidth=2,label=name)
@@ -1381,7 +1385,7 @@ def get_model_winds(lon,lat,t_orig,t_final,model_path):
         torig = datetime.datetime(1970,1,1) #there is no time_origin attriubte in OP files, so I hard coded this
         for ind in np.arange(ts.shape[0]):
             t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
-     
+            
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
 def find_model_point(lon,lat,X,Y):
