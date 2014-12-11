@@ -17,7 +17,7 @@
 plot files from run results.
 """
 import argparse
-import glob
+from glob import glob
 import logging
 import os
 import traceback
@@ -164,7 +164,7 @@ def make_out_plots(run_date, run_type, config, socket, checklist):
                         'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    checklist = glob.glob(plots_dir)
+    checklist = glob(plots_dir)
 
 
 def results_dataset(period, grid, results_dir):
