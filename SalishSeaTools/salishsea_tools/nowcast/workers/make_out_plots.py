@@ -17,7 +17,7 @@
 plot files from run results.
 """
 import argparse
-from glob import glob
+import glob
 import logging
 import os
 import traceback
