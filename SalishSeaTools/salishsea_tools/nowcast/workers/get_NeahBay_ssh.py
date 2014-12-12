@@ -23,6 +23,7 @@ import traceback
 
 from bs4 import BeautifulSoup
 import pytz
+import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -112,9 +113,15 @@ def getNBssh(config, checklist):
     for i in range(dates.shape[0]):
         dates[i] = to_datetime(dates[i], utc_now.year,isDec,isJan)
     dates_list = list_full_days(dates)
+    #set up plotting
+    fig,ax,ip=setup_plotting()
     # Loop through full days and save netcdf
     for d in dates_list:
         surges, tc, forecast_flag = retrieve_surge(d, dates, data)
+        #plotting
+        if ip <3:
+          ax.plot(surges,'-o',lw=2,label=d.strftime('%d-%b-%Y'))
+        ip=ip+1;
         filepath = save_netcdf(
             d, tc, surges, forecast_flag, textfile,
             config['ssh']['ssh_dir'], lats, lons)
@@ -127,7 +134,8 @@ def getNBssh(config, checklist):
         else:
             item = {'obs': filename}
         checklist.update(item)
-
+    ax.legend(loc=4)
+    fig.savefig('NBssh.png')
 
 def read_website(save_path):
     """Reads a website with Neah Bay storm surge predictions/observations.
@@ -364,6 +372,15 @@ def to_datetime(datestr,year,isDec,isJan):
 def feet_to_metres(feet):
     metres = feet*0.3048
     return metres
+
+def setup_plotting():
+    fig,ax=plt.subplots(1,1,figsize=(10,4))
+    ax.set_title('Neah Bay SSH')
+    ax.set_ylim([-1,1])
+    ax.grid()
+    ax.set_ylabel('Sea surface height (m)')
+    ip=0
+    return fig,ax,ip
 
 
 if __name__ == '__main__':
