@@ -1473,9 +1473,9 @@ def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
 
     :returns: ttide, a DataFrame object with tidal predictions an columns time, pred_all, pred_8
     """
-  
+    #tide file covers 2014 and 2015. Harmonics were from a 2013 time series
     path='/data/nsoontie/MEOPAR/analysis/Nancy/tides/'
-    filename = '_t_tide_compare8_31-Dec-{}_02-Jan-{}.csv'.format(t_orig.year-1,t_orig.year+1)
+    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
     ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,linewidth=2,label='tidal predictions')
