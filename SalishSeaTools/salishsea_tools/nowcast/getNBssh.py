@@ -12,6 +12,7 @@ import urllib2
 from bs4 import BeautifulSoup
 from StringIO import StringIO
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def getNBssh():
    """ Script for generate sea surface height forcing files from the Neah Bay storm surge website.""" 
@@ -41,9 +42,17 @@ def getNBssh():
    dates_list=list_full_days(dates)
 
    #loop through full days and save netcdf
+   fig,ax,ip=setup_plotting()
    for d in dates_list:
       surges,tc,forecast_flag=retrieve_surge(d,dates,data)
       save_netcdf(d,tc,surges,forecast_flag,textfile,SAVE_PATH,lat,lon)
+      #plotting
+      if ip <3:
+        ax.plot(surges,'-o',lw=2,label='day {}'.format(ip+1))
+      ip=ip+1;
+      ax.legend(loc=4)
+
+   fig.savefig('NBssh.png')
 
 def load_surge_data(filename):
     """Loads the textfile with surge predictions
@@ -250,5 +259,12 @@ def feet_to_metres(feet):
     metres = feet*0.3048
     return metres
 
+def setup_plotting():
+    fig,ax=plt.subplots(1,1,figsize=(10,4))
+    ax.set_title('Neah Bay SSH')
+    ax.set_ylim([-1,1])
+    ax.grid()
+    ip=0
+    return fig,ax,ip
 if __name__ == '__main__':
     getNBssh()
