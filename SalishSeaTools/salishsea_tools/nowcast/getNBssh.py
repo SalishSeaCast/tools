@@ -264,6 +264,7 @@ def setup_plotting():
     ax.set_title('Neah Bay SSH')
     ax.set_ylim([-1,1])
     ax.grid()
+    ax.set_xlabel('Sea surface height (m)')
     ip=0
     return fig,ax,ip
 if __name__ == '__main__':
