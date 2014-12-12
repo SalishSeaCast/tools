@@ -48,7 +48,7 @@ def getNBssh():
       save_netcdf(d,tc,surges,forecast_flag,textfile,SAVE_PATH,lat,lon)
       #plotting
       if ip <3:
-        ax.plot(surges,'-o',lw=2,label='day {}'.format(ip+1))
+        ax.plot(surges,'-o',lw=2,label=d.strftime('%d-%b-%Y'))
       ip=ip+1;
       ax.legend(loc=4)
 
@@ -264,8 +264,9 @@ def setup_plotting():
     ax.set_title('Neah Bay SSH')
     ax.set_ylim([-1,1])
     ax.grid()
-    ax.set_xlabel('Sea surface height (m)')
+    ax.set_ylabel('Sea surface height (m)')
     ip=0
     return fig,ax,ip
+
 if __name__ == '__main__':
     getNBssh()
