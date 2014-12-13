@@ -23,6 +23,8 @@ import os
 import traceback
 
 import arrow
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pylab as plt
 import netCDF4 as nc
 import zmq
