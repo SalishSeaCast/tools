@@ -59,11 +59,10 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        make_out_plots(
+        checklist = make_out_plots(
             parsed_args.run_date, parsed_args.run_type, config,
-            socket, checklist)
+            socket)
         logger.info('Make the "Out" plots for {.run_type} completed'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
@@ -90,11 +89,12 @@ def main():
     context.destroy()
     logger.info('task completed; shutting down')
 
+
 def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run_type', choices=set(('nowcast','forecast1','forecast2')),
+        'run_type', choices=set(('nowcast', 'forecast1', 'forecast2')),
         help='''Which results set to produce plot files for:
                 "nowcast" means nowcast,
                 "forecast1" means forecast directly following nowcast,
@@ -109,14 +109,16 @@ def configure_argparser(prog, description, parents):
     )
     return parser
 
-def make_out_plots(run_date, run_type, config, socket, checklist):
+
+def make_out_plots(run_date, run_type, config, socket):
 
     # set-up, read from config file
     results_home = config['run']['results archive'][run_type]
-    results_dir = os.path.join(results_home, run_date.strftime('%d%b%y').lower())
+    results_dir = os.path.join(
+        results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
-    if run_type in ['forecast1','forecast2']:
-        model_path = os.path.join(model_path,'fcst')
+    if run_type in ['forecast1', 'forecast2']:
+        model_path = os.path.join(model_path, 'fcst')
     bathy = nc.Dataset(config['bathymetry'])
 
     # configure plot directory for saving
@@ -128,45 +130,46 @@ def make_out_plots(run_date, run_type, config, socket, checklist):
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
 
     # do the plots
-    fig = figures.PA_tidal_predictions(grid_T_hr)
-    filename = os.path.join(plots_dir,
-                        'PA_tidal_predictions_{date}.svg'.format(date=date_key))
+    figures.PA_tidal_predictions(grid_T_hr)
+    filename = os.path.join(
+        plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_tidalpredictions_maxSSH(
-                    grid_T_hr, bathy, model_path, name='Victoria')
-    filename = os.path.join(plots_dir,
-                        'Vic_maxSSH__{date}.svg'.format(date=date_key))
+    figures.compare_tidalpredictions_maxSSH(
+        grid_T_hr, bathy, model_path, name='Victoria')
+    filename = os.path.join(
+        plots_dir, 'Vic_maxSSH__{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_tidalpredictions_maxSSH(
-                                             grid_T_hr, bathy, model_path)
-    filename = os.path.join(plots_dir,
-                        'PA_maxSSH_{date}.svg'.format(date=date_key))
+    figures.compare_tidalpredictions_maxSSH(
+        grid_T_hr, bathy, model_path)
+    filename = os.path.join(
+        plots_dir, 'PA_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_tidalpredictions_maxSSH(
-                         grid_T_hr, bathy, model_path, name='Campbell River')
-    filename = os.path.join(plots_dir,
-                        'CR_maxSSH_{date}.svg'.format(date=date_key))
+    figures.compare_tidalpredictions_maxSSH(
+        grid_T_hr, bathy, model_path, name='Campbell River')
+    filename = os.path.join(
+        plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.compare_water_levels(grid_T_hr, bathy)
-    filename = os.path.join(plots_dir,
-                        'NOAA_ssh_{date}.svg'.format(date=date_key))
+    figures.compare_water_levels(grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
-    filename = os.path.join(plots_dir,
-                 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
+    figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
+    filename = os.path.join(
+        plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
-    filename = os.path.join(plots_dir,
-                        'SH_wind_{date}.svg'.format(date=date_key))
+    figures.Sandheads_winds(grid_T_hr, bathy, model_path)
+    filename = os.path.join(
+        plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
     checklist = glob(plots_dir)
+    return checklist
 
 
 def results_dataset(period, grid, results_dir):
@@ -174,8 +177,8 @@ def results_dataset(period, grid, results_dir):
     and grid (e.g. grid_T, grid_U) from results_dir.
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
-    filepaths = glob(os.path.join(results_dir,
-                   filename_pattern.format(period=period, grid=grid)))
+    filepaths = glob(os.path.join(
+        results_dir, filename_pattern.format(period=period, grid=grid)))
     return nc.Dataset(filepaths[0])
 
 if __name__ == '__main__':
