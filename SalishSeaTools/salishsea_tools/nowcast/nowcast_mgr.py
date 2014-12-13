@@ -399,7 +399,7 @@ def launch_worker(worker, config, cmd_line_args=[], host='localhost'):
     if host == 'localhost':
         cmd = [config['python'], '-m']
     else:
-        cmd = ['ssh', config[host], 'python', '-m']
+        cmd = ['ssh', host, 'python', '-m']
     cmd.extend([
         'salishsea_tools.nowcast.workers.{}'.format(worker),
         config['config_file'],
@@ -407,6 +407,7 @@ def launch_worker(worker, config, cmd_line_args=[], host='localhost'):
     if cmd_line_args:
         cmd.extend(cmd_line_args)
     logger.info('launching {} worker on {}'.format(worker, host))
+    logger.debug(cmd)
     subprocess.Popen(cmd)
 
 
