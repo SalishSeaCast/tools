@@ -80,9 +80,8 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        grib_to_netcdf(parsed_args.runtype, config, checklist)
+        checklist = grib_to_netcdf(parsed_args.runtype, config)
         logger.info('NEMO-atmos forcing file completed for run type {.runtype}'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
@@ -109,14 +108,18 @@ def main():
     context.destroy()
     logger.info('task completed; shutting down')
 
+
 def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
         'runtype', choices=set(('nowcast+', 'forecast2')),
-        help="Type of run to produce netCDF files for: 'nowcast+' means nowcast & 1st forecast runs, 'forecast2' means 2nd forecast run.",
+        help='''Type of run to produce netCDF files for:
+        'nowcast+' means nowcast & 1st forecast runs,
+        'forecast2' means 2nd forecast run.''',
     )
     return parser
+
 
 def configure_wgrib2_logging(config):
     wgrib2_logger.setLevel(logging.DEBUG)
@@ -130,7 +133,7 @@ def configure_wgrib2_logging(config):
     wgrib2_logger.addHandler(handler)
 
 
-def grib_to_netcdf(runtype, config, checklist):
+def grib_to_netcdf(runtype, config):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
@@ -144,7 +147,7 @@ def grib_to_netcdf(runtype, config, checklist):
 
     # set-up plotting
     fig, axs, ip = set_up_plotting()
-
+    checklist = {}
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
             fcst_section_hrs_arr, zerostart, length, subdirectory,
             yearmonthday):
@@ -171,6 +174,7 @@ def grib_to_netcdf(runtype, config, checklist):
                 checklist.update({subdir: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
     fig.savefig('wg.png')
+    return checklist
 
 
 def define_forecast_segments_nowcast():
@@ -224,7 +228,8 @@ def define_forecast_segments_nowcast():
     subdirectory.append('fcst')
     yearmonthday.append(nextday.strftime('y%Ym%md%d'))
     return (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday)
+            yearmonthday)
+
 
 def define_forecast_segments_forecast2():
     """Define segments of forecasts to build into working weather files
@@ -242,7 +247,7 @@ def define_forecast_segments_forecast2():
     p1 = os.path.join(today.format('YYYYMMDD'), '06')
     logger.info('forecast section: {}'.format(p1))
     fcst_section_hrs_arr[0] = OrderedDict([
-            ('section 1', (p1, -1, 24-6-1, 24+24-6)),
+        ('section 1', (p1, -1, 24-6-1, 24+24-6)),
     ])
     zerostart = [[]]
     length = [24]
@@ -262,10 +267,8 @@ def define_forecast_segments_forecast2():
     yearmonthday.append(nextday.strftime('y%Ym%md%d'))
 
     return (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday)
+            yearmonthday)
 
-    return (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday)
 
 def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
