@@ -121,12 +121,17 @@ def run_NEMO(host_name, run_type, config):
     return {run_type: True}
 
 
-def update_time_namelist(
-    host, run_type, today, timesteps_per_day=TIMESTEPS_PER_DAY,
-):
+def update_time_namelist(host, run_type, today):
     namelist = os.path.join(host['run_prep_dirs'][run_type], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
+    new_lines, prev_itend = calc_new_namelist_lines(lines, today)
+    with open(namelist, 'wt') as f:
+        f.writelines(new_lines)
+    return prev_itend
+
+
+def calc_new_namelist_lines(lines, today, timesteps_per_day=TIMESTEPS_PER_DAY):
     it000_line, prev_it000 = get_namelist_value('nn_it000', lines)
     itend_line, prev_itend = get_namelist_value('nn_itend', lines)
     date0_line, date0 = get_namelist_value('nn_date0', lines)
@@ -135,14 +140,12 @@ def update_time_namelist(
     date0 = datetime.date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
     one_day = datetime.timedelta(days=1)
     if next_itend / timesteps_per_day > (today - date0 + one_day).days:
-        return int(prev_it000) - 1
+        return lines, int(prev_it000) - 1
     # Increment 1st and last time steps to values for today
     lines[it000_line] = lines[it000_line].replace(
         prev_it000, str(int(prev_itend) + 1))
     lines[itend_line] = lines[itend_line].replace(prev_itend, str(next_itend))
-    with open(namelist, 'wt') as f:
-        f.writelines(lines)
-    return int(prev_itend)
+    return lines, int(prev_itend)
 
 
 def get_namelist_value(key, lines):
