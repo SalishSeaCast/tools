@@ -32,21 +32,86 @@ def run_NEMO_module():
     return run_NEMO
 
 
-def test_get_namelist_value(run_NEMO_module):
-    lines = ['  nn_it000 = 8641  ! first time step\n']
-    line_index, value = run_NEMO_module.get_namelist_value('nn_it000', lines)
-    assert line_index == 0
-    assert value == str(8641)
+@pytest.mark.use_fixtures(['run_NEMO_module'])
+class TestCalcNewNamelistLines(object):
+    """Unit tests for calc_new_namelist_lines() function.
+    """
+    def test_nowcast_it000(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 8640\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
+            lines, today)
+        assert new_lines[0] == '  nn_it000 = 8641\n'
+
+    def test_nowcast_itend(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 8640\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
+            lines, today)
+        assert new_lines[1] == '  nn_itend = 17280\n'
+
+    def test_nowcast_prev_itend(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 8640\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
+            lines, today)
+        assert prev_itend == 8640
+
+    def test_nowcast_no_update_after_today(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 8640\n',
+            '  nn_date0 = 20141214\n',
+        ]
+        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
+            lines, today)
+        assert new_lines == lines
+
+    def test_nowcast_no_update_after_today_prev_itend(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        lines = [
+            '  nn_it000 = 8641\n',
+            '  nn_itend = 17280\n',
+            '  nn_date0 = 20141214\n',
+        ]
+        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
+            lines, today)
+        assert prev_itend == 8640
 
 
-def test_get_namelist_value_last_occurrence(run_NEMO_module):
-    lines = [
-        '  nn_it000 = 8641  ! first time step\n',
-        '  nn_it000 = 8642  ! first time step\n',
-    ]
-    line_index, value = run_NEMO_module.get_namelist_value('nn_it000', lines)
-    assert line_index == 1
-    assert value == str(8642)
+@pytest.mark.use_fixtures(['run_NEMO_module'])
+class TestGetNamelistValue(object):
+    """Unit tests for get_namelist_value() function.
+    """
+    def test_get_value(self, run_NEMO_module):
+        lines = ['  nn_it000 = 8641  ! first time step\n']
+        line_index, value = run_NEMO_module.get_namelist_value(
+            'nn_it000', lines)
+        assert line_index == 0
+        assert value == str(8641)
+
+    def test_get_last_occurrence(self, run_NEMO_module):
+        lines = [
+            '  nn_it000 = 8641  ! first time step\n',
+            '  nn_it000 = 8642  ! last time step\n',
+        ]
+        line_index, value = run_NEMO_module.get_namelist_value(
+            'nn_it000', lines)
+        assert line_index == 1
+        assert value == str(8642)
 
 
 def test_run_description_init_conditions(run_NEMO_module):
