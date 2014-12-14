@@ -20,10 +20,7 @@ executed.
 from __future__ import division
 
 import argparse
-from datetime import (
-    date,
-    timedelta,
-)
+import datetime
 import logging
 import os
 import traceback
@@ -113,7 +110,7 @@ def configure_argparser(prog, description, parents):
 
 def run_NEMO(host_name, run_type, config):
     host = config['run'][host_name]
-    today = date.today()
+    today = datetime.date.today()
     prev_itend = update_time_namelist(host, run_type, today)
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
@@ -135,8 +132,8 @@ def update_time_namelist(
     date0_line, date0 = get_namelist_value('nn_date0', lines)
     # Prevent namelist from being updated past today
     next_itend = int(prev_itend) + timesteps_per_day
-    date0 = date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
-    one_day = timedelta(days=1)
+    date0 = datetime.date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
+    one_day = datetime.timedelta(days=1)
     if next_itend / timesteps_per_day > (today - date0 + one_day).days:
         return int(prev_it000) - 1
     # Increment 1st and last time steps to values for today
@@ -158,7 +155,7 @@ def get_namelist_value(key, lines):
 
 def run_description(host, run_type, today, run_id, prev_itend):
     # Relative paths from MEOPAR/nowcast/
-    yesterday = today - timedelta(days=1)
+    yesterday = today - datetime.timedelta(days=1)
     init_conditions = os.path.join(
         host['results'][run_type],
         yesterday.strftime('%d%b%y').lower(),
