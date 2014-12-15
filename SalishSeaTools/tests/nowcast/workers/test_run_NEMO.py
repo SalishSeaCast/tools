@@ -43,8 +43,8 @@ class TestCalcNewNamelistLines(object):
             '  nn_itend = 8640\n',
             '  nn_date0 = 20140910\n',
         ]
-        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
-            lines, today)
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'nowcast', today, future_limit_days=1)
         assert new_lines[0] == '  nn_it000 = 8641\n'
 
     def test_nowcast_itend(self, run_NEMO_module):
@@ -54,20 +54,20 @@ class TestCalcNewNamelistLines(object):
             '  nn_itend = 8640\n',
             '  nn_date0 = 20140910\n',
         ]
-        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
-            lines, today)
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'nowcast', today, future_limit_days=1)
         assert new_lines[1] == '  nn_itend = 17280\n'
 
-    def test_nowcast_prev_itend(self, run_NEMO_module):
+    def test_nowcast_restart_timestep(self, run_NEMO_module):
         today = date(2014, 12, 14)
         lines = [
             '  nn_it000 = 1\n',
             '  nn_itend = 8640\n',
             '  nn_date0 = 20140910\n',
         ]
-        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
-            lines, today)
-        assert prev_itend == 8640
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'nowcast', today, future_limit_days=1)
+        assert restart_timestep == 8640
 
     def test_nowcast_no_update_after_today(self, run_NEMO_module):
         today = date(2014, 12, 14)
@@ -76,20 +76,84 @@ class TestCalcNewNamelistLines(object):
             '  nn_itend = 8640\n',
             '  nn_date0 = 20141214\n',
         ]
-        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
-            lines, today)
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'nowcast', today, future_limit_days=1)
         assert new_lines == lines
 
-    def test_nowcast_no_update_after_today_prev_itend(self, run_NEMO_module):
+    def test_nowcast_no_update_after_today_restart_timestep(
+        self, run_NEMO_module,
+    ):
         today = date(2014, 12, 14)
         lines = [
             '  nn_it000 = 8641\n',
             '  nn_itend = 17280\n',
             '  nn_date0 = 20141214\n',
         ]
-        new_lines, prev_itend = run_NEMO_module.calc_new_namelist_lines(
-            lines, today)
-        assert prev_itend == 8640
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'nowcast', today, future_limit_days=1)
+        assert restart_timestep == 8640
+
+    def test_forecast_it000(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        tomorrow = today + timedelta(days=1)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 10800\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'forecast', tomorrow, future_limit_days=2.5)
+        assert new_lines[0] == '  nn_it000 = 8641\n'
+
+    def test_forecast_itend(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        tomorrow = today + timedelta(days=1)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 10800\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'forecast', tomorrow, future_limit_days=2.5)
+        assert new_lines[1] == '  nn_itend = 19440\n'
+
+    def test_forecast_restart_timestep(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        tomorrow = today + timedelta(days=1)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 10800\n',
+            '  nn_date0 = 20140910\n',
+        ]
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'forecast', tomorrow, future_limit_days=2.5)
+        assert restart_timestep == 8640
+
+    def test_forecast_no_update_after_today(self, run_NEMO_module):
+        today = date(2014, 12, 14)
+        tomorrow = today + timedelta(days=1)
+        lines = [
+            '  nn_it000 = 1\n',
+            '  nn_itend = 10800\n',
+            '  nn_date0 = 20141214\n',
+        ]
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'forecast', tomorrow, future_limit_days=1)
+        assert new_lines == lines
+
+    def test_forecast_no_update_after_today_restart_timestep(
+        self, run_NEMO_module,
+    ):
+        today = date(2014, 12, 14)
+        tomorrow = today + timedelta(days=1)
+        lines = [
+            '  nn_it000 = 8641\n',
+            '  nn_itend = 19440\n',
+            '  nn_date0 = 20141214\n',
+        ]
+        new_lines, restart_timestep = run_NEMO_module.calc_new_namelist_lines(
+            lines, 'forecast', tomorrow, future_limit_days=1)
+        assert restart_timestep == 8640
 
 
 @pytest.mark.use_fixtures(['run_NEMO_module'])

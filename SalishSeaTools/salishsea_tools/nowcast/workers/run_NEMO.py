@@ -111,41 +111,58 @@ def configure_argparser(prog, description, parents):
 def run_NEMO(host_name, run_type, config):
     host = config['run'][host_name]
     today = datetime.date.today()
-    prev_itend = update_time_namelist(host, run_type, today)
+    if run_type == 'nowcast':
+        run_day = today
+        future_limit_days = 1
+    elif run_type == 'forecast':
+        run_day = today + datetime.timedelta(days=1)
+        future_limit_days = 2.5
+    restart_timestep = update_time_namelist(
+        host, run_type, run_day, future_limit_days)
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
-    run_desc = run_description(host, run_type, today, run_id, prev_itend)
+    run_desc = run_description(
+        host, run_type, run_day, run_id, restart_timestep)
     results_dir = os.path.join(host['results'][run_type], dmy)
     salishsea_cmd.api.run_in_subprocess(
         run_id, run_desc, 'iodef.xml', os.path.abspath(results_dir))
     return {run_type: True}
 
 
-def update_time_namelist(host, run_type, today):
+def update_time_namelist(host, run_type, run_day, future_limit_days):
     namelist = os.path.join(host['run_prep_dirs'][run_type], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
-    new_lines, prev_itend = calc_new_namelist_lines(lines, today)
+    new_lines, restart_timestep = calc_new_namelist_lines(
+        lines, run_type, run_day, future_limit_days)
     with open(namelist, 'wt') as f:
         f.writelines(new_lines)
-    return prev_itend
+    return restart_timestep
 
 
-def calc_new_namelist_lines(lines, today, timesteps_per_day=TIMESTEPS_PER_DAY):
+def calc_new_namelist_lines(
+    lines, run_type, run_day, future_limit_days,
+    timesteps_per_day=TIMESTEPS_PER_DAY,
+):
     it000_line, prev_it000 = get_namelist_value('nn_it000', lines)
     itend_line, prev_itend = get_namelist_value('nn_itend', lines)
     date0_line, date0 = get_namelist_value('nn_date0', lines)
-    # Prevent namelist from being updated past today
+    next_it000 = int(prev_it000) + timesteps_per_day
     next_itend = int(prev_itend) + timesteps_per_day
+    # Prevent namelist from being updated past today's nowcast/forecast
+    # time step values
     date0 = datetime.date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
-    one_day = datetime.timedelta(days=1)
-    if next_itend / timesteps_per_day > (today - date0 + one_day).days:
+    future_limit = datetime.timedelta(days=future_limit_days)
+    if next_itend / timesteps_per_day > (run_day - date0 + future_limit).days:
         return lines, int(prev_it000) - 1
     # Increment 1st and last time steps to values for today
-    lines[it000_line] = lines[it000_line].replace(
-        prev_it000, str(int(prev_itend) + 1))
+    lines[it000_line] = lines[it000_line].replace(prev_it000, str(next_it000))
     lines[itend_line] = lines[itend_line].replace(prev_itend, str(next_itend))
-    return lines, int(prev_itend)
+    restart_timestep = {
+        'nowcast': int(prev_itend),
+        'forecast': int(next_it000) - 1,
+    }
+    return lines, restart_timestep[run_type]
 
 
 def get_namelist_value(key, lines):
@@ -156,15 +173,15 @@ def get_namelist_value(key, lines):
     return line_index, value
 
 
-def run_description(host, run_type, today, run_id, prev_itend):
+def run_description(host, run_type, run_day, run_id, restart_timestep):
     # Relative paths from MEOPAR/nowcast/
-    yesterday = today - datetime.timedelta(days=1)
+    prev_day = run_day - datetime.timedelta(days=1)
     init_conditions = os.path.join(
-        host['results'][run_type],
-        yesterday.strftime('%d%b%y').lower(),
-        'SalishSea_{:08d}_restart.nc'.format(prev_itend),
+        host['results']['nowcast'],
+        prev_day.strftime('%d%b%y').lower(),
+        'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
-    run_prep_dir = host['run_prep_dirs'][run_type]
+    run_prep_dir = host['run_prep_dirs']['nowcast']
     run_desc = salishsea_cmd.api.run_description(
         NEMO_code=os.path.abspath(os.path.join(run_prep_dir, '../NEMO-code/')),
         forcing=os.path.abspath(
