@@ -398,11 +398,13 @@ def update_checklist(worker, key, worker_checklist):
 def launch_worker(worker, config, cmd_line_args=[], host='localhost'):
     if host == 'localhost':
         cmd = [config['python'], '-m']
+        config_file = config['config_file']
     else:
         cmd = ['ssh', host, 'python', '-m']
+        config_file = '/home/ubuntu/MEOPAR/nowcast/nowcast.yaml'
     cmd.extend([
         'salishsea_tools.nowcast.workers.{}'.format(worker),
-        config['config_file'],
+        config_file,
     ])
     if cmd_line_args:
         cmd.extend(cmd_line_args)
