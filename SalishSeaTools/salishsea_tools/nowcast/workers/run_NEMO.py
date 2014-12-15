@@ -130,7 +130,7 @@ def run_NEMO(host_name, run_type, config):
 
 
 def update_time_namelist(host, run_type, run_day, future_limit_days):
-    namelist = os.path.join(host['run_prep_dirs'][run_type], 'namelist.time')
+    namelist = os.path.join(host['run_prep_dir'], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
     new_lines, restart_timestep = calc_new_namelist_lines(
@@ -181,7 +181,7 @@ def run_description(host, run_type, run_day, run_id, restart_timestep):
         prev_day.strftime('%d%b%y').lower(),
         'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
-    run_prep_dir = host['run_prep_dirs']['nowcast']
+    run_prep_dir = host['run_prep_dir']
     run_desc = salishsea_cmd.api.run_description(
         NEMO_code=os.path.abspath(os.path.join(run_prep_dir, '../NEMO-code/')),
         forcing=os.path.abspath(
