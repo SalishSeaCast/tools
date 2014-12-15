@@ -183,7 +183,7 @@ def test_run_description_init_conditions(run_NEMO_module):
     host = {
         'mpi decomposition': '7x16',
         'results': {'nowcast': '~/MEOPAR/SalishSea/nowcast/'},
-        'run_prep_dirs': {'nowcast': '~/MEOPAR/nowcast/'},
+        'run_prep_dir': '~/MEOPAR/nowcast/',
     }
     run_desc = run_NEMO_module.run_description(
         host, 'nowcast', today, 'run_id', 42)
