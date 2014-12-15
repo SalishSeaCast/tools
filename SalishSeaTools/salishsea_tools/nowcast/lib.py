@@ -177,11 +177,12 @@ def configure_logging(config, logger, debug):
     :type debug: boolean
     """
     logger.setLevel(logging.DEBUG)
+    log_file = os.path.join(
+        config['config_file'], config['logging']['log_file'])
     handler = (
         logging.StreamHandler() if debug
         else logging.handlers.RotatingFileHandler(
-            config['logging']['log_file'],
-            backupCount=config['logging']['backup_count']))
+            log_file, backupCount=config['logging']['backup_count']))
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         config['logging']['message_format'],
