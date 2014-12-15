@@ -124,7 +124,8 @@ def configure_argparser(prog, description, parents):
 def configure_wgrib2_logging(config):
     wgrib2_logger.setLevel(logging.DEBUG)
     log_file = os.path.join(
-        config['config_file'], config['logging']['wgrib2_log_file'])
+        os.path.dirname(config['config_file']),
+        config['logging']['wgrib2_log_file'])
     handler = logging.FileHandler(log_file, mode='w')
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(

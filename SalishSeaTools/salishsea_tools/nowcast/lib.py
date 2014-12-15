@@ -178,7 +178,7 @@ def configure_logging(config, logger, debug):
     """
     logger.setLevel(logging.DEBUG)
     log_file = os.path.join(
-        config['config_file'], config['logging']['log_file'])
+        os.path.dirname(config['config_file']), config['logging']['log_file'])
     handler = (
         logging.StreamHandler() if debug
         else logging.handlers.RotatingFileHandler(
