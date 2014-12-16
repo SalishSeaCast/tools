@@ -424,7 +424,7 @@ def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0, nam
     
     return fig
     
-def get_maxes(ssh,t,res,lon,lat,model_path):
+def get_maxes(ssh, t, res, lon, lat, model_path):
     """ Look up the maximum ssh and other important features such as the timing, residual, and wind speed.
     
     :arg ssh: The ssh field to be maximized
@@ -463,7 +463,7 @@ def get_maxes(ssh,t,res,lon,lat,model_path):
    
     return max_ssh,index_ssh,tmax,max_res,max_wind,ind_w 
     
-def compute_residual(ssh,ttide,t_orig,t_final):
+def compute_residual(ssh, ttide, t_orig, t_final):
     """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
     Both modelled ssh and tidal predictions use eight tidal constituents.
     
@@ -498,7 +498,7 @@ def compute_residual(ssh,ttide,t_orig,t_final):
     
     return res
     
-def plot_thresholds_all(grid_T, gridB, model_path, PST=1,MSL=1,figsize=(20,15.5)):
+def plot_thresholds_all(grid_T, gridB, model_path, PST=1, MSL=1, figsize=(20,15.5)):
   """Figure with the hourly sea surface height at Point Atkinson, Campbell River, and Victoria
   and sections defined by water level thresholds. Also, a map showing the location of the stations,
   colored according to the thresholds in which their water levels lie.
@@ -896,7 +896,7 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
    
   return fig
     
-def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
+def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
     """ Plot the daily averaged salinity field along the thalweg.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -944,7 +944,7 @@ def thalweg_salinity(grid_T_d,figsize=(20,8),cs = [26,27,28,29,30,30.2,30.4,30.6
 
     return fig
 
-def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB,xmin,xmax,ymin,ymax, figsize=(20,12)):
+def plot_surface(grid_T_d, grid_U_d, grid_V_d, gridB, xmin, xmax, ymin, ymax, figsize=(20,12)):
     """Function that plots the daily average surface salinity, temperature and currents.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -1231,7 +1231,7 @@ def compare_VENUS(station, grid_T, gridB, figsize=(6,10)):
 
     return fig
     
-def get_weather_filenames(t_orig,t_final,model_path):
+def get_weather_filenames(t_orig, t_final, model_path):
    """ Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
  
    :arg t_orig: The beginning of the date range of interest
@@ -1265,7 +1265,7 @@ def get_weather_filenames(t_orig,t_final,model_path):
 
    return files
 
-def get_model_winds(lon,lat,t_orig,t_final,model_path):
+def get_model_winds(lon, lat, t_orig, t_final, model_path):
    """ Returns meteorological fields for the "Operational" model at a given longitude and latitude 
    over a date range. 
    
@@ -1318,7 +1318,7 @@ def get_model_winds(lon,lat,t_orig,t_final,model_path):
             
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
-def find_model_point(lon,lat,X,Y):
+def find_model_point(lon, lat, X, Y):
     """ Finds a model grid point close to a specified latitude and longitude.
     
     :arg lon: The longitude we are trying to match
@@ -1378,7 +1378,7 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 
 #Plan for new functions:
 
-def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
+def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     """Plots and returns the tidal predictions at a given station during the year of t_orig. Only for Victoria, Campbell River, Point Atkinson and Patricia Bay. Tidal predictions are stored in a specific location.
     
     :arg ax: The axis where the tides are plotted.
@@ -1410,7 +1410,7 @@ def plot_tides(ax,name,t_orig,PST,MSL,color=predictions_c):
     
     return ttide
     
-def plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,msl):
+def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
 
     :arg ax: The axis where the corrected model is plotted.
