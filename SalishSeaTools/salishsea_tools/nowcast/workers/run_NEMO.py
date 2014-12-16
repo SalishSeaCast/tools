@@ -121,6 +121,7 @@ def run_NEMO(host_name, run_type, config):
         host, run_type, run_day, future_limit_days)
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
+    os.chdir(host['run_prep_dirs'][run_type])
     run_desc = run_description(
         host, run_type, run_day, run_id, restart_timestep)
     results_dir = os.path.join(host['results'][run_type], dmy)
@@ -130,7 +131,7 @@ def run_NEMO(host_name, run_type, config):
 
 
 def update_time_namelist(host, run_type, run_day, future_limit_days):
-    namelist = os.path.join(host['run_prep_dir'], 'namelist.time')
+    namelist = os.path.join(host['run_prep_dirs'][run_type], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
     new_lines, restart_timestep = calc_new_namelist_lines(
@@ -181,22 +182,22 @@ def run_description(host, run_type, run_day, run_id, restart_timestep):
         prev_day.strftime('%d%b%y').lower(),
         'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
-    run_prep_dir = host['run_prep_dir']
+    forcing_home = host['run_prep_dirs']['nowcast']
     run_desc = salishsea_cmd.api.run_description(
-        NEMO_code=os.path.abspath(os.path.join(run_prep_dir, '../NEMO-code/')),
+        NEMO_code=os.path.abspath(os.path.join(forcing_home, '../NEMO-code/')),
         forcing=os.path.abspath(
-            os.path.join(run_prep_dir, '../NEMO-forcing/')),
-        runs_dir=os.path.abspath(os.path.join(run_prep_dir, '../SalishSea/')),
+            os.path.join(forcing_home, '../NEMO-forcing/')),
+        runs_dir=os.path.abspath(os.path.join(forcing_home, '../SalishSea/')),
         init_conditions=os.path.abspath(init_conditions),
     )
     run_desc['run_id'] = run_id
     # Paths to run-specific forcing directories
     run_desc['forcing']['atmospheric'] = os.path.abspath(
-        os.path.join(run_prep_dir, 'NEMO-atmos'))
+        os.path.join(forcing_home, 'NEMO-atmos'))
     run_desc['forcing']['open boundaries'] = os.path.abspath(
-        os.path.join(run_prep_dir, 'open_boundaries'))
+        os.path.join(forcing_home, 'open_boundaries'))
     run_desc['forcing']['rivers'] = os.path.abspath(
-        os.path.join(run_prep_dir, 'rivers'))
+        os.path.join(forcing_home, 'rivers'))
     # Paths to namelist section files
     run_desc['namelists'] = [
         os.path.abspath('namelist.time'),
