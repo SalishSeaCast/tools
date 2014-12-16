@@ -43,8 +43,8 @@ run:
   # Remove or comment out the next line to prevent running in the cloud
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
-    nodes: 18
-    mpi decomposition: 8x18
+    nodes: 29
+    mpi decomposition: 10x230
     images:
       head node: nowcast-head-node-v3
       compute node: nowcast-compute-node-v3
@@ -70,7 +70,9 @@ run:
     # Location of NEMO on-the-fly interpolation weights file
     # for GEM 2.5km operational forecast
     weights: /home/ubuntu/MEOPAR/NEMO-forcing/grid/weights-gem2.5-ops.nc
-    run_prep_dir: /home/ubuntu/MEOPAR/nowcast/
+    run_prep_dirs:
+      nowcast: /home/ubuntu/MEOPAR/nowcast/
+      forecast: /home/ubuntu/MEOPAR/forecast/
     results:
       nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
       forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
