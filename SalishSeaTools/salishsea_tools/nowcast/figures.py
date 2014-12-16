@@ -60,6 +60,16 @@ axis_font = {'fontname':'Arial', 'size':'13'}
 #Average mean sea level calculated over 1983-2001. To be used to centre model output about mean sea level
 MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+def station_coords():
+  """ Returns the coordinates for key stations"""
+  lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,'Victoria': 48.41, 
+          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
+          'Sandheads': 49.10}
+  lons = {'Campbell River':-125.24, 'Point Atkinson': -123.25, 'Victoria': -123.36, 
+          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
+          'Sandheads': -123.30}
+  return lats, lons
+
 
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
@@ -216,9 +226,8 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     :returns: Matplotlib figure object instance
     """
 
-    stations = {'CherryPoint': 9449424,'NeahBay':9443090, 'FridayHarbor': 9449880 }
-    lats={'CherryPoint': 48.866667,'NeahBay': 48.4, 'FridayHarbor': 48.55}
-    lons={'CherryPoint': -122.766667, 'NeahBay':-124.6, 'FridayHarbor': -123.016667}
+    [lats, lons] = station_coords()
+    stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
 
     bathy, X, Y = tidetools.get_bathy_data(gridB)
 
@@ -228,7 +237,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
     timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     m = np.arange(3)
-    names = ['NeahBay', 'FridayHarbor', 'CherryPoint']
+    names = ['Neah Bay', 'Friday Harbor', 'Cherry Point']
 
     fig = plt.figure(figsize=figsize)
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
@@ -321,9 +330,7 @@ def compare_tidalpredictions_maxSSH(grid_T, gridB, model_path, PST=1, MSL=0, nam
     :returns: Matplotlib figure object instance
     """
 
-    #defining stations
-    lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41}
-    lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36}
+    [lats, lons] = station_coords()
     
     bathy, X, Y = tidetools.get_bathy_data(gridB)
     [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
@@ -540,9 +547,7 @@ def plot_thresholds_all(grid_T, gridB, model_path, PST=1, MSL=1, figsize=(20,15.
   ax0.set_ylabel('latitude',**axis_font)
   ax0.grid()
  
-  #defining stations
-  lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41}
-  lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36}
+  [lats, lons] = station_coords()
   
   bathy, X, Y = tidetools.get_bathy_data(gridB)
      
@@ -727,12 +732,7 @@ def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10
   
     """
         
-    lats={'Campbell River': 50.04, 'Point Atkinson': 49.33,'Victoria': 48.41, 
-          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-          'Sandheads': 49.10}
-    lons={'Campbell River':-125.24, 'Point Atkinson': -123.25, 'Victoria': -123.36, 
-          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
-          'Sandheads': -123.30}
+    [lats, lons] = station_coords()
     
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.grid()  
@@ -821,13 +821,8 @@ def winds_at_max_ssh(grid_T, gridB, model_path, station, figsize=(15,10)):
   :type figsize: 2-tuple
   
   """
-  
-  lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
-          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-          'Sandheads': 49.10}
-  lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
-          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
-          'Sandheads': -123.30}
+          
+  [lats, lons] = station_coords()
           
   fig, ax = plt.subplots(1, 1, figsize=figsize)
   ax.grid()  
