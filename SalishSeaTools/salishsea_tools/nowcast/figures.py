@@ -63,14 +63,14 @@ MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 
 
 def stations_info():
   """ Returns station numbers, latitudes, and longitudes for key stations used throughout module""" 
-    stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
-    lats = {'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
+  stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
+  lats = {'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
           'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
           'Sandheads': 49.10}
-    lons = {'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
+  lons = {'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
           'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
           'Sandheads': -123.30}
-    return stations, lats, lons
+  return stations, lats, lons
 
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
