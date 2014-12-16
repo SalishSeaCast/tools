@@ -71,7 +71,6 @@ def station_coords():
           'Sandheads': -123.30}
   return lats, lons
 
-
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     Assumes that a tidal prediction file exists in a specific directory.
@@ -1315,35 +1314,34 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
 def find_model_point(lon, lat, X, Y):
-def find_model_point(lon, lat, X, Y):
-    """ Finds a model grid point close to a specified latitude and longitude.
+  """ Finds a model grid point close to a specified latitude and longitude.
     
-    :arg lon: The longitude we are trying to match
-    :type lon: float
+  :arg lon: The longitude we are trying to match
+  :type lon: float
     
-    :arg lat: The latitude we are trying to match
-    :type lat: float
+  :arg lat: The latitude we are trying to match
+  :type lat: float
     
-    :arg X: The model longitude grid
-    :type X: numpy array
+  :arg X: The model longitude grid
+  :type X: numpy array
     
-    :arg Y: The model latitude grid
-    :type Y: numpy array
+  :arg Y: The model latitude grid
+  :type Y: numpy array
     
-    :returns: The y-index, x-index of the closest model grid point 
-    """  
-    # Tolerance for searching for grid points
-    # (approx. distances between adjacent grid points)
-    tol1 = 0.015 # lon
-    tol2 = 0.015# lat
+  :returns: The y-index, x-index of the closest model grid point 
+  """  
+  # Tolerance for searching for grid points
+  # (approx. distances between adjacent grid points)
+  tol1 = 0.015 # lon
+  tol2 = 0.015# lat
 
-    # Search for a grid point with lon/lat within tolerance of
-    # measured location
-    x1, y1 = np.where(
-        np.logical_and(
-            (np.logical_and(X > lon-tol1, X < lon+tol1)),
-            (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
-    return x1[0], y1[0]
+  # Search for a grid point with lon/lat within tolerance of
+  # measured location
+  x1, y1 = np.where(
+      np.logical_and(
+          (np.logical_and(X > lon-tol1, X < lon+tol1)),
+          (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
+  return x1[0], y1[0]
 
 def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
     """Return a figure containing a plot of hourly sea surface height at
@@ -1376,7 +1374,6 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 #Plan for new functions:
 
 def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
-def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     """Plots and returns the tidal predictions at a given station during the year of t_orig. Only for Victoria, Campbell River, Point Atkinson and Patricia Bay. Tidal predictions are stored in a specific location.
     
     :arg ax: The axis where the tides are plotted.
@@ -1408,7 +1405,6 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     
     return ttide
     
-def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
 
