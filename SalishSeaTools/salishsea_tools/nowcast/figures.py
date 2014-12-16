@@ -57,7 +57,8 @@ hfmt = mdates.DateFormatter('%m/%d %H:%M')
 title_font = {'fontname':'Arial', 'size':'15', 'color':'black', 'weight':'medium'}
 axis_font = {'fontname':'Arial', 'size':'13'}
 
-#Average mean sea level calculated over 1983-2001. To be used to centre model output about mean sea level
+#Average mean sea level calculated over 1983-2001. 
+#To be used to centre model output about mean sea level
 MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
 def station_coords():
@@ -225,7 +226,7 @@ def compare_water_levels(grid_T, gridB, PST=1, figsize=(20,15) ):
 
     :returns: Matplotlib figure object instance
     """
-
+   
     [lats, lons] = station_coords()
     stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
 
@@ -1314,6 +1315,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
    return wind, direc, t, pr, tem, sol, the, qr, pre
   
 def find_model_point(lon, lat, X, Y):
+def find_model_point(lon, lat, X, Y):
     """ Finds a model grid point close to a specified latitude and longitude.
     
     :arg lon: The longitude we are trying to match
@@ -1374,6 +1376,7 @@ def ssh_PtAtkinson(grid_T, gridB=None, figsize=(20, 5)):
 #Plan for new functions:
 
 def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
+def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     """Plots and returns the tidal predictions at a given station during the year of t_orig. Only for Victoria, Campbell River, Point Atkinson and Patricia Bay. Tidal predictions are stored in a specific location.
     
     :arg ax: The axis where the tides are plotted.
@@ -1405,6 +1408,7 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     
     return ttide
     
+def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model. Model is corrected for the tidal constituents that aren't included in the model forcing.
 
