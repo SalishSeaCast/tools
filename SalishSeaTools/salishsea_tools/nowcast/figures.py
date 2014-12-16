@@ -49,14 +49,15 @@ observations_c = 'DarkGreen'
 predictions_c = 'MediumVioletRed'
 stations_c = cm.summer(np.linspace(0, 1, 7))
 
-time_shift = datetime.timedelta(hours=-8) #time shift for plotting in PST
+#Time shift for plotting in PST
+time_shift = datetime.timedelta(hours=-8) 
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 #Font format
 title_font = {'fontname':'Arial', 'size':'15', 'color':'black', 'weight':'medium'}
 axis_font = {'fontname':'Arial', 'size':'13'}
 
-#average mean sea level calculated over 1983-2001. To be used to centre model output about mean sea level
+#Average mean sea level calculated over 1983-2001. To be used to centre model output about mean sea level
 MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
 
@@ -702,79 +703,6 @@ def Sandheads_winds(grid_T, gridB, model_path,PST=1,figsize=(20,12)):
         transform=ax0.transAxes)
 
 
-    return fig
-
-def winds_at_station(station, gridB, gridW, figsize=(15,10)):
-    """ Figure that plots winds at individual or all stations.
-
-      :arg station: Either the name of one of the seven defined stations or 'all' for all stations
-      :type station: string
-    
-      :arg gridB: Bathymetry dataset for the Salish Sea NEMO model.
-      :type gridB: :class:`netCDF4.Dataset`
-    
-      :arg gridW: Winds dataset for the Salish Sea NEMO model.
-      :type gridW: :class:`netCDF4.Dataset`
-    
-      :arg figsize:  Figure size (width, height) in inches
-      :type figsize: 2-tuple
-
-      :returns: Matplotlib figure object instance
-  
-    """
-        
-    lats={'Point Atkinson': 49.33,'Campbell River': 50.04, 'Victoria': 48.41, 
-          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-          'Sandheads': 49.10}
-    lons={'Point Atkinson': -123.25, 'Campbell River':-125.24, 'Victoria': -123.36, 
-          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
-          'Sandheads': -123.30}
-    
-    lat_wind=gridW.variables['nav_lat']
-    lon_wind=gridW.variables['nav_lon'][:]-360
-    uwind=gridW.variables['u_wind']
-    vwind=gridW.variables['v_wind']
-    uaverage = np.mean(uwind, axis=0)
-    vaverage = np.mean(vwind, axis=0)
-  
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
-    ax.grid()  
-    viz_tools.set_aspect(ax)
-    viz_tools.plot_land_mask(ax, gridB,color='burlywood',coords='map')
-    viz_tools.plot_coastline(ax,gridB,coords='map')  
-    ax.set_xlabel('longitude',**axis_font)
-    ax.set_ylabel('latitude',**axis_font)
-    scale = 0.1
-        
-    def plot(name, uwind, vwind, scale):
-        x,y = find_model_point(lons[name], lats[name],  lon_wind[:],lat_wind[:])
-        speeds = np.sqrt(np.square(uaverage[x,y]) + np.square(vaverage[x,y]))
-        ax.plot(lons[name], lats[name], marker='D', color='MediumOrchid',
-                markersize=10, markeredgewidth=2)
-        # use arrow rather than quiver as we are plotting one at a time
-        ax.arrow(lon_wind[x,y], lat_wind[x,y], 
-                 scale*uaverage[x,y], scale*vaverage[x,y], 
-                 head_width=0.05, head_length=0.1, width=0.02, 
-                 color='b',fc='b', ec='b',)
-        return ax
-
-    ax.arrow(-123, 50., 5.*scale, 0.*scale,
-              head_width=0.05, head_length=0.1, width=0.02, 
-              color='b',fc='b', ec='b')
-    ax.text(-123, 50.1, "5 m/s")
-    if station == 'all':
-        names=['Point Atkinson','Campbell River','Victoria','Cherry Point','Neah Bay','Friday Harbor','Sandheads']
-        m = np.arange(len(names))
-        for name, M in zip (names, m):
-            plot(name, uwind, vwind, scale)
-            ax.set_title('Daily average winds at all stations',**title_font)
-        
-    
-    if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
-        name = station
-        plot(name, uwind, vwind, scale)
-        ax.set_title('Daily average winds at ' + name,**title_font)
-        
     return fig
 
 def average_winds_at_station(grid_T, gridB, model_path, station,  figsize=(15,10)):
