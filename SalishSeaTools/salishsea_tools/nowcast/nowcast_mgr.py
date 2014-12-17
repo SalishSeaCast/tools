@@ -323,7 +323,8 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         'failure': None,
         'crash': None,
     }
-    if 'cloud host' in config['run']:
+    if ('cloud host' in config['run']
+            and config['run']['cloud host'] in payload):
         actions['success'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
