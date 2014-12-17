@@ -86,7 +86,7 @@ def set_ssh_config(host_name, config, socket):
     ssh_client, sftp_client = lib.sftp(
         host_name, host['ssh key name']['nowcast'])
     with sftp_client.open('.ssh/config', 'wt') as f:
-        for name, ip in nodes.items():
+        for name, ip in sorted(nodes.items()):
             f.write(tmpl.format(node_name=name, ip_addr=ip))
             logger.debug(
                 'node {} at {} added to {} .ssh/config'

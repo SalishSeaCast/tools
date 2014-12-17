@@ -83,7 +83,7 @@ def mount_sshfs(host_name, config, socket):
     ssh_client.exec_command(mount_cmd)
     logger.debug('"{}" executed on nowcast0'.format(mount_cmd))
     nodes.pop('nowcast0')
-    for node_name in nodes:
+    for node_name in sorted(nodes):
         cmd = (
             'ssh {node_name} {mount_cmd}'
             .format(node_name=node_name, mount_cmd=mount_cmd))
