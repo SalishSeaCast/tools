@@ -80,7 +80,7 @@ def set_mpi_hosts(host_name, config, socket):
     ssh_client, sftp_client = lib.sftp(
         host_name, host['ssh key name']['nowcast'])
     with sftp_client.open('mpi_hosts', 'wt') as f:
-        for name, ip in nodes.items():
+        for name, ip in sorted(nodes.items()):
             f.write('{ip_addr} slots=8 max-slots=8\n'.format(ip_addr=ip))
             logger.debug(
                 'node {} at {} added to {} mpi_hosts'
