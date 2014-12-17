@@ -604,8 +604,11 @@ def test_make_forcing_links_success_no_cloud_next_steps(nowcast_mgr_module):
 
 
 def test_make_forcing_links_success_cloud_host_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = {'run': {'cloud host': 'west.cloud'}}
+    payload = {'west.cloud': True}
+    config = {
+        'run': {
+            'cloud host': 'west.cloud'
+        }}
     next_steps = nowcast_mgr_module.after_make_forcing_links(
         'make_forcing_links', 'success', payload, config)
     expected = [
@@ -635,12 +638,14 @@ def test_run_NEMO_success_next_steps(msg_type, nowcast_mgr_module):
 
 def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {'cloud host': 'west.cloud'}}
     next_steps = nowcast_mgr_module.after_download_results(
         'download_results', 'success nowcast', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['run_NEMO', config, ['forecast'], 'west.cloud']),
         (nowcast_mgr_module.launch_worker,
          ['make_out_plots', config, ['nowcast']]),
     ]
@@ -649,7 +654,7 @@ def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
 
 def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
-    config = Mock(name='config')
+    config = {'run': {'cloud host': 'west.cloud'}}
     next_steps = nowcast_mgr_module.after_download_results(
         'download_results', 'success forecast', payload, config)
     expected = [
