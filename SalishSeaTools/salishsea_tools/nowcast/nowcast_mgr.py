@@ -363,6 +363,11 @@ def after_download_results(worker, msg_type, payload, config):
         'failure forecast': None,
         'crash': None,
     }
+    if 'cloud host' in config['run']:
+        actions['success nowcast'].insert(
+            1,
+            (launch_worker,
+             ['run_NEMO', config, ['forecast'], config['run']['cloud host']]))
     return actions[msg_type]
 
 
