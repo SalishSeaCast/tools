@@ -91,8 +91,8 @@ def main():
 
 
 def getNBssh(config, checklist):
-    """Script for generate sea surface height forcing files from the
-    Neah Bay storm surge website.
+    """Generate sea surface height forcing files from the Neah Bay
+    storm surge website.
     """
     fB = nc.Dataset(config['bathymetry'])
     lats = fB.variables['nav_lat'][:]
@@ -107,24 +107,24 @@ def getNBssh(config, checklist):
     data = load_surge_data(textfile)
     # Process the dates to find days with a full prediction
     dates = np.array(data.date.values)
-    #Check if today is Jan or Dec
-    isDec=False; isJan=False
-    if utc_now.month==1:
-      isJan=True;
-    if utc_now.month==12:
-      isDec=True;
+    # Check if today is Jan or Dec
+    isDec, isJan = False, False
+    if utc_now.month == 1:
+        isJan = True
+    if utc_now.month == 12:
+        isDec = True
     for i in range(dates.shape[0]):
-        dates[i] = to_datetime(dates[i], utc_now.year,isDec,isJan)
+        dates[i] = to_datetime(dates[i], utc_now.year, isDec, isJan)
     dates_list = list_full_days(dates)
-    #set up plotting
+    # Set up plotting
     fig, ax, ip = setup_plotting()
     # Loop through full days and save netcdf
     for d in dates_list:
         surges, tc, forecast_flag = retrieve_surge(d, dates, data)
-        #plotting
+        # Plotting
         if ip < 3:
-          ax.plot(surges, '-o', lw=2, label=d.strftime('%d-%b-%Y'))
-        ip = ip + 1;
+            ax.plot(surges, '-o', lw=2, label=d.strftime('%d-%b-%Y'))
+        ip = ip + 1
         filepath = save_netcdf(
             d, tc, surges, forecast_flag, textfile,
             config['ssh']['ssh_dir'], lats, lons)
@@ -140,10 +140,11 @@ def getNBssh(config, checklist):
         checklist.update(item)
     ax.legend(loc=4)
     fig.savefig('NBssh.png')
-    lib.fix_perms('NBssh.png', grp_name=config['file group']) 
+    lib.fix_perms('NBssh.png', grp_name=config['file group'])
+
 
 def read_website(save_path):
-    """Reads a website with Neah Bay storm surge predictions/observations.
+    """Read a website with Neah Bay storm surge predictions/observations.
 
     The data is stored in a file in save_path.
 
@@ -188,7 +189,7 @@ def load_surge_data(filename):
 def save_netcdf(
     day, tc, surges, forecast_flag, textfile, save_path, lats, lons,
 ):
-    """Saves the surge for a given day in a netCDF4 file.
+    """Save the surge for a given day in a netCDF4 file.
     """
     # Western open boundary (JdF) grid parameter values for NEMO
     startj, endj, r = 384, 471, 1
@@ -289,9 +290,9 @@ def save_netcdf(
 
 
 def retrieve_surge(day, dates, data):
-    """Gathers the surge information for a single day.
+    """Gather the surge information for a single day.
 
-    Returns the surges in metres, an array with time_counter,
+    Return the surges in metres, an array with time_counter,
     and a flag indicating if this day was a forecast.
     """
     # Initialize forecast flag and surge array
@@ -323,54 +324,61 @@ def retrieve_surge(day, dates, data):
 
 
 def isolate_day(day, dates):
-    """returns array of time_counter and datetime objects over a 24 hour period covering one full day"""
-    tc=np.arange(24)
-    dates_return=[];
+    """Return array of time_counter and datetime objects over a 24 hour
+    period covering one full day.
+    """
+    tc = np.arange(24)
+    dates_return = []
     for t in dates:
-        if t.month==day.month:
-            if t.day==day.day:
-                dates_return.append(t);
+        if t.month == day.month:
+            if t.day == day.day:
+                dates_return.append(t)
     return tc, np.array(dates_return)
 
 
 def list_full_days(dates):
-    """returns a list of days that have a full 24 hour data set."""
-
-    #check if first day is a full day
-    tc,ds= isolate_day(dates[0],dates)
+    """Return a list of days that have a full 24 hour data set.
+    """
+    # Check if first day is a full day
+    tc, ds = isolate_day(dates[0], dates)
     if ds.shape[0] == tc.shape[0]:
         start = dates[0]
     else:
-        start = dates[0] +datetime.timedelta(days=1)
-    start=datetime.datetime(start.year,start.month, start.day,tzinfo=pytz.timezone('UTC'))
-
-    #check if last day is a full day
-    tc,ds = isolate_day(dates[-1],dates)
+        start = dates[0] + datetime.timedelta(days=1)
+    start = datetime.datetime(
+        start.year, start.month, start.day, tzinfo=pytz.timezone('UTC'))
+    # Check if last day is a full day
+    tc, ds = isolate_day(dates[-1], dates)
     if ds.shape[0] == tc.shape[0]:
         end = dates[-1]
     else:
-        end = dates[-1] -datetime.timedelta(days=1)
-    end=datetime.datetime(end.year,end.month, end.day,tzinfo=pytz.timezone('UTC'))
-
-    #list of dates that are full
-    dates_list = [start +datetime.timedelta(days=i) for i in range((end-start).days+1)]
+        end = dates[-1] - datetime.timedelta(days=1)
+    end = datetime.datetime(
+        end.year, end.month, end.day, tzinfo=pytz.timezone('UTC'))
+    # list of dates that are full
+    dates_list = [
+        start + datetime.timedelta(days=i) for i in range((end-start).days+1)]
     return dates_list
 
 
-def to_datetime(datestr,year,isDec,isJan):
-    """ converts the string given by datestr to a datetime object.
-    The year is an argument because the datestr in the NOAA data doesn't have a year.
+def to_datetime(datestr, year, isDec, isJan):
+    """Convert the string given by datestr to a datetime object.
+
+    The year is an argument because the datestr in the NOAA data doesn't
+    have a year.
     Times are in UTC/GMT.
-    returns a datetime representation of datestr"""
-    dt = datetime.datetime.strptime(datestr,'%m/%d %HZ')
-    #dealing with year changes.
-    if isDec and dt.month ==1:
-          dt =dt.replace(year=year+1)
-    elif isJan and dt.month==12:
-          dt =dt.replace(year=year-1)
+
+    Return a datetime representation of datestr.
+    """
+    dt = datetime.datetime.strptime(datestr, '%m/%d %HZ')
+    # Dealing with year changes.
+    if isDec and dt.month == 1:
+        dt = dt.replace(year=year+1)
+    elif isJan and dt.month == 12:
+        dt = dt.replace(year=year-1)
     else:
-       dt=dt.replace(year=year)
-    dt=dt.replace(tzinfo=pytz.timezone('UTC'))
+        dt = dt.replace(year=year)
+    dt = dt.replace(tzinfo=pytz.timezone('UTC'))
     return dt
 
 
@@ -378,10 +386,11 @@ def feet_to_metres(feet):
     metres = feet*0.3048
     return metres
 
+
 def setup_plotting():
-    fig, ax = plt.subplots(1, 1, figsize=(10,4))
+    fig, ax = plt.subplots(1, 1, figsize=(10, 4))
     ax.set_title('Neah Bay SSH')
-    ax.set_ylim([-1,1])
+    ax.set_ylim([-1, 1])
     ax.grid()
     ax.set_ylabel('Sea surface height (m)')
     ip = 0
