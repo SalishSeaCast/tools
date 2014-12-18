@@ -1279,7 +1279,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
 
     return fig
 
-def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, xmin, xmax, ymin, ymax, figsize=(20,12)):
+def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     """Function that plots the daily average surface salinity, temperature and currents.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -1293,12 +1293,30 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, xmin, xmax, ymin, ymax, f
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
+    
+    :arg limits: Figure limits [xmin,xmax,ymin,ymax] or 'default' for entire region.
+    :type limits: 2-tuple
 
-    :arg figsize: figure size (width, height) in inches.
+    :arg figsize: Figure size (width, height) in inches or 'default'.
     :type figsize: 2-tuple
 
     """
-
+    
+    if figsize == 'default':
+      figsize = (20,12)
+    else:
+      figsize = figsize
+    
+    if limits == 'default':
+      limits = [0,398,0,898]
+    else:
+      limits = limits
+    
+    xmin = limits[0]
+    xmax = limits[1]
+    ymin = limits [2]
+    ymax = limits[3]
+   
     #loading lon, lat, depth, salinity, temperature
     lon_d = grid_T_d.variables['nav_lon']
     lat_d = grid_T_d.variables['nav_lat']
