@@ -113,7 +113,10 @@ def configure_argparser(prog, description, parents):
 def make_out_plots(run_date, run_type, config, socket):
 
     # set-up, read from config file
-    results_home = config['run']['results archive'][run_type]
+    if run_type == 'forecast1':
+        results_home = config['run']['results archive']['forecast']
+    else:
+        results_home = config['run']['results archive'][run_type]
     results_dir = os.path.join(
         results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
