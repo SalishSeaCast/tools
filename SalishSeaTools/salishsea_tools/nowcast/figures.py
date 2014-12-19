@@ -110,7 +110,7 @@ def find_model_point(lon, lat, X, Y):
   return x1[0], y1[0]   
 
 def interpolate_depth(data, depth_array, depth_new):
-  """Interpolates data field to a desired depth.
+  """ Interpolates data field to a desired depth.
   
   :arg data: The data to be interpolated. Should be one-dimensional over the z-axis.
   :type data: 1-d numpy array
@@ -155,14 +155,14 @@ def get_model_time_variables(grid_T):
     return t_orig,t_final,t  
   
 def dateparse(s):
-    """Parse the dates from the VENUS files."""
+    """ Parse the dates from the VENUS files."""
     
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware      
     
 def dateparse_NOAA(s):
-    """Parse the dates from the NOAA files."""
+    """ Parse the dates from the NOAA files."""
     
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
     aware = unaware.replace(tzinfo=tz.tzutc())
@@ -177,7 +177,7 @@ def dateparse_PAObs(s1,s2,s3,s4):
   return  aware  
  
 def load_PA_observations():
-  """Loads the recent water level observations at Point Atkinson. 
+  """ Loads the recent water level observations at Point Atkinson. 
   
   Times are in UTC and water level is in metres with respect to Chart Datum.
   
@@ -192,7 +192,7 @@ def load_PA_observations():
   return obs   
  
 def get_NOAA_wlevels(station_no, start_date, end_date):
-    """Retrieves recent NOAA water levels from a station in a given date range.
+    """ Retrieves recent NOAA water levels from a station in a given date range.
     
     NOAA water levels are at 6 minute intervals and are relative to mean sea level.
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
@@ -232,7 +232,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     return obs
 
 def get_NOAA_tides(station_no, start_date, end_date):
-    """Retrieves NOAA predicted tides from a station in a given date range.
+    """ Retrieves NOAA predicted tides from a station in a given date range.
     
     NOAA predicted tides are at 6-minute intervals and are relative to mean sea level.
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
@@ -273,7 +273,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
     return tides
  
 def get_maxes(ssh, t, res, lon, lat, model_path):
-    """Identifies maximum ssh and other important features such as the timing, residual, and wind speed.
+    """ Identifies maximum ssh and other important features such as the timing, residual, and wind speed.
     
     :arg ssh: The ssh field to be maximized.
     :type ssh: numpy array
@@ -314,7 +314,7 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     return max_ssh, index_ssh, tmax, max_res, max_wind, ind_w 
 
 def compute_residual(ssh, ttide, t_orig, t_final):
-    """Compute the difference between modelled ssh and tidal predictions for a range of dates.
+    """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
     
     Both modelled ssh and tidal predictions use eight tidal constituents.
     
@@ -350,7 +350,7 @@ def compute_residual(ssh, ttide, t_orig, t_final):
     return res    
 
 def load_VENUS(station):
-    """Loads the most recent State of the Ocean data from the VENUS node indicated by station.
+    """ Loads the most recent State of the Ocean data from the VENUS node indicated by station.
     
     This data set includes pressure, temperature, and salinity among other things.
     See: http://venus.uvic.ca/research/state-of-the-ocean/
@@ -390,7 +390,7 @@ def load_VENUS(station):
     return data, lon, lat, depth    
 
 def get_weather_filenames(t_orig, t_final, model_path):
-   """Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
+   """ Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
  
    :arg t_orig: The beginning of the date range of interest.
    :type t_orig: datetime object
@@ -425,7 +425,7 @@ def get_weather_filenames(t_orig, t_final, model_path):
    return files
 
 def get_model_winds(lon, lat, t_orig, t_final, model_path):
-   """Returns meteorological fields for the "Operational" model 
+   """ Returns meteorological fields for the "Operational" model 
    at a given longitude and latitude over a date range. 
    
    :arg lon: The specified longitude.
@@ -480,7 +480,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
    return wind, direc, t, pr, tem, sol, the, qr, pre
        
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
-    """Plots and returns corrected model. 
+    """ Plots and returns corrected model. 
     
     The model is corrected for the tidal constituents that are not included in the model forcing.
 
@@ -524,7 +524,7 @@ def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     return ssh_corr
 
 def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
-    """Plots and returns the tidal predictions at a given station during the year of t_orig. 
+    """ Plots and returns the tidal predictions at a given station during the year of t_orig. 
     
     This function is only for Victoria, Campbell River, Point Atkinson and Patricia Bay. 
     Tidal predictions are stored in a specific location.
@@ -573,7 +573,7 @@ def plot_PA_observations(ax,PST):
   ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')    
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
-    """Plots a time series of the VENUS data over a date range.
+    """ Plots a time series of the VENUS data over a date range.
 
     :arg ax_sal: The axis in which the salinity is displayed.
     :type ax_sal: axis object
@@ -602,7 +602,7 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     return lon, lat, depth      
   
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
-    """Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
+    """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
     
     This function assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
@@ -655,9 +655,11 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     return fig
 
 def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
-    """Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
+    """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
     
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
+    
+    This function applies to stations at Cherry Point, Neah Bay, and Friday Harbor.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -744,7 +746,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     return fig
 
 def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, name='Point Atkinson', figsize=(20,12)):
-    """Plots a map for sea surface height when it was at its maximum at Point Atkinson 
+    """ Plots a map for sea surface height when it was at its maximum at Point Atkinson 
     and compares modelled water levels to tidal predications over one day.
     
     It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
@@ -995,7 +997,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   return fig
 
 def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
-    """Plots the observed and modelled winds at Sandheads during the simulation.
+    """ Plots the observed and modelled winds at Sandheads during the simulation.
     
     Observations are from Environment Canada data: http://climate.weather.gc.ca/
     Modelled winds are the HRDPS nested model from Environment Canada.
@@ -1087,7 +1089,9 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     return fig
 
 def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,10)):
-    """Plots winds averaged over simulation time at individual or all stations.
+    """ Plots winds averaged over simulation time at individual or all stations.
+    
+    This function applies to stations at Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, and Friday Harbor.
     
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -1177,9 +1181,10 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     return fig
 
 def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
-  """Plots winds at individual stations 4 hours before the maxmimum sea surface height at Point Atkinson. 
+  """ Plots winds at individual stations 4 hours before the maxmimum sea surface height at Point Atkinson. 
   
   If that data is not available then the plot is generated at the start of the simulation. 
+  This function applies to stations at Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, and Friday Harbor.
   
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
@@ -1269,7 +1274,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   return fig
     
 def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
-    """Plots the daily average salinity field along the thalweg.
+    """ Plots the daily average salinity field along the thalweg.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
     :type grid_T_d: :class:`netCDF4.Dataset`
@@ -1317,7 +1322,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     return fig
 
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
-    """Plots the daily average surface salinity, temperature, and currents.
+    """ Plots the daily average surface salinity, temperature, and currents.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
     :type grid_T_d: :class:`netCDF4.Dataset`
@@ -1465,7 +1470,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     return fig
 
 def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
-    """Compares the model's temperature and salinity with observations from VENUS station.
+    """ Compares the model's temperature and salinity with observations from VENUS station.
 
     :arg station: Name of the station ('East' or 'Central')
     :type station: string
@@ -1523,7 +1528,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     return fig
     
 def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
-    """Plots hourly sea surface height at Point Atkinson.
+    """ Plots hourly sea surface height at Point Atkinson.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
