@@ -715,7 +715,8 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
    # Stations information
     [lats, lons] = station_coords()
     stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
-
+    
+    # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
     
     # Time range
@@ -837,8 +838,10 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     t_orig,t_final,t=get_model_time_variables(grid_T)
     tzone=PST*'[PST]' + abs((PST-1))*'[UTC]'
     
-    # Get sea surface height
+    # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
+    
+    # Get sea surface height
     [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
     ssh = grid_T.variables['sossheig']
     ssh_loc = ssh[:,j,i]
@@ -987,6 +990,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
  # Stations information
   [lats, lons] = station_coords()
   
+  # Bathymetry
   bathy, X, Y = tidetools.get_bathy_data(grid_B)
      
   m = np.arange(3)
@@ -1307,8 +1311,10 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   # Time range
   [t_orig,t_final,t] = get_model_time_variables(grid_T)
   
-  # Get sea surface height  
+  # Bathymetry
   bathy, X, Y = tidetools.get_bathy_data(grid_B)
+  
+  # Get sea surface height  
   reference_name = 'Point Atkinson'
   [j,i]=tidetools.find_closest_model_point(lons[reference_name],lats[reference_name],X,Y,bathy,allow_land=False)
   ssh = grid_T.variables['sossheig'][:,j,i]
@@ -1393,7 +1399,8 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
 
     :returns: matplotlib figure object instance (fig).
     """
-
+    
+    # Tracer data
     lon_d = grid_T_d.variables['nav_lon']
     lat_d = grid_T_d.variables['nav_lat']
     dep_d = grid_T_d.variables['deptht']
@@ -1414,7 +1421,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     salP=sal_d[0,:,lines[:,0],lines[:,1]]
     salP= np.ma.masked_values(salP,0)
     
-    # Plot
+    # Figure
     fig,ax=plt.subplots(1,1,figsize=figsize)
     land_colour = 'burlywood'
     ax.set_axis_bgcolor(land_colour)
@@ -1469,76 +1476,66 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     xmax = limits[1]
     ymin = limits [2]
     ymax = limits[3]
-   
+    
+    # Tracer data   
     lon_d = grid_T_d.variables['nav_lon']
     lat_d = grid_T_d.variables['nav_lat']
     dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline']
     tem_d = grid_T_d.variables['votemper']
-
+    
+    # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
-    #tracers ready to plot
+    # Preparing salinity and temperature
     t, z = 0, 0
     sal_d = np.ma.masked_values(sal_d[t, z], 0)
     tem_d = np.ma.masked_values(tem_d[t, z], 0)
 
-
-    #for loop
     tracers = [sal_d, tem_d]
     titles = ['Average Salinity: ','Average Temperature: ']
     cmaps = ['gist_ncar_r','jet']
     units = ['[psu]','[degC]']
-
+    
+    # Figure
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
     axs = [ax1, ax2]
-    plots = np.arange(1,3,1)
-
-    #***temperature and salinity plots
+    plots = np.arange(1,3,1)  
 
     for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
-        #general set up
-        #viz_tools.set_aspect(ax)
+        # Map
         land_colour = 'burlywood'
         ax.set_axis_bgcolor(land_colour)
         cmap = plt.get_cmap(cmap)
 
-        #colourmap breakdown
+        # Colormaps
         if plot == 1:
             cs = [0,4,8,12,16,20,24,28,32,36]
         if plot == 2:
             cs = [0,2,4,6,8,10,12,14,16,18,20]
 
-        #plotting tracers
-        #mesh=ax.contourf(tracer,cs,cmap=cmap,extend='both')
+        # Plot salinity and temperature
         mesh=ax.pcolormesh(tracer,cmap=cmap,vmin=0,vmax=cs[-1])
 
-        #colour bars
+        # Axis
         cbar = fig.colorbar(mesh,ax=ax)
         cbar.set_ticks(cs)
-
-        #labels
         ax.grid()
         ax.set_xlabel('x Index',**axis_font)
         ax.set_ylabel('y Index',**axis_font)
+        ax.set_xlim(xmin,xmax)
+        ax.set_ylim(ymin,ymax)
         timestamp = nc_tools.timestamp(grid_T_d,0)
         ax.set_title(title + timestamp.format('DD-MMM-YYYY'),**title_font)
         cbar.set_label(unit,**axis_font)
-        
-        #limits
-        ax.set_xlim(xmin,xmax)
-        ax.set_ylim(ymin,ymax)
 
-    #loading velocity components
+    # Preparing velocity
     ugrid = grid_U_d.variables['vozocrtx']
     vgrid = grid_V_d.variables['vomecrty']
     zlevels = grid_U_d.variables['depthu']
     timesteps = grid_U_d.variables['time_counter']
-
-    #day's average, surface velocity field
     t, zlevel = 0, 0
 
-    #region
     y_slice = np.arange(0, ugrid.shape[2])
     x_slice = np.arange(0, ugrid.shape[3])
 
@@ -1546,20 +1543,21 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     y_slice_a = y_slice[::arrow_step]
     x_slice_a = x_slice[::arrow_step]
 
-    #masking arrays
     ugrid_tzyx = np.ma.masked_values(ugrid[t, zlevel, y_slice_a, x_slice_a], 0)
     vgrid_tzyx = np.ma.masked_values(vgrid[t, zlevel, y_slice_a, x_slice_a], 0)
-    #unstagger velocity values
+
     u_tzyx, v_tzyx = viz_tools.unstagger(ugrid_tzyx, vgrid_tzyx)
-    #velocity magnitudes
+
     speeds = np.sqrt(np.square(u_tzyx) + np.square(v_tzyx))
 
-    #***velocity plot
-    #viz_tools.set_aspect(ax3)
+    # Colormap
     cs = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
-
+    
+    # Plot velocity
     quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds, 
 					  pivot='mid', cmap='gnuplot_r', width=0.015)
+					  
+    # Axis 
     viz_tools.plot_land_mask(ax3, grid_B, xslice=x_slice, yslice=y_slice, color='burlywood')
 
     cbar = fig.colorbar(quiver,ax=ax3)
@@ -1599,36 +1597,37 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     :returns: matplotlib figure object instance (fig).
     """
 
-    #set date of this simulation
+    # Time range
     t_orig,t_end,t=get_model_time_variables(grid_T)
 
-    #load bathymetry
+    # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
-    #process VENUS data
+    # VENUS data
     fig,(ax_sal, ax_temp) = plt.subplots(2,1,figsize=figsize,sharex=True)
     fig.autofmt_xdate()
     lon, lat, depth = plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
 
-    #identify grid point of VENUS station 
+    # Grid point of VENUS station 
     [j,i]=tidetools.find_closest_model_point(lon,lat,X,Y,bathy,allow_land=True)
-    #load model data
+    
+    # Model data
     sal = grid_T.variables['vosaline'][:,:,j,i]
     temp = grid_T.variables['votemper'][:,:,j,i]
     ds = grid_T.variables['deptht']
 
-    #interpolating data
+    # Interpolating data
     salc=[]
     tempc=[]
     for ind in np.arange(0,sal.shape[0]):
         salc.append(interpolate_depth(sal[ind,:],ds,depth))
         tempc.append(interpolate_depth(temp[ind,:],ds,depth))
 
-    #plot model data
+    # Plot model data
     ax_sal.plot(t,salc,'-b',label='model')
     ax_temp.plot(t,tempc,'-b',label='model')
 
-    #pretty the plot
+    # Axis
     ax_sal.set_ylabel('Practical Salinity [psu]',**axis_font)
     ax_sal.legend(loc=0)
     ax_sal.set_title('VENUS - {}'.format(station) ,**title_font)
