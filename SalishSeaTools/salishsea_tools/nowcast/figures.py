@@ -59,23 +59,26 @@ axis_font = {'fontname':'Arial', 'size':'13'}
 
 #Average mean sea level calculated over 1983-2001
 #To be used to centre model output about mean sea level
-MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 'Campbell River': 2.89, 'Patricia Bay': 2.30}
+MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 
+				'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
 def station_coords():
   """ Returns the longitudes and latitudes for  key stations.
   
-  Stations are Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, 
-  Friday Harbor, and Sandheads.
+  Stations are Campbell River, Point Atkinson, Victoria, 
+  Cherry Point, Neah Bay, Friday Harbor, and Sandheads.
   
   :returns: coordinates (lats, lons).
   """
   
-  lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,'Victoria': 48.41, 
-          'Cherry Point': 48.866667,'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-          'Sandheads': 49.10}
-  lons = {'Campbell River':-125.24, 'Point Atkinson': -123.25, 'Victoria': -123.36, 
-          'Cherry Point': -122.766667, 'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
-          'Sandheads': -123.30}    
+  lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,
+		'Victoria': 48.41, 'Cherry Point': 48.866667,
+		'Neah Bay': 48.4, 'Friday Harbor': 48.55,
+		'Sandheads': 49.10}
+  lons = {'Campbell River':-125.24, 'Point Atkinson': -123.25, 
+		'Victoria': -123.36, 'Cherry Point': -122.766667,
+		'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
+		'Sandheads': -123.30}    
   return lats, lons
 
 def find_model_point(lon, lat, X, Y):
@@ -139,7 +142,8 @@ def get_model_time_variables(grid_T):
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
     
-    :returns: simulation star time (t_orig), simulation end time (t_final), and array (t) of output times all as datetime objects.
+    :returns: simulation star time (t_orig), simulation end time (t_final), 
+    and array (t) of output times all as datetime objects.
     """
 
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
@@ -186,7 +190,8 @@ def load_PA_observations():
   
   filename = '/data/nsoontie/MEOPAR/analysis/Nancy/tides/PA_observations/ptatkin_rt.dat'
 
-  obs = pd.read_csv(filename, delimiter=' ',parse_dates=[[0,1,2,3]],header=None,date_parser=dateparse_PAObs)
+  obs = pd.read_csv(filename, delimiter=' ',parse_dates=[[0,1,2,3]],header=None,
+				date_parser=dateparse_PAObs)
   obs=obs.rename(columns={'0_1_2_3':'time',4:'wlev'})
   
   return obs   
@@ -206,7 +211,8 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     :arg end_date: The end of the date range eg. 02-Jan-2014.
     :type end_date: string
 
-    :returns: DataFrame object (obs) with time and wlev columns, among others that are irrelevant.
+    :returns: DataFrame object (obs) with time and wlev columns, 
+    among others that are irrelevant.
     """
     
     st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
@@ -273,7 +279,8 @@ def get_NOAA_tides(station_no, start_date, end_date):
     return tides
  
 def get_maxes(ssh, t, res, lon, lat, model_path):
-    """ Identifies maximum ssh and other important features such as the timing, residual, and wind speed.
+    """ Identifies maximum ssh and other important features such as the timing, 
+    residual, and wind speed.
     
     :arg ssh: The ssh field to be maximized.
     :type ssh: numpy array
@@ -314,7 +321,8 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     return max_ssh, index_ssh, tmax, max_res, max_wind, ind_w 
 
 def compute_residual(ssh, ttide, t_orig, t_final):
-    """ Compute the difference between modelled ssh and tidal predictions for a range of dates.
+    """ Compute the difference between modelled ssh and tidal predictions 
+    for a range of dates.
     
     Both modelled ssh and tidal predictions use eight tidal constituents.
     
@@ -350,7 +358,8 @@ def compute_residual(ssh, ttide, t_orig, t_final):
     return res    
 
 def load_VENUS(station):
-    """ Loads the most recent State of the Ocean data from the VENUS node indicated by station.
+    """ Loads the most recent State of the Ocean data from the VENUS node 
+    indicated by station.
     
     This data set includes pressure, temperature, and salinity among other things.
     See: http://venus.uvic.ca/research/state-of-the-ocean/
@@ -390,7 +399,8 @@ def load_VENUS(station):
     return data, lon, lat, depth    
 
 def get_weather_filenames(t_orig, t_final, model_path):
-   """ Gathers a list of "Operational" atmospheric model filenames in a specifed date range. 
+   """ Gathers a list of "Operational" atmospheric model filenames 
+   in a specifed date range. 
  
    :arg t_orig: The beginning of the date range of interest.
    :type t_orig: datetime object
@@ -473,7 +483,8 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
         direc=np.append(direc,d)
         
 	ts=G.variables['time_counter']	
-        torig = datetime.datetime(1970,1,1) #there is no time_origin attriubte in OP files, so I hard coded this
+	#there is no time_origin attriubte in OP files, so I hard coded this
+        torig = datetime.datetime(1970,1,1) 
         for ind in np.arange(ts.shape[0]):
             t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
             
@@ -482,7 +493,8 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model. 
     
-    The model is corrected for the tidal constituents that are not included in the model forcing.
+    The model is corrected for the tidal constituents that are not included 
+    in the model forcing.
 
     :arg ax: The axis where the corrected model is plotted.
     :type ax: axis object
@@ -502,10 +514,12 @@ def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     :arg t_final: The end time of the simulation.
     :type t_final: datetime object
 
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     
-    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0.
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 
+    1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
     
     :arg msl: The mean sea level for centring the plot.
@@ -538,16 +552,19 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     :arg t_orig: The date of a simulation.
     :type t_orig: datetime object
 
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     
-    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0.
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 
+    1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg color: The color for the tidal predictions plot.
     :type color: string
 
-    :returns: DataFrame object (ttide) with tidal predictions and columns time, pred_all, pred_8.
+    :returns: DataFrame object (ttide) with tidal predictions and 
+    columns time, pred_all, pred_8.
     """
     
     #tide file covers 2014 and 2015. Harmonics were from a 2013 time series
@@ -555,7 +572,8 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
     tfile = path+name+filename
     ttide,msl= stormtools.load_tidal_predictions(tfile)
-    ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,linewidth=2,label='tidal predictions')
+    ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,
+		linewidth=2,label='tidal predictions')
     
     return ttide        
     
@@ -565,7 +583,8 @@ def plot_PA_observations(ax,PST):
   :arg ax: The axis where the PA observations are plotted.
   :type ax: axis object
   
-  :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+  :arg PST: Specifies if plot should be presented in PST. 
+  1 = plot in PST, 0 = plot in UTC.
   :type PST: 0 or 1
   """
   
@@ -590,7 +609,8 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     :arg end: The end date of the plot.
     :type end: datetime object
 
-    :returns: longitude (lon), latitude (lat), and depth (depth) of the VENUS station.
+    :returns: longitude (lon), latitude (lat), and depth (depth) 
+    of the VENUS station.
     """
     
     [data,lon,lat,depth]= load_VENUS(station)
@@ -602,7 +622,8 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     return lon, lat, depth      
   
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
-    """ Plots the tidal cycle at Point Atkinson during a 4 week period centred around the simulation start date.
+    """ Plots the tidal cycle at Point Atkinson during a 4 week period 
+    centred around the simulation start date.
     
     This function assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
@@ -611,10 +632,12 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
     
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     
-    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0.
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 
+    1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
@@ -655,7 +678,8 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     return fig
 
 def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
-    """ Compares modelled water levels to observed water levels and tides at a NOAA station over one day. 
+    """ Compares modelled water levels to observed water levels and tides 
+    at a NOAA station over one day. 
     
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
     
@@ -667,7 +691,8 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
     
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches.
@@ -715,9 +740,11 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
    
     for name, M in zip(names, m):
 
-        ax0.plot(lons[name],lats[name],marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2) #map
+        ax0.plot(lons[name],lats[name],marker='D',color='MediumOrchid',
+			markersize=10,markeredgewidth=2) #map
         bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
-        ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,color='black',bbox=bbox_args) 
+        ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,
+			color='black',bbox=bbox_args) 
 
         obs=get_NOAA_wlevels(stations[name],start_date,end_date)
         tides=get_NOAA_tides(stations[name],start_date,end_date)
@@ -728,8 +755,10 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
 
         ax = plt.subplot(gs[M,0]) #ssh
         ax.plot(t[:]+time_shift*PST,ssh,c=model_c,linewidth=2,label='model')
-        ax.plot(obs.time[:]+time_shift*PST,obs.wlev,c=observations_c,linewidth=2,label='observed water levels')
-        ax.plot(tides.time+time_shift*PST,tides.pred,c=predictions_c,linewidth=2,label='tidal predictions')
+        ax.plot(obs.time[:]+time_shift*PST,obs.wlev,c=observations_c,linewidth=2,
+			label='observed water levels')
+        ax.plot(tides.time+time_shift*PST,tides.pred,c=predictions_c,linewidth=2,
+			label='tidal predictions')
         ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
         ax.set_ylim([-3,3])
         ax.set_title('Hourly Sea Surface Height at '+name + ': ' + t_orig.strftime('%d-%b-%Y'),**title_font)
@@ -739,7 +768,8 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
         if M == 0:
-	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
+	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
+						prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
 
 
@@ -749,8 +779,10 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     """ Plots a map for sea surface height when it was at its maximum at Point Atkinson 
     and compares modelled water levels to tidal predications over one day.
     
-    It is assummed that the tidal predictions were calculated ahead of time and stored in a very specific location.
-    The tidal predictions were calculated with all constituents using ttide based on a time series from 2013.
+    It is assummed that the tidal predictions were calculated ahead of time and stored 
+    in a very specific location.
+    The tidal predictions were calculated with all constituents using ttide based on a 
+    time series from 2013.
     The corrected model takes into account errors resulting in using only 8 constituents.
     The residual is calculated as corrected model - tides (with all constituents).
     
@@ -763,10 +795,12 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
      
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     
-    :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0.
+    :arg MSL: Specifies if the plot should be centred about mean sea level. 
+    1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
     
     :arg name: Name of station.
@@ -805,7 +839,8 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
 
     #Plot tides, corrected model and original model
     ttide=plot_tides(ax1,name,t_orig,PST,MSL)
-    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,MSL_DATUMS[name])
+    ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,
+			PST,MSL,MSL_DATUMS[name])
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='model')
     #compute residuals
     res = compute_residual(ssh_loc,ttide,t_orig,t_final)
@@ -884,7 +919,8 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   
   This function applies only to Point Atkinson, Campbell River, and Victoria.
   There are three different warning thresholds. 
-  The locations of stations are colored depending on the threshold in which they fall: green, yellow, red.
+  The locations of stations are colored depending on the threshold in 
+  which they fall: green, yellow, red.
   
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
@@ -895,10 +931,12 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   :arg model_path: The directory where the model wind files are stored.
   :type model_path: string
     
-  :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+  :arg PST: Specifies if plot should be presented in PST. 
+  1 = plot in PST, 0 = plot in UTC.
   :type PST: 0 or 1
     
-  :arg MSL: Specifies if the plot should be centred about mean sea level. 1=centre about MSL, 0=centre about 0.
+  :arg MSL: Specifies if the plot should be centred about mean sea level. 
+  1=centre about MSL, 0=centre about 0.
   :type MSL: 0 or 1
     
   :arg figsize:  Figure size (width, height) in inches.
@@ -952,8 +990,10 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      if name =='Point Atkinson':
        plot_PA_observations(ax,PST)
      ttide=plot_tides(ax,name,t_orig,PST,MSL)
-     ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,PST,MSL,MSL_DATUMS[name])
-     ax.plot(t+PST*time_shift,ssh_loc+MSL_DATUMS[name]*MSL,'--',c=model_c,linewidth=1,label='model')
+     ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,
+			PST,MSL,MSL_DATUMS[name])
+     ax.plot(t+PST*time_shift,ssh_loc+MSL_DATUMS[name]*MSL,'--',
+			c=model_c,linewidth=1,label='model')
       
      ax.set_xlim(t_orig+PST*time_shift,t_final+PST*time_shift)
      ax.set_ylim([-1,6])
@@ -966,7 +1006,8 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
         
      #map
      bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
-     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.18),fontsize=15,color='black',bbox=bbox_args)
+     ax0.annotate(name,(lons[name]-0.05,lats[name]-0.18),fontsize=15,
+				color='black',bbox=bbox_args)
      
      #threshold colours
      extreme_ssh = extreme_ssh
@@ -982,7 +1023,8 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
        threshold_c = 'Gold'
        
     #map with coloured points
-     ax0.plot(lons[name],lats[name],marker='D',color=threshold_c,markersize=10,markeredgewidth=2)
+     ax0.plot(lons[name],lats[name],marker='D',
+			color=threshold_c,markersize=10,markeredgewidth=2)
      
      #threshold lines in plots
      ax.axhline(y=max_tides,color='Gold',linewidth=2,ls='solid',label='maximum tides')
@@ -991,7 +1033,8 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      
      
      if M == 0:
-	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Legend')
+	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
+				prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
 	   
   return fig
@@ -1011,7 +1054,8 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     :arg model_path: The directory where the model files are stored.
     :type model_path: string
     
-    :arg PST: Specifies if plot should be presented in PST. 1 = plot in PST, 0 = plot in UTC.
+    :arg PST: Specifies if plot should be presented in PST. 
+    1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     
     :arg figsize:  Figure size (width, height) in inches.
@@ -1091,7 +1135,8 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
 def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,10)):
     """ Plots winds averaged over simulation time at individual or all stations.
     
-    This function applies to stations at Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, and Friday Harbor.
+    This function applies to stations at Campbell River, Point Atkinson, 
+    Victoria, Cherry Point, Neah Bay, and Friday Harbor.
     
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -1152,14 +1197,16 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     ax.text(-123, 50.1, "5 m/s")
 
     if station == 'all':
-        names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
+        names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 
+			'Sandheads', 'Point Atkinson', 'Campbell River']
         m = np.arange(len(names))
         for name, station_c, M in zip (names, stations_c, m):
             twind=plot(name, scale)
                 #times of averaging
 	t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
 	t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
-        legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+        legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+						prop={'size':15}, title=r'Stations')
         legend.get_title().set_fontsize('20')
         ax.set_title('Modelled winds at all stations averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
     
@@ -1181,10 +1228,12 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     return fig
 
 def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
-  """ Plots winds at individual stations 4 hours before the maxmimum sea surface height at Point Atkinson. 
+  """ Plots winds at individual stations 4 hours before the 
+  maxmimum sea surface height at Point Atkinson. 
   
   If that data is not available then the plot is generated at the start of the simulation. 
-  This function applies to stations at Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, and Friday Harbor.
+  This function applies to stations at Campbell River, Point Atkinson, Victoria, 
+  Cherry Point, Neah Bay, and Friday Harbor.
   
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
@@ -1235,8 +1284,10 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
      [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
      uwind = wind[ind_wplot]*np.cos(np.radians(direc[ind_wplot]))
      vwind=wind[ind_wplot]*np.sin(np.radians(direc[ind_wplot]))
-     ax.plot(lons[name], lats[name], marker='D', color=station_c, markersize=10, markeredgewidth=2,label=name)
-     ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
+     ax.plot(lons[name], lats[name], marker='D', 
+		color=station_c, markersize=10, markeredgewidth=2,label=name)
+     ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, 
+		head_length=0.1, width=0.02, color='b',fc='b', ec='b',)
      tplot=t[ind_wplot]
      return tplot
   #reference arrow
@@ -1252,11 +1303,12 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
 	  plot_time=plot(name)
 	#plot time for title
         plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
-	legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,prop={'size':15}, title=r'Stations')
+	legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+						prop={'size':15}, title=r'Stations')
 	legend.get_title().set_fontsize('20')
 	ax.set_title('Modelled winds at all stations \n {time} [PST]'.format(time=plot_time),**title_font)
 	  
-  if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or station == 'Neah Bay' or station == 'Friday Harbor' or station =='Sandheads':
+  if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or  station  == 'Neah Bay' or station ==  'Friday Harbor' or station =='Sandheads':
         name = station
         station_c = 'MediumOrchid'
         plot_time=plot(name)
@@ -1293,7 +1345,8 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline']
 
-    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/analysis_tools/thalweg.txt', delimiter=" ", unpack=False)
+    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/analysis_tools/thalweg.txt', 
+				delimiter=" ", unpack=False)
     lines = lines.astype(int)
 
     thalweg_lon = lon_d[lines[:,0],lines[:,1]]
@@ -1449,7 +1502,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     #viz_tools.set_aspect(ax3)
     cs = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 
-    quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds, pivot='mid', cmap='gnuplot_r', width=0.015)
+    quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds, 
+					  pivot='mid', cmap='gnuplot_r', width=0.015)
     viz_tools.plot_land_mask(ax3, grid_B, xslice=x_slice, yslice=y_slice, color='burlywood')
 
     cbar = fig.colorbar(quiver,ax=ax3)
@@ -1465,12 +1519,14 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     ax3.set_ylabel('y Index',**axis_font)
     ax3.set_title('Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY') +
                   u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels),**title_font)
-    ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', color='Indigo', labelcolor='black')
+    ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', 
+				color='Indigo', labelcolor='black')
 
     return fig
 
 def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
-    """ Compares the model's temperature and salinity with observations from VENUS station.
+    """ Compares the model's temperature and salinity 
+    with observations from VENUS station.
 
     :arg station: Name of the station ('East' or 'Central')
     :type station: string
@@ -1498,7 +1554,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     fig.autofmt_xdate()
     lon, lat, depth = plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
 
-    #identify grid point of VENUS station (could this just be saved somewhere?)
+    #identify grid point of VENUS station 
     [j,i]=tidetools.find_closest_model_point(lon,lat,X,Y,bathy,allow_land=True)
     #load model data
     sal = grid_T.variables['vosaline'][:,:,j,i]
