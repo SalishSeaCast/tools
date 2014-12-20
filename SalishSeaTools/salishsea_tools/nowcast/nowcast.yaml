@@ -182,7 +182,7 @@ msg_types:
     success nowcast+: forcing files for nowcast/forecast uploaded
     failure nowcast+: forcing files for nowcast/forecast upload failed
     success forecast2: forcing files for forecast2 uploaded
-    failure: forcing files for forecast2 upload failed
+    failure forecast2: forcing files for forecast2 upload failed
     crash: upload_forcing worker crashed
   make_forcing_links:
     success: forcing file links created
