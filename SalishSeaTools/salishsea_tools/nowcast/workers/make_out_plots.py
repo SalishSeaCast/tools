@@ -123,6 +123,7 @@ def make_out_plots(run_date, run_type, config, socket):
     if run_type in ['forecast1', 'forecast2']:
         model_path = os.path.join(model_path, 'fcst')
     bathy = nc.Dataset(config['bathymetry'])
+    print model_path
 
     # configure plot directory for saving
     date_key = run_date.strftime('%d%b%y').lower()
@@ -135,7 +136,7 @@ def make_out_plots(run_date, run_type, config, socket):
     # do the plots
     figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
-        plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=date_key))
+        plots_dir, 'SA_tidal_predictions_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
     figures.compare_tidalpredictions_maxSSH(
