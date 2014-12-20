@@ -23,11 +23,15 @@ import argparse
 import datetime
 import logging
 import os
+import subprocess
 import traceback
 
+import yaml
 import zmq
 
 import salishsea_cmd.api
+import salishsea_cmd.lib
+from salishsea_tools.namelist import namelist2dict
 from salishsea_tools.nowcast import lib
 
 
@@ -110,6 +114,7 @@ def configure_argparser(prog, description, parents):
 
 def run_NEMO(host_name, run_type, config):
     host = config['run'][host_name]
+    # Update the namelist.time file
     today = datetime.date.today()
     if run_type == 'nowcast':
         run_day = today
@@ -119,14 +124,46 @@ def run_NEMO(host_name, run_type, config):
         future_limit_days = 2.5
     restart_timestep = update_time_namelist(
         host, run_type, run_day, future_limit_days)
+    # Create the run description data structure and dump it to a YAML file
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
     os.chdir(host['run_prep_dirs'][run_type])
     run_desc = run_description(
         host, run_type, run_day, run_id, restart_timestep)
+    run_desc_file = '{}.yaml'.format(run_id)
+    with open(run_desc_file, 'wt') as f:
+        yaml.dump(run_desc, f, default_flow_style=False)
+    logger.debug('run description file: {}'.format(run_desc_file))
+    # Create and populate the temporary run directory
+    run_dir = salishsea_cmd.api.prepare(run_desc_file, 'iodef.xml')
+    logger.debug('temporary run directory: {}'.format(run_dir))
+    os.unlink(run_desc_file)
+    # Create the bash script to execute the run and gather the results
+    namelist = namelist2dict(os.path.join(run_dir, 'namelist'))
+    cores = namelist['nammpp'][0]['jpnij']
     results_dir = os.path.join(host['results'][run_type], dmy)
-    salishsea_cmd.api.run_in_subprocess(
-        run_id, run_desc, 'iodef.xml', os.path.abspath(results_dir))
+    os.chdir(run_dir)
+    script = build_script(run_desc_file, cores, results_dir)
+    with open('SalishSeaNEMO.sh', 'wt') as f:
+        f.write(script)
+    logger.debug(
+        'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
+    try:
+        cmd = 'bash SalishSeaNEMO.sh >stdout 2>stderr'
+        logger.info('starting run: "{}"'.format(cmd))
+        output = subprocess.check_output(
+            cmd, stderr=subprocess.STDOUT, shell=True)
+        for line in output.splitlines():
+            if line:
+                logger.debug(line)
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            'subprocess "{cmd}" failed with return code {status}'
+            .format(cmd=cmd, status=e.returncode))
+        for line in e.output.splitlines():
+            if line:
+                logger.error(line)
+    logger.info('finished run')
     return {run_type: True}
 
 
@@ -212,6 +249,60 @@ def run_description(host, run_type, run_day, run_id, restart_timestep):
             .format(host['mpi decomposition'])),
     ]
     return run_desc
+
+
+def build_script(run_desc_file, procs, results_dir):
+    run_desc = salishsea_cmd.lib.load_run_desc(run_desc_file)
+    # Variable definitions
+    script = (
+        u'{defns}\n'
+        .format(
+            defns=_definitions(
+                run_desc['run_id'], run_desc_file, results_dir,
+                procs))
+    )
+    # Run NEMO
+    script += (
+        u'echo "Working dir: $(pwd)"\n'
+        u'\n'
+        u'echo "Starting run at $(date)"\n'
+        u'${MPIRUN} ./nemo.exe >>stdout 2>>stderr\n'
+        u'echo "Ended run at $(date)"\n'
+    )
+    # Gather per-processor results files and deflate the finished netCDF4
+    # files
+    script += (
+        u'echo "Results gathering and deflation started at $(date)"\n'
+        u'mkdir -p ${RESULTS_DIR}\n'
+        u'${GATHER} ${GATHER_OPTS} ${RUN_DESC} ${RESULTS_DIR}\n'
+        u'echo "Results gathering and deflation ended at $(date)"\n'
+    )
+    # Delete the (now empty) working directory
+    script += (
+        u'echo "Deleting run directory"\n'
+        u'rmdir $(pwd)\n'
+    )
+    return script
+
+
+def _definitions(run_id, run_desc_file, results_dir, procs):
+    mpirun = 'mpirun -n {procs}'.format(procs=procs)
+    mpirun = ' '.join((mpirun, '--hostfile', '${HOME}/mpi_hosts'))
+    defns = (
+        u'RUN_ID="{run_id}"\n'
+        u'RUN_DESC="{run_desc_file}"\n'
+        u'RESULTS_DIR="{results_dir}"\n'
+        u'MPIRUN="{mpirun}"\n'
+        u'GATHER="{salishsea_cmd} gather"\n'
+        u'GATHER_OPTS="--no-compress"\n'
+    ).format(
+        run_id=run_id,
+        run_desc_file=run_desc_file,
+        results_dir=results_dir,
+        mpirun=mpirun,
+        salishsea_cmd='${HOME}/.local/bin/salishsea',
+    )
+    return defns
 
 
 if __name__ == '__main__':

@@ -43,8 +43,8 @@ run:
   # Remove or comment out the next line to prevent running in the cloud
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
-    nodes: 29
-    mpi decomposition: 10x230
+    nodes: 11
+    mpi decomposition: 6x14
     images:
       head node: nowcast-head-node-v3
       compute node: nowcast-compute-node-v3
@@ -189,10 +189,10 @@ msg_types:
     failure: forcing file links creation failed
     crash: make_forcing_links worker crashed
   run_NEMO:
-    success nowcast: nowcast NEMO run prepared
-    failure nowcast: nowcast NEMO run preparation failed
-    success forecast: forecast NEMO run prepared
-    failure forecast: forecast NEMO run preparation failed
+    success nowcast: nowcast NEMO run completed
+    failure nowcast: nowcast NEMO run failed
+    success forecast: forecast NEMO run completed
+    failure forecast: forecast NEMO run failed
     crash: run_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded
