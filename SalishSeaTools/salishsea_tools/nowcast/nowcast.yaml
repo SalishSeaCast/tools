@@ -179,8 +179,10 @@ msg_types:
     failure: mounting sshfs filesystem on cloud nodes failed
     crash: mount_sshfs worker crashed
   upload_forcing:
-    success: forcing files uploaded
-    failure: forcing files upload failed
+    success nowcast+: forcing files for nowcast/forecast uploaded
+    failure nowcast+: forcing files for nowcast/forecast upload failed
+    success forecast2: forcing files for forecast2 uploaded
+    failure: forcing files for forecast2 upload failed
     crash: upload_forcing worker crashed
   make_forcing_links:
     success: forcing file links created

@@ -59,18 +59,22 @@ def main():
     # Do the work
     try:
         checklist = upload_forcing(
-            parsed_args.host_name, parsed_args.run_date, config)
+            parsed_args.host_name, parsed_args.run_type, parsed_args.run_date,
+            config)
         logger.info(
-            'forcing files upload to {.host_name} completed'
+            '{0.run_type} forcing files upload to {0.host_name} completed'
             .format(parsed_args))
         # Exchange success messages with the nowcast manager process
+        msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'forcing files upload to {.host_name} failed'.format(parsed_args))
+            '{0.run_type} forcing files upload to {0.host_name} failed'
+            .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        msg_type = 'failure {.run_type}'.format(parsed_args)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
@@ -91,6 +95,12 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to upload forcing files to')
     parser.add_argument(
+        'runtype', choices=set(('nowcast+', 'forecast2')),
+        help='''Type of run to produce netCDF files for:
+        'nowcast+' means nowcast & 1st forecast runs,
+        'forecast2' means 2nd forecast run.''',
+    )
+    parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
         Date of the run to download results files from;
@@ -101,28 +111,34 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def upload_forcing(host_name, run_date, config):
+def upload_forcing(host_name, run_type, run_date, config):
+    if run_type == 'nowcast+':
+        working_date = run_date
+        weather_start = 0
+    else:
+        working_date = run_date.replace(days=1)
+        weather_start = 1
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(
         host_name, host['ssh key name']['nowcast'])
     # Neah Bay sea surface height
     for day in range(-1, 3):
         filename = get_NeahBay_ssh.FILENAME_TMPL.format(
-            run_date.replace(days=day).date())
+            working_date.replace(days=day).date())
         dest_dir = 'obs' if day == -1 else 'fcst'
         localpath = os.path.join(config['ssh']['ssh_dir'], dest_dir, filename)
         remotepath = os.path.join(host['ssh_dir'], dest_dir, filename)
         upload_file(sftp_client, host_name, localpath, remotepath)
     # Rivers runoff
     filename = make_runoff_file.FILENAME_TMPL.format(
-        run_date.replace(days=-1).date())
+        working_date.replace(days=-1).date())
     localpath = os.path.join(config['rivers']['rivers_dir'], filename)
     remotepath = os.path.join(host['rivers_dir'], filename)
     upload_file(sftp_client, host_name, localpath, remotepath)
     # Weather
-    for day in range(3):
+    for day in range(weather_start, 3):
         filename = grib_to_netcdf.FILENAME_TMPL.format(
-            run_date.replace(days=day).date())
+            working_date.replace(days=day).date())
         dest_dir = '' if day == 0 else 'fcst'
         localpath = os.path.join(
             config['weather']['ops_dir'], dest_dir, filename)
