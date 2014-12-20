@@ -75,6 +75,8 @@ def axis_colors(ax, plot):
     ax.set_axis_bgcolor(bg_c)
   if plot == 'map':
     ax.set_axis_bgcolor('#2B3E50')
+  if plot == 'land':
+    ax.set_axis_bgcolor('white')
   
   ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
   ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
@@ -1466,8 +1468,6 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     
     # Figure
     fig,ax=plt.subplots(1,1,figsize=figsize)
-    land_colour = 'burlywood'
-    ax.set_axis_bgcolor(land_colour)
     mesh=ax.contourf(XX,ZZ,salP,cs,cmap='hsv',extend='both')
 
     cbar=fig.colorbar(mesh,ax=ax)
@@ -1478,6 +1478,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'),**title_font)
     ax.set_ylabel('Depth [m]',**axis_font)
     ax.set_xlabel('position along thalweg',**axis_font)
+    axis_colors(ax, 'land')
 
     return fig
 
@@ -1547,8 +1548,6 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 
     for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
         # Map
-        land_colour = 'burlywood'
-        ax.set_axis_bgcolor(land_colour)
         cmap = plt.get_cmap(cmap)
 
         # Colormaps
@@ -1571,6 +1570,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         timestamp = nc_tools.timestamp(grid_T_d,0)
         ax.set_title(title + timestamp.format('DD-MMM-YYYY'),**title_font)
         cbar.set_label(unit,**axis_font)
+        axis_colors(ax, 'land')
+        ax.set_axis_bgcolor('burlywood')
 
     # Preparing velocity
     ugrid = grid_U_d.variables['vozocrtx']
@@ -1601,6 +1602,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 					  pivot='mid', cmap='gnuplot_r', width=0.015)
 					  
     # Axis 
+    
     viz_tools.plot_land_mask(ax3, grid_B, xslice=x_slice, yslice=y_slice, color='burlywood')
 
     cbar = fig.colorbar(quiver,ax=ax3)
@@ -1618,7 +1620,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
                   u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels),**title_font)
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', 
 				color='Indigo', labelcolor='black')
-
+    axis_colors(ax3, 'land')
     return fig
 
 def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
@@ -1677,7 +1679,9 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     ax_sal.set_ylim([30,32])
     ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
     ax_temp.set_xlabel('Time [UTC]',**axis_font)
-    ax_temp.set_ylim([7,11])   
+    ax_temp.set_ylim([7,11])
+    axis_colors(ax_sal, 'graph')
+    axis_colors(ax_temp, 'graph')
     
 
     return fig
