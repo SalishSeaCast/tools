@@ -43,6 +43,8 @@ from salishsea_tools import (
     tidetools,
 )
 
+
+
 # Plotting colors
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
@@ -62,6 +64,26 @@ axis_font = {'fontname':'Arial', 'size':'13'}
 MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 
 				'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+def axis_colors(ax, plot):
+  
+  bg_c = '#DBDEE1'
+  labels_c = 'white'
+  ticks_c = 'white'
+  spines_c = 'white'
+  
+  if plot == 'graph':
+    ax.set_axis_bgcolor(bg_c)
+  if plot == 'map':
+    ax.set_axis_bgcolor('#2B3E50')
+  
+  ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
+  ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
+  ax.spines['bottom'].set_color(spines_c), ax.spines['top'].set_color(spines_c)
+  ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
+  ax.title.set_color('white')
+  
+  return ax
+  
 def station_coords():
   """ Returns the longitudes and latitudes for  key stations.
   
@@ -680,6 +702,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     ax.set_ylabel('Sea Surface Height [m]',**axis_font)
     ax.set_xlabel('Time {}'.format(timezone),**axis_font)
     ax.grid()
+    axis_colors(ax, 'graph')
     ax.text(1., -0.2, 
             'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
         horizontalalignment='right',
@@ -741,6 +764,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     ax0.set_xlabel('longitude',**axis_font)
     ax0.set_ylabel('latitude',**axis_font)
     ax0.grid()
+    axis_colors(ax0, 'map')
 
     # Citation
     ax0.text(0.15 , -0.45, 
@@ -749,7 +773,6 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         verticalalignment='top',
         transform=ax0.transAxes)
              
-
     m = np.arange(3)
     names = ['Neah Bay', 'Friday Harbor', 'Cherry Point']
    
@@ -784,13 +807,13 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         ax.grid()
         ax.set_ylabel('Water levels wrt MSL (m)',**axis_font)
         ax.set_xlabel('Time {}'.format(timezone),**axis_font)
+        axis_colors(ax, 'graph')
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
         if M == 0:
 	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
 						prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
-
 
     return fig
 
@@ -856,7 +879,7 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax1=plt.subplot(gs[1, 0]) 				    #sea surface height
     ax2=plt.subplot(gs[:, 1])				    #map
     ax3=plt.subplot(gs[2, 0]) 				    #residual
-
+      
     # Sea surface height plot
     ttide=plot_tides(ax1,name,t_orig,PST,MSL)
     ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,
@@ -937,6 +960,13 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.7)
     ax2.annotate(name,(20, 500),fontsize=15,color='black',bbox=bbox_args) 
     
+    ax0.set_axis_bgcolor('#2B3E50')
+    axc = [ax1, ax3]
+    n = np.arange(len(axc))
+    
+    for ax, N in zip(axc, n):
+      axis_colors(ax, 'graph')
+    
     return fig
         
 def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15.5)):
@@ -986,6 +1016,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   ax0.set_xlabel('longitude',**axis_font)
   ax0.set_ylabel('latitude',**axis_font)
   ax0.grid()
+  axis_colors(ax0, 'map')
  
  # Stations information
   [lats, lons] = station_coords()
@@ -1025,7 +1056,8 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      ax.set_ylim([-1,6])
      ax.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'), **title_font)
      ax.set_xlabel('Time {}'.format(tzone),**axis_font)
-     ax.set_ylabel('Water Level above Chart Datum (m)',**axis_font)
+     ax.set_ylabel('Water Level above Chart Datum (m)',**axis_font)     
+     axis_colors(ax, 'graph')
      ax.xaxis.set_major_formatter(hfmt)
      fig.autofmt_xdate()
      ax.grid()
@@ -1157,6 +1189,12 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax0.transAxes)
+        
+    axis_colors(ax0, 'map')
+    axc = [ ax1, ax2]
+    n= np.arange(len(axc))
+    for ax, N in zip(axc, n):
+      axis_colors(ax, 'graph')
 
 
     return fig
@@ -1264,6 +1302,8 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes)
+    
+    axis_colors(ax, 'map')
     
     return fig
 
@@ -1383,6 +1423,9 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes)
+        
+  axis_colors(ax, 'map')
+  
   return fig
     
 def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30.6,30.8,31,32,33,34]):
@@ -1634,7 +1677,8 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     ax_sal.set_ylim([30,32])
     ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
     ax_temp.set_xlabel('Time [UTC]',**axis_font)
-    ax_temp.set_ylim([7,11])
+    ax_temp.set_ylim([7,11])   
+    
 
     return fig
     
