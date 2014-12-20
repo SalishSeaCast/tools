@@ -198,8 +198,13 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
     }
     if 'hpc host' in config['run']:
         actions['success nowcast+'].append(
-            (launch_worker,
-             ['upload_forcing', config, [config['run']['hpc host']]]))
+            (launch_worker, [
+                'upload_forcing', config, [config['run']['hpc host']],
+                'nowcast+']))
+        actions['success forecast2'].append(
+            (launch_worker, [
+                'upload_forcing', config, [config['run']['hpc host']],
+                'forecast2']))
     if 'cloud host' in config['run']:
         actions['success nowcast+'].append(
             (launch_worker, ['init_cloud', config]))
@@ -291,6 +296,7 @@ def after_mount_sshfs(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'sshfs mount', payload]),
+# this is a problem, needs to know which upload to run
             (launch_worker,
              ['upload_forcing', config, [config['run']['cloud host']]]),
         ],
@@ -303,12 +309,16 @@ def after_mount_sshfs(worker, msg_type, payload, config):
 def after_upload_forcing(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success': [
+        'success nowcast+': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
              ['make_forcing_links', config, [payload.keys()[0]]]),
         ],
-        'failure': None,
+        'failure nowcast+': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'forcing upload', payload]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
     return actions[msg_type]
