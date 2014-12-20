@@ -61,8 +61,9 @@ axis_font = {'fontname':'Arial', 'size':'13'}
 
 # Average mean sea level calculated over 1983-2001
 # (To be used to centre model output about mean sea level)
-MSL_DATUMS = {'Point Atkinson': 3.10, 'Victoria': 1.90, 
-				'Campbell River': 2.89, 'Patricia Bay': 2.30}
+MSL_DATUMS = {
+    'Point Atkinson': 3.10, 'Victoria': 1.90,
+    'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
 def axis_colors(ax, plot):
   
@@ -87,23 +88,22 @@ def axis_colors(ax, plot):
   return ax
   
 def station_coords():
-  """ Returns the longitudes and latitudes for  key stations.
-  
-  Stations are Campbell River, Point Atkinson, Victoria, 
-  Cherry Point, Neah Bay, Friday Harbor, and Sandheads.
-  
-  :returns: coordinates (lats, lons).
-  """
-  
-  lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,
-		'Victoria': 48.41, 'Cherry Point': 48.866667,
-		'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-		'Sandheads': 49.10}
-  lons = {'Campbell River':-125.24, 'Point Atkinson': -123.25, 
-		'Victoria': -123.36, 'Cherry Point': -122.766667,
-		'Neah Bay':-124.6, 'Friday Harbor': -123.016667,
-		'Sandheads': -123.30}    
-  return lats, lons
+    """ Returns the longitudes and latitudes for  key stations.
+    Stations are Campbell River, Point Atkinson, Victoria,
+    Cherry Point, Neah Bay, Friday Harbor, and Sandheads.
+
+    :returns: coordinates (lats, lons).
+    """
+
+    lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,
+            'Victoria': 48.41, 'Cherry Point': 48.866667,
+            'Neah Bay': 48.4, 'Friday Harbor': 48.55,
+            'Sandheads': 49.10}
+    lons = {'Campbell River': -125.24, 'Point Atkinson': -123.25,
+            'Victoria': -123.36, 'Cherry Point': -122.766667,
+            'Neah Bay': -124.6, 'Friday Harbor': -123.016667,
+            'Sandheads': -123.30}
+    return lats, lons
 
 def find_model_point(lon, lat, X, Y):
   """ Finds a model grid point close to a specified latitude and longitude.
@@ -134,7 +134,7 @@ def find_model_point(lon, lat, X, Y):
       np.logical_and(
           (np.logical_and(X > lon-tol1, X < lon+tol1)),
           (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
-  return x1[0], y1[0]   
+  return x1[0], y1[0]
 
 def interpolate_depth(data, depth_array, depth_new):
   """ Interpolates data field to a desired depth.
@@ -433,28 +433,28 @@ def load_VENUS(station):
 def get_weather_filenames(t_orig, t_final, model_path):
    """ Gathers a list of "Operational" atmospheric model filenames 
    in a specifed date range. 
- 
+
    :arg t_orig: The beginning of the date range of interest.
    :type t_orig: datetime object
-   
+
    :arg t_final: The end of the date range of interest.
    :type t_final: datetime object
-   
+
    :arg model_path: The directory where the model files are stored.
    :type model_path: string
-   
+
    :returns: list of files names (files) from the Operational model.
    """
-   
+
    numdays=(t_final-t_orig).days
 
    dates = [ t_orig + datetime.timedelta(days=num) for num in range(0,numdays+1)]
    dates.sort();
-  
+
    allfiles=glob.glob(model_path+'ops_y*')
-   
+
    sstr =model_path+'ops_y'+dates[0].strftime('%Y')+'m'+dates[0].strftime('%m')+'d'+dates[0].strftime('%d')+'.nc'
-   estr =model_path+'ops_y'+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'   
+   estr =model_path+'ops_y'+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'  
    
    files=[]
    for filename in allfiles:
@@ -491,7 +491,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
    """
    
    # Weather file names
-   files=get_weather_filenames(t_orig,t_final,model_path)
+   files=get_weather_filenames(t_orig, t_final, model_path)
    weather=nc.Dataset(files[0])
    Y=weather.variables['nav_lat'][:]
    X=weather.variables['nav_lon'][:]-360
