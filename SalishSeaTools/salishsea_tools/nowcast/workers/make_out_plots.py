@@ -156,10 +156,11 @@ def make_out_plots(run_date, run_type, config, socket):
         plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
-    figures.compare_water_levels(grid_T_hr, bathy)
-    filename = os.path.join(
-        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    # this function currently fails for forecasts, remove it for now
+#    figures.compare_water_levels(grid_T_hr, bathy)
+#    filename = os.path.join(
+#        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
+#    plt.savefig(filename)
 
     figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
     filename = os.path.join(
