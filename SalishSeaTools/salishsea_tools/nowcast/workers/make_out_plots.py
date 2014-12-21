@@ -172,6 +172,10 @@ def make_out_plots(run_date, run_type, config, socket):
         plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
     plt.savefig(filename)
 
+    for f in glob(os.path.join(plots_dir, '*')):
+        print f
+        lib.fix_perms(f, grp_name='sallen')
+
     checklist = glob(plots_dir)
     return checklist
 
