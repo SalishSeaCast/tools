@@ -303,7 +303,8 @@ def after_mount_sshfs(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
             (update_checklist, [worker, 'sshfs mount', payload]),
-# this is a problem, needs to know which upload to run
+# This is a problem.
+# The upload_forcing worker needs to know which run type to use.
             (launch_worker,
              ['upload_forcing', config, [config['run']['cloud host']]]),
         ],
@@ -353,10 +354,16 @@ def after_run_NEMO(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'NEMO run', payload]),
+            (launch_worker, [
+             'download_results', config,
+             [config['run']['cloud host'], 'nowcast']]),
         ],
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'NEMO run', payload]),
+            (launch_worker, [
+             'download_results', config,
+             [config['run']['cloud host'], 'forecast']]),
         ],
         'failure forecast': None,
         'crash': None,
@@ -374,8 +381,7 @@ def after_download_results(worker, msg_type, payload, config):
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker,
-             ['make_out_plots', config, ['forecast1']]),
+            (launch_worker, ['make_out_plots', config, ['forecast1']]),
         ],
         'failure forecast': None,
         'crash': None,
