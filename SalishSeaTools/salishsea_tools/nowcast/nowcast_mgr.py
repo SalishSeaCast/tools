@@ -200,15 +200,21 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
     if 'hpc host' in config['run']:
         actions['success nowcast+'].append(
             (launch_worker, [
-                'upload_forcing', config, [config['run']['hpc host']],
-                'nowcast+']))
+                'upload_forcing', config,
+                [config['run']['hpc host'], 'nowcast+']]))
         actions['success forecast2'].append(
             (launch_worker, [
-                'upload_forcing', config, [config['run']['hpc host']],
-                'forecast2']))
+                'upload_forcing', config,
+                [config['run']['hpc host'], 'forecast2']]))
     if 'cloud host' in config['run']:
         actions['success nowcast+'].append(
-            (launch_worker, ['init_cloud', config]))
+            (launch_worker, [
+             'upload_forcing', config,
+             [config['run']['cloud host'], 'nowcast+']]))
+        actions['success forecast2'].append(
+            (launch_worker, [
+             'upload_forcing', config,
+             [config['run']['cloud host'], 'forecast2']]))
     return actions[msg_type]
 
 
