@@ -136,25 +136,25 @@ def make_out_plots(run_date, run_type, config, socket):
     fig = figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
         plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Victoria')
     filename = os.path.join(
         plots_dir, 'Vic_maxSSH__{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'PA_maxSSH_{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Campbell River')
     filename = os.path.join(
         plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     # this function currently fails for forecasts, remove it for now
 #    fig = figures.compare_water_levels(grid_T_hr, bathy)
@@ -165,12 +165,12 @@ def make_out_plots(run_date, run_type, config, socket):
     fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
-    plt.savefig(filename, facecolor=fig.get_facecolor())
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     for f in glob(os.path.join(plots_dir, '*')):
         lib.fix_perms(f, grp_name='sallen')
