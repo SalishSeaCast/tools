@@ -133,47 +133,46 @@ def make_out_plots(run_date, run_type, config, socket):
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
 
     # do the plots
-    figures.PA_tidal_predictions(grid_T_hr)
+    fig = figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
         plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
-    figures.compare_tidalpredictions_maxSSH(
+    fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Victoria')
     filename = os.path.join(
         plots_dir, 'Vic_maxSSH__{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
-    figures.compare_tidalpredictions_maxSSH(
+    fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'PA_maxSSH_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
-    figures.compare_tidalpredictions_maxSSH(
+    fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Campbell River')
     filename = os.path.join(
         plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
     # this function currently fails for forecasts, remove it for now
-#    figures.compare_water_levels(grid_T_hr, bathy)
+#    fig = figures.compare_water_levels(grid_T_hr, bathy)
 #    filename = os.path.join(
 #        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
-#    plt.savefig(filename)
+#    plt.savefig(filename, facecolor=fig.get_facecolor())
 
-    figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
+    fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
-    figures.Sandheads_winds(grid_T_hr, bathy, model_path)
+    fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
-    plt.savefig(filename)
+    plt.savefig(filename, facecolor=fig.get_facecolor())
 
     for f in glob(os.path.join(plots_dir, '*')):
-        print f
         lib.fix_perms(f, grp_name='sallen')
 
     checklist = glob(plots_dir)
