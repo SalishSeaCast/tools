@@ -44,7 +44,6 @@ from salishsea_tools import (
 )
 
 
-
 # Plotting colors
 model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
@@ -52,7 +51,7 @@ predictions_c = 'MediumVioletRed'
 stations_c = cm.rainbow(np.linspace(0, 1, 7))
 
 # Time shift for plotting in PST
-time_shift = datetime.timedelta(hours=-8) 
+time_shift = datetime.timedelta(hours=-8)
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 # Font format
@@ -65,28 +64,30 @@ MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+
 def axis_colors(ax, plot):
-  
-  bg_c = '#DBDEE1'
-  labels_c = 'white'
-  ticks_c = 'white'
-  spines_c = 'white'
-  
-  if plot == 'graph':
-    ax.set_axis_bgcolor(bg_c)
-  if plot == 'map':
-    ax.set_axis_bgcolor('#2B3E50')
-  if plot == 'blank':
-    ax.set_axis_bgcolor('white')
-  
-  ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
-  ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
-  ax.spines['bottom'].set_color(spines_c), ax.spines['top'].set_color(spines_c)
-  ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
-  ax.title.set_color('white')
-  
+
+    bg_c = '#DBDEE1'
+    labels_c = 'white'
+    ticks_c = 'white'
+    spines_c = 'white'
+
+    if plot == 'graph':
+        ax.set_axis_bgcolor(bg_c)
+    if plot == 'map':
+        ax.set_axis_bgcolor('#2B3E50')
+    if plot == 'blank':
+        ax.set_axis_bgcolor('white')
+
+    ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
+    ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
+    ax.spines['bottom'].set_color(spines_c), ax.spines['top'].set_color(spines_c)
+    ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
+    ax.title.set_color('white')
+
   return ax
-  
+
+
 def station_coords():
     """ Returns the longitudes and latitudes for  key stations.
     Stations are Campbell River, Point Atkinson, Victoria,
@@ -107,22 +108,22 @@ def station_coords():
 
 def find_model_point(lon, lat, X, Y):
   """ Finds a model grid point close to a specified latitude and longitude.
-    
+
   :arg lon: The longitude we are trying to match.
   :type lon: float
-    
+
   :arg lat: The latitude we are trying to match.
   :type lat: float
-    
+
   :arg X: The model longitude grid.
   :type X: numpy array
-    
+
   :arg Y: The model latitude grid.
   :type Y: numpy array
-    
+
   :returns: x-index (x1) and y-index (y1) of the closest model grid point.
-  """  
-  
+  """
+
   # Tolerance for searching for grid points
   # (approximate distances between adjacent grid points)
   tol1 = 0.015 # lon
@@ -138,40 +139,41 @@ def find_model_point(lon, lat, X, Y):
 
 def interpolate_depth(data, depth_array, depth_new):
   """ Interpolates data field to a desired depth.
-  
+
   :arg data: The data to be interpolated. Should be one-dimensional over the z-axis.
   :type data: 1-d numpy array
-  
+
   :arg depth_array: The z-axis for data.
   :type depth_array: 1-d numpy array
-  
+
   :arg depth_new: The new depth to which we want to interpolate.
   :type depth_new: float
-  
+
   :returns: float representing the field interpolated to the desired depth (data_interp).
   """
-  
+
   # Masked arrays are used for more accurate interpolation.
   mu=data==0
   datao=np.ma.array(data,mask=mu)
   mu=depth_array==0
   depth_arrayo=np.ma.array(depth_array,mask=mu)
-  
+
   # Interpolations
   f= interp.interp1d(depth_arrayo,datao)
   data_interp = f(depth_new)
-  return data_interp      
-  
+  return data_interp
+
+
 def get_model_time_variables(grid_T):
     """ Returns important model time variables.
-    
+
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
-    
-    :returns: simulation star time (t_orig), simulation end time (t_final), 
+
+    :returns: simulation star time (t_orig), simulation end time (t_final),
     and array (t) of output times all as datetime objects.
-    """   
-    
+    """
+
     # Time range
     t_orig=(nc_tools.timestamp(grid_T,0)).datetime
     t_final=(nc_tools.timestamp(grid_T,-1)).datetime
@@ -182,47 +184,48 @@ def get_model_time_variables(grid_T):
     for ind in range(len(t)):
         t[ind]=t[ind].datetime
     t=np.array(t)
-    
-    return t_orig,t_final,t  
-  
+
+    return t_orig,t_final,t
+
 def dateparse(s):
     """ Parse the dates from the VENUS files."""
-    
+
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
     aware = unaware.replace(tzinfo=tz.tzutc())
-    return  aware      
-    
+    return  aware
+
+
 def dateparse_NOAA(s):
     """ Parse the dates from the NOAA files."""
-    
+
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
 
 def dateparse_PAObs(s1,s2,s3,s4):
   """ Parse dates for Point Atkinson observations."""
-  
+
   s=s1+s2+s3+s4
   unaware =datetime.datetime.strptime(s, '%Y%m%d%H:%M')
   aware = unaware.replace(tzinfo=tz.tzutc())
-  return  aware  
- 
+  return  aware
+
 def load_PA_observations():
-  """ Loads the recent water level observations at Point Atkinson. 
-  
+  """ Loads the recent water level observations at Point Atkinson.
+
   Times are in UTC and water level is in metres with respect to Chart Datum.
-  
+
   :returns: DataFrame object (obs) with a time column and wlev column.
   """
-  
+
   filename = '/data/nsoontie/MEOPAR/analysis/Nancy/tides/PA_observations/ptatkin_rt.dat'
 
   obs = pd.read_csv(filename, delimiter=' ',parse_dates=[[0,1,2,3]],header=None,
 				date_parser=dateparse_PAObs)
   obs=obs.rename(columns={'0_1_2_3':'time',4:'wlev'})
-  
-  return obs   
- 
+
+  return obs
+
 def get_NOAA_wlevels(station_no, start_date, end_date):
     """ Retrieves recent NOAA water levels from a station in a given date range.
     
@@ -607,9 +610,10 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     ttide,msl= stormtools.load_tidal_predictions(tfile)
     ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,
 		linewidth=2,label='tidal predictions')
-    
-    return ttide        
-    
+
+    return ttide
+
+
 def plot_PA_observations(ax,PST):
   """ Plots the water level observations at Point Atkinson.
   
@@ -653,23 +657,24 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     ax_temp.set_xlim([start,end])
 
     return lon, lat, depth      
-  
+
+
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
-    """ Plots the tidal cycle at Point Atkinson during a 4 week period 
+    """ Plots the tidal cycle at Point Atkinson during a 4 week period
     centred around the simulation start date.
-    
+
     This function assumes that a tidal prediction file exists in a specific directory.
     Tidal predictions were calculated with ttide based on a time series from 2013.
     Plots are of predictions caluclated with all consituents.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
-    
-    :arg PST: Specifies if plot should be presented in PST. 
+
+    :arg PST: Specifies if plot should be presented in PST.
     1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
-    
-    :arg MSL: Specifies if the plot should be centred about mean sea level. 
+
+    :arg MSL: Specifies if the plot should be centred about mean sea level.
     1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
@@ -678,8 +683,8 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
 
     :returns: matplotlib figure object instance (fig).
     """
-    
-    # Time range 
+
+    # Time range
     t_orig,t_end,t_nemo=get_model_time_variables(grid_T)
     timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
@@ -693,12 +698,12 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
     ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,MSL,'black')
-    
+
     # Line indicating current date
     ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r',lw=2)
     ax.plot([t_end+time_shift*PST,t_end+time_shift*PST],ylims,'-r',lw=2)
-    
-    # Axis 
+
+    # Axis
     ax.set_xlim([ax_start+time_shift*PST,ax_end+time_shift*PST])
     ax.set_ylim(ylims)
     ax.set_title('Tidal Predictions at Point Atkinson: ' + t_orig.strftime('%d-%b-%Y'),**title_font)
