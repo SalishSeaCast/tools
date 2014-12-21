@@ -95,7 +95,7 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to upload forcing files to')
     parser.add_argument(
-        'run-type', choices=set(('nowcast+', 'forecast2')),
+        'run_type', choices=set(('nowcast+', 'forecast2')),
         help='''Type of run to produce netCDF files for:
         'nowcast+' means nowcast & 1st forecast runs,
         'forecast2' means 2nd forecast run.''',
