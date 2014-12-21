@@ -268,6 +268,7 @@ def build_script(run_desc_file, procs, results_dir):
         u'echo "Starting run at $(date)"\n'
         u'${MPIRUN} ./nemo.exe >>stdout 2>>stderr\n'
         u'echo "Ended run at $(date)"\n'
+        u'\n'
     )
     # Gather per-processor results files and deflate the finished netCDF4
     # files
@@ -276,6 +277,7 @@ def build_script(run_desc_file, procs, results_dir):
         u'mkdir -p ${RESULTS_DIR}\n'
         u'${GATHER} ${GATHER_OPTS} ${RUN_DESC} ${RESULTS_DIR}\n'
         u'echo "Results gathering and deflation ended at $(date)"\n'
+        u'\n'
     )
     # Delete the (now empty) working directory
     script += (
