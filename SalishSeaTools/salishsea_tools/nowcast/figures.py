@@ -55,8 +55,11 @@ time_shift = datetime.timedelta(hours=-8)
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 # Font format
-title_font = {'fontname':'Arial', 'size':'15', 'color':'black', 'weight':'medium'}
-axis_font = {'fontname':'Arial', 'size':'13'}
+title_font = {
+    'fontname': 'Bitstream Vera Sans', 'size': '15', 'color': 'black',
+    'weight': 'medium'
+    }
+axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
 # Average mean sea level calculated over 1983-2001
 # (To be used to centre model output about mean sea level)
@@ -85,7 +88,7 @@ def axis_colors(ax, plot):
     ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
     ax.title.set_color('white')
 
-  return ax
+    return ax
 
 
 def station_coords():
