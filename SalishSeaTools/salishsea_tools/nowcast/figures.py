@@ -75,23 +75,21 @@ def axis_colors(ax, plot):
   :arg ax: Axis to be formatted.
   :type ax: axis object
   
-  :arg plot: Type of plot. graph = line plots, 
-  map = profile of region, 'blank' = any plot require white background.
+  :arg plot: Keyword for background needed for plot.
   :type plot: string
   
   :returns: axis format
   """
-  
-  bg_c = '#DBDEE1'
+
   labels_c = 'white'
   ticks_c = 'white'
   spines_c = 'white'
 
-  if plot == 'graph':
-      ax.set_axis_bgcolor(bg_c)
-  if plot == 'map':
+  if plot == 'blue':
       ax.set_axis_bgcolor('#2B3E50')
-  if plot == 'blank':
+  if plot == 'gray':
+      ax.set_axis_bgcolor('#DBDEE1')
+  if plot == 'white':
       ax.set_axis_bgcolor('white')
 
   ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
@@ -679,7 +677,7 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
 
     return lon, lat, depth      
 
-def plot_map(ax):
+def plot_map(ax, grid_B):
   """ Plots map of Salish Sea region.
   
   :arg ax: Axis for map.
@@ -748,7 +746,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     ax.set_ylabel('Sea Surface Height [m]',**axis_font)
     ax.set_xlabel('Time {}'.format(timezone),**axis_font)
     ax.grid()
-    axis_colors(ax, 'graph')
+    axis_colors(ax, 'gray')
     ax.text(1., -0.2, 
             'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
         horizontalalignment='right',
@@ -798,20 +796,14 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     fig = plt.figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
-    gs.update(wspace=0.13, hspace=0.2)
+    gs.update(wspace=0.17, hspace=0.2)
     
     # Map
     ax0 = plt.subplot(gs[:,1]) 
+    plot_map(ax0, grid_B)
     plt.axis((-124.8,-122.2,48,50))
-    viz_tools.set_aspect(ax0)
-    land_colour = 'burlywood'
-    viz_tools.plot_coastline(ax0,grid_B,coords='map')
-    viz_tools.plot_land_mask(ax0,grid_B,coords='map', color=land_colour)
     ax0.set_title('Station Locations',**title_font)
-    ax0.set_xlabel('Longitude',**axis_font)
-    ax0.set_ylabel('Latitude',**axis_font)
-    ax0.grid()
-    axis_colors(ax0, 'map')
+    axis_colors(ax0, 'gray')
 
     # Citation
     ax0.text(0.15 , -0.45, 
@@ -831,7 +823,8 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
         ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,
 			color='black',bbox=bbox_args) 
-
+	
+	# NOAA
         obs=get_NOAA_wlevels(stations[name],start_date,end_date)
         tides=get_NOAA_tides(stations[name],start_date,end_date)
         
@@ -854,7 +847,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         ax.set_ylabel('Water Levels wrt MSL (m)',**axis_font)
         ax.set_xlabel('Time {}'.format(timezone),**axis_font)
         ax.grid()
-        axis_colors(ax, 'graph')
+        axis_colors(ax, 'gray')
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
         if M == 0:
@@ -922,12 +915,13 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     gs = gridspec.GridSpec(3, 2, width_ratios=[2,1])
     gs.update(wspace=0.13, hspace=0.2)
     ax0=plt.subplot(gs[0, 0])                                      #information box
+    axis_colors(ax0, 'blue')  
     plt.setp(ax0.spines.values(), visible=False)  # hide axes for information box
     ax0.xaxis.set_visible(False); ax0.yaxis.set_visible(False)
     ax1=plt.subplot(gs[1, 0]) 				    #sea surface height
     ax2=plt.subplot(gs[:, 1])				    #map
     ax3=plt.subplot(gs[2, 0]) 				    #residual
-      
+              
     # Sea surface height plot
     ttide=plot_tides(ax1,name,t_orig,PST,MSL)
     ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,
@@ -973,6 +967,7 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax1.set_ylabel('Water Levels wrt MSL (m)',**axis_font)
     ax1.grid()
     ax1.legend(loc = 0, numpoints = 1)
+    axis_colors(ax1, 'gray')
     ax1.xaxis.set_major_formatter(hfmt)
     
     # Plot Residual
@@ -986,9 +981,10 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax3.set_yticks(np.arange(-1.0,1.25,0.25))
     ax3.grid()
     ax3.legend(loc = 0, numpoints = 1)
+    axis_colors(ax3, 'gray')
     ax3.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
-
+    
     # Map of sea surface height
     cs = [-1,-0.5,0.5,1, 1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.4,2.6]
     ssh_max_field = np.ma.masked_values(ssh[index], 0)
@@ -1005,17 +1001,11 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax2.set_ylabel('Y Index',**axis_font)
     ax2.grid()
     
+    axis_colors(ax2, 'white')
     viz_tools.plot_coastline(ax2,grid_B)
-    axis_colors(ax2, 'blank')
     viz_tools.plot_land_mask(ax2,grid_B,color='burlywood')
     ax2.plot(i, j, marker='o', color='white', markersize=10,
              markeredgewidth=3)
-    
-    ax0.set_axis_bgcolor('#2B3E50')
-    axc = [ax1, ax3]
-    n = np.arange(len(axc))
-    for ax, N in zip(axc, n):
-      axis_colors(ax, 'graph')
     
     return fig
         
@@ -1058,16 +1048,10 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   
   # Map of region
   ax0=plt.subplot(gs[:, 1]) 
+  plot_map(ax0, grid_B)
   plt.axis((-125.4,-122.2,48,50.3))
-  viz_tools.set_aspect(ax0)
-  land_colour = 'burlywood'  
-  viz_tools.plot_coastline(ax0,grid_B,coords='map')
-  viz_tools.plot_land_mask(ax0,grid_B,coords='map', color=land_colour)
   ax0.set_title('Station Locations',**title_font)
-  ax0.set_xlabel('Longitude',**axis_font)
-  ax0.set_ylabel('Latitude',**axis_font)
-  ax0.grid()
-  axis_colors(ax0, 'map')
+  axis_colors(ax0, 'gray')
  
  # Stations information
   [lats, lons] = station_coords()
@@ -1109,7 +1093,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      ax.set_xlabel('Time {}'.format(tzone),**axis_font)
      ax.set_ylabel('Water Level above Chart Datum (m)',**axis_font)
      ax.grid()     
-     axis_colors(ax, 'graph')
+     axis_colors(ax, 'gray')
      ax.xaxis.set_major_formatter(hfmt)
      fig.autofmt_xdate()
         
@@ -1206,35 +1190,32 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     ax1.set_xlabel('Time {}'.format(timezone),**axis_font)
     ax1.legend(loc=0)
     ax1.grid()
+    axis_colors(ax1, 'gray')
     ax1.xaxis.set_major_formatter(hfmt)
 
     # Plot wind direction
     ax2.plot(time+PST*time_shift,dirs,lw=2,color=observations_c,label='Observations')
     ax2.plot(t+PST*time_shift,direc,lw=2,color=model_c,label='Model')
-    ax2.set_ylabel('Wind Direction \n (degress CCW of East)',**axis_font)
-    ax2.set_ylim([0,360])
     ax2.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
+    ax2.set_ylim([0,360])
     ax2.set_xlabel('Time '+ PST*'[PST]' + abs((PST-1))*'[UTC]',**axis_font)
+    ax2.set_ylabel('Wind Direction \n (degress CCW of East)',**axis_font)
     ax2.legend(loc=0)
     ax2.grid()
+    axis_colors(ax2, 'gray')
     ax2.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
     
     # Map
+    plot_map(ax0, grid_B)
     ax0.set_xlim([-124.8,-122.2])
     ax0.set_ylim([48,50])
-    viz_tools.set_aspect(ax0)
-    land_colour = 'burlywood'
-    viz_tools.plot_coastline(ax0,grid_B,coords='map')
-    viz_tools.plot_land_mask(ax0,grid_B,coords='map', color=land_colour)
     ax0.set_title('Station Locations',**title_font)
-    ax0.set_xlabel('Longitude',**axis_font)
-    ax0.set_ylabel('Latitude',**axis_font)
+    axis_colors(ax0, 'gray')
     
     ax0.plot(lon,lat,marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
     ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
-    ax0.grid()
 
     # Citation
     ax0.text(0.0, -0.15,
@@ -1242,12 +1223,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax0.transAxes, color = 'white')
-        
-    axis_colors(ax0, 'map')
-    axc = [ ax1, ax2]
-    n= np.arange(len(axc))
-    for ax, N in zip(axc, n):
-      axis_colors(ax, 'graph')
+
 
     return fig
 
@@ -1281,12 +1257,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     # Map
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    ax.grid()  
-    viz_tools.set_aspect(ax)
-    viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
-    viz_tools.plot_coastline(ax,grid_B,coords='map')  
-    ax.set_xlabel('Longitude',**axis_font)
-    ax.set_ylabel('Latitude',**axis_font)
+    plot_map(ax, grid_B)
     
     # Arrow scale
     scale = 0.1
@@ -1356,7 +1327,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
         verticalalignment='top',
         transform=ax.transAxes, color = 'white')
     
-    axis_colors(ax, 'map')
+    axis_colors(ax, 'gray')
     
     return fig
 
@@ -1392,12 +1363,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   # Map          
   fig, ax = plt.subplots(1, 1, figsize=figsize)
   fig.patch.set_facecolor('#2B3E50')
-  ax.grid()  
-  viz_tools.set_aspect(ax)
-  viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
-  viz_tools.plot_coastline(ax,grid_B,coords='map')  
-  ax.set_xlabel('Longitude',**axis_font)
-  ax.set_ylabel('Latitude',**axis_font)
+  plot_map(ax, grid_B)
   
   # Arrow scale
   scale = 0.1
@@ -1478,7 +1444,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
         verticalalignment='top',
         transform=ax.transAxes, color = 'white')
         
-  axis_colors(ax, 'map')
+  axis_colors(ax, 'gray')
   
   return fig
     
@@ -1532,7 +1498,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'),**title_font)
     ax.set_ylabel('Depth [m]',**axis_font)
     ax.set_xlabel('Position along Thalweg',**axis_font)
-    axis_colors(ax, 'blank')    
+    axis_colors(ax, 'white')    
     ax.set_axis_bgcolor('burlywood')
 
     return fig
@@ -1561,11 +1527,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     :returns: matplotlib figure object instance (fig).
     """
     
-    if figsize == 'default':
-      figsize = (20,12)
-    else:
-      figsize = figsize
-    
+
+    # Limits
     if limits == 'default':
       limits = [0,398,0,898]
     else:
@@ -1575,6 +1538,12 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     xmax = limits[1]
     ymin = limits [2]
     ymax = limits[3]
+    
+    # Figure size
+    if figsize == 'default':
+      figsize = (20,12)
+    else:
+      figsize = figsize
     
     # Tracer data   
     lon_d = grid_T_d.variables['nav_lon']
@@ -1599,10 +1568,12 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     # Figure
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
+    
     axs = [ax1, ax2]
     plots = np.arange(1,3,1)  
 
     for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
+        
         # Map
         cmap = plt.get_cmap(cmap)
 
@@ -1628,7 +1599,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
         cbar.set_label(unit,color='white',**axis_font)
         viz_tools.plot_coastline(ax,grid_B)
-        axis_colors(ax, 'blank')
+        axis_colors(ax, 'white')
         ax.set_axis_bgcolor('burlywood')
 
     # Preparing velocity
@@ -1680,7 +1651,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     ax3.set_ylabel('Y Index',**axis_font)
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', 
 				color='Indigo', labelcolor='black')
-    axis_colors(ax3, 'blank')
+    axis_colors(ax3, 'white')
     
     return fig
 
@@ -1742,8 +1713,8 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     ax_temp.set_ylim([7,11])
     ax_temp.set_xlabel('Time [UTC]',**axis_font)
     ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
-    axis_colors(ax_sal, 'graph')
-    axis_colors(ax_temp, 'graph')
+    axis_colors(ax_sal, 'gray')
+    axis_colors(ax_temp, 'gray')
     
     return fig
     
