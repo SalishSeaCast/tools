@@ -281,7 +281,11 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
 
     fakefile = StringIO(response.content)
 
-    obs = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
+    try:
+      obs = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
+    except ValueError:
+      data={'Date Time': st_ar.datetime, ' Water Level': float('NaN')}
+      obs=pd.DataFrame(data=data,index=[0])
     obs=obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
 
     return obs
