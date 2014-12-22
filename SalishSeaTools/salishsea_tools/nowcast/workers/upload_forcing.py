@@ -103,7 +103,7 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
-        Date of the run to download results files from;
+        Date of the run to upload files from;
         use YYYY-MM-DD format.
         Defaults to %(default)s.
         ''',
@@ -113,10 +113,8 @@ def configure_argparser(prog, description, parents):
 
 def upload_forcing(host_name, run_type, run_date, config):
     if run_type == 'nowcast+':
-        working_date = run_date
         weather_start = 0
     else:
-        working_date = run_date.replace(days=1)
         weather_start = 1
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(
@@ -124,21 +122,21 @@ def upload_forcing(host_name, run_type, run_date, config):
     # Neah Bay sea surface height
     for day in range(-1, 3):
         filename = get_NeahBay_ssh.FILENAME_TMPL.format(
-            working_date.replace(days=day).date())
+            run_date.replace(days=day).date())
         dest_dir = 'obs' if day == -1 else 'fcst'
         localpath = os.path.join(config['ssh']['ssh_dir'], dest_dir, filename)
         remotepath = os.path.join(host['ssh_dir'], dest_dir, filename)
         upload_file(sftp_client, host_name, localpath, remotepath)
     # Rivers runoff
     filename = make_runoff_file.FILENAME_TMPL.format(
-        working_date.replace(days=-1).date())
+        run_date.replace(days=-1).date())
     localpath = os.path.join(config['rivers']['rivers_dir'], filename)
     remotepath = os.path.join(host['rivers_dir'], filename)
     upload_file(sftp_client, host_name, localpath, remotepath)
     # Weather
     for day in range(weather_start, 3):
         filename = grib_to_netcdf.FILENAME_TMPL.format(
-            working_date.replace(days=day).date())
+            run_date.replace(days=day).date())
         dest_dir = '' if day == 0 else 'fcst'
         localpath = os.path.join(
             config['weather']['ops_dir'], dest_dir, filename)
