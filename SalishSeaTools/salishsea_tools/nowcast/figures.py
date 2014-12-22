@@ -118,6 +118,7 @@ def station_coords():
             'Victoria': -123.36, 'Cherry Point': -122.766667,
             'Neah Bay': -124.6, 'Friday Harbor': -123.016667,
             'Sandheads': -123.30}
+            
     return lats, lons
 
 def find_model_point(lon, lat, X, Y):
@@ -149,6 +150,7 @@ def find_model_point(lon, lat, X, Y):
       np.logical_and(
           (np.logical_and(X > lon-tol1, X < lon+tol1)),
           (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
+          
   return x1[0], y1[0]
 
 def interpolate_depth(data, depth_array, depth_new):
@@ -175,6 +177,7 @@ def interpolate_depth(data, depth_array, depth_new):
   # Interpolations
   f= interp.interp1d(depth_arrayo,datao)
   data_interp = f(depth_new)
+  
   return data_interp
 
 def get_model_time_variables(grid_T):
@@ -205,6 +208,7 @@ def dateparse(s):
 
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
     aware = unaware.replace(tzinfo=tz.tzutc())
+    
     return  aware
 
 def dateparse_NOAA(s):
@@ -212,6 +216,7 @@ def dateparse_NOAA(s):
 
     unaware =datetime.datetime.strptime(s, '%Y-%m-%d %H:%M')
     aware = unaware.replace(tzinfo=tz.tzutc())
+    
     return  aware
 
 def dateparse_PAObs(s1,s2,s3,s4):
@@ -220,6 +225,7 @@ def dateparse_PAObs(s1,s2,s3,s4):
   s=s1+s2+s3+s4
   unaware =datetime.datetime.strptime(s, '%Y%m%d%H:%M')
   aware = unaware.replace(tzinfo=tz.tzutc())
+  
   return  aware
 
 def load_PA_observations():
@@ -823,9 +829,9 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         ax.set_xlim(t_orig+time_shift*PST,t_final+time_shift*PST)
         ax.set_ylim([-3,3])
         ax.set_title('Hourly Sea Surface Height at '+name + ': ' + t_orig.strftime('%d-%b-%Y'),**title_font)
-        ax.grid()
         ax.set_ylabel('Water levels wrt MSL (m)',**axis_font)
         ax.set_xlabel('Time {}'.format(timezone),**axis_font)
+        ax.grid()
         axis_colors(ax, 'graph')
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
@@ -943,9 +949,9 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax1.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'),**title_font)
     ax1.set_xlabel('Time {}'.format(tzone),**axis_font)
     ax1.set_ylabel('Water levels wrt MSL (m)',**axis_font)
+    ax1.grid()
     ax1.legend(loc = 0, numpoints = 1)
     ax1.xaxis.set_major_formatter(hfmt)
-    ax1.grid()
     
     # Plot Residual
     ax3.plot(t +PST*time_shift,res,'-k',linewidth=2,label='Residual')
@@ -955,9 +961,9 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax3.set_ylim([-1,1])
     ax3.set_xlabel('Time {}'.format(tzone),**axis_font)
     ax3.set_ylabel('Residual (m)',**axis_font)
-    ax3.legend(loc = 0, numpoints = 1)
-    ax3.grid()
     ax3.set_yticks(np.arange(-1.0,1.25,0.25))
+    ax3.grid()
+    ax3.legend(loc = 0, numpoints = 1)
     ax3.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
 
@@ -966,15 +972,18 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ssh_max_field = np.ma.masked_values(ssh[index], 0)
     mesh=ax2.contourf(ssh_max_field,cs,cmap='nipy_spectral',extend='both',alpha=0.6)
     ax2.contour(ssh_max_field,cs,colors='k',linestyles='--')
+    
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
-    cbar.set_label('[m]', color='white')
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
-    ax2.grid()
+    cbar.set_label('[m]', color='white')
+    
+    ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'),**title_font)
     ax2.set_xlabel('x Index',**axis_font)
     ax2.set_ylabel('y Index',**axis_font)
+    ax2.grid()
+    
     viz_tools.plot_coastline(ax2,grid_B)
-    ax2.set_title('Sea Surface Height: ' + (tmax+PST*time_shift).strftime('%d-%b-%Y, %H:%M'),**title_font)
     axis_colors(ax2, 'blank')
     viz_tools.plot_land_mask(ax2,grid_B,color='burlywood')
     ax2.plot(i, j, marker='o', color='white', markersize=10,
@@ -983,7 +992,6 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax0.set_axis_bgcolor('#2B3E50')
     axc = [ax1, ax3]
     n = np.arange(len(axc))
-    
     for ax, N in zip(axc, n):
       axis_colors(ax, 'graph')
     
@@ -1077,11 +1085,11 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      ax.set_ylim([-1,6])
      ax.set_title('Hourly Sea Surface Height at ' + name + ': ' + (t_orig).strftime('%d-%b-%Y'), **title_font)
      ax.set_xlabel('Time {}'.format(tzone),**axis_font)
-     ax.set_ylabel('Water Level above Chart Datum (m)',**axis_font)     
+     ax.set_ylabel('Water Level above Chart Datum (m)',**axis_font)
+     ax.grid()     
      axis_colors(ax, 'graph')
      ax.xaxis.set_major_formatter(hfmt)
      fig.autofmt_xdate()
-     ax.grid()
         
      # Map 
      bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
@@ -1167,11 +1175,11 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     ax0 = plt.subplot(gs[:,1])
 
     # Plot wind speed
-    ax1.set_title('Winds at Sandheads:  ' + start ,**title_font)
     ax1.plot(time +PST*time_shift,winds,color=observations_c,lw=2,label='Observations')
     ax1.plot(t+PST*time_shift,wind,lw=2,color=model_c,label='Model')
     ax1.set_xlim([t_orig+PST*time_shift,t_end+PST*time_shift])
     ax1.set_ylim([0,20])
+    ax1.set_title('Winds at Sandheads:  ' + start ,**title_font)
     ax1.set_ylabel('Wind speed (m/s)',**axis_font)
     ax1.set_xlabel('Time {}'.format(timezone),**axis_font)
     ax1.legend(loc=0)
@@ -1200,6 +1208,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     ax0.set_title('Station Locations',**title_font)
     ax0.set_xlabel('longitude',**axis_font)
     ax0.set_ylabel('latitude',**axis_font)
+    
     ax0.plot(lon,lat,marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
     ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
@@ -1217,7 +1226,6 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     n= np.arange(len(axc))
     for ax, N in zip(axc, n):
       axis_colors(ax, 'graph')
-
 
     return fig
 
@@ -1586,17 +1594,18 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         mesh=ax.pcolormesh(tracer,cmap=cmap,vmin=0,vmax=cs[-1])
 
         # Axis
-        cbar = fig.colorbar(mesh,ax=ax)
-        cbar.set_ticks(cs)
-        plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
-        ax.grid()
-        ax.set_xlabel('x Index',**axis_font)
-        ax.set_ylabel('y Index',**axis_font)
         ax.set_xlim(xmin,xmax)
         ax.set_ylim(ymin,ymax)
+        cbar = fig.colorbar(mesh,ax=ax)
         timestamp = nc_tools.timestamp(grid_T_d,0)
         ax.set_title(title + timestamp.format('DD-MMM-YYYY'),**title_font)
+        ax.set_xlabel('x Index',**axis_font)
+        ax.set_ylabel('y Index',**axis_font)
+        ax.grid()
+        cbar.set_ticks(cs)
+        plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
         cbar.set_label(unit,color='white',**axis_font)
+        viz_tools.plot_coastline(ax,grid_B)
         axis_colors(ax, 'blank')
         ax.set_axis_bgcolor('burlywood')
 
@@ -1629,8 +1638,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 					  pivot='mid', cmap='gnuplot_r', width=0.015)
 					  
     # Axis 
-    
     viz_tools.plot_land_mask(ax3, grid_B, xslice=x_slice, yslice=y_slice, color='burlywood')
+    viz_tools.plot_coastline(ax3,grid_B)
 
     cbar = fig.colorbar(quiver,ax=ax3)
     cbar.set_ticks(cs)
@@ -1642,13 +1651,15 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     plt.axis((xmin, xmax, ymin, ymax))
     ax3.grid()
 
-    ax3.set_xlabel('x Index',**axis_font)
-    ax3.set_ylabel('y Index',**axis_font)
+
     ax3.set_title('Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY') +
                   u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels),**title_font)
+    ax3.set_xlabel('x Index',**axis_font)
+    ax3.set_ylabel('y Index',**axis_font)
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data', 
 				color='Indigo', labelcolor='black')
     axis_colors(ax3, 'blank')
+    
     return fig
 
 def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
@@ -1702,17 +1713,16 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6,10)):
     ax_temp.plot(t,tempc,'-b',label='model')
 
     # Axis
-    ax_sal.set_ylabel('Practical Salinity [psu]',**axis_font)
-    ax_sal.legend(loc=0)
     ax_sal.set_title('VENUS - {}'.format(station) ,**title_font)
     ax_sal.set_ylim([30,32])
-    ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
-    ax_temp.set_xlabel('Time [UTC]',**axis_font)
+    ax_sal.set_ylabel('Practical Salinity [psu]',**axis_font)
+    ax_sal.legend(loc=0)
     ax_temp.set_ylim([7,11])
+    ax_temp.set_xlabel('Time [UTC]',**axis_font)
+    ax_temp.set_ylabel('Temperature [deg C]',**axis_font)
     axis_colors(ax_sal, 'graph')
     axis_colors(ax_temp, 'graph')
     
-
     return fig
     
 def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
@@ -1734,11 +1744,12 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     ssh = grid_T.variables['sossheig']
     results_date = nc_tools.timestamp(grid_T, 0).format('YYYY-MM-DD')
     ax.plot(ssh[:, 468, 328], 'o')
+    ax.set_title(
+        'Hourly Sea Surface Height at Point Atkinson on {}'.format(results_date))
     ax.set_xlabel('UTC Hour from {}'.format(results_date))
     ax.set_ylabel(
         '{label} [{units}]'
         .format(label=ssh.long_name.title(), units=ssh.units))
     ax.grid()
-    ax.set_title(
-        'Hourly Sea Surface Height at Point Atkinson on {}'.format(results_date))
+        
     return fig   
