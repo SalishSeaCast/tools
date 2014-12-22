@@ -69,27 +69,38 @@ MSL_DATUMS = {
 
 
 def axis_colors(ax, plot):
+  """ Formats the background colour of plots and colours
+  of labels.
+  
+  :arg ax: Axis to be formatted.
+  :type ax: axis object
+  
+  :arg plot: Type of plot. graph = line plots, 
+  map = profile of region, 'blank' = any plot require white background.
+  :type plot: string
+  
+  :returns: axis format
+  """
+  
+  bg_c = '#DBDEE1'
+  labels_c = 'white'
+  ticks_c = 'white'
+  spines_c = 'white'
 
-    bg_c = '#DBDEE1'
-    labels_c = 'white'
-    ticks_c = 'white'
-    spines_c = 'white'
+  if plot == 'graph':
+      ax.set_axis_bgcolor(bg_c)
+  if plot == 'map':
+      ax.set_axis_bgcolor('#2B3E50')
+  if plot == 'blank':
+      ax.set_axis_bgcolor('white')
 
-    if plot == 'graph':
-        ax.set_axis_bgcolor(bg_c)
-    if plot == 'map':
-        ax.set_axis_bgcolor('#2B3E50')
-    if plot == 'blank':
-        ax.set_axis_bgcolor('white')
+  ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
+  ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
+  ax.spines['bottom'].set_color(spines_c), ax.spines['top'].set_color(spines_c)
+  ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
+  ax.title.set_color('white')
 
-    ax.xaxis.label.set_color(labels_c), ax.yaxis.label.set_color(labels_c)
-    ax.tick_params(axis='x', colors=ticks_c), ax.tick_params(axis='y', colors=ticks_c)
-    ax.spines['bottom'].set_color(spines_c), ax.spines['top'].set_color(spines_c)
-    ax.spines['left'].set_color(spines_c), ax.spines['right'].set_color(spines_c)
-    ax.title.set_color('white')
-
-    return ax
-
+  return ax
 
 def station_coords():
     """ Returns the longitudes and latitudes for  key stations.
@@ -166,7 +177,6 @@ def interpolate_depth(data, depth_array, depth_new):
   data_interp = f(depth_new)
   return data_interp
 
-
 def get_model_time_variables(grid_T):
     """ Returns important model time variables.
 
@@ -196,7 +206,6 @@ def dateparse(s):
     unaware =datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
     aware = unaware.replace(tzinfo=tz.tzutc())
     return  aware
-
 
 def dateparse_NOAA(s):
     """ Parse the dates from the NOAA files."""
@@ -616,7 +625,6 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
 
     return ttide
 
-
 def plot_PA_observations(ax,PST):
   """ Plots the water level observations at Point Atkinson.
   
@@ -660,7 +668,6 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     ax_temp.set_xlim([start,end])
 
     return lon, lat, depth      
-
 
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period
@@ -718,7 +725,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
             'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
         horizontalalignment='right',
         verticalalignment='top',
-        transform=ax.transAxes)
+        transform=ax.transAxes, color = 'white')
 
     return fig
 
@@ -783,7 +790,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         'Observed water levels and tidal predictions from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
         horizontalalignment='left',
         verticalalignment='top',
-        transform=ax0.transAxes)
+        transform=ax0.transAxes, color = 'white')
              
     m = np.arange(3)
     names = ['Neah Bay', 'Friday Harbor', 'Cherry Point']
@@ -961,7 +968,8 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ax2.contour(ssh_max_field,cs,colors='k',linestyles='--')
     cbar = fig.colorbar(mesh,ax=ax2)
     cbar.set_ticks(cs)
-    cbar.set_label('[m]')
+    cbar.set_label('[m]', color='white')
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     ax2.grid()
     ax2.set_xlabel('x Index',**axis_font)
     ax2.set_ylabel('y Index',**axis_font)
@@ -1202,7 +1210,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
         'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
-        transform=ax0.transAxes)
+        transform=ax0.transAxes, color = 'white')
         
     axis_colors(ax0, 'map')
     axc = [ ax1, ax2]
@@ -1316,7 +1324,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
         'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
-        transform=ax.transAxes)
+        transform=ax.transAxes, color = 'white')
     
     axis_colors(ax, 'map')
     
@@ -1438,7 +1446,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
     'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
-        transform=ax.transAxes)
+        transform=ax.transAxes, color = 'white')
         
   axis_colors(ax, 'map')
   
@@ -1487,7 +1495,8 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
 
     cbar=fig.colorbar(mesh,ax=ax)
     cbar.set_ticks(cs)
-    cbar.set_label('Practical Salinity [psu]',**axis_font)
+    cbar.set_label('Practical Salinity [psu]',color='white',**axis_font)
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
 
     timestamp = nc_tools.timestamp(grid_T_d,0)
     ax.set_title('Salinity field along thalweg: ' + timestamp.format('DD-MMM-YYYY'),**title_font)
@@ -1579,6 +1588,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         # Axis
         cbar = fig.colorbar(mesh,ax=ax)
         cbar.set_ticks(cs)
+        plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
         ax.grid()
         ax.set_xlabel('x Index',**axis_font)
         ax.set_ylabel('y Index',**axis_font)
@@ -1586,7 +1596,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         ax.set_ylim(ymin,ymax)
         timestamp = nc_tools.timestamp(grid_T_d,0)
         ax.set_title(title + timestamp.format('DD-MMM-YYYY'),**title_font)
-        cbar.set_label(unit,**axis_font)
+        cbar.set_label(unit,color='white',**axis_font)
         axis_colors(ax, 'blank')
         ax.set_axis_bgcolor('burlywood')
 
@@ -1624,7 +1634,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 
     cbar = fig.colorbar(quiver,ax=ax3)
     cbar.set_ticks(cs)
-    cbar.set_label('[m / s]',**axis_font)
+    cbar.set_label('[m / s]',color='white',**axis_font)
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
 
     ax3.set_xlim(x_slice[0], x_slice[-1])
     ax3.set_ylim(y_slice[0], y_slice[-1])
