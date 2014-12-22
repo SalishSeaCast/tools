@@ -94,11 +94,13 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast1', 'forecast2')),
-        help='''Which results set to produce plot files for:
-                "nowcast" means nowcast,
-                "forecast1" means forecast directly following nowcast,
-                "forecast2" means the second forecast, following forecast1''')
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
+        help='''
+        Which results set to produce plot files for:
+        "nowcast" means nowcast,
+        "forecast" means forecast directly following nowcast,
+        "forecast2" means the second forecast, following forecast
+        ''')
     parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
@@ -113,14 +115,14 @@ def configure_argparser(prog, description, parents):
 def make_out_plots(run_date, run_type, config, socket):
 
     # set-up, read from config file
-    if run_type == 'forecast1':
+    if run_type == 'forecast':
         results_home = config['run']['results archive']['forecast']
     else:
         results_home = config['run']['results archive'][run_type]
     results_dir = os.path.join(
         results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
-    if run_type in ['forecast1', 'forecast2']:
+    if run_type in ['forecast', 'forecast2']:
         model_path = os.path.join(model_path, 'fcst/')
     bathy = nc.Dataset(config['bathymetry'])
 
