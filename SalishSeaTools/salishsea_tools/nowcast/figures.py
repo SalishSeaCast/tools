@@ -818,7 +818,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     for name, M in zip(names, m):
 
         #Map
-        ax0.plot(lons[name],lats[name],marker='D',color='MediumOrchid',
+        ax0.plot(lons[name],lats[name],marker='D',color='DarkMagenta',
 			markersize=10,markeredgewidth=2)
         bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
         ax0.annotate(name,(lons[name]-0.05,lats[name]-0.15),fontsize=15,
@@ -1213,7 +1213,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     ax0.set_title('Station Locations',**title_font)
     axis_colors(ax0, 'gray')
     
-    ax0.plot(lon,lat,marker='D',color='MediumOrchid',markersize=10,markeredgewidth=2)
+    ax0.plot(lon,lat,marker='D',color='DarkMagenta',markersize=10,markeredgewidth=2)
     bbox_args = dict(boxstyle='square',facecolor='white',alpha=0.8)
     ax0.annotate('Sandheads',(lon-0.05,lat-0.15),fontsize=15,color='black',bbox=bbox_args)
 
@@ -1287,13 +1287,13 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
        ax.arrow(lons[name],  lats[name], 
                  scale*uaverage, scale*vaverage, 
                  head_width=0.05, head_length=0.1, width=0.02, 
-                 color='white',fc='white', ec='white')
+                 color='white',fc='DarkMagenta', ec='black')
 
        return twind
 
     ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02, 
-              color='white',fc='white', ec='white')
+              color='white',fc='DarkMagenta', ec='black')
     ax.text(-123, 50.1, "5 m/s")
     
     # Plot winds at all stations
@@ -1314,7 +1314,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     # Plot winds at one station only
     else:
         name=station
-        station_c = 'MediumOrchid'
+        station_c = 'DarkMagenta'
         twind=plot(name,scale)
         t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M'); 
         t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
@@ -1404,14 +1404,14 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
      
      # Arrows
      ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05, 
-		head_length=0.1, width=0.02, color='white',fc='white', ec='white')
+		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
      tplot=t[ind_wplot]
      return tplot
      
   # Reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02, 
-              color='white',fc='white', ec='white')
+              color='white',fc='DarkMagenta', ec='black')
   ax.text(-123, 50.1, "5 m/s")
   
   # Plot winds at all stations
@@ -1431,7 +1431,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   # Plot winds at one station only  
   if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or  station  == 'Neah Bay' or station ==  'Friday Harbor' or station =='Sandheads':
         name = station
-        station_c = 'MediumOrchid'
+        station_c = 'DarkMagenta'
         plot_time=plot(name)
         # Time for title
         plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
