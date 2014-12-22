@@ -389,7 +389,7 @@ def after_download_results(worker, msg_type, payload, config):
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_out_plots', config, ['forecast1']]),
+            (launch_worker, ['make_out_plots', config, ['forecast']]),
         ],
         'failure forecast': None,
         'crash': None,
@@ -409,10 +409,10 @@ def after_make_out_plots(worker, msg_type, payload, config):
             (update_checklist, [worker, 'plots', payload]),
         ],
         'failure nowcast': None,
-        'success forecast1': [
+        'success forecast': [
             (update_checklist, [worker, 'plots', payload]),
         ],
-        'failure forecast1': None,
+        'failure forecast': None,
         'success forecast2': [
             (update_checklist, [worker, 'plots', payload]),
         ],
