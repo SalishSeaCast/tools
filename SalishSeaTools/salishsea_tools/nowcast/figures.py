@@ -806,7 +806,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     axis_colors(ax0, 'gray')
 
     # Citation
-    ax0.text(0.15 , -0.45, 
+    ax0.text(0.03 , -0.45, 
         'Observed water levels and tidal predictions from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
         horizontalalignment='left',
         verticalalignment='top',
@@ -1129,7 +1129,14 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
 	   legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
 				prop={'size':15}, title=r'Legend')
 	   legend.get_title().set_fontsize('20')
-	   
+  
+  # Citation
+  ax0.text(0.03 , -0.45, 
+        'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide \nObserved water levels from Fisheries and Oceans, Canada \nvia Scott Tinis at stormsurgebc.ca',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax0.transAxes, color = 'white')
+  
   return fig
 
 def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
