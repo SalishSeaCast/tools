@@ -326,10 +326,9 @@ def after_upload_forcing(worker, msg_type, payload, config):
         'failure nowcast+': None,
         'success forecast2': [
             (update_checklist, [worker, 'forcing upload', payload]),
-# Not ready for this yet
-#            (launch_worker,
-#             ['make_forcing_links', config,
-#              [payload.keys()[0], 'forecast2']]),
+            (launch_worker,
+             ['make_forcing_links', config,
+             [payload.keys()[0], 'forecast2']]),
         ],
         'failure forecast2': None,
         'crash': None,
