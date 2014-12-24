@@ -191,10 +191,8 @@ msg_types:
     failure forecast2: forcing file links for forecast2 failed
     crash: make_forcing_links worker crashed
   run_NEMO:
-    success nowcast: nowcast NEMO run completed
-    failure nowcast: nowcast NEMO run failed
-    success forecast: forecast NEMO run completed
-    failure forecast: forecast NEMO run failed
+    success: NEMO run started
+    failure: NEMO run failed
     crash: run_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded
