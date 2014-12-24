@@ -360,20 +360,10 @@ def after_make_forcing_links(worker, msg_type, payload, config):
 def after_run_NEMO(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast': [
+        'success': [
             (update_checklist, [worker, 'NEMO run', payload]),
-            (launch_worker, [
-             'download_results', config,
-             [config['run']['cloud host'], 'nowcast']]),
         ],
-        'failure nowcast': None,
-        'success forecast': [
-            (update_checklist, [worker, 'NEMO run', payload]),
-            (launch_worker, [
-             'download_results', config,
-             [config['run']['cloud host'], 'forecast']]),
-        ],
-        'failure forecast': None,
+        'failure': None,
         'crash': None,
     }
     return actions[msg_type]

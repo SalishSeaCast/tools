@@ -23,6 +23,7 @@ import argparse
 import datetime
 import logging
 import os
+import shlex
 import subprocess
 import traceback
 
@@ -148,23 +149,14 @@ def run_NEMO(host_name, run_type, config):
         f.write(script)
     logger.debug(
         'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
-    try:
-        cmd = 'bash SalishSeaNEMO.sh >stdout 2>stderr'
-        logger.info('starting run: "{}"'.format(cmd))
-        output = subprocess.check_output(
-            cmd, stderr=subprocess.STDOUT, shell=True)
-        for line in output.splitlines():
-            if line:
-                logger.debug(line)
-    except subprocess.CalledProcessError as e:
-        logger.error(
-            'subprocess "{cmd}" failed with return code {status}'
-            .format(cmd=cmd, status=e.returncode))
-        for line in e.output.splitlines():
-            if line:
-                logger.error(line)
-    logger.info('finished run')
-    return {run_type: True}
+    cmd = shlex.split('bash SalishSeaNEMO.sh >stdout 2>stderr')
+    logger.info('starting run: "{}"'.format(cmd))
+    process = subprocess.Popen(cmd, shell=True)
+    logger.debug('run pid: {.pid}'.format(process))
+    return {run_type: {
+        'run dir': run_dir,
+        'pid': process.pid,
+    }}
 
 
 def update_time_namelist(host, run_type, run_day, future_limit_days):
