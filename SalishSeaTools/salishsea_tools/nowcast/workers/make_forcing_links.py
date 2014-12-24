@@ -112,9 +112,13 @@ def configure_argparser(prog, description, parents):
 
 
 def make_forcing_links(host_name, run_type, run_date, config):
+    if run_type == 'nowcast+':
+        weather_start = 0
+    else:
+        weather_start = 1
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(
-        host_name, host['ssh key name']['nowcast'])
+        host_name, host['ssh key name']['nowcast'])  # nowcast: the project
     # Neah Bay sea surface height
     clear_links(sftp_client, host, 'open_boundaries/west/ssh/')
     for day in range(-1, 3):
@@ -146,7 +150,7 @@ def make_forcing_links(host_name, run_type, run_date, config):
         src = host[linkfile]
         dest = os.path.join(NEMO_atmos_dir, os.path.basename(src))
         create_symlink(sftp_client, host_name, src, dest)
-    for day in range(-1, 3):
+    for day in range(weather_start, 3):
         filename = grib_to_netcdf.FILENAME_TMPL.format(
             run_date.replace(days=day).date())
         dir = '' if day <= 0 else 'fcst'
