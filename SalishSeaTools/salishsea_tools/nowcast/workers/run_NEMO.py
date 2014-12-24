@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that creates the forcing file symlinks
-for a nowcast run on the HPC/cloud facility where the run will be
-executed.
+"""Salish Sea NEMO nowcast worker that prepares the YAML run description
+file and bash run script for a nowcast or forecast run in the cloud
+computing facility, and launches the run.
 """
 from __future__ import division
 
@@ -76,19 +76,17 @@ def main():
     try:
         checklist = run_NEMO(host_name, parsed_args.run_type, config)
         logger.info(
-            '{.run_type} NEMO run in {host_name} completed'
+            '{.run_type} NEMO run in {host_name} started'
             .format(parsed_args, host_name=host_name))
         # Exchange success messages with the nowcast manager process
-        msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
-            worker_name, msg_type, config, logger, socket, checklist)
+            worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             '{.run_type} NEMO run in {host_name} failed'
             .format(parsed_args, host_name=host_name))
         # Exchange failure messages with the nowcast manager process
-        msg_type = 'failure {.run_type}'.format(parsed_args)
-        lib.tell_manager(worker_name, msg_type, config, logger, socket)
+        lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
