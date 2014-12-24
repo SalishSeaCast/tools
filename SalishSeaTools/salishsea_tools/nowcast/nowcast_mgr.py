@@ -320,11 +320,16 @@ def after_upload_forcing(worker, msg_type, payload, config):
         'success nowcast+': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config, [payload.keys()[0]]]),
+             ['make_forcing_links', config,
+              [payload.keys()[0], 'nowcast+']]),
         ],
         'failure nowcast+': None,
         'success forecast2': [
             (update_checklist, [worker, 'forcing upload', payload]),
+# Not ready for this yet
+#            (launch_worker,
+#             ['make_forcing_links', config,
+#              [payload.keys()[0], 'forecast2']]),
         ],
         'failure forecast2': None,
         'crash': None,
@@ -335,15 +340,19 @@ def after_upload_forcing(worker, msg_type, payload, config):
 def after_make_forcing_links(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success': [
+        'success nowcast+': [
             (update_checklist, [worker, 'forcing links', payload]),
         ],
-        'failure': None,
+        'failure nowcast+': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'forcing links', payload]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
     if ('cloud host' in config['run']
             and config['run']['cloud host'] in payload):
-        actions['success'].append(
+        actions['success nowcast+'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
     return actions[msg_type]
