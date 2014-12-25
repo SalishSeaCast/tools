@@ -100,6 +100,7 @@ def message_processor(config, message):
         'upload_forcing': after_upload_forcing,
         'make_forcing_links': after_make_forcing_links,
         'run_NEMO': after_run_NEMO,
+        'watch_NEMO': after_watch_NEMO,
         'download_results': after_download_results,
         'make_out_plots': after_make_out_plots,
         'the end': the_end,
@@ -369,6 +370,30 @@ def after_run_NEMO(worker, msg_type, payload, config):
     return actions[msg_type]
 
 
+def after_watch_NEMO(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
+        'success nowcast': [
+            (update_checklist, [worker, 'NEMO run', payload]),
+            (launch_worker,
+             ['run_NEMO', config, ['forecast'], config['run']['cloud host']]),
+            (launch_worker, [
+             'download_results', config,
+             [config['run']['cloud host'], 'nowcast']]),
+        ],
+        'failure nowcast': None,
+        'success forecast': [
+            (update_checklist, [worker, 'NEMO run', payload]),
+            (launch_worker, [
+             'download_results', config,
+             [config['run']['cloud host'], 'forecast']]),
+        ],
+        'failure forecast': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
 def after_download_results(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
@@ -384,11 +409,6 @@ def after_download_results(worker, msg_type, payload, config):
         'failure forecast': None,
         'crash': None,
     }
-    if 'cloud host' in config['run']:
-        actions['success nowcast'].insert(
-            1,
-            (launch_worker,
-             ['run_NEMO', config, ['forecast'], config['run']['cloud host']]))
     return actions[msg_type]
 
 

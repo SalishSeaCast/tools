@@ -194,6 +194,12 @@ msg_types:
     success: NEMO run started
     failure: NEMO run failed
     crash: run_NEMO worker crashed
+  watch_NEMO:
+    success nowcast: nowcast NEMO run completed
+    failure nowcast: nowcast NEMO run failed
+    success forecast: forecast NEMO run completed
+    failure forecast: forecast NEMO run failed
+    crash: watch_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded
     failure nowcast: nowcast results files download failed
