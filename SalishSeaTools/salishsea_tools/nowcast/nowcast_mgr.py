@@ -321,15 +321,13 @@ def after_upload_forcing(worker, msg_type, payload, config):
         'success nowcast+': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config,
-              [payload.keys()[0], 'nowcast+']]),
+             ['make_forcing_links', config, [payload.keys()[0], 'nowcast+']]),
         ],
         'failure nowcast+': None,
         'success forecast2': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config,
-             [payload.keys()[0], 'forecast2']]),
+             ['make_forcing_links', config, [payload.keys()[0], 'forecast2']]),
         ],
         'failure forecast2': None,
         'crash': None,
