@@ -145,10 +145,11 @@ def run_NEMO(host_name, run_type, config):
     script = build_script(run_desc_file, cores, results_dir)
     with open('SalishSeaNEMO.sh', 'wt') as f:
         f.write(script)
+    lib.fix_perms('SalishSeaNEMO.sh', mode=lib.PERMS_RWX_RWX_R)
     logger.debug(
         'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
     # Launch the bash script
-    cmd = shlex.split('bash SalishSeaNEMO.sh >stdout 2>stderr')
+    cmd = shlex.split('./SalishSeaNEMO.sh >./stdout 2>./stderr')
     logger.info('starting run: "{}"'.format(cmd))
     process = subprocess.Popen(cmd, shell=True)
     logger.debug('run pid: {.pid}'.format(process))
@@ -253,8 +254,12 @@ def run_description(host, run_type, run_day, run_id, restart_timestep):
 
 def build_script(run_desc_file, procs, results_dir):
     run_desc = salishsea_cmd.lib.load_run_desc(run_desc_file)
-    # Variable definitions
     script = (
+        u'#!/bin/bash\n'
+        u'\n'
+    )
+    # Variable definitions
+    script += (
         u'{defns}\n'
         .format(
             defns=_definitions(
