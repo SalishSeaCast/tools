@@ -375,6 +375,9 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_make_forcing_links', 'crash'),
     ('after_run_NEMO', 'failure'),
     ('after_run_NEMO', 'crash'),
+    ('after_watch_NEMO', 'failure nowcast'),
+    ('after_watch_NEMO', 'failure forecast'),
+    ('after_watch_NEMO', 'crash'),
     ('after_download_results', 'failure nowcast'),
     ('after_download_results', 'failure forecast'),
     ('after_download_results', 'crash'),
@@ -655,31 +658,49 @@ def test_run_NEMO_success_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
+def test_after_watch_NEMO_success_nowcast_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = {'run': {'cloud host': 'west.cloud'}}
-    next_steps = nowcast_mgr_module.after_download_results(
-        'download_results', 'success nowcast', payload, config)
+    next_steps = nowcast_mgr_module.after_watch_NEMO(
+        'watch_NEMO', 'success nowcast', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
-         ['download_results', 'results files', payload]),
+         ['watch_NEMO', 'NEMO run', payload]),
         (nowcast_mgr_module.launch_worker,
          ['run_NEMO', config, ['forecast'], 'west.cloud']),
         (nowcast_mgr_module.launch_worker,
-         ['make_out_plots', config, ['nowcast']]),
+         ['download_results', config, ['west.cloud', 'nowcast']]),
     ]
     assert next_steps == expected
 
 
-def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
+def test_after_watch_NEMO_success_forecast_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'cloud host': 'west.cloud'}}
+    next_steps = nowcast_mgr_module.after_watch_NEMO(
+        'watch_NEMO', 'success forecast', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['watch_NEMO', 'NEMO run', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['download_results', config, ['west.cloud', 'forecast']]),
+    ]
+    assert next_steps == expected
+
+
+@pytest.mark.parametrize('run_type', [
+    'nowcast',
+    'forecast'
+])
+def test_download_results_success_next_steps(run_type, nowcast_mgr_module):
     payload = Mock(name='payload')
     config = {'run': {'cloud host': 'west.cloud'}}
     next_steps = nowcast_mgr_module.after_download_results(
-        'download_results', 'success forecast', payload, config)
+        'download_results', 'success {}'.format(run_type), payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['make_out_plots', config, ['forecast']]),
+         ['make_out_plots', config, [run_type]]),
     ]
     assert next_steps == expected
