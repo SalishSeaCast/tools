@@ -158,7 +158,7 @@ def run_NEMO(host_name, run_type, config):
         '/home/ubuntu/MEOPAR/home/nowcast/nowcast.yaml '
         '{run_type} {pid}'.format(run_type=run_type, pid=process.pid)
     )
-    logger.info('launching watch_NEMO worker on {}'.format(host))
+    logger.info('launching watch_NEMO worker on {}'.format(host_name))
     logger.debug(cmd)
     subprocess.Popen(cmd)
     return {run_type: {
