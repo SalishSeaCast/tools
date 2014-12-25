@@ -61,9 +61,8 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        getNBssh(config, checklist)
+        checklist = getNBssh(config)
         logger.info(
             'Neah Bay sea surface height web scraping '
             'and file creation completed')
@@ -90,7 +89,7 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def getNBssh(config, checklist):
+def getNBssh(config):
     """Generate sea surface height forcing files from the Neah Bay
     storm surge website.
     """
@@ -103,7 +102,7 @@ def getNBssh(config, checklist):
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
     textfile = read_website(config['ssh']['ssh_dir'])
     lib.fix_perms(textfile, grp_name=config['file group'])
-    checklist.update({'txt': os.path.basename(textfile)})
+    checklist = {'txt': os.path.basename(textfile)}
     data = load_surge_data(textfile)
     # Process the dates to find days with a full prediction
     dates = np.array(data.date.values)
@@ -141,6 +140,7 @@ def getNBssh(config, checklist):
     ax.legend(loc=4)
     fig.savefig('NBssh.png')
     lib.fix_perms('NBssh.png', grp_name=config['file group'])
+    return checklist
 
 
 def read_website(save_path):
