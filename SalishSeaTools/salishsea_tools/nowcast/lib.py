@@ -40,6 +40,12 @@ PERMS_RW_RW_R = (
     stat.S_IRGRP | stat.S_IWGRP |
     stat.S_IROTH
 )
+# rwxrwxr--
+PERMS_RWX_RWX_R = (
+    stat.S_IRWXU |
+    stat.S_IRWXG |
+    stat.S_IROTH
+)
 # rwxrwxr-x
 PERMS_RWX_RWX_R_X = (
     stat.S_IRWXU |
