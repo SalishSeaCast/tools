@@ -155,7 +155,7 @@ def run_NEMO(host_name, run_type, config):
     # Launch the run watcher worker
     cmd = shlex.split(
         'python -m salishsea_tools.nowcast.workers.watch_NEMO '
-        '/home/ubuntu/MEOPAR/home/nowcast/nowcast.yaml '
+        '/home/ubuntu/MEOPAR/nowcast/nowcast.yaml '
         '{run_type} {pid}'.format(run_type=run_type, pid=process.pid)
     )
     logger.info('launching watch_NEMO worker on {}'.format(host_name))
