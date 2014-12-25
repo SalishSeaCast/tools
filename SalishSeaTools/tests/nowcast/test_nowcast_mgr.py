@@ -371,7 +371,8 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_upload_forcing', 'failure nowcast+'),
     ('after_upload_forcing', 'failure forecast2'),
     ('after_upload_forcing', 'crash'),
-    ('after_make_forcing_links', 'failure'),
+    ('after_make_forcing_links', 'failure nowcast+'),
+    ('after_make_forcing_links', 'failure forecast2'),
     ('after_make_forcing_links', 'crash'),
     ('after_run_NEMO', 'failure'),
     ('after_run_NEMO', 'crash'),
@@ -591,7 +592,9 @@ def test_mount_sshfs_success_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_upload_forcing_success_nowcast_plus_next_steps(nowcast_mgr_module):
+def test_after_upload_forcing_success_nowcast_plus_next_steps(
+    nowcast_mgr_module,
+):
     payload = {'west.cloud': True}
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_upload_forcing(
@@ -600,12 +603,12 @@ def test_upload_forcing_success_nowcast_plus_next_steps(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['upload_forcing', 'forcing upload', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['make_forcing_links', config, ['west.cloud']]),
+         ['make_forcing_links', config, ['west.cloud', 'nowcast+']]),
     ]
     assert next_steps == expected
 
 
-def test_upload_forcing_success_forecast2_next_steps(nowcast_mgr_module):
+def test_after_upload_forcing_success_forecast2_next_steps(nowcast_mgr_module):
     payload = {'west.cloud': True}
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_upload_forcing(
@@ -613,15 +616,19 @@ def test_upload_forcing_success_forecast2_next_steps(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['upload_forcing', 'forcing upload', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_forcing_links', config, ['west.cloud', 'forecast2']])
     ]
     assert next_steps == expected
 
 
-def test_make_forcing_links_success_no_cloud_next_steps(nowcast_mgr_module):
+def test_after_make_forcing_links_success_nowcast_plus_no_cloud_next_steps(
+    nowcast_mgr_module,
+):
     payload = Mock(name='payload')
     config = {'run': {}}
     next_steps = nowcast_mgr_module.after_make_forcing_links(
-        'make_forcing_links', 'success', payload, config)
+        'make_forcing_links', 'success nowcast+', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['make_forcing_links', 'forcing links', payload]),
@@ -629,14 +636,16 @@ def test_make_forcing_links_success_no_cloud_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_make_forcing_links_success_cloud_host_next_steps(nowcast_mgr_module):
+def test_after_make_forcing_links_success_nowcast_plus_cloud_host_next_steps(
+    nowcast_mgr_module,
+):
     payload = {'west.cloud': True}
     config = {
         'run': {
             'cloud host': 'west.cloud'
         }}
     next_steps = nowcast_mgr_module.after_make_forcing_links(
-        'make_forcing_links', 'success', payload, config)
+        'make_forcing_links', 'success nowcast+', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['make_forcing_links', 'forcing links', payload]),
