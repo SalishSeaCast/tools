@@ -73,9 +73,8 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        get_grib(parsed_args.forecast, config, checklist)
+        checklist = get_grib(parsed_args.forecast, config)
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
@@ -114,7 +113,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def get_grib(forecast, config, checklist):
+def get_grib(forecast, config):
     utc = arrow.utcnow()
     utc = utc.replace(hours=-int(forecast))
     date = utc.format('YYYYMMDD')
@@ -146,7 +145,8 @@ def get_grib(forecast, config, checklist):
             lib.fix_perms(filename)
         os.chdir('..')
     os.chdir('..')
-    checklist.update({'{} forecast'.format(forecast): True})
+    checklist = {'{} forecast'.format(forecast): True}
+    return checklist
 
 
 if __name__ == '__main__':

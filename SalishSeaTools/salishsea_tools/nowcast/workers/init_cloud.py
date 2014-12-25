@@ -45,10 +45,9 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     host_name = config['run']['cloud host']
     try:
-        init_cloud(host_name, config, checklist)
+        checklist = init_cloud(host_name, config)
         # Exchange success messages with the nowcast manager process
         logger.info(
             'names and addresses collected from existing nodes in {}'
@@ -76,11 +75,12 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def init_cloud(host_name, config, checklist):
+def init_cloud(host_name, config):
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
     nova = novaclient.client.Client(**credentials)
     logger.debug('authenticated nova client on {}'.format(host_name))
+    checklist = {}
     network_label = config['run'][host_name]['network label']
     for node in nova.servers.list():
         try:
@@ -90,6 +90,7 @@ def init_cloud(host_name, config, checklist):
             logger.warning('node {.name} exists but lacks an ip address')
         logger.debug('node {.name} found with ip {}'.format(node, node_addr))
         checklist[node.name.encode('ascii')] = node_addr.encode('ascii')
+    return checklist
 
 
 if __name__ == '__main__':

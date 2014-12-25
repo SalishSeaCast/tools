@@ -52,11 +52,10 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     host_name = config['run']['cloud host']
     try:
-        create_compute_node(
-            host_name, config, checklist, parsed_args.node_name)
+        checklist = create_compute_node(
+            host_name, config, parsed_args.node_name)
         # Exchange success messages with the nowcast manager process
         logger.info(
             '{0.node_name} node creation on {host} completed'
@@ -90,7 +89,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def create_compute_node(host_name, config, checklist, node_name):
+def create_compute_node(host_name, config, node_name):
     host = config['run'][host_name]
     # Authenticate
     credentials = lib.get_nova_credentials_v2()
@@ -122,7 +121,8 @@ def create_compute_node(host_name, config, checklist, node_name):
     # Get node's private IP address
     node = nova.servers.find(name=node_name)
     node_addr = node.addresses[network_label][0]['addr']
-    checklist[node_name] = node_addr.encode('ascii')
+    checklist = {node_name: node_addr.encode('ascii')}
+    return checklist
 
 
 if __name__ == '__main__':

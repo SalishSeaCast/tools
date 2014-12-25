@@ -52,11 +52,10 @@ def main():
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
-    checklist = {}
     try:
-        download_results(
+        checklist = download_results(
             parsed_args.host_name, parsed_args.run_type, parsed_args.run_date,
-            config, checklist)
+            config)
         logger.info(
             '{0.run_type} results files from {0.host_name} downloaded'
             .format(parsed_args))
@@ -108,7 +107,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def download_results(host_name, run_type, run_date, config, checklist):
+def download_results(host_name, run_type, run_date, config):
     host = config['run'][host_name]
     results_dir = run_date.strftime('%d%b%y').lower()
     src_dir = os.path.join(host['results'][run_type], results_dir)
@@ -122,10 +121,11 @@ def download_results(host_name, run_type, run_date, config, checklist):
         mode=lib.PERMS_RWX_RWX_R_X, grp_name='sallen')
     for filepath in glob.glob(os.path.join(dest, results_dir, '*')):
         lib.fix_perms(filepath, grp_name='sallen')
-    checklist[run_type] = {}
+    checklist = {run_type: {}}
     for freq in '1h 1d'.split():
         checklist[run_type][freq] = glob.glob(
             os.path.join(dest, results_dir, 'SalishSea_{}_*.nc'.format(freq)))
+    return checklist
 
 
 if __name__ == '__main__':
