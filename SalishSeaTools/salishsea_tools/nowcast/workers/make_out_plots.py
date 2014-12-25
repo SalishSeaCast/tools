@@ -143,7 +143,7 @@ def make_out_plots(run_date, run_type, config, socket):
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Victoria')
     filename = os.path.join(
-        plots_dir, 'Vic_maxSSH__{date}.svg'.format(date=date_key))
+        plots_dir, 'Vic_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
