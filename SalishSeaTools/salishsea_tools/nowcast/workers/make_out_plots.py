@@ -69,6 +69,8 @@ def main():
         msg_type = '{} {}'.format('success', parsed_args.run_type)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
+        if parsed_args.run_type == 'forecast':
+            lib.tell_manager(worker_name, 'the end', config, logger, socket)
     except lib.WorkerError:
         logger.critical(
             'Made the "Out" plots failed for results type {.run_type}'
