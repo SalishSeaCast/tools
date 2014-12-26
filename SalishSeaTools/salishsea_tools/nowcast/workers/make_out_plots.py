@@ -160,11 +160,10 @@ def make_out_plots(run_date, run_type, config, socket):
         plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
     plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    # this function currently fails for forecasts, remove it for now
-#    fig = figures.compare_water_levels(grid_T_hr, bathy)
-#    filename = os.path.join(
-#        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
-#    plt.savefig(filename, facecolor=fig.get_facecolor())
+    fig = figures.compare_water_levels(grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
     filename = os.path.join(
@@ -174,6 +173,17 @@ def make_out_plots(run_date, run_type, config, socket):
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
     filename = os.path.join(
         plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = figures.average_winds_at_station(
+        grid_T_hr, bathy, model_path, station='all')
+    filename = os.path.join(
+        plots_dir, 'Avg_wind_vectors_{date}.svg'.format(date=date_key))
+    plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = figures.winds_at_max_ssh(grid_T_hr, bathy, model_path, station='all')
+    filename = os.path.join(
+        plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=date_key))
     plt.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     for f in glob(os.path.join(plots_dir, '*')):
