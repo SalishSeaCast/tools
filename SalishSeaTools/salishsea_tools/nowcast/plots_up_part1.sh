@@ -1,7 +1,7 @@
 # copy the files over and put me in the correct directory to edit .mako
 
 # today
-Year=$(date +%Y)
+Year=$(date +%y)
 Month=$(date +%b)
 Month=$(echo $Month | tr '[:upper:]' '[:lower:]')
 Day=$(date +%d)
@@ -9,7 +9,7 @@ Day=$(date +%d)
 dir=${Day}${Month}${Year}
 
 # origin
-cd /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/$dir
+cd /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/$dir/figures
 
 # destination
 destdir=/ocean/sallen/allen/research/MEOPAR/www_working/salishsea-site/site/_static/nemo/results_figures/forecast/$dir
