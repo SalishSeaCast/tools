@@ -16,9 +16,11 @@
 """Salish Sea NEMO nowcast worker that scrapes NOAA Neah Bay storm surge
 forecast site and generates western open boundary conditions ssh files.
 """
+import argparse
 import datetime
 import logging
 import os
+import shutil
 import traceback
 
 from bs4 import BeautifulSoup
@@ -52,7 +54,13 @@ URL = (
 
 def main():
     # Prepare the worker
-    parser = lib.basic_arg_parser(worker_name, description=__doc__)
+    base_parser = lib.basic_arg_parser(
+        worker_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
+        parents=[base_parser],
+    )
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
@@ -62,7 +70,7 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     try:
-        checklist = getNBssh(config)
+        checklist = getNBssh(parsed_args.run_type, config)
         logger.info(
             'Neah Bay sea surface height web scraping '
             'and file creation completed')
@@ -89,7 +97,17 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def getNBssh(config):
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
+        help='Type of run to execute.'
+    )
+    return parser
+
+
+def getNBssh(run_type, config):
     """Generate sea surface height forcing files from the Neah Bay
     storm surge website.
     """
@@ -98,12 +116,23 @@ def getNBssh(config):
     lons = fB.variables['nav_lon'][:]
     fB.close()
     logger.debug('loaded lats & lons from {bathymetry}'.format(**config))
-    # Load surge data
+    # Scrape the surge data from the website into a text file,
+    # store the file in the run results directory,
+    # and load the data for processing into netCDF4 files
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
     textfile = read_website(config['ssh']['ssh_dir'])
     lib.fix_perms(textfile, grp_name=config['file group'])
-    checklist = {'txt': os.path.basename(textfile)}
     data = load_surge_data(textfile)
+    checklist = {'txt': os.path.basename(textfile)}
+    # Store a copy of the text file in the run results directory so that
+    # there is definitive record of the sea surface height data that was
+    # used for the run
+    run_date = utc_now_to_run_date(utc_now)
+    results_dir = os.path.join(
+        config['run']['results archive'][run_type], run_date)
+    lib.mkdir(
+        results_dir, logger, grp_name=config['file group'], exist_ok=True)
+    shutil.copy2(textfile, results_dir)
     # Process the dates to find days with a full prediction
     dates = np.array(data.date.values)
     # Check if today is Jan or Dec
@@ -184,6 +213,21 @@ def load_surge_data(filename):
     logger.debug(
         'loaded observations & predictions table into Pandas DataFrame')
     return data
+
+
+def utc_now_to_run_date(utc_now, run_type):
+    """Calculate the run_date used for results directory naming from the
+    present UTC time and run_type.
+
+    The offsets used in the calculation are based on nominal start times
+    of the NEMO runs less 2 hours.
+    """
+    offsets = {
+        'nowcast': 16,
+        'forecast': 18,
+        'forecast2': 34,
+    }
+    return (utc_now - datetime.timedelta(hours=offsets[run_type])).date()
 
 
 def save_netcdf(
