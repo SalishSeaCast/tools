@@ -142,13 +142,13 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['make_runoff_file', config]),
-            (launch_worker, ['get_NeahBay_ssh', config]),
+            (launch_worker, ['get_NeahBay_ssh', config, ['forecast2']]),
             (launch_worker, ['grib_to_netcdf', config, ['forecast2']]),
         ],
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
-            (launch_worker, ['get_NeahBay_ssh', config]),
+            (launch_worker, ['get_NeahBay_ssh', config, ['nowcast']]),
             (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
         ],
         'failure 12': None,

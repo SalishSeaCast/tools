@@ -423,7 +423,8 @@ def test_download_weather_success_06_next_step_args(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['download_weather', 'weather', payload]),
         (nowcast_mgr_module.launch_worker, ['make_runoff_file', config]),
-        (nowcast_mgr_module.launch_worker, ['get_NeahBay_ssh', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['get_NeahBay_ssh', config, ['forecast2']]),
         (nowcast_mgr_module.launch_worker,
          ['grib_to_netcdf', config, ['forecast2']]),
     ]
@@ -438,7 +439,8 @@ def test_download_weather_success_12_next_step_args(nowcast_mgr_module):
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['download_weather', 'weather', payload]),
-        (nowcast_mgr_module.launch_worker, ['get_NeahBay_ssh', config]),
+        (nowcast_mgr_module.launch_worker,
+         ['get_NeahBay_ssh', config, ['nowcast']]),
         (nowcast_mgr_module.launch_worker,
          ['grib_to_netcdf', config, ['nowcast+']]),
     ]
