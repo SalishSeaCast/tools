@@ -107,6 +107,13 @@ run:
     forecast2: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/
 
 
+web:
+  site_repo_url: https://bitbucket.org/salishsea/salishsea-site
+  site_storm_surge_path: site/storm-surge
+  site_plots_path: site/_static/nemo/results_figures
+  server_path: shelob:/www/salishsea/data
+
+
 logging:
   # Log files are created in the same directory as the nowcast YAML
   # config file that is used for the nowcast_mgr process
@@ -215,3 +222,7 @@ msg_types:
     failure forecast2: forecast2 OUT plots failed
     crash: make_out_plots worker crashed
     the end: end of automation
+  push_to_web:
+    success: forecast page and figures pushed to salishsea site
+    success: forecast page and figures push to salishsea site failed
+    crash: push_to_web worker crashed

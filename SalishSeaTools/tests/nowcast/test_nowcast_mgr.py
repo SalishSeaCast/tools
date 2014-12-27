@@ -29,7 +29,6 @@ def nowcast_mgr_module():
     return nowcast_mgr
 
 
-@pytest.mark.use_fixtures(['nowcast_mgr_module'])
 class TestMessageProcesor(object):
     """Unit tests for message_processor() function.
     """
@@ -382,6 +381,12 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_download_results', 'failure nowcast'),
     ('after_download_results', 'failure forecast'),
     ('after_download_results', 'crash'),
+    ('after_make_out_plots', 'failure nowcast'),
+    ('after_make_out_plots', 'failure forecast'),
+    ('after_make_out_plots', 'failure forecast2'),
+    ('after_make_out_plots', 'crash'),
+    ('after_push_to_web', 'failure'),
+    ('after_push_to_web', 'crash'),
 ])
 def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
@@ -713,5 +718,17 @@ def test_download_results_success_next_steps(run_type, nowcast_mgr_module):
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
          ['make_out_plots', config, [run_type]]),
+    ]
+    assert next_steps == expected
+
+
+def test_push_to_web_success_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_push_to_web(
+        'push_to_web', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['push_to_web', 'push to salishsea site', payload])
     ]
     assert next_steps == expected

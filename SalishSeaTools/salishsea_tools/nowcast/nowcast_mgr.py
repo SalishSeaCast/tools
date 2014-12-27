@@ -103,6 +103,7 @@ def message_processor(config, message):
         'watch_NEMO': after_watch_NEMO,
         'download_results': after_download_results,
         'make_out_plots': after_make_out_plots,
+        'push_to_web': after_push_to_web,
         'the end': the_end,
     }
     # Handle undefined message type
@@ -425,6 +426,18 @@ def after_make_out_plots(worker, msg_type, payload, config):
             (update_checklist, [worker, 'plots', payload]),
         ],
         'failure forecast2': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_push_to_web(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
+        'success': [
+            (update_checklist, [worker, 'push to salishsea site', payload]),
+        ],
+        'failure': None,
         'crash': None,
     }
     return actions[msg_type]
