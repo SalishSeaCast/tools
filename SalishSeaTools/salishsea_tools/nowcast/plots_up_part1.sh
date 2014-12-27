@@ -12,7 +12,7 @@ dir=${Day}${Month}${Year}
 cd /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/$dir/figures
 
 # destination
-destdir=/ocean/sallen/allen/research/MEOPAR/www_working/salishsea-site/site/_static/nemo/results_figures/forecast/$dir
+destdir=/data/dlatorne/MEOPAR/nowcast/www/salishsea-site/site/_static/nemo/results_figures/forecast/$dir
 echo $destdir
 mkdir $destdir
 cp * $destdir
