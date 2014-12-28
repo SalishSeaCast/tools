@@ -111,6 +111,7 @@ web:
   site_repo_url: https://bitbucket.org/salishsea/salishsea-site
   site_storm_surge_path: site/storm-surge
   site_plots_path: site/_static/nemo/results_figures
+  www_path: www
   server_path: shelob:/www/salishsea/data
 
 
@@ -224,5 +225,5 @@ msg_types:
     the end: end of automation
   push_to_web:
     success: forecast page and figures pushed to salishsea site
-    success: forecast page and figures push to salishsea site failed
+    failure: forecast page and figures push to salishsea site failed
     crash: push_to_web worker crashed
