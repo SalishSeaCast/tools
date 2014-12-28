@@ -69,16 +69,9 @@ def main():
     logger.info('task completed; shutting down')
 
 
-def sphinx_build(repo_path):
-    site_path = os.path.join(repo_path, 'site')
-    build_path = os.path.join(site_path, '_build')
-    html_path = os.path.join(build_path, 'html')
-    return html_path
-
-
 def push_to_web(config):
-    # repo_path = hg_update(site_repo_url, www_path)
-    repo_path = '/data/dlatorne/MEOPAR/nowcast/www/salishsea-site'
+    repo_path = hg_update(
+        config['web']['site_repo_url'], config['web']['www_path'])
     html_path = sphinx_build(repo_path)
     results_pages = os.path.join(
         *config['web']['site_storm_surge_path'].split(os.path.sep)[1:])
@@ -90,7 +83,49 @@ def push_to_web(config):
     return checklist
 
 
+def hg_update(repo_url, www_path):
+    """Pull changes from repo_url and update its clone in www_path.
+
+    If the clone does not yet exist, create it.
+    """
+    repo_name = repo_url.rsplit('/')[-1]
+    repo = os.path.join(www_path, repo_name)
+    if os.path.exists(repo):
+        cmd = ['hg', 'pull', '--update', '--cwd', repo]
+        logger.info('pulling updates from {}'.format(repo_url))
+    else:
+        cmd = ['hg', 'clone', repo_url, repo]
+        logger.info('cloning{}'.format(repo_url))
+    subprocess.check_call(cmd)
+    logger.info('updated {}'.format(repo))
+    return repo
+
+
+def sphinx_build(repo_path):
+    """Do a clean build of the site by deleting the site/_build tree
+    and then running sphinx-build.
+    """
+    site_path = os.path.join(repo_path, 'site')
+    build_path = os.path.join(site_path, '_build')
+    html_path = os.path.join(build_path, 'html')
+    cmd = 'rm -rf {}'.format(os.path.join(build_path, '*'))
+    subprocess.check_call(cmd, shell=True)
+    cmd = [
+        'sphinx-build',
+        '-b', 'html',
+        '-d', os.path.join(build_path, 'doctrees'),
+        '-E',
+        site_path,
+        html_path,
+    ]
+    subprocess.check_call(cmd)
+    logger.info('finished sphinx-build of {}'.format(site_path))
+    return html_path
+
+
 def rsync_to_site(html_path, results_pages, plots_path, server_path):
+    """Push the results page and plot files to the web server.
+    """
     cmd = [
         'rsync', '-rRt',
         '{}/./{}/'.format(html_path, results_pages),
