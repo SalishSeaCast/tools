@@ -44,6 +44,8 @@ context = zmq.Context()
 
 
 TIMESTEPS_PER_DAY = 8640
+NOWCAST_DURATION = 1  # day
+FORECAST_DURATION = 1.25  # days
 
 
 def main():
@@ -113,30 +115,29 @@ def configure_argparser(prog, description, parents):
 
 def run_NEMO(host_name, run_type, config):
     host = config['run'][host_name]
-    # Update the namelist.time file
-    today = datetime.date.today()
-    if run_type == 'nowcast':
-        run_day = today
-        future_limit_days = 1
-    elif run_type == 'forecast':
-        run_day = today + datetime.timedelta(days=1)
-        future_limit_days = 2.5
-    restart_timestep = update_time_namelist(
-        host, run_type, run_day, future_limit_days)
+    restart_timestep = update_time_namelist(host, run_type)
+
     # Create the run description data structure and dump it to a YAML file
+    os.chdir(host['run_prep_dir'])
+    today = datetime.date.today()
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
-    os.chdir(host['run_prep_dirs'][run_type])
+    run_days = {
+        'nowcast': today,
+        'forecast': today + datetime.timedelta(days=1),
+    }
     run_desc = run_description(
-        host, run_type, run_day, run_id, restart_timestep)
+        host, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
     logger.debug('run description file: {}'.format(run_desc_file))
+
     # Create and populate the temporary run directory
     run_dir = salishsea_cmd.api.prepare(run_desc_file, 'iodef.xml')
     logger.debug('temporary run directory: {}'.format(run_dir))
     os.unlink(run_desc_file)
+
     # Create the bash script to execute the run and gather the results
     namelist = namelist2dict(os.path.join(run_dir, 'namelist'))
     cores = namelist['nammpp'][0]['jpnij']
@@ -148,11 +149,13 @@ def run_NEMO(host_name, run_type, config):
     lib.fix_perms('SalishSeaNEMO.sh', mode=lib.PERMS_RWX_RWX_R)
     logger.debug(
         'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
+
     # Launch the bash script
     cmd = shlex.split('./SalishSeaNEMO.sh >./stdout 2>./stderr')
     logger.info('starting run: "{}"'.format(cmd))
     process = subprocess.Popen(cmd, shell=True)
     logger.debug('run pid: {.pid}'.format(process))
+
     # Launch the run watcher worker
     cmd = shlex.split(
         'python -m salishsea_tools.nowcast.workers.watch_NEMO '
@@ -168,40 +171,47 @@ def run_NEMO(host_name, run_type, config):
     }}
 
 
-def update_time_namelist(host, run_type, run_day, future_limit_days):
-    namelist = os.path.join(host['run_prep_dirs'][run_type], 'namelist.time')
+def update_time_namelist(host, run_type):
+    namelist = os.path.join(host['run_prep_dir'], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
-    new_lines, restart_timestep = calc_new_namelist_lines(
-        lines, run_type, run_day, future_limit_days)
+    new_lines, restart_timestep = calc_new_namelist_lines(lines, run_type)
     with open(namelist, 'wt') as f:
         f.writelines(new_lines)
     return restart_timestep
 
 
 def calc_new_namelist_lines(
-    lines, run_type, run_day, future_limit_days,
+    lines, run_type, run_day=datetime.date.today(),
     timesteps_per_day=TIMESTEPS_PER_DAY,
 ):
-    it000_line, prev_it000 = get_namelist_value('nn_it000', lines)
-    itend_line, prev_itend = get_namelist_value('nn_itend', lines)
+    # Read indices & values of it000 and itend from namelist;
+    # they are the lines we will update, actual values are irrelevant
+    it000_line, it000 = get_namelist_value('nn_it000', lines)
+    itend_line, itend = get_namelist_value('nn_itend', lines)
+    # Read the date that the sequence of runs was started on;
+    # used to calculate it000 and itend for the run we are preparing
     date0_line, date0 = get_namelist_value('nn_date0', lines)
-    next_it000 = int(prev_it000) + timesteps_per_day
-    next_itend = int(prev_itend) + timesteps_per_day
-    # Prevent namelist from being updated past today's nowcast/forecast
-    # time step values
     date0 = datetime.date(*map(int, [date0[:4], date0[4:6], date0[-2:]]))
-    future_limit = datetime.timedelta(days=future_limit_days)
-    if next_itend / timesteps_per_day > (run_day - date0 + future_limit).days:
-        return lines, int(prev_it000) - 1
-    # Increment 1st and last time steps to values for today
-    lines[it000_line] = lines[it000_line].replace(prev_it000, str(next_it000))
-    lines[itend_line] = lines[itend_line].replace(prev_itend, str(next_itend))
-    restart_timestep = {
-        'nowcast': int(prev_itend),
-        'forecast': int(next_it000) - 1,
+    dt = run_day - date0
+    new_values = {
+        'nowcast': (
+            int(dt.days * timesteps_per_day + 1),
+            int((dt.days + NOWCAST_DURATION) * timesteps_per_day),
+        ),
+        'forecast': (
+            int((dt.days + NOWCAST_DURATION) * timesteps_per_day + 1),
+            int((dt.days + NOWCAST_DURATION + FORECAST_DURATION)
+                * timesteps_per_day),
+        ),
     }
-    return lines, restart_timestep[run_type]
+    new_it000, new_itend = new_values[run_type]
+    # Increment 1st and last time steps to values for the run
+    lines[it000_line] = lines[it000_line].replace(it000, str(new_it000))
+    lines[itend_line] = lines[itend_line].replace(itend, str(new_itend))
+    # Calculate the restart file time step
+    restart_timestep = new_it000 - 1
+    return lines, restart_timestep
 
 
 def get_namelist_value(key, lines):
@@ -212,7 +222,7 @@ def get_namelist_value(key, lines):
     return line_index, value
 
 
-def run_description(host, run_type, run_day, run_id, restart_timestep):
+def run_description(host, run_day, run_id, restart_timestep):
     # Relative paths from MEOPAR/nowcast/
     prev_day = run_day - datetime.timedelta(days=1)
     init_conditions = os.path.join(
@@ -220,7 +230,7 @@ def run_description(host, run_type, run_day, run_id, restart_timestep):
         prev_day.strftime('%d%b%y').lower(),
         'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
-    forcing_home = host['run_prep_dirs']['nowcast']
+    forcing_home = host['run_prep_dir']
     run_desc = salishsea_cmd.api.run_description(
         NEMO_code=os.path.abspath(os.path.join(forcing_home, '../NEMO-code/')),
         forcing=os.path.abspath(
