@@ -70,9 +70,7 @@ run:
     # Location of NEMO on-the-fly interpolation weights file
     # for GEM 2.5km operational forecast
     weights: /home/ubuntu/MEOPAR/NEMO-forcing/grid/weights-gem2.5-ops.nc
-    run_prep_dirs:
-      nowcast: /home/ubuntu/MEOPAR/nowcast/
-      forecast: /home/ubuntu/MEOPAR/forecast/
+    run_prep_dir: /home/ubuntu/MEOPAR/nowcast/
     results:
       nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
       forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
