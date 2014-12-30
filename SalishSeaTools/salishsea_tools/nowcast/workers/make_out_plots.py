@@ -104,7 +104,8 @@ def configure_argparser(prog, description, parents):
         "forecast2" means the second forecast, following forecast
         ''')
     parser.add_argument(
-        '--run-date', type=lib.arrow_date, default=arrow.now(),
+        '--run-date', type=lib.arrow_date,
+        default=arrow.now().date(),
         help='''
         Date of the run to download results files from;
         use YYYY-MM-DD format.
