@@ -28,15 +28,15 @@ import subprocess
 import traceback
 
 import arrow
+import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
 import zmq
 
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-from salishsea_tools.nowcast import lib
+from salishsea_tools.nowcast import (
+    figures,
+    lib,
+)
 
 
 worker_name = lib.get_module_name()
@@ -175,7 +175,7 @@ def grib_to_netcdf(runtype, config):
             else:
                 checklist.update({subdir: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
-    fig.savefig('wg.png')
+    figures.save_image(fig, 'wg.png')
     return checklist
 
 

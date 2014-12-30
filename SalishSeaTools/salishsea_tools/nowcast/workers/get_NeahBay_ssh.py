@@ -25,8 +25,6 @@ import traceback
 
 from bs4 import BeautifulSoup
 import pytz
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
@@ -34,7 +32,10 @@ import pandas as pd
 import zmq
 
 from salishsea_tools import nc_tools
-from salishsea_tools.nowcast import lib
+from salishsea_tools.nowcast import (
+    figures,
+    lib,
+)
 
 
 worker_name = lib.get_module_name()
@@ -168,7 +169,7 @@ def getNBssh(run_type, config):
             item = {'obs': filename}
         checklist.update(item)
     ax.legend(loc=4)
-    fig.savefig('NBssh.png')
+    figures.save_image(fig, 'NBssh.png')
     lib.fix_perms('NBssh.png', grp_name=config['file group'])
     return checklist
 
