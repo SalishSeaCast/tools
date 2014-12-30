@@ -26,7 +26,7 @@ import os
 
 import arrow
 from dateutil import tz
-import matplotlib.backends.backend_agg
+from matplotlib.backends import backend_agg as backend
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -81,14 +81,14 @@ def save_image(fig, filename, **kwargs):
                    e.g. .png, .svg, etc.
     :type filename: str
 
-    :arg **kwargs: Keyword argument names and values to control how fig
-                   is rendered;
-                   e.g. :kbd:`facecolor=fig.get_facecolor()`,
-                   :kbd:`bbox_inches='tight', etc.
-                   See the matplotlib docs for details.
-    :type **kwargs: dict
+    :arg kwargs: Keyword argument names and values to control how fig
+                 is rendered;
+                 e.g. :kbd:`facecolor=fig.get_facecolor()`,
+                 :kbd:`bbox_inches='tight', etc.
+                 See the matplotlib docs for details.
+    :type kwargs: dict
     """
-    canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(fig)
+    canvas = backend.FigureCanvasAgg(fig)
     canvas.print_svg(filename, **kwargs)
 
 
