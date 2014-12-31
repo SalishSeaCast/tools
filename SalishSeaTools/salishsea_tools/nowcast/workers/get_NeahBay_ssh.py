@@ -170,8 +170,10 @@ def getNBssh(run_type, config):
             item = {'obs': filename}
         checklist.update(item)
     ax.legend(loc=4)
-    figures.save_image(fig, 'NBssh.png')
-    lib.fix_perms('NBssh.png', grp_name=config['file group'])
+    image_file = os.path.join(
+        os.path.dirname(config['logging']['log_file']), 'NBssh.png')
+    figures.save_image(fig, image_file)
+    lib.fix_perms(image_file, grp_name=config['file group'])
     return checklist
 
 

@@ -176,7 +176,10 @@ def grib_to_netcdf(runtype, config):
             else:
                 checklist.update({subdir: os.path.basename(outnetcdf)})
     axs[2, 0].legend(loc='upper left')
-    figures.save_image(fig, 'wg.png')
+    image_file = os.path.join(
+        os.path.dirname(config['logging']['log_file']), 'wg.png')
+    figures.save_image(fig, image_file)
+    lib.fix_perms(image_file, grp_name=config['file group'])
     return checklist
 
 
