@@ -89,7 +89,7 @@ def save_image(fig, filename, **kwargs):
     :type kwargs: dict
     """
     canvas = backend.FigureCanvasAgg(fig)
-    canvas.print_svg(filename, **kwargs)
+    canvas.print_figure(filename, **kwargs)
 
 
 def axis_colors(ax, plot):
@@ -754,7 +754,8 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     ylims=[-3,3]
 
     # Figure
-    fig,ax=plt.subplots(1,1,figsize=figsize)
+    fig = matplotlib.figure.Figure(figsize=figsize)
+    ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
     ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,MSL,'black')
@@ -817,7 +818,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     # Figure
-    fig = plt.figure(figsize=figsize)
+    fig = matplotlib.figure.Figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
     gs.update(wspace=0.17, hspace=0.2)
@@ -934,7 +935,7 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ssh_loc = ssh[:,j,i]
 
     # Figure
-    fig=plt.figure(figsize=figsize)
+    fig = matplotlib.figure.Figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2, width_ratios=[2,1])
     gs.update(wspace=0.13, hspace=0.2)
@@ -1065,7 +1066,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   """
 
   # Figure
-  fig=plt.figure(figsize=figsize)
+  fig = matplotlib.figure.Figure(figsize=figsize)
   fig.patch.set_facecolor('#2B3E50')
   gs = gridspec.GridSpec(3, 2, width_ratios=[1.5,1])
   gs.update(wspace=0.13, hspace=0.2)
@@ -1205,7 +1206,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     gs.update(wspace=0.13, hspace=0.2)
 
     # Figure
-    fig = plt.figure(figsize=figsize)
+    fig = matplotlib.figure.Figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     ax1 = plt.subplot(gs[0,0])
     ax2 = plt.subplot(gs[1,0])
@@ -1286,7 +1287,8 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     [lats, lons] = station_coords()
 
     # Map
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    fig = matplotlib.figure.Figure(figsize=figsize)
+    ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B)
 
@@ -1392,7 +1394,8 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   [lats, lons] = station_coords()
 
   # Map
-  fig, ax = plt.subplots(1, 1, figsize=figsize)
+  fig = matplotlib.figure.Figure(figsize=figsize)
+  ax = fig.add_subplot(1, 1, 1)
   fig.patch.set_facecolor('#2B3E50')
   plot_map(ax, grid_B)
 

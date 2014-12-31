@@ -28,7 +28,7 @@ import subprocess
 import traceback
 
 import arrow
-import matplotlib.pyplot as plt
+import matplotlib
 import netCDF4 as nc
 import numpy as np
 import zmq
@@ -148,8 +148,9 @@ def grib_to_netcdf(runtype, config):
          yearmonthday) = define_forecast_segments_forecast2()
 
     # set-up plotting
-    fig, axs, ip = set_up_plotting()
+    fig, axs = set_up_plotting()
     checklist = {}
+    ip = 0
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
             fcst_section_hrs_arr, zerostart, length, subdirectory,
             yearmonthday):
@@ -579,21 +580,33 @@ def netCDF4_deflate(outnetcdf):
 
 
 def set_up_plotting():
-    fig, axs = plt.subplots(4, 3, figsize=(10, 15))
+    fig = matplotlib.figure.Figure(figsize=(10, 15))
+    axs = []
+    axs[0, 0] = fig.add_subplot(12, 1, 1)
     axs[0, 0].set_title('Air Temp. 0 hr')
+    axs[0, 1] = fig.add_subplot(12, 2, 1)
     axs[0, 1].set_title('Air Temp. +1 day')
+    axs[0, 2] = fig.add_subplot(12, 3, 1)
     axs[0, 2].set_title('Air Temp. +2 days')
+    axs[1, 0] = fig.add_subplot(12, 1, 2)
     axs[1, 0].set_title('Accumulated Precip')
+    axs[1, 1] = fig.add_subplot(12, 2, 2)
     axs[1, 1].set_title('Instant. Precip')
+    axs[1, 2] = fig.add_subplot(12, 3, 2)
     axs[1, 2].set_title('Humidity')
+    axs[2, 0] = fig.add_subplot(12, 1, 3)
     axs[2, 0].set_title('Solar Rad')
+    axs[2, 1] = fig.add_subplot(12, 2, 3)
     axs[2, 1].set_title('Longwave Down')
+    axs[2, 2] = fig.add_subplot(12, 3, 3)
     axs[2, 2].set_title('Sea Level Pres')
+    axs[3, 0] = fig.add_subplot(12, 1, 4)
     axs[3, 0].set_title('u wind')
+    axs[3, 1] = fig.add_subplot(12, 2, 4)
     axs[3, 1].set_title('v wind')
+    axs[3, 2] = fig.add_subplot(12, 3, 4)
     axs[3, 2].set_title('Wind Speed')
-    ip = 0
-    return fig, axs, ip
+    return fig, axs
 
 
 if __name__ == '__main__':
