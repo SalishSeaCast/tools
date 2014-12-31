@@ -26,11 +26,12 @@ import os
 
 import arrow
 from dateutil import tz
+import matplotlib
 from matplotlib.backends import backend_agg as backend
+import matplotlib.cm as cm
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -824,9 +825,10 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     gs.update(wspace=0.17, hspace=0.2)
 
     # Map
-    ax0 = plt.subplot(gs[:,1])
+    ax0 = fig.add_subplot(gs[:,1])
     plot_map(ax0, grid_B)
-    plt.axis((-124.8,-122.2,48,50))
+    ax0.set_xlim(-124.8, -122.2)
+    ax0.set_ylim(48, 50)
     ax0.set_title('Station Locations',**title_font)
     axis_colors(ax0, 'gray')
 
@@ -858,7 +860,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
         ssh = grid_T.variables['sossheig'][:,j,i]
 
         # Sea surface height plots
-        ax = plt.subplot(gs[M,0])
+        ax = fig.add_subplot(gs[M,0])
         ax.plot(t[:]+time_shift*PST,ssh,c=model_c,linewidth=2,label='Model')
         ax.plot(obs.time[:]+time_shift*PST,obs.wlev,c=observations_c,linewidth=2,
 			label='Observed water levels')
@@ -939,13 +941,13 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2, width_ratios=[2,1])
     gs.update(wspace=0.13, hspace=0.2)
-    ax0=plt.subplot(gs[0, 0])                                      #information box
+    ax0 = fig.add_subplot(gs[0, 0])  # information box
     axis_colors(ax0, 'blue')
     plt.setp(ax0.spines.values(), visible=False)  # hide axes for information box
     ax0.xaxis.set_visible(False); ax0.yaxis.set_visible(False)
-    ax1=plt.subplot(gs[1, 0]) 				    #sea surface height
-    ax2=plt.subplot(gs[:, 1])				    #map
-    ax3=plt.subplot(gs[2, 0]) 				    #residual
+    ax1 = fig.add_subplot(gs[1, 0])  # sea surface height
+    ax2 = fig.add_subplot(gs[:, 1])  # map
+    ax3 = fig.add_subplot(gs[2, 0])  # residual
 
     # Sea surface height plot
     ttide=plot_tides(ax1,name,t_orig,PST,MSL)
@@ -1072,9 +1074,10 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   gs.update(wspace=0.13, hspace=0.2)
 
   # Map of region
-  ax0=plt.subplot(gs[:, 1])
+  ax0=fig.add_subplot(gs[:, 1])
   plot_map(ax0, grid_B)
-  plt.axis((-125.4,-122.2,48,50.3))
+  ax0.set_xlim(-125.4, -122.2)
+  ax0.set_ylim(48, 50.3)
   ax0.set_title('Station Locations',**title_font)
   axis_colors(ax0, 'gray')
 
@@ -1100,7 +1103,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
      tzone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
      # Sea surface height plot
-     ax = plt.subplot(gs[M,0])
+     ax = fig.add_subplot(gs[M,0])
 
      # Plot tides, corrected model and original model
      if name =='Point Atkinson':
@@ -1208,9 +1211,9 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     # Figure
     fig = matplotlib.figure.Figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    ax1 = plt.subplot(gs[0,0])
-    ax2 = plt.subplot(gs[1,0])
-    ax0 = plt.subplot(gs[:,1])
+    ax1 = fig.add_subplot(gs[0,0])
+    ax2 = fig.add_subplot(gs[1,0])
+    ax0 = fig.add_subplot(gs[:,1])
 
     # Plot wind speed
     ax1.plot(time +PST*time_shift,winds,color=observations_c,lw=2,label='Observations')
