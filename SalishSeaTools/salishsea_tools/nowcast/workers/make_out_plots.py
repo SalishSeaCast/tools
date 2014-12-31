@@ -20,6 +20,7 @@ import argparse
 from glob import glob
 import logging
 import os
+import shutil
 import traceback
 
 import arrow
@@ -127,8 +128,8 @@ def make_out_plots(run_date, run_type, config, socket):
     bathy = nc.Dataset(config['bathymetry'])
 
     # configure plot directory for saving
-    date_key = run_date.strftime('%d%b%y').lower()
-    plots_dir = os.path.join(results_home, date_key, 'figures')
+    dmy = run_date.strftime('%d%b%y').lower()
+    plots_dir = os.path.join(results_home, dmy, 'figures')
     lib.mkdir(plots_dir, logger, grp_name='sallen')
 
     # get the results
@@ -137,64 +138,74 @@ def make_out_plots(run_date, run_type, config, socket):
     # do the plots
     fig = figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
-        plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=date_key))
+        plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Victoria')
     filename = os.path.join(
-        plots_dir, 'Vic_maxSSH_{date}.svg'.format(date=date_key))
+        plots_dir, 'Vic_maxSSH_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path)
     filename = os.path.join(
-        plots_dir, 'PA_maxSSH_{date}.svg'.format(date=date_key))
+        plots_dir, 'PA_maxSSH_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Campbell River')
     filename = os.path.join(
-        plots_dir, 'CR_maxSSH_{date}.svg'.format(date=date_key))
+        plots_dir, 'CR_maxSSH_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_water_levels(grid_T_hr, bathy)
     filename = os.path.join(
-        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=date_key))
+        plots_dir, 'NOAA_ssh_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path)
     filename = os.path.join(
-        plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=date_key))
+        plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path)
     filename = os.path.join(
-        plots_dir, 'SH_wind_{date}.svg'.format(date=date_key))
+        plots_dir, 'SH_wind_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.average_winds_at_station(
         grid_T_hr, bathy, model_path, station='all')
     filename = os.path.join(
-        plots_dir, 'Avg_wind_vectors_{date}.svg'.format(date=date_key))
+        plots_dir, 'Avg_wind_vectors_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.winds_at_max_ssh(grid_T_hr, bathy, model_path, station='all')
     filename = os.path.join(
-        plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=date_key))
+        plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
     figures.save_image(
         fig, filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
+    # Fix permissions on image files and copy them to salishsea site
+    # prep directory
+    www_plots_path = os.path.join(
+        config['web']['www_path'],
+        os.path.basename(config['web']['site_repo_url']),
+        config['web']['site_plots_path'],
+        run_type,
+        dmy)
+    lib.mkdir(www_plots_path, logger, grp_name=config['file group'])
     for f in glob(os.path.join(plots_dir, '*')):
-        lib.fix_perms(f, grp_name='sallen')
+        lib.fix_perms(f, grp_name=config['file group'])
+        shutil.copy2(f, www_plots_path)
 
     checklist = glob(plots_dir)
     return checklist
