@@ -25,17 +25,18 @@
   </p>
   <p>
     At present all of the pre-processing steps are included in the worker automation,
-    as is the run results downloading step.
-    So,
-    there is a pause in the log while the run is manually queued on orcinus and while it is executed,
-    but the log resumes with downloading of the results,
-    after which  the log file rollovers happen.
+    as are launching of the nowcast and forecast runs on west.cloud,
+    the run results downloading step,
+    and parts of the generation of the
+    <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> storm surge
+    <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">forecast page</a>.
+    The log file rollovers happen after the generation of the figure images for the forecast page.
   </p>
   <dl>
     <dt><a href="nowcast.log">nowcast.log</a></dt>
     <dd>
       Current log file.
-      Nearly empty after the run results download is completed and the current day's run log file is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
+      Nearly empty after generation of the figure images for the <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">forecast page</a> is completed and the current day's run log file is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
       </dd>
     <dt><a href="nowcast.log.1">nowcast.log.1</a></dt>
     <dd>
