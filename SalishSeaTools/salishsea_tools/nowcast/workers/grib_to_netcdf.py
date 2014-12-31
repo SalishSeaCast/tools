@@ -581,7 +581,7 @@ def netCDF4_deflate(outnetcdf):
 
 def set_up_plotting():
     fig = matplotlib.figure.Figure(figsize=(10, 15))
-    axs = []
+    axs = np.empty((4, 3), dtype='object')
     axs[0, 0] = fig.add_subplot(4, 3, 1)
     axs[0, 0].set_title('Air Temp. 0 hr')
     axs[0, 1] = fig.add_subplot(4, 3, 2)
