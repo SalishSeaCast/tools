@@ -25,7 +25,7 @@ import traceback
 
 from bs4 import BeautifulSoup
 import pytz
-import matplotlib.pyplot as plt
+import matplotlib
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -147,8 +147,9 @@ def getNBssh(run_type, config):
         dates[i] = to_datetime(dates[i], utc_now.year, isDec, isJan)
     dates_list = list_full_days(dates)
     # Set up plotting
-    fig, ax, ip = setup_plotting()
+    fig, ax = setup_plotting()
     # Loop through full days and save netcdf
+    ip = 0
     for d in dates_list:
         surges, tc, forecast_flag = retrieve_surge(d, dates, data)
         # Plotting
@@ -434,13 +435,13 @@ def feet_to_metres(feet):
 
 
 def setup_plotting():
-    fig, ax = plt.subplots(1, 1, figsize=(10, 4))
+    fig = matplotlib.figure.Figure(figsize=(10, 4))
+    ax = fig.add_subplot(1, 1, 1)
     ax.set_title('Neah Bay SSH')
     ax.set_ylim([-1, 1])
     ax.grid()
     ax.set_ylabel('Sea surface height (m)')
-    ip = 0
-    return fig, ax, ip
+    return fig, ax
 
 
 if __name__ == '__main__':
