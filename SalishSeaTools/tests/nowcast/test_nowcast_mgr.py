@@ -350,7 +350,9 @@ def test_the_end_next_step(nowcast_mgr_module):
     ('after_download_weather', 'failure 12'),
     ('after_download_weather', 'failure 18'),
     ('after_download_weather', 'crash'),
-    ('after_get_NeahBay_ssh', 'failure'),
+    ('after_get_NeahBay_ssh', 'failure nowcast'),
+    ('after_get_NeahBay_ssh', 'failure forecast'),
+    ('after_get_NeahBay_ssh', 'failure forecast2'),
     ('after_get_NeahBay_ssh', 'crash'),
     ('after_make_runoff_file', 'failure'),
     ('after_make_runoff_file', 'crash'),
@@ -452,16 +454,56 @@ def test_download_weather_success_12_next_step_args(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_get_NeahBay_ssh_success_next_step_args(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = Mock(name='config')
-    next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
-        'get_NeahBay_ssh', 'success', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['get_NeahBay_ssh', 'sshNeahBay', payload]),
-    ]
-    assert next_steps == expected
+class TestGetNeahBaySsh(object):
+    """Unit tests for get_NeahBay_ssh() function.
+    """
+    def test_success_nowcast_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
+            'get_NeahBay_ssh', 'success nowcast', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['get_NeahBay_ssh', 'sshNeahBay', payload]),
+        ]
+        assert next_steps == expected
+
+    def test_success_forecast_hpc_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'hpc host': 'orcinus'}}
+        next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
+            'get_NeahBay_ssh', 'success forecast', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['get_NeahBay_ssh', 'sshNeahBay', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['upload_forcing', config, ['orcinus', 'ssh']])
+        ]
+        assert next_steps == expected
+
+    def test_success_forecast_cloud_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
+            'get_NeahBay_ssh', 'success forecast', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['get_NeahBay_ssh', 'sshNeahBay', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['upload_forcing', config, ['west.cloud', 'ssh']])
+        ]
+        assert next_steps == expected
+
+    def test_success_forecast2_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        next_steps = nowcast_mgr_module.after_get_NeahBay_ssh(
+            'get_NeahBay_ssh', 'success forecast2', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['get_NeahBay_ssh', 'sshNeahBay', payload]),
+        ]
+        assert next_steps == expected
 
 
 def test_make_runoff_file_success_next_steps(nowcast_mgr_module):
@@ -683,7 +725,7 @@ def test_after_watch_NEMO_success_nowcast_next_steps(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['watch_NEMO', 'NEMO run', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['run_NEMO', config, ['forecast'], 'west.cloud']),
+         ['get_NeahBay_ssh', config, ['forecast']]),
         (nowcast_mgr_module.launch_worker,
          ['download_results', config, ['west.cloud', 'nowcast']]),
     ]

@@ -95,10 +95,13 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to upload forcing files to')
     parser.add_argument(
-        'run_type', choices=set(('nowcast+', 'forecast2')),
-        help='''Type of run to make links for:
+        'run_type', choices=set(('nowcast+', 'forecast2', 'ssh')),
+        help='''
+        Type of run to make links for:
         'nowcast+' means nowcast & 1st forecast runs,
-        'forecast2' means 2nd forecast run.''',
+        'forecast2' means 2nd forecast run,
+        'ssh' means Neah Bay sea surface height files only (for forecast run).
+        ''',
     )
     parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
@@ -125,6 +128,10 @@ def make_forcing_links(host_name, run_type, run_date, config):
         dest = os.path.join(
             host['nowcast_dir'], 'open_boundaries/west/ssh/', filename)
         create_symlink(sftp_client, host_name, src, dest)
+    if run_type == 'ssh':
+        sftp_client.close()
+        ssh_client.close()
+        return {host_name: True}
     # Rivers runoff
     clear_links(sftp_client, host, 'rivers/')
     src = host['rivers_month.nc']

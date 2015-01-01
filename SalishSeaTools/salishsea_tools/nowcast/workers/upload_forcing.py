@@ -95,10 +95,13 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to upload forcing files to')
     parser.add_argument(
-        'run_type', choices=set(('nowcast+', 'forecast2')),
-        help='''Type of run to upload files for:
+        'run_type', choices=set(('nowcast+', 'forecast2', 'ssh')),
+        help='''
+        Type of run to upload files for:
         'nowcast+' means nowcast & 1st forecast runs,
-        'forecast2' means 2nd forecast run.''',
+        'forecast2' means 2nd forecast run,
+        'ssh' means Neah Bay sea surface height files only (for forecast run).
+        ''',
     )
     parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
@@ -112,10 +115,6 @@ def configure_argparser(prog, description, parents):
 
 
 def upload_forcing(host_name, run_type, run_date, config):
-    if run_type == 'nowcast+':
-        weather_start = 0
-    else:
-        weather_start = 1
     host = config['run'][host_name]
     ssh_client, sftp_client = lib.sftp(
         host_name, host['ssh key name']['nowcast'])
@@ -127,6 +126,10 @@ def upload_forcing(host_name, run_type, run_date, config):
         localpath = os.path.join(config['ssh']['ssh_dir'], dest_dir, filename)
         remotepath = os.path.join(host['ssh_dir'], dest_dir, filename)
         upload_file(sftp_client, host_name, localpath, remotepath)
+    if run_type == 'ssh':
+        sftp_client.close()
+        ssh_client.close()
+        return {host_name: True}
     # Rivers runoff
     filename = make_runoff_file.FILENAME_TMPL.format(
         run_date.replace(days=-1).date())
@@ -134,6 +137,10 @@ def upload_forcing(host_name, run_type, run_date, config):
     remotepath = os.path.join(host['rivers_dir'], filename)
     upload_file(sftp_client, host_name, localpath, remotepath)
     # Weather
+    if run_type == 'nowcast+':
+        weather_start = 0
+    else:
+        weather_start = 1
     for day in range(weather_start, 3):
         filename = grib_to_netcdf.FILENAME_TMPL.format(
             run_date.replace(days=day).date())
