@@ -398,6 +398,9 @@ def find_closest_model_point(lon, lat, X, Y, bathy, allow_land=False):
         np.logical_and(
             (np.logical_and(X > lon-tol1, X < lon+tol1)),
             (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
+
+    # check size of arrays so we don't go out of bounds in our search
+    xmax, ymax = bathy.shape
     if np.size(x1) != 0:
         x1 = x1[0]
         y1 = y1[0]
@@ -408,8 +411,8 @@ def find_closest_model_point(lon, lat, X, Y, bathy, allow_land=False):
         # If all those points are masked, search 4x4 grid around, etc.
         for ii in np.arange(1, 100):
             if bathy.mask[x1, y1] and not allow_land:
-                for i in np.arange(x1-ii, x1+ii+1):
-                    for j in np.arange(y1-ii, y1+ii+1):
+                for i in np.arange(max(0, x1-ii), min(xmax, x1+ii+1)):
+                    for j in np.arange(max(0, y1-ii), min(ymax, y1+ii+1)):
                         if not bathy.mask[i, j]:
                             break
                     if not bathy.mask[i, j]:
