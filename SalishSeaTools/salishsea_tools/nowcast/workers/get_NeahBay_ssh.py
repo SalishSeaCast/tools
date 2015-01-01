@@ -76,14 +76,16 @@ def main():
             'Neah Bay sea surface height web scraping '
             'and file creation completed')
         # Exchange success messages with the nowcast manager process
+        msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
+            worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.error(
             'Neah Bay sea surface height web scraping '
             'and file creation failed')
         # Exchange failure messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
+        msg_type = 'failure {.run_type}'.format(parsed_args)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass

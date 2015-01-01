@@ -165,12 +165,28 @@ def after_download_weather(worker, msg_type, payload, config):
 def after_get_NeahBay_ssh(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success': [
+        'success nowcast': [
             (update_checklist, [worker, 'sshNeahBay', payload]),
         ],
-        'failure': None,
+        'failure nowcast': None,
+        'success forecast': [
+            (update_checklist, [worker, 'sshNeahBay', payload]),
+        ],
+        'failure forecast': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'sshNeahBay', payload]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
+    if 'hpc host' in config['run']:
+        actions['success forecast'].append(
+            (launch_worker, [
+             'upload_forcing', config, [config['run']['hpc host'], 'ssh']]))
+    if 'cloud host' in config['run']:
+        actions['success forecast'].append(
+            (launch_worker, [
+             'upload_forcing', config, [config['run']['cloud host'], 'ssh']]))
     return actions[msg_type]
 
 
@@ -331,6 +347,12 @@ def after_upload_forcing(worker, msg_type, payload, config):
              ['make_forcing_links', config, [payload.keys()[0], 'forecast2']]),
         ],
         'failure forecast2': None,
+        'success ssh': [
+            (update_checklist, [worker, 'forcing upload', payload]),
+            (launch_worker,
+             ['make_forcing_links', config, [payload.keys()[0], 'ssh']]),
+        ],
+        'failure ssh': None,
         'crash': None,
     }
     return actions[msg_type]
@@ -347,6 +369,10 @@ def after_make_forcing_links(worker, msg_type, payload, config):
             (update_checklist, [worker, 'forcing links', payload]),
         ],
         'failure forecast2': None,
+        'success ssh': [
+            (update_checklist, [worker, 'forcing links', payload]),
+        ],
+        'failure ssh': None,
         'crash': None,
     }
     if ('cloud host' in config['run']
@@ -354,6 +380,9 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         actions['success nowcast+'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
+        actions['success ssh'].append(
+            (launch_worker,
+             ['run_NEMO', config, ['forecast'], config['run']['cloud host']]))
     return actions[msg_type]
 
 
@@ -374,8 +403,7 @@ def after_watch_NEMO(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'NEMO run', payload]),
-            (launch_worker,
-             ['run_NEMO', config, ['forecast'], config['run']['cloud host']]),
+            (launch_worker, ['get_NeahBay_ssh', config, ['forecast']]),
             (launch_worker, [
              'download_results', config,
              [config['run']['cloud host'], 'nowcast']]),

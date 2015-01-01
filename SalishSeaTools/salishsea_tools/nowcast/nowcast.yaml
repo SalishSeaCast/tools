@@ -148,8 +148,12 @@ msg_types:
     failure: rivers forcing files preparation failed
     crash: make_runoff_file worker crashed
   get_NeahBay_ssh:
-    success: Neah Bay ssh ready
-    failure: Neah Bay sea surface height file preparation failed
+    success nowcast: Neah Bay ssh for nowcast ready
+    failure nowcast: Neah Bay sea surface height file prep for nowcast failed
+    success forecast: Neah Bay ssh for forecast ready
+    failure forecast : Neah Bay sea surface height file prep for forecast failed
+    success forecast2: Neah Bay ssh for forecast2 ready
+    failure forecast2: Neah Bay sea surface height file prep for forecast2 failed
     crash: get_NeahBay_ssh worker crashed
   grib_to_netcdf:
     success nowcast+: atmospheric nowcast/forecast forcing ready
@@ -189,12 +193,16 @@ msg_types:
     failure nowcast+: forcing files for nowcast/forecast upload failed
     success forecast2: forcing files for forecast2 uploaded
     failure forecast2: forcing files for forecast2 upload failed
+    success ssh: sea surface height forcing files for forecast uploaded
+    failure ssh: sea surface height forcing files for forecast upload failed
     crash: upload_forcing worker crashed
   make_forcing_links:
     success nowcast+: forcing file links for nowcast/forecast created
     failure nowcast+: forcing file links for nowcast/forecast failed
     success forecast2: forcing file links for forecast2 created
     failure forecast2: forcing file links for forecast2 failed
+    success ssh: sea surface height forcing file links for forecast created
+    failure ssh: sea surface height forcing file links for forecast failed
     crash: make_forcing_links worker crashed
   run_NEMO:
     success: NEMO run started
