@@ -464,7 +464,7 @@ Install the paramiko package that provides a Python implementation of the SSH2 p
 
 Finally,
 install Sphinx and the sphinx-rtd-theme ReadTheDocs theme,
-the sphinx-bootstrap-theme used for the salishsea.eos.ubc.ca site,
+the sphinx-bootstrap-theme and mako template library used for the salishsea.eos.ubc.ca site,
 IPython and IPython Notebook,
 the pytest and coverage unit testing tools,
 and the ipdb debugger:
@@ -472,7 +472,7 @@ and the ipdb debugger:
 .. code-block:: bash
 
     (nowcast)$ conda install sphinx ipython-notebook pytest coverage
-    (nowcast)$ pip install sphinx-rtd-theme sphinx-bootstrap-theme ipdb
+    (nowcast)$ pip install sphinx-rtd-theme sphinx-bootstrap-theme mako ipdb
 
 to support writing and building docs,
 and developing and debugging Python code and :ref:`salishsea_tools.nowcast.figures` functions.
