@@ -1,6 +1,6 @@
-************************************************************
-Tuesday, December 30, 2014, Salish Sea Storm Surge Forecast
-************************************************************
+************************************************************************
+${fcst_date.strftime('%A, %d %B %Y')} -- Salish Sea Storm Surge Forecast
+************************************************************************
 
 Disclaimer
 ==========
@@ -8,49 +8,25 @@ Disclaimer
 This site presents output from a research project.
 Results are not expected to be a robust prediction of the storm surge.
 
+
 Plots
 =====
 
 .. raw:: html
-
+    <%
+        run_dmy = run_date.strftime('%d%b%y').lower()
+    %>
+    %for svg_file in svg_file_roots:
     <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/PA_tidal_predictions_29dec14.svg">
+      data="../_static/nemo/results_figures/forecast/${run_dmy}/${svg_file}_${run_dmy}.svg">
     </object>
-
     <hr>
-
-    <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/Vic_maxSSH_29dec14.svg">
-    </object>
-
-    <hr>
-
-    <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/PA_maxSSH_29dec14.svg">
-    </object>
-
-    <hr>
-
-    <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/CR_maxSSH_29dec14.svg">
-    </object>
-
-    <hr>
-
-    <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/WaterLevel_Thresholds_29dec14.svg">
-    </object>
-
-    <hr>
-
-    <object class="standard-plot" type="image/svg+xml"
-            data="../_static/nemo/results_figures/forecast/29dec14/SH_wind_29dec14.svg">
-    </object>
-
+    %endfor
 
 Summary blurb
 
 [1] Soontiens et al., 2014,  In prep.
+
 
 Data Sources
 ============

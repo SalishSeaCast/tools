@@ -103,6 +103,7 @@ def message_processor(config, message):
         'watch_NEMO': after_watch_NEMO,
         'download_results': after_download_results,
         'make_out_plots': after_make_out_plots,
+        'make_site_page': after_make_site_page,
         'push_to_web': after_push_to_web,
         'the end': the_end,
     }
@@ -448,12 +449,26 @@ def after_make_out_plots(worker, msg_type, payload, config):
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'plots', payload]),
+            (launch_worker, ['make_site_page', config, ['forecast']]),
         ],
         'failure forecast': None,
         'success forecast2': [
             (update_checklist, [worker, 'plots', payload]),
         ],
         'failure forecast2': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_make_site_page(worker, msg_type, payload, config):
+    actions = {
+        # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
+        'success forecast': [
+            (update_checklist, [worker, 'salishsea site pages', payload]),
+            (launch_worker, ['push_to_web', config]),
+        ],
+        'failure forecast': None,
         'crash': None,
     }
     return actions[msg_type]
