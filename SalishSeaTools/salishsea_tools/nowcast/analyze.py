@@ -122,12 +122,14 @@ def combine_files(files,var,depth,j,i):
       var_tmp=G.variables[var][:,j,i]
     else:
       var_tmp=G.variables[var][:,depth,j,i]
-      var_ary=np.append(var_ary,var_tmp,axis=0)
-      t=nc_tools.timestamp(G,np.arange(var_tmp.shape[0]))
-      for ind in range(len(t)):
-	t[ind]=t[ind].datetime
-	time=np.append(time,t)
-
+    
+    var_ary=np.append(var_ary,var_tmp,axis=0)
+    t=nc_tools.timestamp(G,np.arange(var_tmp.shape[0]))
+    for ind in range(len(t)):
+      t[ind]=t[ind].datetime
+    
+    time=np.append(time,t)
+	
   return var_ary,time
 
 def plot_week(grid_B, files, var, depth, name, figsize=(20,5)):
@@ -172,12 +174,14 @@ def plot_week(grid_B, files, var, depth, name, figsize=(20,5)):
     
   #Figure
   fig,ax=plt.subplots(1,1,figsize=figsize)
+
     
   #Plot
   ax.plot(time,var_ary)
+ 
     
-  #hfmt = mdates.DateFormatter('%m/%d %H:%M')
-  #ax.xaxis.set_major_formatter(hfmt)
-  #fig.autofmt_xdate()
+  hfmt = mdates.DateFormatter('%m/%d %H:%M')
+  ax.xaxis.set_major_formatter(hfmt)
+  fig.autofmt_xdate()
     
   return fig
