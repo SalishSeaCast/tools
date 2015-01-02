@@ -720,12 +720,15 @@ def plot_map(ax, grid_B):
 
   return ax
 
-def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
+
+def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period
     centred around the simulation start date.
 
-    This function assumes that a tidal prediction file exists in a specific directory.
-    Tidal predictions were calculated with ttide based on a time series from 2013.
+    This function assumes that a tidal prediction file exists in a
+    specific directory.
+    Tidal predictions were calculated with ttide based on a time series
+    from 2013.
     Plots are of predictions caluclated with all consituents.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
@@ -755,7 +758,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
     ylims=[-3,3]
 
     # Figure
-    fig = matplotlib.figure.Figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
@@ -781,13 +784,15 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20,5)):
 
     return fig
 
-def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
+
+def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20, 15)):
     """ Compares modelled water levels to observed water levels and tides
     at a NOAA station over one day.
 
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels
 
-    This function applies to stations at Cherry Point, Neah Bay, and Friday Harbor.
+    This function applies to stations at Cherry Point, Neah Bay,
+    and Friday Harbor.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -805,9 +810,13 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     :returns: matplotlib figure object instance (fig).
     """
 
-   # Stations information
+    # Stations information
     [lats, lons] = station_coords()
-    stations = {'Cherry Point': 9449424,'Neah Bay':9443090, 'Friday Harbor': 9449880 }
+    stations = {
+        'Cherry Point': 9449424,
+        'Neah Bay': 9443090,
+        'Friday Harbor': 9449880,
+    }
 
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
@@ -819,7 +828,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
     timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
 
     # Figure
-    fig = matplotlib.figure.Figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2,width_ratios=[1.5,1])
     gs.update(wspace=0.17, hspace=0.2)
@@ -884,16 +893,23 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20,15) ):
 
     return fig
 
-def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, name='Point Atkinson', figsize=(20,12)):
-    """ Plots a map for sea surface height when it was at its maximum at Point Atkinson
-    and compares modelled water levels to tidal predications over one day.
 
-    It is assummed that the tidal predictions were calculated ahead of time and stored
-    in a very specific location.
-    The tidal predictions were calculated with all constituents using ttide based on a
-    time series from 2013.
-    The corrected model takes into account errors resulting in using only 8 constituents.
-    The residual is calculated as corrected model - tides (with all constituents).
+def compare_tidalpredictions_maxSSH(
+    grid_T, grid_B, model_path, PST=1, MSL=0, name='Point Atkinson',
+    figsize=(20, 12),
+):
+    """Plots a map for sea surface height when it was at its maximum
+    at Point Atkinson and compares modelled water levels to tidal
+    predications over one day.
+
+    It is assummed that the tidal predictions were calculated ahead of
+    time and stored in a very specific location.
+    The tidal predictions were calculated with all constituents using
+    ttide based on a time series from 2013.
+    The corrected model takes into account errors resulting in using
+    only 8 constituents.
+    The residual is calculated as corrected model - tides
+    (with all constituents).
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -937,7 +953,7 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
     ssh_loc = ssh[:,j,i]
 
     # Figure
-    fig = matplotlib.figure.Figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     gs = gridspec.GridSpec(3, 2, width_ratios=[2,1])
     gs.update(wspace=0.13, hspace=0.2)
@@ -1036,8 +1052,11 @@ def compare_tidalpredictions_maxSSH(grid_T, grid_B, model_path, PST=1, MSL=0, na
 
     return fig
 
-def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15.5)):
-  """ Plots sea surface height over one day with respect to warning thresholds.
+
+def plot_thresholds_all(
+    grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 15.5),
+):
+  """Plots sea surface height over one day with respect to warning thresholds.
 
   This function applies only to Point Atkinson, Campbell River, and Victoria.
   There are three different warning thresholds.
@@ -1068,7 +1087,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
   """
 
   # Figure
-  fig = matplotlib.figure.Figure(figsize=figsize)
+  fig = plt.figure(figsize=figsize)
   fig.patch.set_facecolor('#2B3E50')
   gs = gridspec.GridSpec(3, 2, width_ratios=[1.5,1])
   gs.update(wspace=0.13, hspace=0.2)
@@ -1167,10 +1186,13 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20,15
 
   return fig
 
-def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
-    """ Plots the observed and modelled winds at Sandheads during the simulation.
 
-    Observations are from Environment Canada data: http://climate.weather.gc.ca/
+def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
+    """ Plots the observed and modelled winds at Sandheads during
+    the simulation.
+
+    Observations are from Environment Canada data:
+    http://climate.weather.gc.ca/
     Modelled winds are the HRDPS nested model from Environment Canada.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
@@ -1209,7 +1231,7 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
     gs.update(wspace=0.13, hspace=0.2)
 
     # Figure
-    fig = matplotlib.figure.Figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     ax1 = fig.add_subplot(gs[0,0])
     ax2 = fig.add_subplot(gs[1,0])
@@ -1262,8 +1284,12 @@ def Sandheads_winds(grid_T, grid_B, model_path,PST=1,figsize=(20,12)):
 
     return fig
 
-def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,10)):
-    """ Plots winds averaged over simulation time at individual or all stations.
+
+def average_winds_at_station(
+    grid_T, grid_B, model_path, station, figsize=(15, 10),
+):
+    """ Plots winds averaged over simulation time at individual or all
+    stations.
 
     This function applies to stations at Campbell River, Point Atkinson,
     Victoria, Cherry Point, Neah Bay, and Friday Harbor.
@@ -1290,7 +1316,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
     [lats, lons] = station_coords()
 
     # Map
-    fig = matplotlib.figure.Figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B)
@@ -1367,7 +1393,8 @@ def average_winds_at_station(grid_T, grid_B, model_path, station,  figsize=(15,1
 
     return fig
 
-def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
+
+def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   """ Plots winds at individual stations 4 hours before the
   maxmimum sea surface height at Point Atkinson.
 
@@ -1397,7 +1424,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15,10)):
   [lats, lons] = station_coords()
 
   # Map
-  fig = matplotlib.figure.Figure(figsize=figsize)
+  fig = plt.figure(figsize=figsize)
   ax = fig.add_subplot(1, 1, 1)
   fig.patch.set_facecolor('#2B3E50')
   plot_map(ax, grid_B)
