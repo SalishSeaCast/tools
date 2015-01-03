@@ -118,9 +118,10 @@ def make_site_page(page_type, run_date, config):
         repo_path,
         config['web']['site_storm_surge_path'],
         '.'.join((page_type, 'rst')))
+    fcst_date = run_date + datetime.timedelta(days=1)
     vars = {
         'run_date': run_date,
-        'fcst_date': run_date + datetime.timedelta(days=1),
+        'fcst_date': fcst_date,
         'svg_file_roots': [
             'PA_tidal_predictions',
             'Vic_maxSSH',
@@ -141,7 +142,7 @@ def make_site_page(page_type, run_date, config):
     # Copy rst file to dated archive file
     path, ext = os.path.splitext(rst_file)
     archive_file = ''.join(
-        (path, '_', run_date.strftime('%d%b%y').lower(), ext))
+        (path, '_', fcst_date.strftime('%d%b%y').lower(), ext))
     shutil.copy2(rst_file, archive_file)
     logger.debug('copied page to archive: {}'.format(archive_file))
     checklist[' '.join((page_type, 'archive'))] = archive_file
