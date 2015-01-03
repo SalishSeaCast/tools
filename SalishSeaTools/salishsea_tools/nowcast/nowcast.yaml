@@ -233,7 +233,6 @@ msg_types:
     success forecast2: forecast2 OUT plots produced
     failure forecast2: forecast2 OUT plots failed
     crash: make_out_plots worker crashed
-    the end: end of automation
   make_site_page:
     success forecast: forecast page ready for push to salishsea site
     failure forecast: forecast page for salishsea site preparation failed
@@ -242,3 +241,4 @@ msg_types:
     success: forecast page and figures pushed to salishsea site
     failure: forecast page and figures push to salishsea site failed
     crash: push_to_web worker crashed
+    the end: end of automation
