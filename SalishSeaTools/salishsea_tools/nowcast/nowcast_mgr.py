@@ -37,16 +37,28 @@ checklist = {}
 
 
 def main():
+    # Parse command-line arguments
     parser = lib.basic_arg_parser(mgr_name, description=__doc__)
     parser.prog = 'python -m salishsea_tools.nowcast.{}'.format(mgr_name)
     parsed_args = parser.parse_args()
+
+    # Load configuration and set up logging
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {.config_file}'.format(parsed_args))
+
+    # Set up interrupt and kill signal handlers
     lib.install_signal_handlers(logger, context)
-    socket = init_req_rep(config['ports']['req_rep'], context)
+
+    # Create messaging socket and connect to broker
+    socket = context.socket(zmq.REP)
+    backend_port = config['zmq']['ports']['backend']
+    socket.connect('tcp://localhost:{}'.format(backend_port))
+    logger.info('connected to port {}'.format(backend_port))
+
     while True:
+        # Process messages from workers
         logger.info('listening...')
         try:
             message = socket.recv()
@@ -67,13 +79,6 @@ def main():
             logger.critical('unhandled exception:')
             for line in traceback.format_exc().splitlines():
                 logger.error(line)
-
-
-def init_req_rep(port, context):
-    socket = context.socket(zmq.REP)
-    socket.bind('tcp://*:{}'.format(port))
-    logger.info('bound to port {}'.format(port))
-    return socket
 
 
 def message_processor(config, message):

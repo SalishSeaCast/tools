@@ -54,7 +54,7 @@ def main():
     logger.info('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(
-        context, config, logger, config['nowcast_mgr'])
+        context, config, logger, config['zmq']['server'])
     # Do the work
     host_name = config['run']['cloud host']
     try:

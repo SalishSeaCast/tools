@@ -253,7 +253,7 @@ def init_zmq_req_rep_worker(context, config, logger, mgr_host='localhost'):
     :returns: ZeroMQ socket for communication with nowcast manager process.
     """
     socket = context.socket(zmq.REQ)
-    port = config['ports']['req_rep']
+    port = config['zmq']['ports']['frontend']
     socket.connect(
         'tcp://{mgr_host}:{port}'.format(mgr_host=mgr_host, port=port))
     logger.info(
