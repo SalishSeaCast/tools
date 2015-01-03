@@ -84,10 +84,9 @@ def main():
         # Fatal ZeroMQ problem
         logger.critical('ZMQError: {}'.format(e))
         logger.critical('shutting down')
-        break
     except SystemExit:
         # Termination by signal
-        break
+        pass
     except:
         logger.critical('unhandled exception:')
         for line in traceback.format_exc().splitlines():
