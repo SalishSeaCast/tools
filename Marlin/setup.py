@@ -1,6 +1,6 @@
 """Marlin -- Salish Sea NEMO svn-hg Maintenance Tool
 
-Copyright 2014 The Salish Sea MEOPAR Contributors
+Copyright 2015 The Salish Sea MEOPAR Contributors
 and The University of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
