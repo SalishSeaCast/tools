@@ -30,8 +30,8 @@ import os
 def main():
     this_yr = datetime.date.today().year
     last_yr = this_yr - 1
-    p_last_yr = re.compile('Copyright (.*){}'.format(last_yr))
-    p_this_yr = re.compile('Copyright (.*){}'.format(this_yr))
+    p_last_yr = re.compile('(Copyright) (.*){}'.format(last_yr), re.IGNORECASE)
+    p_this_yr = re.compile('Copyright (.*){}'.format(this_yr), re.IGNORECASE)
 
     for root, dirs, files in os.walk('.'):
         for name in files:
@@ -46,7 +46,7 @@ def main():
                 if not p_this_yr.search(contents):
                     print('{}: no copyright'.format(os.path.join(root, name)))
                 continue
-            new_copyright = 'Copyright {}{}'.format(m.groups()[0], this_yr)
+            new_copyright = '{0[0]} {0[1]}{1}'.format(m.groups(), this_yr)
             updated = p_last_yr.sub(new_copyright, contents)
             with open(os.path.join(root, name), 'wt') as f:
                 f.write(updated)
