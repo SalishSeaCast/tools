@@ -30,8 +30,9 @@ Descriptions under the links below are from the first cell of the notebooks
     This is an interim step toward fully automated web publication of  
     analysis and monitoring figures from nowcast runs.  
 
-* ##[SSH_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/SSH_Template.ipynb)  
-    
+* ##[SSH_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/SSH_Template.ipynb) 
+ 
+* ##[Test_analyze_module.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Test_analyze_module.ipynb)  
        
 
 
