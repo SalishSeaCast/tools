@@ -46,7 +46,12 @@ def main():
                 if not p_this_yr.search(contents):
                     print('{}: no copyright'.format(os.path.join(root, name)))
                 continue
-            new_copyright = '{0[0]} {0[1]}{1}'.format(m.groups(), this_yr)
+            if not m.groups()[1]:
+                # Single year copyright
+                new_copyright = (
+                    '{0[0]} {1}-{2}'.format(m.groups(), last_yr, this_yr))
+            else:
+                new_copyright = '{0[0]} {0[1]}{1}'.format(m.groups(), this_yr)
             updated = p_last_yr.sub(new_copyright, contents)
             with open(os.path.join(root, name), 'wt') as f:
                 f.write(updated)
