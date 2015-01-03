@@ -125,9 +125,13 @@ logging:
   datetime_format: '%Y-%m-%d %H:%M:%S'
 
 # Message system
-nowcast_mgr: salish.eos.ubc.ca
-ports:
-  req_rep: 5555
+zmq:
+  server: salish.eos.ubc.ca
+  ports:
+    # traffic between nowcast_mgr and broker
+    backend: 5554
+    # traffic between workers and broker
+    frontend: 5555
 
 msg_types:
   # message types registry
