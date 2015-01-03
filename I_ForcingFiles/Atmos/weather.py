@@ -1,5 +1,20 @@
+# Copyright 2013-2015 The Salish Sea MEOPAR contributors
+# and The University of British Columbia
 
-"""A collection of tools for comparing atmospheric forcing with observations from the Salish Sea Model.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""A collection of tools for comparing atmospheric forcing with
+observations from the Salish Sea Model.
 """
 from __future__ import division
 
@@ -103,10 +118,10 @@ def get_EC_observations(station, start_day, end_day):
 
 def list_files(startdate, numdays, model):
 	""" create a list of files for a given model beginning on startdate and going back numdays.
-	model can be a string 'Operational_old' (reformatted GRIB2, older files), 
+	model can be a string 'Operational_old' (reformatted GRIB2, older files),
 	'Operational' (reformatted GRIB2 on subset), or 'GEM' (netcdf from EC).
 	returns the list of files and desired dates"""
- 	path=''	
+ 	path=''
 	if model =='GEM':
 	   path='/ocean/dlatorne/MEOPAR/GEM2.5/NEMO-atmos/res_'
 	elif model =='Operational_old':
@@ -115,7 +130,7 @@ def list_files(startdate, numdays, model):
 	   path ='/ocean/sallen/allen/research/Meopar/Operational/ops_y'
 
 	dates = [ startdate - datetime.timedelta(days=num) for num in range(0,numdays)]
-	dates.sort();	
+	dates.sort();
 	sstr =path+dates[0].strftime('%Y')+'m'+dates[0].strftime('%m')+'d'+dates[0].strftime('%d')+'.nc'
 	estr =path+dates[-1].strftime('%Y')+'m'+dates[-1].strftime('%m')+'d'+dates[-1].strftime('%d')+'.nc'
 
@@ -149,25 +164,25 @@ def find_model_point(lon,lat,X,Y):
 
 def compile_model_output(i,j,files,model):
     """ compiles the model variables over severl files into a single array at a j,i grid point.
-        Model can be "Operational", "Operational_old", "GEM".   
+        Model can be "Operational", "Operational_old", "GEM".
 	returns wind speed, wind direction, time,pressure, temperature, solar radiation, thermal radiation and humidity.
     """
     wind=[]; direc=[]; t=[]; pr=[]; sol=[]; the=[]; pre=[]; tem=[]; qr=[];
     for f in files:
         G = nc.Dataset(f)
         u = G.variables['u_wind'][:,j,i]; v=G.variables['v_wind'][:,j,i];
-        pr.append(G.variables['atmpres'][:,j,i]); sol.append(G.variables['solar'][:,j,i]); 
-        qr.append(G.variables['qair'][:,j,i]); the.append(G.variables['therm_rad'][:,j,i]); 
+        pr.append(G.variables['atmpres'][:,j,i]); sol.append(G.variables['solar'][:,j,i]);
+        qr.append(G.variables['qair'][:,j,i]); the.append(G.variables['therm_rad'][:,j,i]);
         pre.append(G.variables['precip'][:,j,i]);
         tem.append(G.variables['tair'][:,j,i])
         speed = np.sqrt(u**2 + v**2)
         wind.append(speed)
-        
+
         d = np.arctan2(v, u)
         d = np.rad2deg(d + (d<0)*2*np.pi);
         direc.append(d)
-        
-	ts=G.variables['time_counter']	
+
+	ts=G.variables['time_counter']
 	if model =='GEM':
 	   torig = nc_tools.time_origin(G)
 	elif model =='Operational' or model=='Operational_old':
@@ -184,26 +199,26 @@ def compile_model_output(i,j,files,model):
     the = np.array(the).reshape(len(filesGEM)*24,)
     qr = np.array(qr).reshape(len(filesGEM)*24,)
     pre = np.array(pre).reshape(len(filesGEM)*24,)
-    
+
     return wind, direc, t, pr, tem, sol, the, qr, pre
 
 def compile_model_output_MF(i,j,files,model):
    """ Uses the MFDataset method to combine all the datasets
-       Model can be "Operational", "Operational_old", "GEM".   
+       Model can be "Operational", "Operational_old", "GEM".
        returns wind speed, wind direction, time,pressure, temperature, solar radiation, thermal radiation and humidity.
    """
    G = nc.MFDataset(files)
-    
+
    u = G.variables['u_wind'][:,j,i]; v=G.variables['v_wind'][:,j,i];
    pr = G.variables['atmpres'][:,j,i]; sol = G.variables['solar'][:,j,i];
-   qr = G.variables['qair'][:,j,i]; the = G.variables['therm_rad'][:,j,i]; 
+   qr = G.variables['qair'][:,j,i]; the = G.variables['therm_rad'][:,j,i];
    pre = G.variables['precip'][:,j,i]; tem = G.variables['tair'][:,j,i];
-    
+
    wind = np.sqrt(u**2 + v**2)
    direc = np.arctan2(v, u)
    direc = np.rad2deg(direc + (direc<0)*2*np.pi);
-        
-   ts=G.variables['time_counter']	
+
+   ts=G.variables['time_counter']
    if model =='GEM':
       torig = nc_tools.time_origin(G)
    elif model =='Operational' or model=='Operational_old':
@@ -256,7 +271,7 @@ def gather_observed_winds(location, startdate, numdays):
     	times[i] = times[i].astimezone(pytz.timezone('utc'))
     #isolates only requested days
     winds = winds[np.where((times<(startdate +datetime.timedelta(days=1)))
-		  & (times>=(startdate -datetime.timedelta(days=numdays-1))))]    
+		  & (times>=(startdate -datetime.timedelta(days=numdays-1))))]
     dirs = dirs[np.where((times<(startdate +datetime.timedelta(days=1)))
 		  & (times>=(startdate -datetime.timedelta(days=numdays-1))))]
     temps = temps[np.where((times<(startdate +datetime.timedelta(days=1)))

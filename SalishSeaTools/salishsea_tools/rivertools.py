@@ -1,3 +1,23 @@
+# Copyright 2013-2015 The Salish Sea MEOPAR contributors
+# and The University of British Columbia
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""A collections of functions for working with river flow forcing data
+for the Salish Sea NEMO model.
+"""
+
+
 import numpy as np
 import netCDF4 as NC
 
@@ -8,7 +28,7 @@ def put_watershed_into_runoff(rivertype, watershedname, flux,
     #get the proportion that each river occupies in the watershed
     pd = get_watershed_prop_dict(watershedname)
     for key in pd:
-        river = pd[key]		
+        river = pd[key]
 	if rivertype == 'constant':
             fill_runoff_array(flux*river['prop'], river['i'],
 			      river['di'], river['j'], river['dj'],
@@ -16,14 +36,14 @@ def put_watershed_into_runoff(rivertype, watershedname, flux,
 	if rivertype == 'monthly':
             fill_runoff_array_monthly(flux*river['prop'], river['i'],
 				      river['di'], river['j'], river['dj'],
-				      river['depth'], runoff, run_depth, 
+				      river['depth'], runoff, run_depth,
 				      run_temp)
     return runoff, run_depth, run_temp
 
 def get_watershed_prop_dict(watershedname):
 	"""define a function to get the proportion that each river occupies in the watershed"""
-	if watershedname == 'howe':	
-		#dictionary of rivers in Howe watershed		
+	if watershedname == 'howe':
+		#dictionary of rivers in Howe watershed
 		prop_dict = {'Squamish':{'prop':0.9,'i':532,'j':385,'di':1,'dj':2,'depth':3},'Burrard':{'prop':0.1,'i':457,'j':343,'di':3,'dj':1,'depth':3}}
 	if watershedname == 'jdf':
 		# Assume that 50% of the area of the JdF watershed defined by Morrison et al (2011) is on north side of JdF (Canada side)
@@ -124,7 +144,7 @@ def get_watershed_prop_dict(watershedname):
 		'Duwamish1':{'prop':0.50*WRIA9,'i':68,'j':243,'di':1,'dj':1,'depth':3},\
 		'Duwamish2':{'prop':0.50*WRIA9,'i':68,'j':246,'di':1,'dj':1,'depth':3},\
 		'CedarSammamish':{'prop':1.0*WRIA8,'i':88,'j':246,'di':1,'dj':1,'depth':3}}
-	
+
 	if watershedname == 'skagit':
 		WRIA4 = 0.33
 		WRIA3 = 0.17
@@ -141,7 +161,7 @@ def get_watershed_prop_dict(watershedname):
 		'SnohomishAllenQuilceda':{'prop':WRIA7*0.98,'i':143,'j':318,'di':1,'dj':1,'depth':3},\
 		'Tulalip':{'prop':WRIA7*0.01,'i':154,'j':311,'di':1,'dj':1,'depth':3},\
 		'Mission':{'prop':WRIA7*0.01,'i':152,'j':312,'di':1,'dj':1,'depth':3}}
-	
+
 	if watershedname == 'fraser':
 		WRIA1 = 0.016
 		Fraser = 1 - WRIA1
@@ -183,7 +203,7 @@ def get_watershed_prop_dict(watershedname):
 		'Windy':{'prop':10/totalarea,'i':893,'j':42,'di':1,'dj':1,'depth':3}}
 
 	if watershedname == 'jervis':
-		#Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis watershed 
+		#Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis watershed
 		Jervis = 0.25
 
 		prop_dict = {'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood':{'prop':Jervis*0.60,'i':648,'j':318,'di':1,'dj':1,'depth':3},\
@@ -203,7 +223,7 @@ def get_watershed_prop_dict(watershedname):
 		'Wakefield':{'prop':0.02,'i':533,'j':263,'di':1,'dj':1,'depth':3},\
 		'Halfmoon':{'prop':0.02,'i':549,'j':253,'di':1,'dj':1,'depth':3},\
 		'MyersKleindaleAnderson':{'prop':0.04,'i':571,'j':248,'di':1,'dj':1,'depth':3}}
-	
+
 	if watershedname == 'toba':
 		prop_dict = {'Toba':{'prop':1.0,'i':746,'j':240,'di':1,'dj':3,'depth':3}}
 
@@ -211,7 +231,7 @@ def get_watershed_prop_dict(watershedname):
 		prop_dict = {'Homathko':{'prop':0.58,'i':897,'j':294,'di':1,'dj':1,'depth':3},\
 		'Southgate':{'prop':0.35,'i':885,'j':296,'di':1,'dj':2,'depth':3},\
 		'Orford':{'prop':0.07,'i':831,'j':249,'di':1,'dj':1,'depth':3}}
-	
+
 	if watershedname == 'evi_s':
 		prop_dict = {'Cowichan':{'prop':0.22,'i':383,'j':201,'di':1,'dj':2,'depth':3},\
 		'Chemanius1':{'prop':0.5*0.13,'i':414,'j':211,'di':1,'dj':1,'depth':3},\
@@ -281,7 +301,7 @@ def fill_runoff_array_monthly(Flux, istart, di, jstart, dj,
 	e1t, e2t = get_bathy_cell_size()
 	number_cells = di*dj
 	area = number_cells*e1t[0,istart,jstart]*e2t[0,istart,jstart]
-	for month in range(1,13):	
+	for month in range(1,13):
 		w = Flux[month-1]/area * 1000.   # w is in kg/s not m/s
 		runoff[(month-1),istart:istart+di,jstart:jstart+dj] = w
 		run_depth[(month-1),istart:istart+di,jstart:jstart+dj] = depth_of_flux
@@ -294,7 +314,7 @@ def check_sum(runoff_orig, runoff_new, Flux):
 	print (np.sum(runoff_new)-runoff_orig.sum())*e1t[0,450,200]*e2t[0,450,200]/1000., Flux
 
 def check_sum_monthly(runoff_orig, runoff_new, Flux):
-	"""define a function to check the runoff adds up per month to what 
+	"""define a function to check the runoff adds up per month to what
 	it should"""
 	e1t, e2t = get_bathy_cell_size()
 	print (np.sum(runoff_new)/12-runoff_orig.sum()/12)*e1t[0,450,200]*e2t[0,450,200]/1000., np.mean(Flux)
@@ -304,9 +324,9 @@ def rivertemp(month):
     Temperature in NEMO is Celcius
     '''
     centerday = [15.5, 31+14, 31+28+15.5, 31+28+31+15, 31+28+31+30+15.5,
-		 31+28+31+30+31+15, 31+28+31+30+31+30+15.5, 
+		 31+28+31+30+31+15, 31+28+31+30+31+30+15.5,
 		 31+28+31+30+31+30+31+15.5, 31+28+31+30+31+30+31+31+15,
-		 31+28+31+30+31+30+31+31+30+15.5, 
+		 31+28+31+30+31+30+31+31+30+15.5,
 		 31+28+31+30+31+30+31+31+30+31+15,
 		 31+28+31+30+31+30+31+31+30+31+30+15.5]
     yearday = centerday[month-1]
