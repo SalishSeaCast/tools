@@ -48,7 +48,16 @@ from salishsea_tools import (
 
 from salishsea_tools.nowcast import figures
 
-def get_filenames(t_orig,t_final,period,grid,model_path):
+# Time shift for plotting in PST
+time_shift = datetime.timedelta(hours=-8)
+
+# Average mean sea level calculated over 1983-2001
+# (To be used to centre model output about mean sea level)
+MSL_DATUMS = {
+    'Point Atkinson': 3.10, 'Victoria': 1.90,
+    'Campbell River': 2.89, 'Patricia Bay': 2.30}
+
+def get_filenames(t_orig, t_final, period, grid, model_path):
   """Returns a list with the filenames for all files over the
   defined period of time and sorted in chronological order.
   
@@ -67,7 +76,7 @@ def get_filenames(t_orig,t_final,period,grid,model_path):
   :arg model	_path: The directory where the model files are stored.
   :type model_path: string
   
-  :returns: list of strings.
+  :returns: list of strings (files).
   """
   
   numdays=(t_final-t_orig).days
@@ -88,7 +97,7 @@ def get_filenames(t_orig,t_final,period,grid,model_path):
   
   return files
   
-def combine_files(files,var,depth,j,i):
+def combine_files(files, var, depth, j, i):
   """Returns the value of the variable entered over 
   multiple files covering a certain period of time.
   
@@ -110,7 +119,7 @@ def combine_files(files,var,depth,j,i):
   :arg i: Latitude index of location.
   :type i: integer
   
-  :returns: array of model results.
+  :returns: array of model results (var_ary and time).
   """
   
   time=np.array([]); 
@@ -132,7 +141,7 @@ def combine_files(files,var,depth,j,i):
 	
   return var_ary,time
 
-def plot_week(grid_B, files, var, depth, name, figsize=(20,5)):
+def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5)):
   """Plots values of  variable over multiple files covering 
   a certain period of time.
   
@@ -157,7 +166,7 @@ def plot_week(grid_B, files, var, depth, name, figsize=(20,5)):
   :arg figsize: Figure size (width, height) in inches.
   :type figsize: 2-tuple
   
-  :returns: matplotlib figure object instance (fig).
+  :returns: matplotlib figure object instance (fig) and axis object (ax).
   """
     
   # Stations information
@@ -170,18 +179,31 @@ def plot_week(grid_B, files, var, depth, name, figsize=(20,5)):
   [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
     
   # Call function
-  var_ary, time= combine_files(files, var, depth,j,i)
+  var_ary, time= combine_files(files, var, depth, j, i)
     
   #Figure
-  fig,ax=plt.subplots(1,1,figsize=figsize)
-
-    
+  fig, ax=plt.subplots(1,1,figsize=figsize)
+  
   #Plot
   ax.plot(time,var_ary)
+  
+  ax_start = t_orig
+  ax_end = t_final + datetime.timedelta(days=1)
+  ax.set_xlim(ax_start, ax_end)
  
-    
   hfmt = mdates.DateFormatter('%m/%d %H:%M')
   ax.xaxis.set_major_formatter(hfmt)
   fig.autofmt_xdate()
     
-  return fig
+  return fig, ax
+  
+def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
+    
+  fig, ax = plot_files(grid_B, files, 'sossheig', 'None', t_orig, t_final, name)
+  
+  figures.plot_tides(ax, name, t_orig, PST, MSL, color='green')
+  
+  ax_start = t_orig
+  ax_end = t_final + datetime.timedelta(days=1)
+  ax.set_xlim(ax_start, ax_end)
+  
