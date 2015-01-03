@@ -22,7 +22,7 @@ Yes,
 License
 =======
 
-The ``marlin`` code and documentation are copyright 2014 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
+The ``marlin`` code and documentation are copyright 2014-2015 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
 http://www.apache.org/licenses/LICENSE-2.0

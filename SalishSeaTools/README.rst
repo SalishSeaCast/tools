@@ -10,7 +10,7 @@ Documentation for the package is in the ``docs/`` directory and is rendered at h
 License
 =======
 
-The Salish Sea Tools package and documentation are copyright 2013-2014 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
+The Salish Sea Tools package and documentation are copyright 2013-2015 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
 http://www.apache.org/licenses/LICENSE-2.0
