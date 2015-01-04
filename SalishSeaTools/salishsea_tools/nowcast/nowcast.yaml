@@ -210,10 +210,16 @@ msg_types:
     failure ssh: sea surface height forcing file links for forecast failed
     crash: make_forcing_links worker crashed
   run_NEMO:
+    log.debug: debug level logging message
+    log.info: info level logging message
+    log.error: error level logging message
     success: NEMO run started
     failure: NEMO run failed
     crash: run_NEMO worker crashed
   watch_NEMO:
+    log.debug: debug level logging message
+    log.info: info level logging message
+    log.error: error level logging message
     success nowcast: nowcast NEMO run completed
     failure nowcast: nowcast NEMO run failed
     success forecast: forecast NEMO run completed

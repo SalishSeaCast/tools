@@ -673,37 +673,73 @@ def test_after_upload_forcing_success_forecast2_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_after_make_forcing_links_success_nowcast_plus_no_cloud_next_steps(
-    nowcast_mgr_module,
-):
-    payload = Mock(name='payload')
-    config = {'run': {}}
-    next_steps = nowcast_mgr_module.after_make_forcing_links(
-        'make_forcing_links', 'success nowcast+', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['make_forcing_links', 'forcing links', payload]),
-    ]
-    assert next_steps == expected
+class TestAfterMakeForcingLinks(object):
+    """Unit tests for after_make_forcing_links() function.
+    """
+    def test_success_nowcast_plus_no_cloud_next_steps(
+        self, nowcast_mgr_module,
+    ):
+        payload = Mock(name='payload')
+        config = {'run': {}}
+        next_steps = nowcast_mgr_module.after_make_forcing_links(
+            'make_forcing_links', 'success nowcast+', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['make_forcing_links', 'forcing links', payload]),
+        ]
+        assert next_steps == expected
 
+    @patch('salishsea_tools.nowcast.nowcast_mgr.logging.getLogger')
+    @patch('salishsea_tools.nowcast.nowcast_mgr.lib.configure_logging')
+    def test_success_cloud_host_config_logging(
+        self, m_config_logging, m_getLogger, nowcast_mgr_module,
+    ):
+        payload = {'west.cloud': True}
+        config = {
+            'run': {'cloud host': 'west.cloud'},
+            'logging': {'console': False},
+        }
+        nowcast_mgr_module.after_make_forcing_links(
+            'make_forcing_links', 'success nowcast+', payload, config)
+        m_config_logging.assert_any_call(config, m_getLogger(), False)
 
-def test_after_make_forcing_links_success_nowcast_plus_cloud_host_next_steps(
-    nowcast_mgr_module,
-):
-    payload = {'west.cloud': True}
-    config = {
-        'run': {
-            'cloud host': 'west.cloud'
-        }}
-    next_steps = nowcast_mgr_module.after_make_forcing_links(
-        'make_forcing_links', 'success nowcast+', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['make_forcing_links', 'forcing links', payload]),
-        (nowcast_mgr_module.launch_worker,
-         ['run_NEMO', config, ['nowcast'], 'west.cloud'])
-    ]
-    assert next_steps == expected
+    @patch('salishsea_tools.nowcast.nowcast_mgr.lib.configure_logging')
+    def test_success_nowcast_plus_cloud_host_next_steps(
+        self, m_config_logging, nowcast_mgr_module,
+    ):
+        payload = {'west.cloud': True}
+        config = {
+            'run': {'cloud host': 'west.cloud'},
+            'logging': {'console': False},
+        }
+        next_steps = nowcast_mgr_module.after_make_forcing_links(
+            'make_forcing_links', 'success nowcast+', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['make_forcing_links', 'forcing links', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['run_NEMO', config, ['nowcast'], 'west.cloud'])
+        ]
+        assert next_steps == expected
+
+    @patch('salishsea_tools.nowcast.nowcast_mgr.lib.configure_logging')
+    def test_success_ssh_cloud_host_next_steps(
+        self, m_config_logging, nowcast_mgr_module,
+    ):
+        payload = {'west.cloud': True}
+        config = {
+            'run': {'cloud host': 'west.cloud'},
+            'logging': {'console': False},
+        }
+        next_steps = nowcast_mgr_module.after_make_forcing_links(
+            'make_forcing_links', 'success ssh', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['make_forcing_links', 'forcing links', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['run_NEMO', config, ['forecast'], 'west.cloud'])
+        ]
+        assert next_steps == expected
 
 
 def test_run_NEMO_success_next_steps(nowcast_mgr_module):
