@@ -97,7 +97,7 @@ def hg_update(repo_url, www_path):
     else:
         cmd = ['hg', 'clone', repo_url, repo]
         logger.info('cloning{}'.format(repo_url))
-    subprocess.check_call(cmd)
+    lib.run_in_subprocess(cmd, logger.debug, logger.error)
     logger.info('updated {}'.format(repo))
     return repo
 
@@ -119,7 +119,7 @@ def sphinx_build(repo_path):
         site_path,
         html_path,
     ]
-    subprocess.check_call(cmd)
+    lib.run_in_subprocess(cmd, logger.debug, logger.error)
     logger.info('finished sphinx-build of {}'.format(site_path))
     return html_path
 
@@ -128,18 +128,18 @@ def rsync_to_site(html_path, results_pages, plots_path, server_path):
     """Push the results page and plot files to the web server.
     """
     cmd = [
-        'rsync', '-rRt',
+        'rsync', '-rRtv',
         '{}/./{}/'.format(html_path, results_pages),
         server_path,
     ]
-    subprocess.check_output(cmd)
+    lib.run_in_subprocess(cmd, logger.debug, logger.error)
     logger.info('pushed results pages to {}/'.format(server_path))
     cmd = [
-        'rsync', '-rRt',
+        'rsync', '-rRtv',
         '{}/./{}/'.format(html_path, plots_path),
         server_path,
     ]
-    subprocess.check_call(cmd)
+    lib.run_in_subprocess(cmd, logger.debug, logger.error)
     logger.info('pushed plots to {}/'.format(server_path))
 
 
