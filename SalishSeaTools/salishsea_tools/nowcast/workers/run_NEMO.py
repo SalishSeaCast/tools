@@ -151,23 +151,26 @@ def run_NEMO(host_name, run_type, config):
         'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
 
     # Launch the bash script
-    cmd = shlex.split('./SalishSeaNEMO.sh >./stdout 2>./stderr')
-    logger.info('starting run: "{}"'.format(cmd))
-    process = subprocess.Popen(cmd, shell=True)
-    logger.debug('run pid: {.pid}'.format(process))
+    cmd = shlex.split('./SalishSeaNEMO.sh')
+    logger.info(
+        'launching ./SalishSeaNEMO.sh run script on {}'.format(host_name))
+    logger.debug(cmd)
+    run_process = subprocess.Popen(cmd)
+    logger.debug('run pid: {.pid}'.format(run_process))
 
     # Launch the run watcher worker
     cmd = shlex.split(
         'python -m salishsea_tools.nowcast.workers.watch_NEMO '
         '/home/ubuntu/MEOPAR/nowcast/nowcast.yaml '
-        '{run_type} {pid}'.format(run_type=run_type, pid=process.pid)
+        '{run_type} {pid}'.format(run_type=run_type, pid=run_process.pid)
     )
     logger.info('launching watch_NEMO worker on {}'.format(host_name))
     logger.debug(cmd)
-    subprocess.Popen(cmd)
+    watcher_process = subprocess.Popen(cmd)
     return {run_type: {
         'run dir': run_dir,
-        'pid': process.pid,
+        'pid': run_process.pid,
+        'watcher pid': watcher_process.pid
     }}
 
 
@@ -278,25 +281,24 @@ def build_script(run_desc_file, procs, results_dir):
     )
     # Run NEMO
     script += (
-        u'echo "Working dir: $(pwd)"\n'
+        u'mkdir -p ${RESULTS_DIR}\n'
         u'\n'
-        u'echo "Starting run at $(date)"\n'
-        u'${MPIRUN} ./nemo.exe >>stdout 2>>stderr\n'
-        u'echo "Ended run at $(date)"\n'
+        u'echo "Starting run at $(date)" >>${RESULTS_DIR}/stdout\n'
+        u'${MPIRUN} ./nemo.exe >>${RESULTS_DIR}/stdout 2>>${RESULTS_DIR}/stderr\n'
+        u'echo "Ended run at $(date)" >>${RESULTS_DIR}/stdout\n'
         u'\n'
     )
     # Gather per-processor results files and deflate the finished netCDF4
     # files
     script += (
-        u'echo "Results gathering and deflation started at $(date)"\n'
-        u'mkdir -p ${RESULTS_DIR}\n'
-        u'${GATHER} ${GATHER_OPTS} ${RUN_DESC} ${RESULTS_DIR}\n'
-        u'echo "Results gathering and deflation ended at $(date)"\n'
+        u'echo "Results gathering and deflation started at $(date)" >>${RESULTS_DIR}/stdout\n'
+        u'${GATHER} ${GATHER_OPTS} ${RUN_DESC} ${RESULTS_DIR} >>${RESULTS_DIR}/stdout 2>>${RESULTS_DIR}/stderr\n'
+        u'echo "Results gathering and deflation ended at $(date) >>${RESULTS_DIR}/stdout"\n'
         u'\n'
     )
     # Delete the (now empty) working directory
     script += (
-        u'echo "Deleting run directory"\n'
+        u'echo "Deleting run directory >>${RESULTS_DIR}/stdout"\n'
         u'rmdir $(pwd)\n'
     )
     return script
