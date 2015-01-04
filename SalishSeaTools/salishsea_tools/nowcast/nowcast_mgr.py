@@ -30,6 +30,7 @@ from salishsea_tools.nowcast import lib
 mgr_name = lib.get_module_name()
 
 logger = logging.getLogger(mgr_name)
+worker_loggers = {}
 
 context = zmq.Context()
 
@@ -44,6 +45,7 @@ def main():
 
     # Load configuration and set up logging
     config = lib.load_config(parsed_args.config_file)
+    config['logging']['console'] = parsed_args.debug
     lib.configure_logging(config, logger, parsed_args.debug)
     logger.info('running in process {}'.format(os.getpid()))
     logger.info('read config from {.config_file}'.format(parsed_args))
@@ -134,6 +136,11 @@ def message_processor(config, message):
     if msg_type.startswith('need'):
         reply = lib.serialize_message(mgr_name, 'ack', checklist[payload])
         return reply, None
+    # Handle log messages from workers
+    if msg_type.startswith('log'):
+        level = getattr(logging, msg_type.split('.')[1].upper())
+        worker_loggers[worker].log(level, payload)
+        return reply_ack, None
     # Handle success, failure, and crash messages from workers
     next_steps = after_actions[worker](worker, msg_type, payload, config)
     return reply_ack, next_steps
@@ -383,6 +390,10 @@ def after_make_forcing_links(worker, msg_type, payload, config):
     }
     if ('cloud host' in config['run']
             and config['run']['cloud host'] in payload):
+        for worker in 'run_NEMO watch_NEMO'.split():
+            worker_loggers[worker] = logging.getLogger(worker)
+            lib.configure_logging(
+                config, worker_loggers[worker], config['logging']['console'])
         actions['success nowcast+'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))

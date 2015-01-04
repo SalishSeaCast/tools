@@ -76,7 +76,7 @@ def main():
     # Do the work
     host_name = config['run']['cloud host']
     try:
-        checklist = run_NEMO(host_name, parsed_args.run_type, config)
+        checklist = run_NEMO(host_name, parsed_args.run_type, config, socket)
         logger.info(
             '{.run_type} NEMO run in {host_name} started'
             .format(parsed_args, host_name=host_name))
@@ -113,7 +113,7 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def run_NEMO(host_name, run_type, config):
+def run_NEMO(host_name, run_type, config, socket):
     host = config['run'][host_name]
     restart_timestep = update_time_namelist(host, run_type)
 
@@ -131,11 +131,15 @@ def run_NEMO(host_name, run_type, config):
     run_desc_file = '{}.yaml'.format(run_id)
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
-    logger.debug('run description file: {}'.format(run_desc_file))
+    msg = 'run description file: {}'.format(run_desc_file)
+    logger.debug(msg)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Create and populate the temporary run directory
     run_dir = salishsea_cmd.api.prepare(run_desc_file, 'iodef.xml')
-    logger.debug('temporary run directory: {}'.format(run_dir))
+    msg = 'temporary run directory: {}'.format(run_dir)
+    logger.debug(msg)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     os.unlink(run_desc_file)
 
     # Create the bash script to execute the run and gather the results
@@ -147,26 +151,38 @@ def run_NEMO(host_name, run_type, config):
     with open('SalishSeaNEMO.sh', 'wt') as f:
         f.write(script)
     lib.fix_perms('SalishSeaNEMO.sh', mode=lib.PERMS_RWX_RWX_R)
-    logger.debug(
-        'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh')))
+    msg = 'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh'))
+    logger.debug(msg)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Launch the bash script
+    msg = 'launching ./SalishSeaNEMO.sh run script on {}'.format(host_name)
+    logger.info(msg)
+    lib.tell_manager(worker_name, 'log.info', config, logger, socket, msg)
     cmd = shlex.split('./SalishSeaNEMO.sh')
-    logger.info(
-        'launching ./SalishSeaNEMO.sh run script on {}'.format(host_name))
+    msg = 'running command in subprocess: {}'.format(cmd)
     logger.debug(cmd)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     run_process = subprocess.Popen(cmd)
-    logger.debug('run pid: {.pid}'.format(run_process))
+    msg = 'run pid: {.pid}'.format(run_process)
+    logger.debug(msg)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Launch the run watcher worker
+    logger.info('launching watch_NEMO worker on {}'.format(host_name))
+    logger.debug(cmd)
     cmd = shlex.split(
         'python -m salishsea_tools.nowcast.workers.watch_NEMO '
         '/home/ubuntu/MEOPAR/nowcast/nowcast.yaml '
         '{run_type} {pid}'.format(run_type=run_type, pid=run_process.pid)
     )
-    logger.info('launching watch_NEMO worker on {}'.format(host_name))
+    msg = 'running command in subprocess: {}'.format(cmd)
     logger.debug(cmd)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     watcher_process = subprocess.Popen(cmd)
+    msg = 'watcher pid: {.pid}'.format(watcher_process)
+    logger.debug(msg)
+    lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     return {run_type: {
         'run dir': run_dir,
         'pid': run_process.pid,

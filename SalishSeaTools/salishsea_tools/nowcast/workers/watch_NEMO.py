@@ -58,7 +58,8 @@ def main():
     # Do the work
     host_name = config['run']['cloud host']
     try:
-        checklist = watch_NEMO(parsed_args.run_type, parsed_args.pid)
+        checklist = watch_NEMO(
+            parsed_args.run_type, parsed_args.pid, config, socket)
         logger.info(
             '{.run_type} NEMO run in {host_name} completed'
             .format(parsed_args, host_name=host_name))
@@ -101,14 +102,19 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def watch_NEMO(run_type, pid):
+def watch_NEMO(run_type, pid, config, socket):
     # Ensure that the run is in progress
     if not pid_exists(pid):
-        logger.error('NEMO run pid {} does not exit'.format(pid))
+        msg = 'NEMO run pid {} does not exist'.format(pid)
+        logger.error(msg)
+        lib.tell_manager(worker_name, 'log.error', config, logger, socket, msg)
         raise lib.WorkerError()
     # Watch for the run bash script process to end
     while pid_exists(pid):
         # TODO: report on progress of the run via logging
+        msg = 'pid {} exists, continuing to watch...'.format(pid)
+        logger.debug(msg)
+        lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
         time.sleep(POLL_INTERVAL)
     # TODO: confirm that the run and subsequent results gathering
     # completed successfully
