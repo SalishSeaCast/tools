@@ -111,7 +111,7 @@ web:
   site_plots_path: site/_static/nemo/results_figures
   www_path: www
   templates_path: www/templates
-  server_path: shelob:/www/salishsea/data
+  server_path: shelob-salishsea:/www/salishsea/data
 
 
 logging:
