@@ -32,6 +32,7 @@ from salishsea_tools.nowcast import lib
 mgr_name = lib.get_module_name()
 
 logger = logging.getLogger(mgr_name)
+worker_loggers = {}
 
 context = zmq.Context()
 
@@ -420,6 +421,7 @@ def after_make_forcing_links(worker, msg_type, payload, config):
     }
     if ('cloud host' in config['run']
             and config['run']['cloud host'] in payload):
+        global worker_loggers
         worker_loggers = {}
         for worker in 'run_NEMO watch_NEMO'.split():
             worker_loggers[worker] = logging.getLogger(worker)
