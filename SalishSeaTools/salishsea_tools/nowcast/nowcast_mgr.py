@@ -15,6 +15,7 @@
 
 """Salish Sea NEMO nowcast manager.
 """
+import argparse
 from copy import copy
 import logging
 import os
@@ -22,6 +23,7 @@ import pprint
 import subprocess
 import traceback
 
+import yaml
 import zmq
 
 from salishsea_tools.nowcast import lib
@@ -38,8 +40,13 @@ checklist = {}
 
 def main():
     # Parse command-line arguments
-    parser = lib.basic_arg_parser(mgr_name, description=__doc__)
-    parser.prog = 'python -m salishsea_tools.nowcast.{}'.format(mgr_name)
+    base_parser = lib.basic_arg_parser(
+        mgr_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog='python -m salishsea_tools.nowcast.{}'.format(mgr_name),
+        description=base_parser.description,
+        parents=[base_parser],
+    )
     parsed_args = parser.parse_args()
 
     # Load configuration and set up logging
@@ -57,6 +64,17 @@ def main():
     backend_port = config['zmq']['ports']['backend']
     socket.connect('tcp://localhost:{}'.format(backend_port))
     logger.info('connected to port {}'.format(backend_port))
+
+    if not parsed_args.ignore_checklist:
+        # Load the serialized checklist left by a previous instance of
+        # the manager
+        try:
+            with open('nowcast_checklist.yaml', 'rt') as f:
+                global checklist
+                checklist = yaml.load(f)
+        except IOError as e:
+            logger.warning('checklist load failed: {.message}'.format(e))
+            logger.warning('running with empty checklist')
 
     while True:
         # Process messages from workers
@@ -80,6 +98,19 @@ def main():
             logger.critical('unhandled exception:')
             for line in traceback.format_exc().splitlines():
                 logger.error(line)
+
+
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        '--ignore-checklist', action='store_true',
+        help='''
+        Don't load the serialized checklist left by a previously
+        running instance of the nowcast manager.
+        ''',
+    )
+    return parser
 
 
 def message_processor(config, message):
@@ -510,6 +541,8 @@ def update_checklist(worker, key, worker_checklist):
     logger.debug('checklist:\n{}'.format(pprint.pformat(checklist)))
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
+    with open('nowcast_checklist.yaml', 'wt') as f:
+        yaml.dump(checklist, f)
 
 
 def launch_worker(worker, config, cmd_line_args=[], host='localhost'):
