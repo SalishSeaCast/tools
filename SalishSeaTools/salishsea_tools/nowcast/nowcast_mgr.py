@@ -73,6 +73,9 @@ def main():
             with open('nowcast_checklist.yaml', 'rt') as f:
                 global checklist
                 checklist = yaml.load(f)
+                logger.info('checklist read from disk')
+                logger.debug(
+                    'checklist:\n{}'.format(pprint.pformat(checklist)))
         except IOError as e:
             logger.warning('checklist load failed: {.message}'.format(e))
             logger.warning('running with empty checklist')
