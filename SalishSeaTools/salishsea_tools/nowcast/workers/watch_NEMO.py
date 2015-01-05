@@ -16,6 +16,8 @@
 """Salish Sea NEMO nowcast worker that monitors and reports on the
 progress of a run in the cloud computing facility.
 """
+from __future__ import division
+
 import argparse
 import errno
 import logging
@@ -26,6 +28,7 @@ import traceback
 import zmq
 
 from salishsea_tools.nowcast import lib
+from salishsea_tools.nowcast.workers import run_NEMO
 
 
 worker_name = lib.get_module_name()
@@ -109,10 +112,35 @@ def watch_NEMO(run_type, pid, config, socket):
         logger.error(msg)
         lib.tell_manager(worker_name, 'log.error', config, logger, socket, msg)
         raise lib.WorkerError()
+    # Get directory that NEMO is running from
+    run_info = lib.tell_manager(
+        worker_name, 'need', config, logger, socket, 'NEMO run')
+    run_dir = run_info[run_type]['run dir']
+    time_step_file = os.path.join(run_dir, 'time.step')
+    namelist = os.path.join(run_dir, 'namelist')
+    with open(namelist, 'rt') as f:
+        lines = f.readlines()
+    _, it000 = run_NEMO.get_namelist_value('nn_it000', lines)
+    _, itend = run_NEMO.get_namelist_value('nn_itend', lines)
+    _, date0 = run_NEMO.get_namelist_value('nn_date0', lines)
     # Watch for the run bash script process to end
     while pid_exists(pid):
-        # TODO: report on progress of the run via logging
-        msg = 'pid {} exists, continuing to watch...'.format(pid)
+        try:
+            with open(time_step_file, 'rt') as f:
+                time_step = int(f.read().strip())
+            model_seconds = time_step * 86400 / run_NEMO.TIMESTEPS_PER_DAY
+            model_time = (
+                date0.replace(seconds=model_seconds)
+                .format('YYYY-MM-DD hh:mm:ss UTC'))
+            fraction_done = (time_step - it000) / (itend - it000)
+            msg = (
+                'timestep: {} = {}, {:.1%} complete'
+                .format(time_step, model_time, fraction_done))
+        except IOError:
+            # time.step file not found; assument that run is young and it
+            # hasn't been created yet, or has finished and it has been
+            # moved to the results directory
+            msg = 'time.step not found; continuing to watch...'
         logger.debug(msg)
         lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
         time.sleep(POLL_INTERVAL)
