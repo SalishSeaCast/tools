@@ -593,6 +593,8 @@ def finish_automation(config):
     global checklist
     checklist = {}
     logger.info('checklist cleared')
+    with open('nowcast_checklist.yaml', 'wt') as f:
+        yaml.dump(checklist, f)
     rotate_log_file(config)
 
 
