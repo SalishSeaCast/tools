@@ -220,6 +220,7 @@ msg_types:
     log.debug: debug level logging message
     log.info: info level logging message
     log.error: error level logging message
+    need: NEMO run information dict requested
     success nowcast: nowcast NEMO run completed
     failure nowcast: nowcast NEMO run failed
     success forecast: forecast NEMO run completed
