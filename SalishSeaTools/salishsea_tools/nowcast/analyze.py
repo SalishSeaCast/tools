@@ -201,7 +201,7 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
     
   fig, ax = plot_files(grid_B, files, 'sossheig', 'None', t_orig, t_final, name)
   
-  figures.plot_tides(ax, name, t_orig, PST, MSL, color='green')
+  figures.plot_tides(ax, name, PST, MSL, color='green')
   
   ax_start = t_orig
   ax_end = t_final + datetime.timedelta(days=1)
