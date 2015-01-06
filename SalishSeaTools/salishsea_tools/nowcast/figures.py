@@ -570,6 +570,28 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
 
    return wind, direc, t, pr, tem, sol, the, qr, pre
 
+def get_tides(name):
+    """ Returns the tidal predictions at a given station. Tidal 
+    predictions are calculated for 2014 and 2015.
+
+    This function is only for Victoria, Campbell River, Point Atkinson and
+    Patricia Bay. Tidal predictions are stored in a specific location.
+
+    :arg name: The name of the station.
+    :type name: string
+    
+    :returns: DataFrame object (ttide) with tidal predictions and columns time, 
+    pred_all, pred_8.
+    """
+    
+    # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
+    path='/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
+    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
+    tfile = path+name+filename
+    ttide,msl= stormtools.load_tidal_predictions(tfile)
+
+    return ttide
+   
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model.
 
@@ -617,7 +639,7 @@ def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
 
     return ssh_corr
 
-def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
+def plot_tides(ax, name, PST, MSL, color=predictions_c):
     """ Plots and returns the tidal predictions at a given station during the year of t_orig.
 
     This function is only for Victoria, Campbell River, Point Atkinson and Patricia Bay.
@@ -628,9 +650,6 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
 
     :arg name: The name of the station.
     :type name: string
-
-    :arg t_orig: The date of a simulation.
-    :type t_orig: datetime object
 
     :arg PST: Specifies if plot should be presented in PST.
     1 = plot in PST, 0 = plot in UTC.
@@ -646,13 +665,8 @@ def plot_tides(ax, name, t_orig, PST, MSL, color=predictions_c):
     :returns: DataFrame object (ttide) with tidal predictions and
     columns time, pred_all, pred_8.
     """
-
-    # Tide file covers 2014 and 2015.
-    # Harmonics were from a 2013 time series.
-    path='/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
-    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
-    tfile = path+name+filename
-    ttide,msl= stormtools.load_tidal_predictions(tfile)
+    
+    ttide=get_tides(name)
     ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,
 		linewidth=2,label='Tidal predictions')
 
@@ -762,7 +776,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
-    ttide=plot_tides(ax,'Point Atkinson',t_orig,PST,MSL,'black')
+    ttide=plot_tides(ax,'Point Atkinson',PST,MSL,'black')
 
     # Line indicating current date
     ax.plot([t_orig +time_shift*PST,t_orig+time_shift*PST],ylims,'-r',lw=2)
@@ -966,7 +980,7 @@ def compare_tidalpredictions_maxSSH(
     ax3 = fig.add_subplot(gs[2, 0])  # residual
 
     # Sea surface height plot
-    ttide=plot_tides(ax1,name,t_orig,PST,MSL)
+    ttide=plot_tides(ax1,name,PST,MSL)
     ssh_corr=plot_corrected_model(ax1,t,ssh_loc,ttide,t_orig,t_final,
 			PST,MSL,MSL_DATUMS[name])
     ax1.plot(t+PST*time_shift,ssh_loc,'--',c=model_c,linewidth=1,label='Model')
@@ -1127,7 +1141,7 @@ def plot_thresholds_all(
      # Plot tides, corrected model and original model
      if name =='Point Atkinson':
        plot_PA_observations(ax,PST)
-     ttide=plot_tides(ax,name,t_orig,PST,MSL)
+     ttide=plot_tides(ax,name,PST,MSL)
      ssh_corr=plot_corrected_model(ax,t,ssh_loc,ttide,t_orig,t_final,
 			PST,MSL,MSL_DATUMS[name])
      ax.plot(t+PST*time_shift,ssh_loc+MSL_DATUMS[name]*MSL,'--',
