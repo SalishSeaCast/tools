@@ -92,7 +92,6 @@ def save_image(fig, filename, **kwargs):
     canvas = backend.FigureCanvasAgg(fig)
     canvas.print_figure(filename, **kwargs)
 
-
 def axis_colors(ax, plot):
   """ Formats the background colour of plots and colours
   of labels.
@@ -437,6 +436,28 @@ def compute_residual(ssh, ttide, t_orig, t_final):
 
     return res
 
+def get_tides(name):
+    """ Returns the tidal predictions at a given station. Tidal 
+    predictions are calculated for 2014 and 2015.
+
+    This function is only for Victoria, Campbell River, Point Atkinson and
+    Patricia Bay. Tidal predictions are stored in a specific location.
+
+    :arg name: The name of the station.
+    :type name: string
+    
+    :returns: DataFrame object (ttide) with tidal predictions and columns time, 
+    pred_all, pred_8.
+    """
+    
+    # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
+    path='/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
+    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
+    tfile = path+name+filename
+    ttide,msl= stormtools.load_tidal_predictions(tfile)
+
+    return ttide
+    
 def load_VENUS(station):
     """ Loads the most recent State of the Ocean data from the VENUS node
     indicated by station.
@@ -569,28 +590,6 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
             t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
 
    return wind, direc, t, pr, tem, sol, the, qr, pre
-
-def get_tides(name):
-    """ Returns the tidal predictions at a given station. Tidal 
-    predictions are calculated for 2014 and 2015.
-
-    This function is only for Victoria, Campbell River, Point Atkinson and
-    Patricia Bay. Tidal predictions are stored in a specific location.
-
-    :arg name: The name of the station.
-    :type name: string
-    
-    :returns: DataFrame object (ttide) with tidal predictions and columns time, 
-    pred_all, pred_8.
-    """
-    
-    # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
-    path='/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
-    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
-    tfile = path+name+filename
-    ttide,msl= stormtools.load_tidal_predictions(tfile)
-
-    return ttide
    
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model.
@@ -685,6 +684,53 @@ def plot_PA_observations(ax,PST):
 
   obs=load_PA_observations()
   ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')
+  
+def plot_threshold_map(ax, grid_T, grid_B, marker, msize, alpha, name, PST=1, MSL=1):
+  """Determines category (green, yellow, red)
+  in which the max sea surface height at a station
+  falls.
+  """
+  
+  # Stations information
+  [lats, lons] = station_coords()
+  
+  # Bathymetry
+  bathy, X, Y = tidetools.get_bathy_data(grid_B)
+  
+  # Get sea surface height
+  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+  ssh = grid_T.variables['sossheig']
+  ssh_loc = ssh[:,j,i]
+  
+  # Time range
+  t_orig,t_final,t=get_model_time_variables(grid_T)
+  
+  # Get tides and ssh
+  ttide=get_tides(name)
+  sdt=t_orig.replace(minute=0)
+  edt=t_final +datetime.timedelta(minutes=30)
+  ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
+  
+  # Defining thresholds
+  extreme_sshs = {'Point Atkinson': 5.61, 'Campbell River': 5.35, 'Victoria': 3.76}
+  extreme_ssh = extreme_sshs[name]
+  max_tides=max(ttide.pred_all) + MSL_DATUMS[name]*MSL
+  mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
+  max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]*MSL
+  
+  # Threshold colors
+  if max_ssh < (max_tides):
+    threshold_c = 'green'
+  elif max_ssh > (mid_tides):
+    threshold_c = 'red'
+  else:
+    threshold_c = 'Gold'
+    
+  ax.plot(lons[name],lats[name],marker=marker,
+			color=threshold_c,markersize=msize,markeredgewidth=2,
+			alpha=alpha)
+    
+  return t_orig, t_final,t, ssh_loc, lons, lats, max_tides, mid_tides, extreme_ssh
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
     """ Plots a time series of the VENUS data over a date range.
@@ -733,7 +779,6 @@ def plot_map(ax, grid_B):
   ax.grid()
 
   return ax
-
 
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period
@@ -797,7 +842,6 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
         transform=ax.transAxes, color = 'white')
 
     return fig
-
 
 def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20, 15)):
     """ Compares modelled water levels to observed water levels and tides
@@ -906,7 +950,6 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20, 15)):
 	   legend.get_title().set_fontsize('20')
 
     return fig
-
 
 def compare_tidalpredictions_maxSSH(
     grid_T, grid_B, model_path, PST=1, MSL=0, name='Point Atkinson',
@@ -1066,7 +1109,6 @@ def compare_tidalpredictions_maxSSH(
 
     return fig
 
-
 def plot_thresholds_all(
     grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 15.5),
 ):
@@ -1200,7 +1242,6 @@ def plot_thresholds_all(
 
   return fig
 
-
 def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
     """ Plots the observed and modelled winds at Sandheads during
     the simulation.
@@ -1297,7 +1338,6 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
 
 
     return fig
-
 
 def average_winds_at_station(
     grid_T, grid_B, model_path, station, figsize=(15, 10),
@@ -1406,7 +1446,6 @@ def average_winds_at_station(
     axis_colors(ax, 'gray')
 
     return fig
-
 
 def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   """ Plots winds at individual stations 4 hours before the
