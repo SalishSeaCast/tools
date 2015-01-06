@@ -236,7 +236,7 @@ def calc_new_namelist_lines(
 def get_namelist_value(key, lines):
     line_index = [
         i for i, line in enumerate(lines)
-        if line.split()[0] == key][-1]
+        if line.strip() and line.split()[0] == key][-1]
     value = lines[line_index].split()[2]
     return line_index, value
 
