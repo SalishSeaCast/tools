@@ -116,6 +116,16 @@ class TestGetNamelistValue(object):
         assert line_index == 1
         assert value == str(8642)
 
+    def test_handle_empty_line(self, run_NEMO_module):
+        lines = [
+            '\n',
+            '  nn_it000 = 8641  ! first time step\n',
+            ]
+        line_index, value = run_NEMO_module.get_namelist_value(
+            'nn_it000', lines)
+        assert line_index == 1
+        assert value == str(8641)
+
 
 def test_run_description_init_conditions(run_NEMO_module):
     today = date(2014, 10, 28)
