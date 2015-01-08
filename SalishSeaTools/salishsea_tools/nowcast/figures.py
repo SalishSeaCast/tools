@@ -1602,7 +1602,7 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     sal_d = grid_T_d.variables['vosaline']
 
     # Call thalweg
-    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/analysis_tools/thalweg.txt',
+    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
 				delimiter=" ", unpack=False)
     lines = lines.astype(int)
 
