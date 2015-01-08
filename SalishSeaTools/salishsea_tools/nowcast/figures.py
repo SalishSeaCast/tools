@@ -1339,113 +1339,84 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
 
     return fig
 
-def average_winds_at_station(
-    grid_T, grid_B, model_path, station, figsize=(15, 10),
-):
-    """ Plots winds averaged over simulation time at individual or all
-    stations.
+def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(15, 10)):
+  """ Plots winds averaged over simulation time at individual or all
+  stations.
+  
+  This function applies to stations at Campbell River, Point Atkinson,
+  Victoria, Cherry Point, Neah Bay, and Friday Harbor.
+  
+  :arg grid_T: Hourly tracer results dataset from NEMO.
+  :type grid_T: :class:`netCDF4.Dataset`
+  
+  :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+  :type grid_B: :class:`netCDF4.Dataset`
+  
+  :arg model_path: The directory where the model files are stored.
+  :type model_path: string
+  
+  :arg station: Name of one station or 'all' for all stations.
+  :type station: string
+  
+  :arg figsize:  Figure size (width, height) in inches.
+  :type figsize: 2-tuple
+  
+  :returns: matplotlib figure object instance (fig).
+  """
+  
+  # Stations information
+  [lats, lons] = station_coords()
+  
+  # Map
+  fig = plt.figure(figsize=figsize)
+  ax = fig.add_subplot(1, 1, 1)
+  fig.patch.set_facecolor('#2B3E50')
+  plot_map(ax, grid_B)
 
-    This function applies to stations at Campbell River, Point Atkinson,
-    Victoria, Cherry Point, Neah Bay, and Friday Harbor.
+  # Arrow scale
+  scale = 0.1
 
-    :arg grid_T: Hourly tracer results dataset from NEMO.
-    :type grid_T: :class:`netCDF4.Dataset`
+  # Time range
+  [t_orig,t_final,t] = get_model_time_variables(grid_T)
 
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-
-    :arg model_path: The directory where the model files are stored.
-    :type model_path: string
-
-    :arg station: Name of one station or 'all' for all stations.
-    :type station: string
-
-    :arg figsize:  Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: matplotlib figure object instance (fig).
-    """
-
-    # Stations information
-    [lats, lons] = station_coords()
-
-    # Map
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(1, 1, 1)
-    fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B)
-
-    # Arrow scale
-    scale = 0.1
-
-    # Time range
-    [t_orig,t_final,t] = get_model_time_variables(grid_T)
-
-    def plot(name, scale):
-       [wind, direc, twind, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
-
-       # This is truncated so that average is only over simulation time.
-       indices = np.where(np.logical_and(twind >= t_orig.replace(minute=0,tzinfo=None),
-                                         twind <= t_final.replace(tzinfo=None)))
-       wind=wind[indices]; direc=direc[indices]; twind=twind[indices]
-
-       # Calculate U, V, and their averages
-       uwind = wind*np.cos(np.radians(direc))
-       vwind=wind*np.sin(np.radians(direc))
-       uaverage = np.mean(uwind, axis=0)
-       vaverage = np.mean(vwind, axis=0)
-
-       # Station markers
-       ax.plot(lons[name], lats[name], marker='D', color=station_c,
-                markersize=10, markeredgewidth=2,label=name)
-
-       #Arrows are used instead of quivers.
-       ax.arrow(lons[name],  lats[name],
-                 scale*uaverage, scale*vaverage,
-                 head_width=0.05, head_length=0.1, width=0.02,
-                 color='white',fc='DarkMagenta', ec='black')
-
-       return twind
-
-    ax.arrow(-123, 50., 5.*scale, 0.*scale,
-              head_width=0.05, head_length=0.1, width=0.02,
-              color='white',fc='DarkMagenta', ec='black')
-    ax.text(-123, 50.1, "5 m/s")
-
-    # Plot winds at all stations
-    if station == 'all':
-        names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point',
-			'Sandheads', 'Point Atkinson', 'Campbell River']
-        m = np.arange(len(names))
-        for name, station_c, M in zip (names, stations_c, m):
-            twind=plot(name, scale)
-                #times of averaging
-	t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M');
-	t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
-        legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
-						prop={'size':15}, title=r'Stations')
-        legend.get_title().set_fontsize('20')
-        ax.set_title('Modelled winds at all stations averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
-
-    # Plot winds at one station only
-    else:
-        name=station
-        station_c = 'DarkMagenta'
-        twind=plot(name,scale)
-        t1=(twind[0] +time_shift).strftime('%d-%b-%Y %H:%M');
-        t2=(twind[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
-        ax.set_title('Modelled winds at {name} averaged over \n {t1} [PST] to {t2} [PST]'.format(name=name,t1=t[0],t2=t[-1]),**title_font)
-
-    # Citation
-    ax.text(1.07,0.1,
-        'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
-        horizontalalignment='left',
-        verticalalignment='top',
-        transform=ax.transAxes, color = 'white')
-
-    axis_colors(ax, 'gray')
-
-    return fig
+  # Condition if plotting all stations or a single station
+  if station == 'all':
+    names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
+    colors=stations_c
+  else:
+    names=[station]
+    colors=['DarkMagenta']
+  
+  # Loop through all stations to plot arrows and markers
+  for name, station_c in zip (names, colors):
+    plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, 'all', scale)
+    ax.plot(lons[name], lats[name], marker='D',color=station_c,
+            markersize=10, markeredgewidth=2,label=name)
+    
+  # Reference arrow
+  ax.arrow(-123, 50., 5.*scale, 0.*scale,
+           head_width=0.05, head_length=0.1, width=0.02,
+           color='white',fc='DarkMagenta', ec='black')
+  ax.text(-123, 50.1, "5 m/s")
+  
+  # Times for titles and legend
+  t1=(plot_time[0] +time_shift).strftime('%d-%b-%Y %H:%M');
+  t2=(plot_time[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
+  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+                     prop={'size':15}, title=r'Stations')
+  legend.get_title().set_fontsize('20')
+  ax.set_title('Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
+  
+  # Citation
+  ax.text(1.07,0.1,
+          'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+          horizontalalignment='left',
+          verticalalignment='top',
+          transform=ax.transAxes, color = 'white')
+  
+  axis_colors(ax, 'gray')
+  
+  return fig
 
 def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   """ Plots winds at individual stations 4 hours before the
@@ -1488,71 +1459,35 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   # Time range
   [t_orig,t_final,t] = get_model_time_variables(grid_T)
 
-  # Bathymetry
-  bathy, X, Y = tidetools.get_bathy_data(grid_B)
-
-  # Get sea surface height
-  reference_name = 'Point Atkinson'
-  [j,i]=tidetools.find_closest_model_point(lons[reference_name],lats[reference_name],X,Y,bathy,allow_land=False)
-  ssh = grid_T.variables['sossheig'][:,j,i]
-
-  # "Place holder" residual so function can be used
-  placeholder_res=np.zeros_like(ssh)
-
-  # Index at which sea surface height is at its maximum at Point Atkinson
-  [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[reference_name],lats[reference_name],model_path)
-
-  # Plot 4 hours before max ssh if possible. If not, plot at beginning of file.
-  if ind_w>4:
-    ind_wplot =ind_w[0]-4
-  else:
-    ind_wplot=0;
-
-  def plot(name):
-     [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
-
-     # Calculate U and V
-     uwind = wind[ind_wplot]*np.cos(np.radians(direc[ind_wplot]))
-     vwind=wind[ind_wplot]*np.sin(np.radians(direc[ind_wplot]))
-
-     # Station markers
-     ax.plot(lons[name], lats[name], marker='D',
-		color=station_c, markersize=10, markeredgewidth=2,label=name)
-
-     # Arrows
-     ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05,
-		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
-     tplot=t[ind_wplot]
-     return tplot
-
   # Reference arrow
   ax.arrow(-123, 50., 5.*scale, 0.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
   ax.text(-123, 50.1, "5 m/s")
 
-  # Plot winds at all stations
+  # Condition if plotting all stations or a single station
   if station == 'all':
         names = ['Neah Bay', 'Victoria', 'Friday Harbor', 'Cherry Point', 'Sandheads', 'Point Atkinson', 'Campbell River']
-        m = np.arange(len(names))
-        for name, station_c, M in zip (names, stations_c, m):
-	  plot_time=plot(name)
+        colors=stations_c
+  else:
+        names=[station]
+        colors=['DarkMagenta']
 
-	# Time for title
-        plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
-	legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+  # Indices for plotting wind vectors
+  inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path,t,4,True)
+  
+  # Loop through all stations to plot arrows and markers
+  for name, station_c in zip (names, colors):
+    plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+    ax.plot(lons[name], lats[name], marker='D',
+	    color=station_c, markersize=10, markeredgewidth=2,label=name) 
+
+  # Time for title and legend
+  plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
+  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
 						prop={'size':15}, title=r'Stations')
-	legend.get_title().set_fontsize('20')
-	ax.set_title('Modelled winds at all stations \n {time} [PST]'.format(time=plot_time),**title_font)
-
-  # Plot winds at one station only
-  if station == 'Point Atkinson' or station == 'Campbell River' or station =='Victoria' or station =='Cherry Point' or  station  == 'Neah Bay' or station ==  'Friday Harbor' or station =='Sandheads':
-        name = station
-        station_c = 'DarkMagenta'
-        plot_time=plot(name)
-        # Time for title
-        plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
-        ax.set_title('Modelled winds at {name} \n {time} [PST]'.format(name=name,time=plot_time),**title_font)
+  legend.get_title().set_fontsize('20')
+  ax.set_title('Modelled winds at \n {time} [PST]'.format(time=plot_time),**title_font)
 
   # Citation
   ax.text(1.07,0.1,
@@ -1619,6 +1554,54 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     ax.set_axis_bgcolor('burlywood')
 
     return fig
+    
+def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
+  """ Plots a single wind vector at a station in an axis.
+  """
+  [lats, lons] = station_coords()
+  
+  [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
+
+  if inds =='all':
+    inds=np.array([0,np.shape(wind)[0]-1])
+  # Calculate U and V
+  uwind = np.mean(wind[inds[0]:inds[-1]+1]*np.cos(np.radians(direc[inds[0]:inds[-1]+1]))); uwind=np.array([uwind])
+  vwind = np.mean(wind[inds[0]:inds[-1]+1]*np.sin(np.radians(direc[inds[0]:inds[-1]+1]))); vwind=np.array([vwind])
+
+  # Arrows
+  ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05,
+		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
+  tplot=t[inds[0]:inds[-1]+1]
+  
+  return tplot
+
+def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,single=False):
+  """ Isolates indices for plotting wind vectors. """
+  
+  [lats, lons] = station_coords()
+  
+  # Bathymetry
+  bathy, X, Y = tidetools.get_bathy_data(grid_B)
+
+  # Get sea surface height
+  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+  ssh = grid_T.variables['sossheig'][:,j,i]
+
+  # "Place holder" residual so function can be used
+  placeholder_res=np.zeros_like(ssh)
+
+  # Index at which sea surface height is at its maximum at Point Atkinson
+  [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[name],lats[name],model_path)
+
+  # Build indices based in x hours before max ssh if possible. If not, start at beginning of file.
+  if ind_w>hour:
+    inds =np.array([ind_w[0]-hour,ind_w])
+  else:
+    inds=np.array([0,ind_w]);
+  if single:
+    inds=np.array([inds[0]])
+    
+  return inds
 
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     """ Plots the daily average surface salinity, temperature, and currents.
