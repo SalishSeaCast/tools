@@ -685,31 +685,12 @@ def plot_PA_observations(ax,PST):
   obs=load_PA_observations()
   ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')
   
-def plot_threshold_map(ax, grid_T, grid_B, marker, msize, alpha, name, PST=1, MSL=1):
+def plot_threshold_map(ax, grid_T, grid_B, lats, lons, 
+  ttide, ssh_corr, marker, msize, alpha, name, PST=1, MSL=1):
   """Determines category (green, yellow, red)
   in which the max sea surface height at a station
   falls.
   """
-  
-  # Stations information
-  [lats, lons] = station_coords()
-  
-  # Bathymetry
-  bathy, X, Y = tidetools.get_bathy_data(grid_B)
-  
-  # Get sea surface height
-  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
-  ssh = grid_T.variables['sossheig']
-  ssh_loc = ssh[:,j,i]
-  
-  # Time range
-  t_orig,t_final,t=get_model_time_variables(grid_T)
-  
-  # Get tides and ssh
-  ttide=get_tides(name)
-  sdt=t_orig.replace(minute=0)
-  edt=t_final +datetime.timedelta(minutes=30)
-  ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
   
   # Defining thresholds
   extreme_sshs = {'Point Atkinson': 5.61, 'Campbell River': 5.35, 'Victoria': 3.76}
@@ -730,7 +711,7 @@ def plot_threshold_map(ax, grid_T, grid_B, marker, msize, alpha, name, PST=1, MS
 			color=threshold_c,markersize=msize,markeredgewidth=2,
 			alpha=alpha)
     
-  return t_orig, t_final,t, ssh_loc, lons, lats, max_tides, mid_tides, extreme_ssh
+  return max_tides, mid_tides, extreme_ssh
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
     """ Plots a time series of the VENUS data over a date range.
