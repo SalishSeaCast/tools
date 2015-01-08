@@ -762,6 +762,105 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
 
     return lon, lat, depth
 
+def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
+  """ Plots a single wind vector at a station in an axis. Winds are averaged over the 
+  times represnted by the indices in inds[0] and inds[-1].
+  
+  :arg ax: The axis for plotting.
+  :type ax: an axis object
+  
+  :arg name: The name of the station, can be Neah Bay, Point Atkinson, Campbell River,
+  Victoria, Friday Harbor, Cherry Point, Sandheads.
+  :type name: string
+  
+  :arg t_orig: start time of the simulation.
+  :type t_orig: datetime object
+  
+  :arg t_final: end time fo simulation.
+  :type t_final: datetime object
+  
+  :arg model_path: path to the weather model data.
+  :type model_path: string
+  
+  :arg inds: indices corresponding to the time range of desired wind plots. 
+  If inds='all', the average will span the entire simulation.
+  :type inds: numpy array, or string 'all'
+  
+  :arg scale: scale of arrows for plotting wind vector.
+  :type scale: float
+  
+  :returns: tplot, an array with the time range winds were averaged: tplot[0] and tplot[-1] .
+  """
+  [lats, lons] = station_coords()
+  
+  [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
+
+  if inds =='all':
+    inds=np.array([0,np.shape(wind)[0]-1])
+  # Calculate U and V
+  uwind = np.mean(wind[inds[0]:inds[-1]+1]*np.cos(np.radians(direc[inds[0]:inds[-1]+1]))); uwind=np.array([uwind])
+  vwind = np.mean(wind[inds[0]:inds[-1]+1]*np.sin(np.radians(direc[inds[0]:inds[-1]+1]))); vwind=np.array([vwind])
+
+  # Arrows
+  ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05,
+		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
+  tplot=t[inds[0]:inds[-1]+1]
+  
+  return tplot
+
+def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
+  """ Isolates indices timing of wind vectors. 
+  The timing is based on x number of hours before the max water level at a station.
+  
+  :arg name: The name of the station, Point Atkinson, Victora, Campbell River are good choices.
+  :type name: string
+  
+  :arg grid_T: Hourly tracer results dataset from NEMO.
+  :type grid_T: :class:`netCDF4.Dataset`
+  
+  :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+  :type grid_B: :class:`netCDF4.Dataset`
+  
+  :arg model_path: path to the weather model data.
+  :type model_path: string
+  
+  :arg t: An array of outut times from the NEMO model.
+  :type t: numpy array consisting of datetime objects
+  
+  :arg hour: The number of hours before max ssh to plt.
+  :type hour: integer
+  
+  :arg average: Flag to determine if plotting should be averaged over x hours before ssh or just a single time.
+  :type average: Boolean (True=average over times, False = only a single time_counter
+  
+  :returns: inds, an array with the start and end index for plotting winds.
+  """
+  
+  [lats, lons] = station_coords()
+  
+  # Bathymetry
+  bathy, X, Y = tidetools.get_bathy_data(grid_B)
+
+  # Get sea surface height
+  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+  ssh = grid_T.variables['sossheig'][:,j,i]
+
+  # "Place holder" residual so function can be used
+  placeholder_res=np.zeros_like(ssh)
+
+  # Index at which sea surface height is at its maximum at Point Atkinson
+  [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[name],lats[name],model_path)
+
+  # Build indices based in x hours before max ssh if possible. If not, start at beginning of file.
+  if ind_w>hour:
+    inds =np.array([ind_w[0]-hour,ind_w])
+  else:
+    inds=np.array([0,ind_w]);
+  if not(average):
+    inds=np.array([inds[0]])
+    
+  return inds
+
 def plot_map(ax, grid_B):
   """ Plots map of Salish Sea region.
 
@@ -1474,7 +1573,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
         colors=['DarkMagenta']
 
   # Indices for plotting wind vectors
-  inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path,t,4,True)
+  inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path,t,4,average=False)
   
   # Loop through all stations to plot arrows and markers
   for name, station_c in zip (names, colors):
@@ -1555,53 +1654,6 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
 
     return fig
     
-def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
-  """ Plots a single wind vector at a station in an axis.
-  """
-  [lats, lons] = station_coords()
-  
-  [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
-
-  if inds =='all':
-    inds=np.array([0,np.shape(wind)[0]-1])
-  # Calculate U and V
-  uwind = np.mean(wind[inds[0]:inds[-1]+1]*np.cos(np.radians(direc[inds[0]:inds[-1]+1]))); uwind=np.array([uwind])
-  vwind = np.mean(wind[inds[0]:inds[-1]+1]*np.sin(np.radians(direc[inds[0]:inds[-1]+1]))); vwind=np.array([vwind])
-
-  # Arrows
-  ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05,
-		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
-  tplot=t[inds[0]:inds[-1]+1]
-  
-  return tplot
-
-def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,single=False):
-  """ Isolates indices for plotting wind vectors. """
-  
-  [lats, lons] = station_coords()
-  
-  # Bathymetry
-  bathy, X, Y = tidetools.get_bathy_data(grid_B)
-
-  # Get sea surface height
-  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
-  ssh = grid_T.variables['sossheig'][:,j,i]
-
-  # "Place holder" residual so function can be used
-  placeholder_res=np.zeros_like(ssh)
-
-  # Index at which sea surface height is at its maximum at Point Atkinson
-  [max_ssh,index_ssh,tmax,max_res,max_wind,ind_w] = get_maxes(ssh,t,placeholder_res,lons[name],lats[name],model_path)
-
-  # Build indices based in x hours before max ssh if possible. If not, start at beginning of file.
-  if ind_w>hour:
-    inds =np.array([ind_w[0]-hour,ind_w])
-  else:
-    inds=np.array([0,ind_w]);
-  if single:
-    inds=np.array([inds[0]])
-    
-  return inds
 
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     """ Plots the daily average surface salinity, temperature, and currents.
