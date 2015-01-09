@@ -685,19 +685,20 @@ def plot_PA_observations(ax,PST):
   obs=load_PA_observations()
   ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')
   
-def plot_threshold_map(ax, grid_T, grid_B, lats, lons, 
-  ttide, ssh_corr, marker, msize, alpha, name, PST=1, MSL=1):
+def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
   """Determines category (green, yellow, red)
   in which the max sea surface height at a station
   falls.
   """
+  #load lats and longs of stations
+  lats,lons=station_coords() #these should probably be constants
   
   # Defining thresholds
   extreme_sshs = {'Point Atkinson': 5.61, 'Campbell River': 5.35, 'Victoria': 3.76}
   extreme_ssh = extreme_sshs[name]
-  max_tides=max(ttide.pred_all) + MSL_DATUMS[name]*MSL
+  max_tides=max(ttide.pred_all) + MSL_DATUMS[name]
   mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
-  max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]*MSL
+  max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]
   
   # Threshold colors
   if max_ssh < (max_tides):
@@ -1635,7 +1636,6 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
 
     return fig
     
-
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     """ Plots the daily average surface salinity, temperature, and currents.
 
@@ -1878,4 +1878,105 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
         .format(label=ssh.long_name.title(), units=ssh.units))
     ax.grid()
 
+    return fig
+    
+def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 22)):
+    # Stations information
+    [lats, lons] = station_coords()
+  
+    # Bathymetry
+    bathy, X, Y = tidetools.get_bathy_data(grid_B)
+    
+    # Time range
+    t_orig,t_final,t=get_model_time_variables(grid_T)
+    
+    #Wind time
+    inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path, t,4,average=True)
+    
+    # Set up loop
+    names = ['Point Atkinson','Campbell River','Victoria']
+    
+    # Set up Information
+    max_sshs = {}; max_times = {}; max_winds = {}
+    
+    # Figure
+    fig = plt.figure(figsize = figsize)
+    gs = gridspec.GridSpec(2, 3, height_ratios=[6,1])
+    gs.update(hspace=0.002, wspace=0.1)
+    ax=fig.add_subplot(gs[0, :])
+    ax1=fig.add_subplot(gs[1, 0])
+    ax2=fig.add_subplot(gs[1, 1])
+    ax3=fig.add_subplot(gs[1, 2])
+      
+    # Map
+    plot_map(ax, grid_B)
+        
+    for name in names:
+  
+        # Get sea surface height
+        [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+        ssh = grid_T.variables['sossheig']
+        ssh_loc = ssh[:,j,i]
+
+        # Get tides and ssh
+        ttide=get_tides(name)
+        sdt=t_orig.replace(minute=0)
+        edt=t_final +datetime.timedelta(minutes=30)
+        ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
+        
+        # Plot thresholds
+        plot_threshold_map(ax, ttide, ssh_corr,'o', 55, 0.3, name)
+        # Plot winds
+        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+        
+        # Information
+        res = compute_residual(ssh_loc,ttide,t_orig,t_final)
+        [max_ssh, index_ssh, tmax, max_res, max_wind, ind_w] = get_maxes(ssh_corr, t, res, lons[name], lats[name], model_path)
+        max_sshs[name] = max_ssh
+        max_times[name] = tmax
+        max_winds[name] = max_wind
+    
+    # Reference arrow
+    ax.arrow(-122.8, 50.8, 5.*scale, 0.*scale,
+              head_width=0.05, head_length=0.1, width=0.02,
+              color='white',fc='DarkMagenta', ec='black')
+    ax.text(-122.8, 50.85, "Reference: 5 m/s", fontsize=13)
+    
+    #Location labels
+    ax.text(-125.6,48.1,'Pacific Ocean', fontsize=13)
+    ax.text(-122.8,50.1,'British Columbia',fontsize=13)
+    ax.text(-123.8,47.3,'Washington \n State', fontsize=13)
+
+    ax.text(-122.3,47.6,'Puget Sound', fontsize=13)
+    ax.text(-124.7,48.45,'Strait of Juan de Fuca',fontsize=13,rotation=-18)
+    ax.text(-123.95,49.25,'Strait of \n Georgia',fontsize=13,rotation=-2)
+
+    ax.text(-123.1,49.4,'Point \n Atkinson', fontsize=20)
+    ax.text(-125.9,50.05,'Campbell \n River', fontsize=20)
+    ax.text(-123.5,48.2,'Victoria', fontsize=20)
+
+    # Figure format
+    ax.set_title('Station Locations',**title_font)
+    fig.patch.set_facecolor('#2B3E50')
+    axis_colors(ax, 'gray')
+    
+    # Information_box
+    axs = [ax1, ax2, ax3]
+    for ax, name in zip (axs, names):
+        plt.setp(ax.spines.values(), visible=False)
+        ax.xaxis.set_visible(False); ax.yaxis.set_visible(False)
+        axis_colors(ax, 'blue')
+        display_time=(max_times[name]+PST*time_shift).strftime('H:M')
+        
+        ax.text(0.05, 0.9, name, fontsize=20, 
+                horizontalalignment='left', verticalalignment='top', color = 'w')
+        ax.text(0.05, 0.7, 'Maximum Sea Surface Height: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
+                horizontalalignment='left',verticalalignment='top', color = 'white')
+        ax.text(0.05, 0.4, 'Time of Maximum SSH:', fontsize=15, 
+                horizontalalignment='left', verticalalignment='top', color = 'white')
+        ax.text(0.05, 0.3, '{time} {timezone}'.format(time=display_time,timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'), fontsize=15, 
+                horizontalalignment='left', verticalalignment='top', color = 'white')
+        ax.text(0.05, 0.1,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
+                 horizontalalignment='left',verticalalignment='top', color = 'white')
+   
     return fig
