@@ -1880,7 +1880,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
     return fig
     
-def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 22)):
+def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 16)):
     # Stations information
     [lats, lons] = station_coords()
   
@@ -1901,12 +1901,12 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
     
     # Figure
     fig = plt.figure(figsize = figsize)
-    gs = gridspec.GridSpec(2, 3, height_ratios=[6,1])
-    gs.update(hspace=0.002, wspace=0.1)
-    ax=fig.add_subplot(gs[0, :])
-    ax1=fig.add_subplot(gs[1, 0])
+    gs = gridspec.GridSpec(3, 2, width_ratios=[6,1])
+    gs.update(hspace=-0.1, wspace=0.1)
+    ax=fig.add_subplot(gs[:, 0])
+    ax1=fig.add_subplot(gs[0, 1])
     ax2=fig.add_subplot(gs[1, 1])
-    ax3=fig.add_subplot(gs[1, 2])
+    ax3=fig.add_subplot(gs[2, 1])
       
     # Map
     plot_map(ax, grid_B)
@@ -1927,7 +1927,7 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr,'o', 55, 0.3, name)
         # Plot winds
-        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+        twind=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
         
         # Information
         res = compute_residual(ssh_loc,ttide,t_orig,t_final)
@@ -1935,6 +1935,10 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
         max_sshs[name] = max_ssh
         max_times[name] = tmax
         max_winds[name] = max_wind
+        
+    # Add winds for other stations
+    for name in ['Neah Bay','Cherry Point','Sandheads','Friday Harbor']:
+        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
     
     # Reference arrow
     ax.arrow(-122.8, 50.8, 5.*scale, 0.*scale,
@@ -1960,23 +1964,37 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
     fig.patch.set_facecolor('#2B3E50')
     axis_colors(ax, 'gray')
     
+    # Citation
+    t1=(twind[0]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
+    t2=(twind[-1]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
+    timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
+    ax.text(0,-0.1,
+      'Wind vectors averaged over: {time1} to {time2} {tzone}'.format(time1=t1,time2=t2,tzone=timezone),
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax.transAxes, color = 'white',fontsize=14)
+    ax.text(0,-.15,
+      'Modelled winds are from the High Resolution Deterministic Prediction System of Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax.transAxes, color = 'white',fontsize=14)
+    
     # Information_box
     axs = [ax1, ax2, ax3]
     for ax, name in zip (axs, names):
         plt.setp(ax.spines.values(), visible=False)
         ax.xaxis.set_visible(False); ax.yaxis.set_visible(False)
         axis_colors(ax, 'blue')
-        display_time=(max_times[name]+PST*time_shift).strftime('H:M')
+        display_time=(max_times[name]+PST*time_shift).strftime('%H:%M')
+
         
-        ax.text(0.05, 0.9, name, fontsize=20, 
+        ax.text(0.05, 0.7, name, fontsize=20, 
                 horizontalalignment='left', verticalalignment='top', color = 'w')
-        ax.text(0.05, 0.7, 'Maximum Sea Surface Height: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
+        ax.text(0.05, 0.6, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
                 horizontalalignment='left',verticalalignment='top', color = 'white')
-        ax.text(0.05, 0.4, 'Time of Maximum SSH:', fontsize=15, 
-                horizontalalignment='left', verticalalignment='top', color = 'white')
-        ax.text(0.05, 0.3, '{time} {timezone}'.format(time=display_time,timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'), fontsize=15, 
-                horizontalalignment='left', verticalalignment='top', color = 'white')
-        ax.text(0.05, 0.1,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
+        ax.text(0.05, 0.5, 'Time: {time} {tzone}'.format(time=display_time,tzone=timezone), 
+	        fontsize=15,horizontalalignment='left', verticalalignment='top', color = 'white')
+        ax.text(0.05, 0.4,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
                  horizontalalignment='left',verticalalignment='top', color = 'white')
    
     return fig
