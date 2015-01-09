@@ -25,6 +25,7 @@ import os
 import time
 import traceback
 
+import arrow
 import zmq
 
 from salishsea_tools.nowcast import lib
@@ -123,6 +124,8 @@ def watch_NEMO(run_type, pid, config, socket):
     _, it000 = run_NEMO.get_namelist_value('nn_it000', lines)
     _, itend = run_NEMO.get_namelist_value('nn_itend', lines)
     _, date0 = run_NEMO.get_namelist_value('nn_date0', lines)
+    it000, itend = map(int, (it000, itend))
+    date0 = arrow.get(date0, 'YYYYMMDD')
     # Watch for the run bash script process to end
     while pid_exists(pid):
         try:
@@ -131,7 +134,7 @@ def watch_NEMO(run_type, pid, config, socket):
             model_seconds = time_step * 86400 / run_NEMO.TIMESTEPS_PER_DAY
             model_time = (
                 date0.replace(seconds=model_seconds)
-                .format('YYYY-MM-DD hh:mm:ss UTC'))
+                .format('YYYY-MM-DD HH:mm:ss UTC'))
             fraction_done = (time_step - it000) / (itend - it000)
             msg = (
                 'timestep: {} = {}, {:.1%} complete'
