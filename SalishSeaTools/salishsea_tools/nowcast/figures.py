@@ -1190,9 +1190,7 @@ def compare_tidalpredictions_maxSSH(
 
     return fig
 
-def plot_thresholds_all(
-    grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 15.5),
-):
+def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 15.5)):
   """Plots sea surface height over one day with respect to warning thresholds.
 
   This function applies only to Point Atkinson, Campbell River, and Victoria.
@@ -1287,21 +1285,7 @@ def plot_thresholds_all(
 				color='black',bbox=bbox_args)
 
      # Define thresholds in sea surface height plots
-     extreme_ssh = extreme_ssh
-     max_tides=max(ttide.pred_all) + MSL_DATUMS[name]*MSL
-     mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
-     max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]*MSL
-
-     # Thresholds in map
-     if max_ssh < (max_tides):
-       threshold_c = 'green'
-     elif max_ssh > (mid_tides):
-       threshold_c = 'red'
-     else:
-       threshold_c = 'Gold'
-
-     ax0.plot(lons[name],lats[name],marker='D',
-			color=threshold_c,markersize=10,markeredgewidth=2)
+     [max_tides, mid_tides, extreme_ssh] = plot_threshold_map(ax0,ttide, ssh_corr, 'D', 10, 1.0, name)
 
      # Plot thresholds in sea surface height plots
      ax.axhline(y=max_tides,color='Gold',linewidth=2,ls='solid',label='Maximum tides')
