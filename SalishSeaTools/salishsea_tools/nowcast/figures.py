@@ -1881,6 +1881,32 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     return fig
     
 def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 16)):
+    """ Overview image for Salish Sea website. Plots a map of the Salish Sea with markers indicating 
+    extreme water at Point Atkinson, Victoria nd Campbell River. Also plots wind vectors averaged
+    over 4 ours before the max ssh at Point Atkinson. Includes text boxes with max water level and timing.
+    
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+    
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg model_path: The directory where the model wind files are stored.
+    :type model_path: string
+    
+    :arg scale: scale factor or wind arrows
+    :type scale: float
+    
+    :arg PST: Specifies if plot should be presented in PST.
+    1 = plot in PST, 0 = plot in UTC.
+    :type PST: 0 or 1
+    
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: matplotlib figure object instance (fig).
+    """
+
     # Stations information
     [lats, lons] = station_coords()
   
