@@ -64,7 +64,7 @@ def main():
             parsed_args.run_date, parsed_args.run_type,
             parsed_args.plot_type, config,
             socket)
-        logger.info('Make the {.plot_type} plots for {.run_type} completed'
+        logger.info('Make the {0.plot_type} plots for {0.run_type} completed'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
         msg_type = '{} {} {}'.format('success', parsed_args.run_type,
@@ -73,7 +73,7 @@ def main():
             worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'Made the {.plot_type} plots failed for results type {.run_type}'
+            'Made the {0.plot_type} plots failed for results type {0.run_type}'
             .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
         msg_type = '{} {} {}'.format('failure', parsed_args.run_type,
@@ -230,23 +230,23 @@ def make_research_plots(dmy, model_path, bathy, results_dir, plots_dir):
     # do the plots
     fig = figures.thalweg_salinity(grid_T_dy)
     filename = os.path.join(
-        plots_dir, 'Salinity_on_thalweg_{data}.svg'.format(date=dmy))
+        plots_dir, 'Salinity_on_thalweg_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.plot_surface(grid_T_dy, grid_U_dy, grid_V_dy, bathy,
                                'default', 'default')
     filename = os.path.join(
-        plots_dir, 'T_S_Currents_on_surface_{data}.svg'.format(date=dmy))
+        plots_dir, 'T_S_Currents_on_surface_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_VENUS('East', grid_T_hr, bathy)
     filename = os.path.join(
-        plots_dir, 'Compare_VENUS_East_{data}.svg'.format(date=dmy))
+        plots_dir, 'Compare_VENUS_East_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_VENUS('Central', grid_T_hr, bathy)
     filename = os.path.join(
-        plots_dir, 'Compare_VENUS_Central_{data}.svg'.format(date=dmy))
+        plots_dir, 'Compare_VENUS_Central_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
 
