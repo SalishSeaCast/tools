@@ -143,7 +143,7 @@ def message_processor(config, message):
         'run_NEMO': after_run_NEMO,
         'watch_NEMO': after_watch_NEMO,
         'download_results': after_download_results,
-        'make_out_plots': after_make_out_plots,
+        'make_plots': after_make_plots,
         'make_site_page': after_make_site_page,
         'push_to_web': after_push_to_web,
         'the end': the_end,
@@ -479,12 +479,13 @@ def after_download_results(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_out_plots', config, ['nowcast']]),
+            (launch_worker, ['make_plots', config, ['nowcast', 'publish']]),
+            (launch_worker, ['make_plots', config, ['nowcast', 'research']]),
         ],
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_out_plots', config, ['forecast']]),
+            (launch_worker, ['make_plots', config, ['forecast', 'publish']]),
         ],
         'failure forecast': None,
         'crash': None,
@@ -492,22 +493,26 @@ def after_download_results(worker, msg_type, payload, config):
     return actions[msg_type]
 
 
-def after_make_out_plots(worker, msg_type, payload, config):
+def after_make_plots(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast': [
+        'success nowcast publish': [
             (update_checklist, [worker, 'plots', payload]),
         ],
-        'failure nowcast': None,
-        'success forecast': [
+        'failure nowcast publish': None,
+        'success nowcast research': [
+            (update_checklist, [worker, 'plots', payload]),
+        ],
+        'failure nowcast research': None,
+        'success forecast publish': [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config, ['forecast']]),
         ],
-        'failure forecast': None,
-        'success forecast2': [
+        'failure forecast publish': None,
+        'success forecast2 publish': [
             (update_checklist, [worker, 'plots', payload]),
         ],
-        'failure forecast2': None,
+        'failure forecast2 publish': None,
         'crash': None,
     }
     return actions[msg_type]
