@@ -232,14 +232,16 @@ msg_types:
     success forecast: forecast results files downloaded
     failure forecast: forecast results files download failed
     crash: download_results worker crashed
-  make_out_plots:
-    success nowcast: nowcast OUT plots produced
-    failure nowcast: nowcast OUT plots failed
-    success forecast: forecast OUT plots produced
-    failure forecast: forecast OUT plots failed
-    success forecast2: forecast2 OUT plots produced
-    failure forecast2: forecast2 OUT plots failed
-    crash: make_out_plots worker crashed
+  make_plots:
+    success nowcast publish: nowcast publish plots produced
+    success nowcast research: nowcast reseach plots produced
+    failure nowcast publish: nowcast publish plots failed
+    failure nowcast research: nowcast research plots failed
+    success forecast publish: forecast publish plots produced
+    failure forecast publish: forecast publish plots failed
+    success forecast2 publish: forecast2 publish plots produced
+    failure forecast2 publish: forecast2 publish plots failed
+    crash: make_plots worker crashed
   make_site_page:
     success forecast: forecast page ready for push to salishsea site
     failure forecast: forecast page for salishsea site preparation failed
