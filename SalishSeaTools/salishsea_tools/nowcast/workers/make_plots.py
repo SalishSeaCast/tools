@@ -60,21 +60,24 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     try:
-        checklist = make_out_plots(
-            parsed_args.run_date, parsed_args.run_type, config,
+        checklist = make_plots(
+            parsed_args.run_date, parsed_args.run_type,
+            parsed_args.plot_type, config,
             socket)
-        logger.info('Make the "Out" plots for {.run_type} completed'
+        logger.info('Make the {.plot_type} plots for {.run_type} completed'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
-        msg_type = '{} {}'.format('success', parsed_args.run_type)
+        msg_type = '{} {} {}'.format('success', parsed_args.run_type,
+                                     parsed_args.plot_type)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'Made the "Out" plots failed for results type {.run_type}'
+            'Made the {.plot_type} plots failed for results type {.run_type}'
             .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        msg_type = '{} {}'.format('failure', parsed_args.run_type)
+        msg_type = '{} {} {}'.format('failure', parsed_args.run_type,
+                                     parsed_args.plot_type)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
@@ -102,6 +105,13 @@ def configure_argparser(prog, description, parents):
         "forecast2" means the second forecast, following forecast
         ''')
     parser.add_argument(
+        'plot_type', choices=set(('publish', 'research')),
+        help='''
+        Which type of plots to produce:
+        "publish" means ssh, weather and other approved plots for publishing,
+        "research" means tracers, currents and other research plots
+        ''')
+    parser.add_argument(
         '--run-date', type=lib.arrow_date,
         default=arrow.now().date(),
         help='''
@@ -113,13 +123,10 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def make_out_plots(run_date, run_type, config, socket):
+def make_plots(run_date, run_type, plot_type, config, socket):
 
     # set-up, read from config file
-    if run_type == 'forecast':
-        results_home = config['run']['results archive']['forecast']
-    else:
-        results_home = config['run']['results archive'][run_type]
+    results_home = config['run']['results archive'][run_type]
     results_dir = os.path.join(
         results_home, run_date.strftime('%d%b%y').lower())
     model_path = config['weather']['ops_dir']
@@ -131,6 +138,31 @@ def make_out_plots(run_date, run_type, config, socket):
     dmy = run_date.strftime('%d%b%y').lower()
     plots_dir = os.path.join(results_home, dmy, 'figures')
     lib.mkdir(plots_dir, logger, grp_name='sallen')
+
+    if plot_type == 'publish':
+        make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir)
+    else:
+        make_research_plots(dmy, model_path, bathy, results_dir, plots_dir)
+
+    # Fix permissions on image files and copy them to salishsea site
+    # prep directory
+    www_plots_path = os.path.join(
+        config['web']['www_path'],
+        os.path.basename(config['web']['site_repo_url']),
+        config['web']['site_plots_path'],
+        run_type,
+        dmy)
+    lib.mkdir(www_plots_path, logger, grp_name=config['file group'])
+    for f in glob(os.path.join(plots_dir, '*')):
+        lib.fix_perms(f, grp_name=config['file group'])
+        shutil.copy2(f, www_plots_path)
+
+    checklist = glob(plots_dir)
+    return checklist
+
+
+def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir):
+    '''Make the plots we wish to publish'''
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
@@ -185,21 +217,37 @@ def make_out_plots(run_date, run_type, config, socket):
         plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    # Fix permissions on image files and copy them to salishsea site
-    # prep directory
-    www_plots_path = os.path.join(
-        config['web']['www_path'],
-        os.path.basename(config['web']['site_repo_url']),
-        config['web']['site_plots_path'],
-        run_type,
-        dmy)
-    lib.mkdir(www_plots_path, logger, grp_name=config['file group'])
-    for f in glob(os.path.join(plots_dir, '*')):
-        lib.fix_perms(f, grp_name=config['file group'])
-        shutil.copy2(f, www_plots_path)
 
-    checklist = glob(plots_dir)
-    return checklist
+def make_research_plots(dmy, model_path, bathy, results_dir, plots_dir):
+    '''Make the plots we wish to look at for research purposes'''
+
+    # get the results
+    grid_T_dy = results_dataset('1d', 'grid_T', results_dir)
+    grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
+    grid_U_dy = results_dataset('1d', 'grid_U', results_dir)
+    grid_V_dy = results_dataset('1d', 'grid_V', results_dir)
+
+    # do the plots
+    fig = figures.thalweg_salinity(grid_T_dy)
+    filename = os.path.join(
+        plots_dir, 'Salinity_on_thalweg_{data}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = figures.plot_surface(grid_T_dy, grid_U_dy, grid_V_dy, bathy,
+                               'default', 'default')
+    filename = os.path.join(
+        plots_dir, 'T_S_Currents_on_surface_{data}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = figures.compare_VENUS('East', grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'Compare_VENUS_East_{data}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = figures.compare_VENUS('Central', grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'Compare_VENUS_Central_{data}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
 
 def results_dataset(period, grid, results_dir):
