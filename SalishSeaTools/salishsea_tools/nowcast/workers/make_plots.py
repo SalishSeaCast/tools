@@ -54,8 +54,12 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.info(
+        '{0.plot_type} {0.run_type}: running in process {pid}'
+        .format(parsed_args, pid=os.getpid()))
+    logger.info(
+        '{0.plot_type} {0.run_type}: read config from {0.config_file}'
+        .format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -64,33 +68,37 @@ def main():
             parsed_args.run_date, parsed_args.run_type,
             parsed_args.plot_type, config,
             socket)
-        logger.info('Make the {0.plot_type} plots for {0.run_type} completed'
+        logger.info('{0.plot_type} plots for {0.run_type} completed'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
-        msg_type = '{} {} {}'.format('success', parsed_args.run_type,
-                                     parsed_args.plot_type)
+        msg_type = 'success {0.run_type} {0.plot_type}'.format(parsed_args)
         lib.tell_manager(
             worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            'Made the {0.plot_type} plots failed for results type {0.run_type}'
+            '{0.plot_type} plots failed for {0.run_type} failed'
             .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        msg_type = '{} {} {}'.format('failure', parsed_args.run_type,
-                                     parsed_args.plot_type)
+        msg_type = 'failure {0.run_type} {0.plot_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
         pass
     except:
-        logger.critical('unhandled exception:')
+        logger.critical(
+            '{0.plot_type} {0.run_type}: unhandled exception:'
+            .format(parsed_args))
         for line in traceback.format_exc().splitlines():
-            logger.error(line)
+            logger.error(
+                '{0.plot_type} {0.run_type}: {line}'
+                .format(parsed_args, line=line))
         # Exchange crash messages with the nowcast manager process
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.info(
+        '{0.plot_type} {0.run_type}: task completed; shutting down'
+        .format(parsed_args))
 
 
 def configure_argparser(prog, description, parents):
