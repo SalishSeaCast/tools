@@ -433,6 +433,9 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         actions['success nowcast+'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
+        actions['success forecast2'].append(
+            (launch_worker,
+             ['run_NEMO', config, ['forecast2'], config['run']['cloud host']]))
         actions['success ssh'].append(
             (launch_worker,
              ['run_NEMO', config, ['forecast'], config['run']['cloud host']]))
@@ -469,6 +472,10 @@ def after_watch_NEMO(worker, msg_type, payload, config):
              [config['run']['cloud host'], 'forecast']]),
         ],
         'failure forecast': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'NEMO run', payload]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
     return actions[msg_type]

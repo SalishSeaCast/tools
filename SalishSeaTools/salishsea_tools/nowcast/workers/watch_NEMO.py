@@ -96,7 +96,7 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast')),
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
         help='Type of run to execute.'
     )
     parser.add_argument(
