@@ -359,7 +359,7 @@ def get_subdomain_bathy_data():
     return bathy, X, Y
 
 
-def find_closest_model_point(lon, lat, X, Y, bathy, allow_land=False):
+def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052, lat_tol = 0.00189, allow_land=False):
     """Returns the grid co-ordinates of the closest non-land model point
     to a specified lon/lat.
 
@@ -380,7 +380,13 @@ def find_closest_model_point(lon, lat, X, Y, bathy, allow_land=False):
 
     :arg bathy: model bathymetry
     :type bathy: numpy array
+    
+    :arg lon_tol: tolerance value for seaching in longitude
+    :type lon_tol: float
 
+    :arg lat_tol: tolerance value for searching in latitude
+    :type lat_tol: float
+    
     :arg allow_land: whether code should return a land point or closest
                      water point
     :type allow_land: boolean
@@ -388,9 +394,9 @@ def find_closest_model_point(lon, lat, X, Y, bathy, allow_land=False):
     :returns: x1, j1
     """
     # Tolerance for searching for grid points
-    # (approx. distances between adjacent grid points)
-    tol1 = 0.0052   # lon
-    tol2 = 0.00189  # lat
+    # (default is approx. distances between adjacent grid points)
+    tol1 = lon_tol   # lon
+    tol2 = lat_tol   # lat
 
     # Search for a grid point with lon/lat within tolerance of
     # measured location
