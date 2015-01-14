@@ -74,6 +74,7 @@ run:
     results:
       nowcast: /home/ubuntu/MEOPAR/SalishSea/nowcast/
       forecast: /home/ubuntu/MEOPAR/SalishSea/forecast/
+      forecast2: /home/ubuntu/MEOPAR/SalishSea/forecast2/
 
   # If the `hpc host` key is present, the forcing files will be uploaded
   # to the HPC cluster and the symlinks created ready for the runs to be
@@ -98,6 +99,7 @@ run:
     results:
       nowcast: /home/dlatorne/MEOPAR/SalishSea/nowcast/
       forecast: /home/dlatorne/MEOPAR/SalishSea/forecast/
+      forecast2: /home/dlatorne/MEOPAR/SalishSea/forecast2/
 
   results archive:
     nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
@@ -225,6 +227,8 @@ msg_types:
     failure nowcast: nowcast NEMO run failed
     success forecast: forecast NEMO run completed
     failure forecast: forecast NEMO run failed
+    success forecast2: forecast2 NEMO run completed
+    failure forecast2: forecast2 NEMO run failed
     crash: watch_NEMO worker crashed
   download_results:
     success nowcast: nowcast results files downloaded

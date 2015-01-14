@@ -14,8 +14,8 @@
 # limitations under the License.
 
 """Salish Sea NEMO nowcast worker that prepares the YAML run description
-file and bash run script for a nowcast or forecast run in the cloud
-computing facility, and launches the run.
+file and bash run script for a nowcast, forecast or forecast2 run in the
+cloud computing facility, and launches the run.
 """
 from __future__ import division
 
@@ -46,6 +46,8 @@ context = zmq.Context()
 TIMESTEPS_PER_DAY = 8640
 NOWCAST_DURATION = 1  # day
 FORECAST_DURATION = 1.25  # days
+FORECAST2_START = 2  # days after nowcast start, it needs to an integer
+FORECAST2_DURATION = 1.25  # days
 
 
 def main():
@@ -107,7 +109,7 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast')),
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
         help='Type of run to execute.'
     )
     return parser
@@ -125,9 +127,10 @@ def run_NEMO(host_name, run_type, config, socket):
     run_days = {
         'nowcast': today,
         'forecast': today + datetime.timedelta(days=1),
+        'forecast2': today + datetime.timedelta(days=2),
     }
     run_desc = run_description(
-        host, run_days[run_type], run_id, restart_timestep)
+        host, run_type, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
@@ -223,6 +226,11 @@ def calc_new_namelist_lines(
             int((dt.days + NOWCAST_DURATION + FORECAST_DURATION)
                 * timesteps_per_day),
         ),
+        'forecast2': (
+            int((dt.days + FORECAST2_START) * timesteps_per_day + 1),
+            int((dt.days + FORECAST2_START + FORECAST2_DURATION)
+                * timesteps_per_day),
+        ),
     }
     new_it000, new_itend = new_values[run_type]
     # Increment 1st and last time steps to values for the run
@@ -241,11 +249,15 @@ def get_namelist_value(key, lines):
     return line_index, value
 
 
-def run_description(host, run_day, run_id, restart_timestep):
+def run_description(host, run_type, run_day, run_id, restart_timestep):
     # Relative paths from MEOPAR/nowcast/
     prev_day = run_day - datetime.timedelta(days=1)
+    if run_type != 'forecast2':
+        restart_dir = host['results']['nowcast']
+    else:
+        restart_dir = host['results']['forecast']
     init_conditions = os.path.join(
-        host['results']['nowcast'],
+        restart_dir,
         prev_day.strftime('%d%b%y').lower(),
         'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
