@@ -123,7 +123,8 @@ def make_site_page(page_type, run_date, config):
         'run_date': run_date,
         'fcst_date': fcst_date,
         'svg_file_roots': [
-            'PA_tidal_predictions',
+            'Threshold_website',
+	    'PA_tidal_predictions',
             'Vic_maxSSH',
             'PA_maxSSH',
             'CR_maxSSH',

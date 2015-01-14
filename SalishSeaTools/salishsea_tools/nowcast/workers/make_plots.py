@@ -176,6 +176,11 @@ def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir):
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
 
     # do the plots
+    fig = figures.plot_threshold_website(bathy, grid_T_hr, model_path)
+    filename = os.path.join(
+        plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
     fig = figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
         plots_dir, 'PA_tidal_predictions_{date}.svg'.format(date=dmy))
