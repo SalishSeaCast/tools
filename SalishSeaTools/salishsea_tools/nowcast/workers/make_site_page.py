@@ -56,9 +56,10 @@ def main():
     # Do the work
     try:
         checklist = make_site_page(
-            parsed_args.page_type, parsed_args.run_date, config)
+            parsed_args.run_type, parsed_args.page_type, parsed_args.run_date,
+            config)
         logger.info(
-            '{.page_type} page for salishsea site prepared'
+            '{0.page_type} page for {0.run_type} salishsea site prepared'
             .format(parsed_args))
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.page_type}'.format(parsed_args)
@@ -68,7 +69,7 @@ def main():
         logger.critical(
             '{.page_type} page preparation failed'.format(parsed_args))
         # Exchange failure messages with the nowcast manager process
-        msg_type = 'failure {.run_type}'.format(parsed_args)
+        msg_type = 'failure {.page_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
     except SystemExit:
         # Normal termination
@@ -88,9 +89,15 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'page_type', choices=set(('forecast',)),
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2',)),
         help='''
-        Type of page to render from template to salishesea site prep directory.
+        Type of run that the results come from.
+        '''
+    )
+    parser.add_argument(
+        'page_type', choices=set(('publish',)),
+        help='''
+        Type of page to render from template to salishsea site prep directory.
         '''
     )
     parser.add_argument(
@@ -105,7 +112,17 @@ def configure_argparser(prog, description, parents):
     return parser
 
 
-def make_site_page(page_type, run_date, config):
+def make_site_page(run_type, page_type, run_date, config):
+    results_date = {
+        'nowcast': run_date,
+        'forecast': run_date + datetime.timedelta(days=1),
+        'forecast2': run_date + datetime.timedelta(days=2),
+    }
+    run_title = {
+        'nowcast': 'Nowcast',
+        'forecast': 'Forecast',
+        'forecast2': 'Preliminary Forecast',
+    }
     # Load template
     mako_file = os.path.join(
         config['web']['templates_path'], '.'.join((page_type, 'mako')))
@@ -116,12 +133,16 @@ def make_site_page(page_type, run_date, config):
     repo_path = os.path.join(config['web']['www_path'], repo_name)
     rst_file = os.path.join(
         repo_path,
-        config['web']['site_storm_surge_path'],
-        '.'.join((page_type, 'rst')))
-    fcst_date = run_date + datetime.timedelta(days=1)
+        config['web']['site_nemo_results_path'],
+        run_type,
+        '.'.join((page_type, '_',
+                  results_date.strftime('%d%b%y').lower(), 'rst')))
+
     vars = {
         'run_date': run_date,
-        'fcst_date': fcst_date,
+        'run_type': run_type,
+        'results_date': results_date[run_type],
+        'run_title': run_title[run_type],
         'svg_file_roots': [
             'Threshold_website',
             'PA_tidal_predictions',
@@ -139,14 +160,16 @@ def make_site_page(page_type, run_date, config):
         f.write(tmpl.render(**vars))
     lib.fix_perms(rst_file, grp_name=config['file group'])
     logger.debug('rendered page: {}'.format(rst_file))
-    checklist = {page_type: rst_file}
-    # Copy rst file to dated archive file
-    path, ext = os.path.splitext(rst_file)
-    archive_file = ''.join(
-        (path, '_', fcst_date.strftime('%d%b%y').lower(), ext))
-    shutil.copy2(rst_file, archive_file)
-    logger.debug('copied page to archive: {}'.format(archive_file))
-    checklist[' '.join((page_type, 'archive'))] = archive_file
+    checklist = {' '.join((run_type, page_type)): rst_file}
+    # If appropriate copy rst file to forecast file
+    if run_type in ('forecast', 'forecast2'):
+        forecast_file = os.path.join(
+            repo_path,
+            config['web']['site_storm_surge_path'],
+            '.'.join(('forecast', 'rst')))
+        shutil.copy2(rst_file, forecast_file)
+        logger.debug('copied page to forecast: {}'.format(forecast_file))
+        checklist['Most recent forecast'] = forecast_file
     return checklist
 
 
