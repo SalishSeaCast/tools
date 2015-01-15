@@ -110,6 +110,7 @@ run:
 web:
   site_repo_url: https://bitbucket.org/salishsea/salishsea-site
   site_storm_surge_path: site/storm-surge
+  site_nemo_results_path: site/nemo
   site_plots_path: site/_static/nemo/results_figures
   www_path: www
   templates_path: www/templates
@@ -247,11 +248,11 @@ msg_types:
     failure forecast2 publish: forecast2 publish plots failed
     crash: make_plots worker crashed
   make_site_page:
-    success forecast: forecast page ready for push to salishsea site
-    failure forecast: forecast page for salishsea site preparation failed
+    success publish: publish page ready for push to salishsea site
+    failure publish: publish page for salishsea site preparation failed
     crash: make_site_page worker crashed
   push_to_web:
-    success: forecast page and figures pushed to salishsea site
-    failure: forecast page and figures push to salishsea site failed
+    success: publish page and figures pushed to salishsea site
+    failure: publish page and figures push to salishsea site failed
     crash: push_to_web worker crashed
     the end: end of automation

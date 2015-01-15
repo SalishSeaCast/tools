@@ -528,11 +528,11 @@ def after_make_plots(worker, msg_type, payload, config):
 def after_make_site_page(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success forecast': [
+        'success publish': [
             (update_checklist, [worker, 'salishsea site pages', payload]),
             (launch_worker, ['push_to_web', config]),
         ],
-        'failure forecast': None,
+        'failure publish': None,
         'crash': None,
     }
     return actions[msg_type]
