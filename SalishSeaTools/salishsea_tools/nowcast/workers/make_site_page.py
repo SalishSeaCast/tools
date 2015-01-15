@@ -124,7 +124,7 @@ def make_site_page(page_type, run_date, config):
         'fcst_date': fcst_date,
         'svg_file_roots': [
             'Threshold_website',
-	    'PA_tidal_predictions',
+            'PA_tidal_predictions',
             'Vic_maxSSH',
             'PA_maxSSH',
             'CR_maxSSH',
