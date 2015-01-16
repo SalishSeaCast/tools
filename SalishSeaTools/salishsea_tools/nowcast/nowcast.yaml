@@ -110,7 +110,7 @@ run:
 web:
   site_repo_url: https://bitbucket.org/salishsea/salishsea-site
   site_storm_surge_path: site/storm-surge
-  site_nemo_results_path: site/nemo
+  site_nemo_results_path: site/nemo/results
   site_plots_path: site/_static/nemo/results_figures
   www_path: www
   templates_path: www/templates
