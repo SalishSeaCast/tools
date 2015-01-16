@@ -169,8 +169,7 @@ def getNBssh(run_type, config):
             else:
                 checklist['fcst'] = [filename]
         else:
-            item = {'obs': filename}
-        checklist.update(item)
+            checklist['obs'] = filename
     ax.legend(loc=4)
     image_file = os.path.join(
         os.path.dirname(config['logging']['log_file']), 'NBssh.png')
