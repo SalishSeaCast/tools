@@ -135,8 +135,8 @@ def make_site_page(run_type, page_type, run_date, config):
         repo_path,
         config['web']['site_nemo_results_path'],
         run_type,
-        '.'.join((page_type, '_',
-                  results_date.strftime('%d%b%y').lower(), 'rst')))
+        ''.join((page_type, '_',
+                 results_date[run_type].strftime('%d%b%y').lower(), '.rst')))
 
     vars = {
         'run_date': run_date,

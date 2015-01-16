@@ -18,7 +18,7 @@ Plots
     %>
     %for svg_file in svg_file_roots:
     <object class="standard-plot" type="image/svg+xml"
-      data="../_static/nemo/results_figures/${run_type}/${run_dmy}/${svg_file}_${run_dmy}.svg">
+      data="../../../../_static/nemo/results_figures/${run_type}/${run_dmy}/${svg_file}_${run_dmy}.svg">
     </object>
     <hr>
     %endfor
