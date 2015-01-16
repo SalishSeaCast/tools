@@ -1,3 +1,4 @@
+
 # Copyright 2013-2015 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
@@ -122,6 +123,8 @@ def run_NEMO(host_name, run_type, config, socket):
     # Create the run description data structure and dump it to a YAML file
     os.chdir(host['run_prep_dir'])
     today = datetime.date.today()
+    if run_type == 'forecast2':
+        today = today + datetime.timedelta(days=-1)
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
     run_days = {
