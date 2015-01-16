@@ -513,7 +513,8 @@ def after_make_plots(worker, msg_type, payload, config):
         'failure nowcast research': None,
         'success forecast publish': [
             (update_checklist, [worker, 'plots', payload]),
-            (launch_worker, ['make_site_page', config, ['forecast']]),
+            (launch_worker, ['make_site_page', config,
+                             ['forecast', 'publish']]),
         ],
         'failure forecast publish': None,
         'success forecast2 publish': [
