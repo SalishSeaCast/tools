@@ -1404,7 +1404,7 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
 
     return fig
 
-def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(15, 10)):
+def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   """ Plots winds averaged over simulation time at individual or all
   stations.
   
@@ -1456,25 +1456,25 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(15, 1
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, 'all', scale)
     ax.plot(lons[name], lats[name], marker='D',color=station_c,
-            markersize=10, markeredgewidth=2,label=name)
+            markersize=16, markeredgewidth=2,label=name)
     
   # Reference arrow
-  ax.arrow(-123, 50., 5.*scale, 0.*scale,
+  ax.arrow(-122, 51, 0.*scale, -5.*scale,
            head_width=0.05, head_length=0.1, width=0.02,
            color='white',fc='DarkMagenta', ec='black')
-  ax.text(-123, 50.1, "5 m/s")
+  ax.text(-122.1, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
   
   # Times for titles and legend
   t1=(plot_time[0] +time_shift).strftime('%d-%b-%Y %H:%M');
   t2=(plot_time[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
-  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+  legend = ax.legend(numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
                      prop={'size':15}, title=r'Stations')
   legend.get_title().set_fontsize('20')
   ax.set_title('Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
   
   # Citation
-  ax.text(1.07,0.1,
-          'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+  ax.text(0.6,-0.07,
+          'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
           horizontalalignment='left',
           verticalalignment='top',
           transform=ax.transAxes, color = 'white')
@@ -1483,7 +1483,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(15, 1
   
   return fig
 
-def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
+def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   """ Plots winds at individual stations 4 hours before the
   maxmimum sea surface height at Point Atkinson.
 
@@ -1525,10 +1525,10 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   [t_orig,t_final,t] = get_model_time_variables(grid_T)
 
   # Reference arrow
-  ax.arrow(-123, 50., 5.*scale, 0.*scale,
+  ax.arrow(-122, 51, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-  ax.text(-123, 50.1, "5 m/s")
+  ax.text(-122.1, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
 
   # Condition if plotting all stations or a single station
   if station == 'all':
@@ -1545,18 +1545,18 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(15, 10)):
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
     ax.plot(lons[name], lats[name], marker='D',
-	    color=station_c, markersize=10, markeredgewidth=2,label=name) 
+	    color=station_c, markersize=16, markeredgewidth=2,label=name) 
 
   # Time for title and legend
   plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
-  legend = ax.legend(numpoints=1, bbox_to_anchor=(1.14, 1), loc=2, borderaxespad=0.,
+  legend = ax.legend(numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
 						prop={'size':15}, title=r'Stations')
   legend.get_title().set_fontsize('20')
   ax.set_title('Modelled winds at \n {time} [PST]'.format(time=plot_time),**title_font)
 
   # Citation
-  ax.text(1.07,0.1,
-    'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+  ax.text(0.6,-0.07,
+    'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes, color = 'white')
