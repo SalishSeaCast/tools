@@ -74,8 +74,12 @@ def push_to_web(config):
     repo_path = hg_update(
         config['web']['site_repo_url'], config['web']['www_path'])
     html_path = sphinx_build(repo_path)
-    results_pages = os.path.join(
-        *config['web']['site_storm_surge_path'].split(os.path.sep)[1:])
+    results_pages = [
+        os.path.join(
+            *config['web']['site_storm_surge_path'].split(os.path.sep)[1:]),
+        os.path.join(
+            *config['web']['site_nemo_results_path'].split(os.path.sep)[1:]),
+        ]
     plots_path = os.path.join(
         *config['web']['site_plots_path'].split(os.path.sep)[1:])
     rsync_to_site(
@@ -125,15 +129,16 @@ def sphinx_build(repo_path):
 
 
 def rsync_to_site(html_path, results_pages, plots_path, server_path):
-    """Push the results page and plot files to the web server.
+    """Push the results pages and plot files to the web server.
     """
-    cmd = [
-        'rsync', '-rRtv',
-        '{}/./{}/'.format(html_path, results_pages),
-        server_path,
-    ]
-    lib.run_in_subprocess(cmd, logger.debug, logger.error)
-    logger.info('pushed results pages to {}/'.format(server_path))
+    for results_path in results_pages:
+        cmd = [
+            'rsync', '-rRtv',
+            '{}/./{}/'.format(html_path, results_path),
+            server_path,
+        ]
+        lib.run_in_subprocess(cmd, logger.debug, logger.error)
+        logger.info('pushed results pages to {}/'.format(server_path))
     cmd = [
         'rsync', '-rRtv',
         '{}/./{}/'.format(html_path, plots_path),
