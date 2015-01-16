@@ -1456,7 +1456,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, 'all', scale)
     ax.plot(lons[name], lats[name], marker='D',color=station_c,
-            markersize=16, markeredgewidth=2,label=name)
+            markersize=14, markeredgewidth=2,label=name)
     
   # Reference arrow
   ax.arrow(-122, 51, 0.*scale, -5.*scale,
@@ -1545,7 +1545,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
     ax.plot(lons[name], lats[name], marker='D',
-	    color=station_c, markersize=16, markeredgewidth=2,label=name) 
+	    color=station_c, markersize=14, markeredgewidth=2,label=name) 
 
   # Time for title and legend
   plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
@@ -1864,7 +1864,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
     return fig
     
-def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 16)):
+def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 20)):
     """ Overview image for Salish Sea website. Plots a map of the Salish Sea with markers indicating 
     extreme water at Point Atkinson, Victoria nd Campbell River. Also plots wind vectors averaged
     over 4 ours before the max ssh at Point Atkinson. Includes text boxes with max water level and timing.
@@ -1911,12 +1911,12 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
     
     # Figure
     fig = plt.figure(figsize = figsize)
-    gs = gridspec.GridSpec(3, 2, width_ratios=[6,1])
-    gs.update(hspace=-0.1, wspace=0.1)
-    ax=fig.add_subplot(gs[:, 0])
-    ax1=fig.add_subplot(gs[0, 1])
+    gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,1], height_ratios=[6,1])
+    gs.update(hspace=0.1, wspace=0.05)
+    ax=fig.add_subplot(gs[0, :])
+    ax1=fig.add_subplot(gs[1, 0])
     ax2=fig.add_subplot(gs[1, 1])
-    ax3=fig.add_subplot(gs[2, 1])
+    ax3=fig.add_subplot(gs[1, 2])
       
     # Map
     plot_map(ax, grid_B)
@@ -1951,10 +1951,10 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
     
     # Reference arrow
-    ax.arrow(-122.8, 50.8, 5.*scale, 0.*scale,
+    ax.arrow(-121.5, 51, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-    ax.text(-122.8, 50.85, "Reference: 5 m/s", fontsize=13)
+    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
     
     #Location labels
     ax.text(-125.6,48.1,'Pacific Ocean', fontsize=13)
@@ -1978,13 +1978,13 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
     t1=(twind[0]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
     t2=(twind[-1]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
     timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
-    ax.text(0,-0.1,
+    ax.text(0.4,-0.25,
       'Wind vectors averaged over: {time1} to {time2} {tzone}'.format(time1=t1,time2=t2,tzone=timezone),
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes, color = 'white',fontsize=14)
-    ax.text(0,-.15,
-      'Modelled winds are from the High Resolution Deterministic Prediction System of Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+    ax.text(0.4,-0.29,
+      'Modelled winds are from the High Resolution Deterministic Prediction System\nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes, color = 'white',fontsize=14)
@@ -1998,13 +1998,13 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
         display_time=(max_times[name]+PST*time_shift).strftime('%H:%M')
 
         
-        ax.text(0.05, 0.7, name, fontsize=20, 
+        ax.text(0.05, 0.9, name, fontsize=20, 
                 horizontalalignment='left', verticalalignment='top', color = 'w')
-        ax.text(0.05, 0.6, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
-                horizontalalignment='left',verticalalignment='top', color = 'white')
-        ax.text(0.05, 0.5, 'Time: {time} {tzone}'.format(time=display_time,tzone=timezone), 
-	        fontsize=15,horizontalalignment='left', verticalalignment='top', color = 'white')
-        ax.text(0.05, 0.4,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
-                 horizontalalignment='left',verticalalignment='top', color = 'white')
+        ax.text(0.05, 0.7, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
+                horizontalalignment='left',verticalalignment='top', color = 'w')
+        ax.text(0.05, 0.3, 'Time: {time} {tzone}'.format(time=display_time,tzone=timezone), 
+	        fontsize=15,horizontalalignment='left', verticalalignment='top', color = 'w')
+        ax.text(0.05, 0.5,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
+                 horizontalalignment='left',verticalalignment='top', color = 'w')
    
     return fig
