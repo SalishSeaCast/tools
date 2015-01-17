@@ -90,7 +90,7 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         'host_name', help='Name of the host to download results files from')
     parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast')),
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
         help='Type of run to download results files from.'
     )
     parser.add_argument(
