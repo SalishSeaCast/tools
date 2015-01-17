@@ -118,7 +118,6 @@ def configure_argparser(prog, description, parents):
 
 def run_NEMO(host_name, run_type, config, socket):
     host = config['run'][host_name]
-    restart_timestep = update_time_namelist(host, run_type)
 
     # Create the run description data structure and dump it to a YAML file
     os.chdir(host['run_prep_dir'])
@@ -132,6 +131,7 @@ def run_NEMO(host_name, run_type, config, socket):
         'forecast': today + datetime.timedelta(days=1),
         'forecast2': today + datetime.timedelta(days=2),
     }
+    restart_timestep = update_time_namelist(host, run_type, run_days[run_type])
     run_desc = run_description(
         host, run_type, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
@@ -196,19 +196,19 @@ def run_NEMO(host_name, run_type, config, socket):
     }}
 
 
-def update_time_namelist(host, run_type):
+def update_time_namelist(host, run_type, run_day):
     namelist = os.path.join(host['run_prep_dir'], 'namelist.time')
     with open(namelist, 'rt') as f:
         lines = f.readlines()
-    new_lines, restart_timestep = calc_new_namelist_lines(lines, run_type)
+    new_lines, restart_timestep = calc_new_namelist_lines(
+        lines, run_type, run_day)
     with open(namelist, 'wt') as f:
         f.writelines(new_lines)
     return restart_timestep
 
 
 def calc_new_namelist_lines(
-    lines, run_type, run_day=datetime.date.today(),
-    timesteps_per_day=TIMESTEPS_PER_DAY,
+    lines, run_type, run_day, timesteps_per_day=TIMESTEPS_PER_DAY,
 ):
     # Read indices & values of it000 and itend from namelist;
     # they are the lines we will update, actual values are irrelevant
@@ -254,14 +254,16 @@ def get_namelist_value(key, lines):
 
 def run_description(host, run_type, run_day, run_id, restart_timestep):
     # Relative paths from MEOPAR/nowcast/
-    prev_day = run_day - datetime.timedelta(days=1)
+
     if run_type != 'forecast2':
         restart_dir = host['results']['nowcast']
+        prev_run_id = run_day - datetime.timedelta(days=1)
     else:
         restart_dir = host['results']['forecast']
+        prev_run_id = run_day - datetime.timedelta(days=2)
     init_conditions = os.path.join(
         restart_dir,
-        prev_day.strftime('%d%b%y').lower(),
+        prev_run_id.strftime('%d%b%y').lower(),
         'SalishSea_{:08d}_restart.nc'.format(restart_timestep),
     )
     forcing_home = host['run_prep_dir']
