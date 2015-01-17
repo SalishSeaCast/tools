@@ -474,6 +474,9 @@ def after_watch_NEMO(worker, msg_type, payload, config):
         'failure forecast': None,
         'success forecast2': [
             (update_checklist, [worker, 'NEMO run', payload]),
+            (launch_worker, [
+             'download_results', config,
+             [config['run']['cloud host'], 'forecast2']]),
         ],
         'failure forecast2': None,
         'crash': None,
