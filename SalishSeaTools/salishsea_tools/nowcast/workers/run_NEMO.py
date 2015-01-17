@@ -131,7 +131,7 @@ def run_NEMO(host_name, run_type, config, socket):
         'forecast': today + datetime.timedelta(days=1),
         'forecast2': today + datetime.timedelta(days=2),
     }
-    restart_timestep = update_time_namelist(host, run_type, run_days[run_type])
+    restart_timestep = update_time_namelist(host, run_type, today)
     run_desc = run_description(
         host, run_type, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
