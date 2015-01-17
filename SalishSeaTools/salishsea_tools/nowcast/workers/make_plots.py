@@ -164,8 +164,22 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     for f in glob(os.path.join(plots_dir, '*')):
         lib.fix_perms(f, grp_name=config['file group'])
         shutil.copy2(f, www_plots_path)
-
-    checklist = glob(plots_dir)
+    checklist = {' '.join((run_type, plot_type)):
+                 glob(os.path.join(www_plots_path, '*'))}
+    if plot_type == 'publish' and run_type in ('forecast', 'forecast2'):
+        summary_plot = os.path.join(
+            config['web']['www_path'],
+            os.path.basename(config['web']['site_repo_url']),
+            config['web']['site_storm_surge_plot_path'],
+            '.'.join(config['web']['site_storm_surge_plot'],'svg')
+            )
+        f = '{plot_name}_{date}.svg'.format(
+            plot_name=config['web']['site_storm_surge_plot'],
+            date=dmy)
+        os.path.join(plots_dir, f)
+        shutil.copy2(f, summary_plot)
+        checklist['Most recent summary plot'] = summary_plot
+    
     return checklist
 
 
