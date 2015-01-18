@@ -537,6 +537,10 @@ def after_make_site_page(worker, msg_type, payload, config):
             (launch_worker, ['push_to_web', config]),
         ],
         'failure publish': None,
+        'success research': [
+            (update_checklist, [worker, 'salishsea site pages', payload]),
+        ],
+        'failure research': None,
         'crash': None,
     }
     return actions[msg_type]

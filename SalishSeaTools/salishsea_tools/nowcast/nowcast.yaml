@@ -251,7 +251,9 @@ msg_types:
     crash: make_plots worker crashed
   make_site_page:
     success publish: publish page ready for push to salishsea site
-    failure publish: publish page for salishsea site preparation failed
+    failure publish: publish page for salishsea site, preparation failed
+    success research: research page ready for push to salishsea site
+    failure research: research page for salishsea site, preparation failed
     crash: make_site_page worker crashed
   push_to_web:
     success: publish page and figures pushed to salishsea site
