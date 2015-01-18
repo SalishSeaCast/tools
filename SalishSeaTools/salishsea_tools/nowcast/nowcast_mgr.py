@@ -560,7 +560,7 @@ def after_push_to_web(worker, msg_type, payload, config):
         'failure': None,
         'crash': None,
     }
-    if 'finish the day' in payload:
+    if 'finish the day' in checklist:
         actions['success'].append((finish_the_day, [config]))
     return actions[msg_type]
 
