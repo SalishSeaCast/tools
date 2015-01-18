@@ -134,7 +134,8 @@ def test_run_description_init_conditions(run_NEMO_module):
         'results': {'nowcast': '~/MEOPAR/SalishSea/nowcast/'},
         'run_prep_dir': '~/MEOPAR/nowcast/',
     }
-    run_desc = run_NEMO_module.run_description(host, today, 'run_id', 42)
+    run_desc = run_NEMO_module.run_description(
+        host, 'nowcast', today, 'run_id', 42)
     expected = os.path.join(
         'SalishSea/nowcast/',
         (today - timedelta(days=1)).strftime('%d%b%y').lower(),
