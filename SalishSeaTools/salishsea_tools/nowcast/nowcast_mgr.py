@@ -489,7 +489,6 @@ def after_download_results(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_plots', config, ['nowcast', 'publish']]),
             (launch_worker, ['make_plots', config, ['nowcast', 'research']]),
         ],
         'failure nowcast': None,
@@ -498,6 +497,11 @@ def after_download_results(worker, msg_type, payload, config):
             (launch_worker, ['make_plots', config, ['forecast', 'publish']]),
         ],
         'failure forecast': None,
+        'success forecast2': [
+            (update_checklist, [worker, 'results files', payload]),
+            (launch_worker, ['make_plots', config, ['forecast2', 'publish']]),
+        ],
+        'failure forecast2': None,
         'crash': None,
     }
     return actions[msg_type]
@@ -506,14 +510,18 @@ def after_download_results(worker, msg_type, payload, config):
 def after_make_plots(worker, msg_type, payload, config):
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast publish': [
-            (update_checklist, [worker, 'plots', payload]),
-        ],
-        'failure nowcast publish': None,
         'success nowcast research': [
             (update_checklist, [worker, 'plots', payload]),
+            (launch_worker, ['make_site_page', config,
+                             ['nowcast', 'research']]),
         ],
         'failure nowcast research': None,
+        'success nowcast publish': [
+            (update_checklist, [worker, 'plots', payload]),
+            (launch_worker, ['make_site_page', config,
+                             ['nowcast', 'publish']]),
+        ],
+        'failure nowcast publish': None,
         'success forecast publish': [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config,
@@ -522,6 +530,8 @@ def after_make_plots(worker, msg_type, payload, config):
         'failure forecast publish': None,
         'success forecast2 publish': [
             (update_checklist, [worker, 'plots', payload]),
+            (launch_worker, ['make_site_page', config,
+                             ['forecast2', 'publish']]),
         ],
         'failure forecast2 publish': None,
         'crash': None,
@@ -539,6 +549,7 @@ def after_make_site_page(worker, msg_type, payload, config):
         'failure publish': None,
         'success research': [
             (update_checklist, [worker, 'salishsea site pages', payload]),
+            (launch_worker, ['make_plots', config, ['nowcast', 'publish']]),
         ],
         'failure research': None,
         'crash': None,
