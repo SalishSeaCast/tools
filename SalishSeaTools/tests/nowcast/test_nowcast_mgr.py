@@ -795,8 +795,6 @@ def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
         (nowcast_mgr_module.update_checklist,
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
-         ['make_plots', config, ['nowcast', 'publish']]),
-        (nowcast_mgr_module.launch_worker,
          ['make_plots', config, ['nowcast', 'research']]),
     ]
     assert next_steps == expected
@@ -816,11 +814,11 @@ def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
-def test_make_site_page_success_forecast_next_steps(nowcast_mgr_module):
+def test_make_site_page_success_publish_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_make_site_page(
-        'make_site_page', 'success forecast', payload, config)
+        'make_site_page', 'success publish', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['make_site_page', 'salishsea site pages', payload]),
