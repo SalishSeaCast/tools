@@ -259,4 +259,3 @@ msg_types:
     success: publish page and figures pushed to salishsea site
     failure: publish page and figures push to salishsea site failed
     crash: push_to_web worker crashed
-    the end: end of automation

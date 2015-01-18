@@ -146,7 +146,6 @@ def message_processor(config, message):
         'make_plots': after_make_plots,
         'make_site_page': after_make_site_page,
         'push_to_web': after_push_to_web,
-        'the end': the_end,
     }
     # Handle undefined message type
     if msg_type not in config['msg_types'][worker]:
@@ -161,11 +160,6 @@ def message_processor(config, message):
         .format(worker=worker,
                 msg_type=msg_type,
                 msg_words=config['msg_types'][worker][msg_type]))
-    # Handle end of automation message
-    if msg_type == 'the end':
-        logger.info('worker-automated parts of nowcast completed for today')
-        next_steps = after_actions['the end'](config)
-        return reply_ack, next_steps
     # Handle need messages from workers
     if msg_type.startswith('need'):
         reply = lib.serialize_message(mgr_name, 'ack', checklist[payload])
@@ -566,6 +560,8 @@ def after_push_to_web(worker, msg_type, payload, config):
         'failure': None,
         'crash': None,
     }
+    if 'finish the day' in payload:
+        actions['success'].append((finish_the_day, [config]))
     return actions[msg_type]
 
 
@@ -617,14 +613,13 @@ def is_cloud_ready(config):
             launch_worker('set_ssh_config', config)
 
 
-def the_end(config):
-    next_step = finish_automation
-    next_step_args = [config]
-    return [(next_step, next_step_args)]
+def finish_the_day(config):
+    """Finish nowcast and forecast automation process for the day.
 
-
-def finish_automation(config):
+    Clear the checklist and rotate the log file.
+    """
     global checklist
+    logger.info('nowcast and forecast processing completed for today')
     checklist = {}
     logger.info('checklist cleared')
     with open('nowcast_checklist.yaml', 'wt') as f:

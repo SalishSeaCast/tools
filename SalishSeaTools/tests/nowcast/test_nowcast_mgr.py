@@ -68,14 +68,18 @@ class TestMessageProcesor(object):
     def test_valid_msg_type_logging(self, m_logger, nowcast_mgr_module):
         config = {
             'msg_types': {
-                'worker': {
-                    'the end': 'foo'
-                }
+                'download_weather': {
+                    'success 06': 'foo',
+                },
             }
         }
-        message = '{source: worker, msg_type: the end, payload: null}\n'
+        message = (
+            '{source: download_weather, '
+            'msg_type: success 06, '
+            'payload: null}\n')
         nowcast_mgr_module.message_processor(config, message)
-        m_logger.assert_any_call('received message from worker: (the end) foo')
+        m_logger.assert_any_call(
+            'received message from download_weather: (success 06) foo')
 
     def test_valid_msg_reply(self, nowcast_mgr_module):
         nowcast_mgr_module.mgr_name = 'nowcast_mgr'
@@ -97,52 +101,6 @@ class TestMessageProcesor(object):
             'payload': None,
         }
         assert yaml.safe_load(reply) == expected
-
-    @patch('salishsea_tools.nowcast.nowcast_mgr.logger.info')
-    def test_the_end_msg_logging(self, m_logger, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'worker': {
-                    'the end': 'foo'
-                }
-            }
-        }
-        message = '{source: worker, msg_type: the end, payload: null}\n'
-        nowcast_mgr_module.message_processor(config, message)
-        m_logger.assert_any_call(
-            'worker-automated parts of nowcast completed for today')
-
-    def test_the_end_msg_reply(self, nowcast_mgr_module):
-        nowcast_mgr_module.mgr_name = 'nowcast_mgr'
-        config = {
-            'msg_types': {
-                'worker': {
-                    'the end': 'foo',
-                },
-            },
-        }
-        message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.message_processor(
-            config, message)
-        expected = {
-            'source': 'nowcast_mgr',
-            'msg_type': 'ack',
-            'payload': None,
-        }
-        assert yaml.safe_load(reply) == expected
-
-    def test_the_end_next_msg_steps(self, nowcast_mgr_module):
-        config = {
-            'msg_types': {
-                'worker': {
-                    'the end': 'foo'
-                }
-            }
-        }
-        message = '{source: worker, msg_type: the end, payload: null}\n'
-        reply, next_steps = nowcast_mgr_module.message_processor(
-            config, message)
-        assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
 @pytest.mark.use_fixtures(['nowcast_mgr_module'])
@@ -336,12 +294,6 @@ class TestIsCloudReady(object):
             nowcast_mgr_module.is_cloud_ready(config)
             nowcast_mgr_module.launch_worker.assert_called_once_with(
                 'set_ssh_config', config)
-
-
-def test_the_end_next_step(nowcast_mgr_module):
-    config = Mock(name='config')
-    next_steps = nowcast_mgr_module.the_end(config)
-    assert next_steps == [(nowcast_mgr_module.finish_automation, [config])]
 
 
 @pytest.mark.parametrize('worker, msg_type', [
@@ -828,12 +780,25 @@ def test_make_site_page_success_publish_next_steps(nowcast_mgr_module):
 
 
 def test_push_to_web_success_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
+    payload = {}
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_push_to_web(
         'push_to_web', 'success', payload, config)
     expected = [
         (nowcast_mgr_module.update_checklist,
          ['push_to_web', 'push to salishsea site', payload])
+    ]
+    assert next_steps == expected
+
+
+def test_push_to_web_success_finish_the_day_next_steps(nowcast_mgr_module):
+    payload = {'finish the day': True}
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_push_to_web(
+        'push_to_web', 'success', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['push_to_web', 'push to salishsea site', payload]),
+        (nowcast_mgr_module.finish_the_day, [config])
     ]
     assert next_steps == expected
