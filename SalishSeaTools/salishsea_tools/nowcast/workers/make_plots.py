@@ -171,7 +171,7 @@ def make_plots(run_date, run_type, plot_type, config, socket):
             config['web']['www_path'],
             os.path.basename(config['web']['site_repo_url']),
             config['web']['site_storm_surge_plot_path'],
-            '.'.join(config['web']['site_storm_surge_plot'],'svg')
+            '.'.join(config['web']['site_storm_surge_plot'], 'svg')
             )
         f = '{plot_name}_{date}.svg'.format(
             plot_name=config['web']['site_storm_surge_plot'],
@@ -179,7 +179,7 @@ def make_plots(run_date, run_type, plot_type, config, socket):
         os.path.join(plots_dir, f)
         shutil.copy2(f, summary_plot)
         checklist['Most recent summary plot'] = summary_plot
-    
+
     return checklist
 
 

@@ -139,7 +139,7 @@ def make_site_page(run_type, page_type, run_date, config):
                      'T_S_Currents_on_surface',
                      'Compare_VENUS_East',
                      'Compare_VENUS_Central',
-                    ],
+                     ],
         }
     # Load template
     mako_file = os.path.join(
@@ -169,7 +169,7 @@ def make_site_page(run_type, page_type, run_date, config):
     logger.debug('rendered page: {}'.format(rst_file))
     checklist = {' '.join((run_type, page_type)): rst_file}
     # If appropriate copy rst file to forecast file
-    if run_type in ('forecast', 'forecast2') and page_type = 'publish':
+    if run_type in ('forecast', 'forecast2') and page_type == 'publish':
         forecast_file = os.path.join(
             repo_path,
             config['web']['site_storm_surge_path'],
