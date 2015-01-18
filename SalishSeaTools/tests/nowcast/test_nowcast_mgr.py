@@ -780,7 +780,7 @@ def test_make_site_page_success_publish_next_steps(nowcast_mgr_module):
 
 
 def test_push_to_web_success_next_steps(nowcast_mgr_module):
-    payload = {}
+    payload = Mock(name='payload')
     config = Mock(name='config')
     next_steps = nowcast_mgr_module.after_push_to_web(
         'push_to_web', 'success', payload, config)
@@ -792,8 +792,9 @@ def test_push_to_web_success_next_steps(nowcast_mgr_module):
 
 
 def test_push_to_web_success_finish_the_day_next_steps(nowcast_mgr_module):
-    payload = {'finish the day': True}
+    payload = Mock(name='payload')
     config = Mock(name='config')
+    nowcast_mgr_module.checklist = {'finish the day': True}
     next_steps = nowcast_mgr_module.after_push_to_web(
         'push_to_web', 'success', payload, config)
     expected = [
