@@ -95,7 +95,7 @@ def configure_argparser(prog, description, parents):
         '''
     )
     parser.add_argument(
-        'page_type', choices=set(('publish',)),
+        'page_type', choices=set(('publish', 'research')),
         help='''
         Type of page to render from template to salishsea site prep directory.
         '''
@@ -123,6 +123,24 @@ def make_site_page(run_type, page_type, run_date, config):
         'forecast': 'Forecast',
         'forecast2': 'Preliminary Forecast',
     }
+    svg_file_roots = {
+        'publish': ['Threshold_website',
+                    'PA_tidal_predictions',
+                    'Vic_maxSSH',
+                    'PA_maxSSH',
+                    'CR_maxSSH',
+                    'NOAA_ssh',
+                    'WaterLevel_Thresholds',
+                    'SH_wind',
+                    'Avg_wind_vectors',
+                    'Wind_vectors_at_max',
+                    ],
+        'research': ['Salinity_on_thalweg',
+                     'T_S_Currents_on_surface',
+                     'Compare_VENUS_East',
+                     'Compare_VENUS_Central',
+                    ],
+        }
     # Load template
     mako_file = os.path.join(
         config['web']['templates_path'], '.'.join((page_type, 'mako')))
@@ -143,26 +161,15 @@ def make_site_page(run_type, page_type, run_date, config):
         'run_type': run_type,
         'results_date': results_date[run_type],
         'run_title': run_title[run_type],
-        'svg_file_roots': [
-            'Threshold_website',
-            'PA_tidal_predictions',
-            'Vic_maxSSH',
-            'PA_maxSSH',
-            'CR_maxSSH',
-            'NOAA_ssh',
-            'WaterLevel_Thresholds',
-            'SH_wind',
-            'Avg_wind_vectors',
-            'Wind_vectors_at_max',
-        ],
-    }
+        'svg_file_roots': svg_file_roots[page_type],
+        }
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
     lib.fix_perms(rst_file, grp_name=config['file group'])
     logger.debug('rendered page: {}'.format(rst_file))
     checklist = {' '.join((run_type, page_type)): rst_file}
     # If appropriate copy rst file to forecast file
-    if run_type in ('forecast', 'forecast2'):
+    if run_type in ('forecast', 'forecast2') and page_type = 'publish':
         forecast_file = os.path.join(
             repo_path,
             config['web']['site_storm_surge_path'],
