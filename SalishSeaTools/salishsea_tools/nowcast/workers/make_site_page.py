@@ -49,8 +49,12 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.info(
+        '{0.run_type} {0.page_type}: running in process {1}'
+        .format(parsed_args, os.getpid()))
+    logger.info(
+        '{0.run_type} {0.page_type}: read config from {0.config_file}'
+        .format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -59,7 +63,7 @@ def main():
             parsed_args.run_type, parsed_args.page_type, parsed_args.run_date,
             config)
         logger.info(
-            '{0.page_type} page for {0.run_type} salishsea site prepared'
+            '{0.run_type} {0.page_type} page for salishsea site prepared'
             .format(parsed_args))
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.page_type}'.format(parsed_args)
@@ -67,7 +71,8 @@ def main():
             worker_name, msg_type, config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
-            '{.page_type} page preparation failed'.format(parsed_args))
+            '{0.run_type} {0.page_type} page preparation failed'
+            .format(parsed_args))
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.page_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
@@ -75,14 +80,18 @@ def main():
         # Normal termination
         pass
     except:
-        logger.critical('unhandled exception:')
+        logger.critical(
+            '{0.run_type} {0.page_type}: unhandled exception:'
+            .format(parsed_args))
         for line in traceback.format_exc().splitlines():
             logger.error(line)
         # Exchange crash messages with the nowcast manager process
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.info(
+        '{0.run_type} {0.page_type}: task completed; shutting down'
+        .format(parsed_args))
 
 
 def configure_argparser(prog, description, parents):
@@ -113,71 +122,134 @@ def configure_argparser(prog, description, parents):
 
 
 def make_site_page(run_type, page_type, run_date, config):
-    results_date = {
-        'nowcast': run_date,
-        'forecast': run_date + datetime.timedelta(days=1),
-        'forecast2': run_date + datetime.timedelta(days=2),
-    }
-    run_title = {
-        'nowcast': 'Nowcast',
-        'forecast': 'Forecast',
-        'forecast2': 'Preliminary Forecast',
-    }
     svg_file_roots = {
-        'publish': ['Threshold_website',
-                    'PA_tidal_predictions',
-                    'Vic_maxSSH',
-                    'PA_maxSSH',
-                    'CR_maxSSH',
-                    'NOAA_ssh',
-                    'WaterLevel_Thresholds',
-                    'SH_wind',
-                    'Avg_wind_vectors',
-                    'Wind_vectors_at_max',
-                    ],
-        'research': ['Salinity_on_thalweg',
-                     'T_S_Currents_on_surface',
-                     'Compare_VENUS_East',
-                     'Compare_VENUS_Central',
-                     ],
-        }
+        'publish': [
+            'Threshold_website',
+            'PA_tidal_predictions',
+            'Vic_maxSSH',
+            'PA_maxSSH',
+            'CR_maxSSH',
+            'NOAA_ssh',
+            'WaterLevel_Thresholds',
+            'SH_wind',
+            'Avg_wind_vectors',
+            'Wind_vectors_at_max',
+        ],
+        'research': [
+            'Salinity_on_thalweg',
+            'T_S_Currents_on_surface',
+            'Compare_VENUS_East',
+            'Compare_VENUS_Central',
+        ],
+    }
+    # Functions to render rst files for various run types
+    render_rst = {
+        'nowcast': render_nowcast_rst,
+        'forecast': render_forecast_rst,
+        'forecast2': render_forecast2_rst,
+    }
     # Load template
     mako_file = os.path.join(
-        config['web']['templates_path'], '.'.join((page_type, 'mako')))
+        config['web']['templates_path'],
+        '{page_type}.mako'.format(page_type=page_type))
     tmpl = mako.template.Template(filename=mako_file)
-    logger.debug('read template: {}'.format(mako_file))
+    logger.debug(
+        '{run_type} {page_type}: read template: {mako_file}'
+        .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
     # Render template to rst
     repo_name = config['web']['site_repo_url'].rsplit('/')[-1]
     repo_path = os.path.join(config['web']['www_path'], repo_name)
-    rst_file = os.path.join(
+    results_pages_path = os.path.join(
         repo_path,
-        config['web']['site_nemo_results_path'],
-        run_type,
-        ''.join((page_type, '_',
-                 results_date[run_type].strftime('%d%b%y').lower(), '.rst')))
+        config['web']['site_nemo_results_path'])
+    checklist = render_rst[run_type](
+        tmpl, page_type, run_date, svg_file_roots, results_pages_path, config)
+    # If appropriate copy rst file to forecast file
+    if run_type in ('forecast', 'forecast2') and page_type == 'publish':
+        rst_file = checklist['{} publish'.format(run_type)]
+        forecast_file = os.path.join(
+            repo_path, config['web']['site_storm_surge_path'], 'forecast.rst')
+        shutil.copy2(rst_file, forecast_file)
+        logger.debug(
+            '{run_type} {page_type}: copied page to forecast: {forecast_file}'
+            .format(
+                run_type=run_type,
+                page_type=page_type,
+                forecast_file=forecast_file))
+        checklist['most recent forecast'] = forecast_file
+    return checklist
 
+
+def render_nowcast_rst(
+    tmpl, page_type, run_date, svg_file_roots, rst_path, config,
+):
+    rst_filename = (
+        '{page_type}_{dmy}.rst'
+        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+    rst_file = os.path.join(rst_path, 'nowcast', rst_filename)
     vars = {
         'run_date': run_date,
-        'run_type': run_type,
-        'results_date': results_date[run_type],
-        'run_title': run_title[run_type],
+        'run_type': 'nowcast',
+        'results_date': run_date,
+        'run_title': 'Nowcast',
         'svg_file_roots': svg_file_roots[page_type],
-        }
+    }
+    tmpl_to_rst(tmpl, rst_file, vars, config)
+    logger.debug(
+        'nowcast {page_type}: rendered page: {rst_file}'
+        .format(page_type=page_type, rst_file=rst_file))
+    checklist = {'nowcast {}'.format(page_type): rst_file}
+    return checklist
+
+
+def render_forecast_rst(
+    tmpl, page_type, run_date, svg_file_roots, rst_path, config,
+):
+    rst_filename = (
+        '{page_type}_{dmy}.rst'
+        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+    rst_file = os.path.join(rst_path, 'forecast', rst_filename)
+    vars = {
+        'run_date': run_date,
+        'run_type': 'forecast',
+        'results_date': run_date + datetime.timedelta(days=1),
+        'run_title': 'Forecast',
+        'svg_file_roots': svg_file_roots[page_type],
+    }
+    tmpl_to_rst(tmpl, rst_file, vars, config)
+    logger.debug(
+        'forecast {page_type}: rendered page: {rst_file}'
+        .format(page_type=page_type, rst_file=rst_file))
+    checklist = {'forecast {}'.format(page_type): rst_file}
+    return checklist
+
+
+def render_forecast2_rst(
+    tmpl, page_type, run_date, svg_file_roots, rst_path, config,
+):
+    rst_filename = (
+        '{page_type}_{dmy}.rst'
+        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+    rst_file = os.path.join(rst_path, 'forecast2', rst_filename)
+    vars = {
+        'run_date': run_date,
+        'run_type': 'forecast2',
+        'results_date': run_date + datetime.timedelta(days=2),
+        'run_title': 'Preliminary Forecast',
+        'svg_file_roots': svg_file_roots[page_type],
+    }
+    tmpl_to_rst(tmpl, rst_file, vars, config)
+    logger.debug(
+        'forecast2 {page_type}: rendered page: {rst_file}'
+        .format(page_type=page_type, rst_file=rst_file))
+    checklist = {'forecast2 {}'.format(page_type): rst_file}
+    return checklist
+
+
+def tmpl_to_rst(tmpl, rst_file, vars, config):
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
     lib.fix_perms(rst_file, grp_name=config['file group'])
-    logger.debug('rendered page: {}'.format(rst_file))
-    checklist = {' '.join((run_type, page_type)): rst_file}
-    # If appropriate copy rst file to forecast file
-    if run_type in ('forecast', 'forecast2') and page_type == 'publish':
-        forecast_file = os.path.join(
-            repo_path,
-            config['web']['site_storm_surge_path'],
-            '.'.join(('forecast', 'rst')))
-        shutil.copy2(rst_file, forecast_file)
-        logger.debug('copied page to forecast: {}'.format(forecast_file))
-        checklist['Most recent forecast'] = forecast_file
-    return checklist
 
 
 if __name__ == '__main__':
