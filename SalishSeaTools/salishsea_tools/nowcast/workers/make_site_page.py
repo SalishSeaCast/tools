@@ -36,6 +36,9 @@ logger = logging.getLogger(worker_name)
 
 context = zmq.Context()
 
+# Number of days in index page grid
+INDEX_GRID_COLS = 21
+
 
 def main():
     # Prepare the worker
@@ -164,6 +167,10 @@ def make_site_page(run_type, page_type, run_date, config):
         config['web']['site_nemo_results_path'])
     checklist = render_rst[run_type](
         tmpl, page_type, run_date, svg_file_roots, results_pages_path, config)
+    # Render index page template to rst
+    checklist.update(
+        render_index_rst(
+            page_type, run_type, run_date, results_pages_path, config))
     # If appropriate copy rst file to forecast file
     if run_type in ('forecast', 'forecast2') and page_type == 'publish':
         rst_file = checklist['{} publish'.format(run_type)]
@@ -249,10 +256,42 @@ def render_forecast2_rst(
     return checklist
 
 
+def render_index_rst(page_type, run_type, run_date, rst_path, config):
+    mako_file = os.path.join(config['web']['templates_path'], 'index.mako')
+    tmpl = mako.template.Template(filename=mako_file)
+    logger.debug(
+        '{run_type} {page_type}: read template: {mako_file}'
+        .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
+    rst_file = os.path.join(rst_path, 'index.rst')
+    fcst_date = arrow.get(run_date).replace(days=+1)
+    dates = arrow.Arrow.range(
+        'day', fcst_date.replace(days=-(INDEX_GRID_COLS - 1)), fcst_date)
+    if dates[0].month != dates[-1].month:
+        this_month_cols = dates[-1].day
+        last_month_cols = INDEX_GRID_COLS - this_month_cols
+    else:
+        this_month_cols, last_month_cols = INDEX_GRID_COLS, 0
+    vars = {
+        'this_month_cols': this_month_cols,
+        'last_month_cols': last_month_cols,
+        'prelim_fcst_dates': dates,
+        'nowcast_dates': (dates[:-1] if run_type in 'nowcast forecast'.split()
+                          else dates[:-2]),
+        'fcst_dates': dates[:-1] if run_type == 'nowcast' else dates,
+    }
+    tmpl_to_rst(tmpl, rst_file, vars, config)
+    logger.debug(
+        '{run_type} {page_type}: rendered page: {rst_file}'
+        .format(run_type=run_type, page_type=page_type, rst_file=rst_file))
+
+    checklist = {'index page'.format(page_type): rst_file}
+    return checklist
+
+
 def tmpl_to_rst(tmpl, rst_file, vars, config):
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
-    lib.fix_perms(rst_file, grp_name=config['file group'])
+    # lib.fix_perms(rst_file, grp_name=config['file group'])
 
 
 if __name__ == '__main__':
