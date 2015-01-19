@@ -106,7 +106,7 @@ def configure_argparser(prog, description, parents):
     parser.add_argument(
         '--run-date', type=lib.arrow_date, default=arrow.now(),
         help='''
-        Date of the run to download results files from;
+        Date of the run to make forcing links for;
         use YYYY-MM-DD format.
         Defaults to %(default)s.
         ''',
