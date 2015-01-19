@@ -1619,7 +1619,8 @@ def thalweg_salinity(grid_T_d, figsize=(20,8), cs = [26,27,28,29,30,30.2,30.4,30
     ax.set_axis_bgcolor('burlywood')
 
     return fig
-    
+
+
 def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     """ Plots the daily average surface salinity, temperature, and currents.
 
@@ -1635,7 +1636,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
 
-    :arg limits: Figure limits [xmin,xmax,ymin,ymax] or 'default' for entire region.
+    :arg limits: Figure limits [xmin,xmax,ymin,ymax]
+                           or 'default' for entire region.
     :type limits: 2-tuple
 
     :arg figsize: Figure size (width, height) in inches or 'default'.
@@ -1644,28 +1646,20 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     :returns: matplotlib figure object instance (fig).
     """
 
-
     # Limits
     if limits == 'default':
-      limits = [0,398,0,898]
-    else:
-      limits = limits
+        limits = [0, 398, 0, 898]
 
     xmin = limits[0]
     xmax = limits[1]
-    ymin = limits [2]
+    ymin = limits[2]
     ymax = limits[3]
 
     # Figure size
     if figsize == 'default':
-      figsize = (20,12)
-    else:
-      figsize = figsize
+        figsize = (20, 12)
 
     # Tracer data
-    lon_d = grid_T_d.variables['nav_lon']
-    lat_d = grid_T_d.variables['nav_lat']
-    dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline']
     tem_d = grid_T_d.variables['votemper']
 
@@ -1678,30 +1672,31 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     tem_d = np.ma.masked_values(tem_d[t, z], 0)
 
     tracers = [sal_d, tem_d]
-    titles = ['Average Salinity: ','Average Temperature: ']
-    cmaps = ['gist_ncar_r','jet']
-    units = ['[psu]','[degC]']
+    titles = ['Average Salinity: ', 'Average Temperature: ']
+    cmaps = ['gist_ncar_r', 'jet']
+    units = ['[]', '[degC]']
 
     # Figure
-    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=figsize)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
 
     axs = [ax1, ax2]
-    plots = np.arange(1,3,1)
+    plots = np.arange(1, 3, 1)
 
-    for ax,tracer,title,cmap,unit,plot in zip(axs,tracers,titles,cmaps,units,plots):
+    for ax, tracer, title, cmap, unit, plot in zip(
+            axs, tracers, titles, cmaps, units, plots):
 
         # Map
         cmap = plt.get_cmap(cmap)
 
         # Colormaps
-        if plot == 1:
-            cs = [0,4,8,12,16,20,24,28,32,36]
-        if plot == 2:
-            cs = [0,2,4,6,8,10,12,14,16,18,20]
+        if plot == 1:   # salinity
+            cs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+        if plot == 2:   # temperature
+            cs = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 
         # Plot salinity and temperature
-        mesh=ax.pcolormesh(tracer,cmap=cmap,vmin=0,vmax=cs[-1])
+        mesh = ax.pcolormesh(tracer, cmap=cmap, vmin=0, vmax=cs[-1])
 
         # Axis
         ax.set_xlim(xmin,xmax)
