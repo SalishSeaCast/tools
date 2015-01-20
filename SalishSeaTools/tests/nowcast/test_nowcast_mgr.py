@@ -781,6 +781,29 @@ def test_download_results_success_forecasts_next_steps(nowcast_mgr_module):
     assert next_steps == expected
 
 
+@pytest.mark.parametrize('msg_type, args', [
+    ('success nowcast research', ['nowcast', 'research']),
+    ('success nowcast publish', ['nowcast', 'publish']),
+    ('success nowcast publish', ['nowcast', 'publish']),
+    ('success forecast publish', ['forecast', 'publish']),
+    ('success forecast2 publish', ['forecast2', 'publish']),
+])
+def test_success_nowcast_research_next_steps(
+    msg_type, args, nowcast_mgr_module,
+):
+    payload = Mock(name='payload')
+    config = Mock(name='config')
+    next_steps = nowcast_mgr_module.after_make_plots(
+        'make_plots', msg_type, payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['make_plots', 'plots', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_site_page', config, args])
+    ]
+    assert next_steps == expected
+
+
 def test_make_site_page_success_publish_next_steps(nowcast_mgr_module):
     payload = Mock(name='payload')
     config = Mock(name='config')
