@@ -334,6 +334,7 @@ class TestIsCloudReady(object):
     ('after_watch_NEMO', 'crash'),
     ('after_download_results', 'failure nowcast'),
     ('after_download_results', 'failure forecast'),
+    ('after_download_results', 'failure forecast2'),
     ('after_download_results', 'crash'),
     ('after_make_plots', 'failure nowcast publish'),
     ('after_make_plots', 'failure nowcast research'),
@@ -762,6 +763,20 @@ def test_download_results_success_forecast_next_steps(nowcast_mgr_module):
          ['download_results', 'results files', payload]),
         (nowcast_mgr_module.launch_worker,
          ['make_plots', config, ['forecast', 'publish']]),
+    ]
+    assert next_steps == expected
+
+
+def test_download_results_success_forecasts_next_steps(nowcast_mgr_module):
+    payload = Mock(name='payload')
+    config = {'run': {'cloud host': 'west.cloud'}}
+    next_steps = nowcast_mgr_module.after_download_results(
+        'download_results', 'success forecast2', payload, config)
+    expected = [
+        (nowcast_mgr_module.update_checklist,
+         ['download_results', 'results files', payload]),
+        (nowcast_mgr_module.launch_worker,
+         ['make_plots', config, ['forecast2', 'publish']]),
     ]
     assert next_steps == expected
 
