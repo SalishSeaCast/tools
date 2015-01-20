@@ -125,6 +125,8 @@ def configure_argparser(prog, description, parents):
 
 
 def make_site_page(run_type, page_type, run_date, config):
+    if run_type == 'forecast2':
+        run_date = run_date + datetime.timedelta(days=-1)
     svg_file_roots = {
         'publish': [
             'Threshold_website',
