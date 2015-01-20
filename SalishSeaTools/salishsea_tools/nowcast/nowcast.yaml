@@ -238,6 +238,8 @@ msg_types:
     failure nowcast: nowcast results files download failed
     success forecast: forecast results files downloaded
     failure forecast: forecast results files download failed
+    success forecast2: forecast2 results files downloaded
+    failure forecast2: forecast2 results files download failed
     crash: download_results worker crashed
   make_plots:
     success nowcast publish: nowcast publish plots produced
