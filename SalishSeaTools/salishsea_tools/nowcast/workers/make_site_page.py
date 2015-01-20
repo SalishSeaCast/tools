@@ -212,14 +212,16 @@ def render_nowcast_rst(
 def render_forecast_rst(
     tmpl, page_type, run_date, svg_file_roots, rst_path, config,
 ):
+    results_date = run_date + datetime.timedelta(days=1)
     rst_filename = (
         '{page_type}_{dmy}.rst'
-        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+        .format(page_type=page_type,
+                dmy=results_date.strftime('%d%b%y').lower()))
     rst_file = os.path.join(rst_path, 'forecast', rst_filename)
     vars = {
         'run_date': run_date,
         'run_type': 'forecast',
-        'results_date': run_date + datetime.timedelta(days=1),
+        'results_date': results_date,
         'run_title': 'Forecast',
         'svg_file_roots': svg_file_roots[page_type],
     }
@@ -237,14 +239,16 @@ def render_forecast_rst(
 def render_forecast2_rst(
     tmpl, page_type, run_date, svg_file_roots, rst_path, config,
 ):
+    results_date = run_date + datetime.timedelta(days=2)
     rst_filename = (
         '{page_type}_{dmy}.rst'
-        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+        .format(page_type=page_type,
+                dmy=results_date.strftime('%d%b%y').lower()))
     rst_file = os.path.join(rst_path, 'forecast2', rst_filename)
     vars = {
         'run_date': run_date,
         'run_type': 'forecast2',
-        'results_date': run_date + datetime.timedelta(days=2),
+        'results_date': results_date,
         'run_title': 'Preliminary Forecast',
         'svg_file_roots': svg_file_roots[page_type],
     }
