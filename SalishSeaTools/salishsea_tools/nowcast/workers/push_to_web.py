@@ -77,7 +77,7 @@ def push_to_web(config):
         os.path.join(
             *config['web']['site_storm_surge_path'].split(os.path.sep)[1:]),
         os.path.join(
-            *config['web']['site_nemo_results_path'].split(os.path.sep)[1:-1]),
+            *config['web']['site_nemo_results_path'].split(os.path.sep)[1:]),
         ]
     plots_path = os.path.join(
         *config['web']['site_plots_path'].split(os.path.sep)[1:])
