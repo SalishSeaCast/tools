@@ -354,6 +354,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
 
     return tides
 
+
 def get_maxes(ssh, t, res, lon, lat, model_path):
     """ Identifies maximum ssh and other important features such as the timing,
     residual, and wind speed.
@@ -377,24 +378,24 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     :type model_path: string
 
     :returns: maxmimum ssh (max_ssh), index of maximum ssh (index_ssh),
-    time of maximum ssh (tmax), residual at that time (max_res),
-    wind speed at that time (max_wind), and the index of that wind speed (ind_w).
+    time of maximum ssh (tmax), residual at that time (max_res), wind
+    speed at that time (max_wind), and the index of that wind speed (ind_w).
     """
 
     # Index when sea surface height is at its maximum at Point Atkinson
     max_ssh = np.max(ssh)
     index_ssh = np.argmax(ssh)
-    tmax=t[index_ssh]
-    max_res=res[index_ssh]
+    tmax = t[index_ssh]
+    max_res = res[index_ssh]
 
     # Get model winds
     t_orig=t[0]; t_final = t[-1]
-    [wind, direc, t_wind, pr, tem, sol, the, qr, pre]=get_model_winds(lon,lat,t_orig,t_final,model_path)
+    [wind, direc, t_wind, pr, tem, sol, the, qr, pre] = get_model_winds(lon,lat,t_orig,t_final,model_path)
 
     # Index where t_wind=tmax
     # (Find a match between the year, month, day and hour)
-    ind_w=np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
-    max_wind=wind[ind_w]
+    ind_w = np.where(t_wind==datetime.datetime(tmax.year,tmax.month,tmax.day,tmax.hour))
+    max_wind = wind[ind_w]
 
     return max_ssh, index_ssh, tmax, max_res, max_wind, ind_w
 
@@ -560,35 +561,34 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
    """
 
    # Weather file names
-   files=get_weather_filenames(t_orig, t_final, model_path)
-   weather=nc.Dataset(files[0])
-   Y=weather.variables['nav_lat'][:]
-   X=weather.variables['nav_lon'][:]-360
+   files = get_weather_filenames(t_orig, t_final, model_path)
+   weather = nc.Dataset(files[0])
+   Y = weather.variables['nav_lat'][:]
+   X = weather.variables['nav_lon'][:]-360
 
-   [j,i]=find_model_point(lon,lat,X,Y)
+   [j,i] = find_model_point(lon,lat,X,Y)
 
-   wind=np.array([]); direc=np.array([],'double'); t=np.array([]); pr=np.array([]);
-   sol=np.array([]); the=np.array([]); pre=np.array([]); tem=np.array([]); qr=np.array([]);
+   wind = np.array([]); direc=np.array([],'double'); t=np.array([]); pr=np.array([]);
+   sol = np.array([]); the=np.array([]); pre=np.array([]); tem=np.array([]); qr=np.array([]);
    for f in files:
         G = nc.Dataset(f)
         u = G.variables['u_wind'][:,j,i]; v=G.variables['v_wind'][:,j,i];
-        pr=np.append(pr,G.variables['atmpres'][:,j,i]); sol=np.append(sol,G.variables['solar'][:,j,i]);
-        qr=np.append(qr,G.variables['qair'][:,j,i]); the=np.append(the,G.variables['therm_rad'][:,j,i]);
-        pre=np.append(pre,G.variables['precip'][:,j,i]);
-        tem=np.append(tem,G.variables['tair'][:,j,i])
+        pr = np.append(pr,G.variables['atmpres'][:,j,i]); sol=np.append(sol,G.variables['solar'][:,j,i]);
+        qr = np.append(qr,G.variables['qair'][:,j,i]); the=np.append(the,G.variables['therm_rad'][:,j,i]);
+        pre = np.append(pre,G.variables['precip'][:,j,i]);
+        tem = np.append(tem,G.variables['tair'][:,j,i])
         speed = np.sqrt(u**2 + v**2)
-        wind=np.append(wind,speed)
+        wind = np.append(wind,speed)
 
         d = np.arctan2(v, u)
         d = np.rad2deg(d + (d<0)*2*np.pi);
-        direc=np.append(direc,d)
+        direc = np.append(direc,d)
 
-	ts=G.variables['time_counter']
-	# There is no time_origin attriubte in OP files; this is hard coded.
+	ts = G.variables['time_counter']
+	# There is no time_origin attribute in OP files; this is hard coded.
         torig = datetime.datetime(1970,1,1)
         for ind in np.arange(ts.shape[0]):
-            t= np.append(t,torig + datetime.timedelta(seconds=ts[ind]))
-
+            t = np.append(t, torig + datetime.timedelta(seconds = ts[ind]))
    return wind, direc, t, pr, tem, sol, the, qr, pre
    
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
@@ -1858,28 +1858,31 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     ax.grid()
 
     return fig
-    
-def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize = (18, 20)):
-    """ Overview image for Salish Sea website. Plots a map of the Salish Sea with markers indicating 
-    extreme water at Point Atkinson, Victoria nd Campbell River. Also plots wind vectors averaged
-    over 4 ours before the max ssh at Point Atkinson. Includes text boxes with max water level and timing.
-    
+
+
+def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1,
+                           PST=1, figsize = (18, 20)):
+    """ Overview image for Salish Sea website. Plots a map of the Salish Sea with
+    markers indicating extreme water at Point Atkinson, Victoria nd Campbell
+    River. Also plots wind vectors averaged over 4 ours before the max ssh at
+    Point Atkinson. Includes text boxes with max water level and timing.
+
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
-    
+
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
 
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
-    
+
     :arg scale: scale factor or wind arrows
     :type scale: float
-    
+
     :arg PST: Specifies if plot should be presented in PST.
     1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
-    
+
     :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
 
@@ -1888,102 +1891,103 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
 
     # Stations information
     [lats, lons] = station_coords()
-  
+
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
-    
+
     # Time range
-    t_orig,t_final,t=get_model_time_variables(grid_T)
-    
-    #Wind time
-    inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path, t,4,average=True)
-    
+    t_orig, t_final, t = get_model_time_variables(grid_T)
+
+    # Wind time
+    inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
+                               model_path, t, 4, average=True)
+
     # Set up loop
-    names = ['Point Atkinson','Campbell River','Victoria']
-    
+    names = ['Point Atkinson', 'Campbell River', 'Victoria']
+
     # Set up Information
     max_sshs = {}; max_times = {}; max_winds = {}
-    
+
     # Figure
-    fig = plt.figure(figsize = figsize)
-    gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,1], height_ratios=[6,1])
+    fig = plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(2, 3, width_ratios=[1, 1, 1], height_ratios=[6, 1])
     gs.update(hspace=0.1, wspace=0.05)
-    ax=fig.add_subplot(gs[0, :])
-    ax1=fig.add_subplot(gs[1, 0])
-    ax2=fig.add_subplot(gs[1, 1])
-    ax3=fig.add_subplot(gs[1, 2])
-      
+    ax = fig.add_subplot(gs[0, :])
+    ax1 = fig.add_subplot(gs[1, 0])
+    ax2 = fig.add_subplot(gs[1, 1])
+    ax3 = fig.add_subplot(gs[1, 2])
+
     # Map
     plot_map(ax, grid_B)
-        
+
     for name in names:
-  
         # Get sea surface height
-        [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
+        [j, i] = tidetools.find_closest_model_point(lons[name], lats[name],
+                                            X, Y, bathy, allow_land=False)
         ssh = grid_T.variables['sossheig']
-        ssh_loc = ssh[:,j,i]
+        ssh_loc = ssh[:, j, i]
 
         # Get tides and ssh
-        ttide=get_tides(name)
-        sdt=t_orig.replace(minute=0)
-        edt=t_final +datetime.timedelta(minutes=30)
-        ssh_corr=stormtools.correct_model(ssh_loc,ttide,sdt,edt)
-        
+        ttide = get_tides(name)
+        sdt = t_orig.replace(minute=0)
+        edt = t_final + datetime.timedelta(minutes=30)
+        ssh_corr = stormtools.correct_model(ssh_loc, ttide, sdt, edt)
+
         # Plot thresholds
-        plot_threshold_map(ax, ttide, ssh_corr,'o', 55, 0.3, name)
+        plot_threshold_map(ax, ttide, ssh_corr, 'o', 55, 0.3, name)
         # Plot winds
-        twind=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
-        
+        twind = plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+
         # Information
-        res = compute_residual(ssh_loc,ttide,t_orig,t_final)
+        res = compute_residual(ssh_loc, ttide, t_orig, t_final)
         [max_ssh, index_ssh, tmax, max_res, max_wind, ind_w] = get_maxes(ssh_corr, t, res, lons[name], lats[name], model_path)
         max_sshs[name] = max_ssh
         max_times[name] = tmax
         max_winds[name] = max_wind
-        
+
     # Add winds for other stations
-    for name in ['Neah Bay','Cherry Point','Sandheads','Friday Harbor']:
+    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
-    
+
     # Reference arrow
     ax.arrow(-121.5, 51, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
-    
-    #Location labels
-    ax.text(-125.6,48.1,'Pacific Ocean', fontsize=13)
-    ax.text(-122.8,50.1,'British Columbia',fontsize=13)
-    ax.text(-123.8,47.3,'Washington \n State', fontsize=13)
+    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize=14)
 
-    ax.text(-122.3,47.6,'Puget Sound', fontsize=13)
-    ax.text(-124.7,48.45,'Strait of Juan de Fuca',fontsize=13,rotation=-18)
-    ax.text(-123.95,49.25,'Strait of \n Georgia',fontsize=13,rotation=-2)
+    # Location labels
+    ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
+    ax.text(-122.8, 50.1, 'British Columbia', fontsize=13)
+    ax.text(-123.8, 47.3, 'Washington \n State', fontsize=13)
 
-    ax.text(-123.1,49.4,'Point \n Atkinson', fontsize=20)
-    ax.text(-125.9,50.05,'Campbell \n River', fontsize=20)
-    ax.text(-123.5,48.2,'Victoria', fontsize=20)
+    ax.text(-122.3, 47.6, 'Puget Sound', fontsize=13)
+    ax.text(-124.7, 48.45, 'Strait of Juan de Fuca', fontsize=13, rotation=-18)
+    ax.text(-123.95, 49.25, 'Strait of \n Georgia', fontsize=13, rotation=-2)
+
+    ax.text(-123.1, 49.4, 'Point \n Atkinson', fontsize=20)
+    ax.text(-125.9, 50.05, 'Campbell \n River', fontsize=20)
+    ax.text(-123.5, 48.2, 'Victoria', fontsize=20)
 
     # Figure format
-    ax.set_title('Station Locations',**title_font)
+    ax.set_title('Station Locations', **title_font)
     fig.patch.set_facecolor('#2B3E50')
     axis_colors(ax, 'gray')
-    
+
     # Citation
-    t1=(twind[0]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
-    t2=(twind[-1]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
-    timezone=PST*'[PST]' + abs((PST-1))*'[UTC]'
+    t1 = (twind[0]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
+    t2 = (twind[-1]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
+    timezone = PST*'[PST]' + abs((PST-1))*'[UTC]'
     ax.text(0.4,-0.25,
       'Wind vectors averaged over: {time1} to {time2} {tzone}'.format(time1=t1,time2=t2,tzone=timezone),
         horizontalalignment='left',
         verticalalignment='top',
         transform=ax.transAxes, color = 'white',fontsize=14)
-    ax.text(0.4,-0.29,
+    ax.text(0.4, -0.29,
       'Modelled winds are from the High Resolution Deterministic Prediction System\nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
-        horizontalalignment='left',
-        verticalalignment='top',
+        horizontalalignment = 'left',
+        verticalalignment = 'top',
         transform=ax.transAxes, color = 'white',fontsize=14)
-    
+
     # Information_box
     axs = [ax1, ax2, ax3]
     for ax, name in zip (axs, names):
@@ -1992,14 +1996,14 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1, PST=1, figsize
         axis_colors(ax, 'blue')
         display_time=(max_times[name]+PST*time_shift).strftime('%H:%M')
 
-        
-        ax.text(0.05, 0.9, name, fontsize=20, 
+
+        ax.text(0.05, 0.9, name, fontsize=20,
                 horizontalalignment='left', verticalalignment='top', color = 'w')
-        ax.text(0.05, 0.7, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15, 
+        ax.text(0.05, 0.7, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name]+MSL_DATUMS[name]),fontsize=15,
                 horizontalalignment='left',verticalalignment='top', color = 'w')
-        ax.text(0.05, 0.3, 'Time: {time} {tzone}'.format(time=display_time,tzone=timezone), 
+        ax.text(0.05, 0.3, 'Time: {time} {tzone}'.format(time=display_time,tzone=timezone),
 	        fontsize=15,horizontalalignment='left', verticalalignment='top', color = 'w')
-        ax.text(0.05, 0.5,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15, 
+        ax.text(0.05, 0.5,'Wind speed: {:.1f} m/s'.format(float(max_winds[name])),fontsize=15,
                  horizontalalignment='left',verticalalignment='top', color = 'w')
-   
+
     return fig
