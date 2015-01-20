@@ -78,11 +78,16 @@ def push_to_web(config):
             *config['web']['site_storm_surge_path'].split(os.path.sep)[1:]),
         os.path.join(
             *config['web']['site_nemo_results_path'].split(os.path.sep)[1:]),
-        ]
-    plots_path = os.path.join(
-        *config['web']['site_plots_path'].split(os.path.sep)[1:])
+    ]
+    plots_paths = [
+        os.path.join(
+            *config['web']['site_storm_surge_plot_path']
+            .split(os.path.sep)[1:]),
+        os.path.join(
+            *config['web']['site_plots_path'].split(os.path.sep)[1:]),
+    ]
     rsync_to_site(
-        html_path, results_pages, plots_path, config['web']['server_path'])
+        html_path, results_pages, plots_paths, config['web']['server_path'])
     checklist = True
     return checklist
 
@@ -127,7 +132,7 @@ def sphinx_build(repo_path):
     return html_path
 
 
-def rsync_to_site(html_path, results_pages, plots_path, server_path):
+def rsync_to_site(html_path, results_pages, plots_paths, server_path):
     """Push the results pages and plot files to the web server.
     """
     for results_path in results_pages:
@@ -138,13 +143,14 @@ def rsync_to_site(html_path, results_pages, plots_path, server_path):
         ]
         lib.run_in_subprocess(cmd, logger.debug, logger.error)
         logger.info('pushed results pages to {}/'.format(server_path))
-    cmd = [
-        'rsync', '-rRtv',
-        '{}/./{}/'.format(html_path, plots_path),
-        server_path,
-    ]
-    lib.run_in_subprocess(cmd, logger.debug, logger.error)
-    logger.info('pushed plots to {}/'.format(server_path))
+    for plots_path in plots_paths:
+        cmd = [
+            'rsync', '-rRtv',
+            '{}/./{}/'.format(html_path, plots_path),
+            server_path,
+        ]
+        lib.run_in_subprocess(cmd, logger.debug, logger.error)
+        logger.info('pushed plots to {}/'.format(server_path))
 
 
 if __name__ == '__main__':
