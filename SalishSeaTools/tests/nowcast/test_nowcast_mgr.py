@@ -344,8 +344,6 @@ class TestIsCloudReady(object):
     ('after_make_site_page', 'failure publish'),
     ('after_make_site_page', 'failure research'),
     ('after_make_site_page', 'crash'),
-    ('after_push_to_web', 'failure'),
-    ('after_push_to_web', 'crash'),
 ])
 def test_after_worker_no_next_steps(
     worker, msg_type, nowcast_mgr_module,
@@ -820,27 +818,48 @@ class TestAfterMakeSitePage(object):
         assert next_steps == expected
 
 
-def test_push_to_web_success_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = Mock(name='config')
-    next_steps = nowcast_mgr_module.after_push_to_web(
-        'push_to_web', 'success', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['push_to_web', 'push to salishsea site', payload])
-    ]
-    assert next_steps == expected
+class TestAfterPushToWeb(object):
+    """Unit tests for after_push_to_web() function.
+    """
+    def test_success_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = Mock(name='config')
+        nowcast_mgr_module.checklist = {
+            'salishsea site pages': {}
+        }
+        next_steps = nowcast_mgr_module.after_push_to_web(
+            'push_to_web', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['push_to_web', 'push to salishsea site', payload])
+        ]
+        assert next_steps == expected
 
+    @pytest.mark.parametrize('msg_type', [
+        'failure',
+        'crash',
+    ])
+    def test_failure_next_steps(self, msg_type, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = Mock(name='config')
+        nowcast_mgr_module.checklist = {
+            'salishsea site pages': {}
+        }
+        next_steps = nowcast_mgr_module.after_push_to_web(
+            'push_to_web', msg_type, payload, config)
+        assert next_steps is None
 
-def test_push_to_web_success_finish_the_day_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = Mock(name='config')
-    nowcast_mgr_module.checklist = {'finish the day': True}
-    next_steps = nowcast_mgr_module.after_push_to_web(
-        'push_to_web', 'success', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['push_to_web', 'push to salishsea site', payload]),
-        (nowcast_mgr_module.finish_the_day, [config])
-    ]
-    assert next_steps == expected
+    def test_success_finish_the_day_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = Mock(name='config')
+        nowcast_mgr_module.checklist = {
+            'salishsea site pages': {'finish the day': True}
+        }
+        next_steps = nowcast_mgr_module.after_push_to_web(
+            'push_to_web', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['push_to_web', 'push to salishsea site', payload]),
+            (nowcast_mgr_module.finish_the_day, [config])
+        ]
+        assert next_steps == expected
