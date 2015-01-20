@@ -1696,7 +1696,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
             cs = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 
         # Plot salinity and temperature
-        mesh = ax.pcolormesh(tracer, cmap=cmap, vmin=0, vmax=cs[-1])
+        mesh = ax.contourf(tracer, cmap=cmap, vmin=0, vmax=cs[-1])
 
         # Axis
         ax.set_xlim(xmin,xmax)
