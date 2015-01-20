@@ -263,7 +263,7 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         '{run_type} {page_type}: read template: {mako_file}'
         .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
     rst_file = os.path.join(rst_path, 'index.rst')
-    fcst_date = arrow.get(run_date).replace(days=+1)
+    fcst_date = arrow.Arrow.fromdate(run_date).replace(days=+1)
     dates = arrow.Arrow.range(
         'day', fcst_date.replace(days=-(INDEX_GRID_COLS - 1)), fcst_date)
     if dates[0].month != dates[-1].month:
