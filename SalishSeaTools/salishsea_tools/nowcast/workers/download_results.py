@@ -17,6 +17,7 @@
 from a nowcast run on the HPC/cloud facility to archival storage.
 """
 import argparse
+import datetime
 import glob
 import logging
 import os
@@ -108,8 +109,7 @@ def configure_argparser(prog, description, parents):
 def download_results(host_name, run_type, run_date, config):
     host = config['run'][host_name]
     if run_type == 'forecast2':
-        run_date.replace(day=-1)
-
+        run_date = run_date + datetime.timedelta(days=-1)
     results_dir = run_date.strftime('%d%b%y').lower()
     src_dir = os.path.join(host['results'][run_type], results_dir)
     src = (
