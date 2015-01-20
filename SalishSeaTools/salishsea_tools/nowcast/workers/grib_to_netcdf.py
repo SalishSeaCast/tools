@@ -253,7 +253,7 @@ def define_forecast_segments_forecast2():
     p1 = os.path.join(today.format('YYYYMMDD'), '06')
     logger.info('forecast section: {}'.format(p1))
     fcst_section_hrs_arr[0] = OrderedDict([
-        ('section 1', (p1, -1, 24-6-1, 24+24-6)),
+        ('section 1', (p1, -1, 24-6-1, 24+23-6)),
     ])
     zerostart = [[]]
     length = [24]
