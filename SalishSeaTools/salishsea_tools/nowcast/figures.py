@@ -313,7 +313,9 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     except ValueError:
         data = {'Date Time': st_ar.datetime, ' Water Level': float('NaN')}
         obs = pd.DataFrame(data=data, index=[0])
+    print 'Printing obs column headings (before rename): ', obs.columns
     obs = obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
+    print 'Printing obs column headings (after rename): ', obs.columns
     return obs
 
 
