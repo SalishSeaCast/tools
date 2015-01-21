@@ -266,10 +266,13 @@ def load_PA_observations():
 
   return obs
 
-def get_NOAA_wlevels(station_no, start_date, end_date):
-    """ Retrieves recent NOAA water levels from a station in a given date range.
 
-    NOAA water levels are at 6 minute intervals and are relative to mean sea level.
+def get_NOAA_wlevels(station_no, start_date, end_date):
+    """ Retrieves recent NOAA water levels from a station in a given
+    date range.
+
+    NOAA water levels are at 6 minute intervals and are relative to
+    mean sea level.
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
 
     :arg station_no: NOAA station number.
@@ -286,31 +289,33 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     """
 
     # Time range
-    st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
-    end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
+    end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
 
-    base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=water_level&application=NOS.COOPS.TAC.WL'
+    base_url = (
+        'http://tidesandcurrents.noaa.gov/api/datagetter'
+        '?product=water_level&application=NOS.COOPS.TAC.WL')
     params = {
-    'begin_date': st_ar.format('YYYYMMDD'),
-    'end_date': end_ar.format('YYYYMMDD'),
-    'datum':  'MSL',
-    'station': str(station_no),
-    'time_zone': 'GMT',
-    'units':'metric',
-    'format': 'csv',}
-
+        'begin_date': st_ar.format('YYYYMMDD'),
+        'end_date': end_ar.format('YYYYMMDD'),
+        'datum':  'MSL',
+        'station': str(station_no),
+        'time_zone': 'GMT',
+        'units': 'metric',
+        'format': 'csv',
+    }
     response = requests.get(base_url, params=params)
 
     fakefile = StringIO(response.content)
-
     try:
-      obs = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
+        obs = pd.read_csv(
+            fakefile, parse_dates=[0], date_parser=dateparse_NOAA)
     except ValueError:
-      data={'Date Time': st_ar.datetime, ' Water Level': float('NaN')}
-      obs=pd.DataFrame(data=data,index=[0])
-    obs=obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
-
+        data = {'Date Time': st_ar.datetime, ' Water Level': float('NaN')}
+        obs = pd.DataFrame(data=data, index=[0])
+    obs = obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
     return obs
+
 
 def get_NOAA_tides(station_no, start_date, end_date):
     """ Retrieves NOAA predicted tides from a station in a given date range.
@@ -438,7 +443,7 @@ def compute_residual(ssh, ttide, t_orig, t_final):
     return res
 
 def get_tides(name):
-    """ Returns the tidal predictions at a given station. Tidal 
+    """ Returns the tidal predictions at a given station. Tidal
     predictions are calculated for 2014 and 2015.
 
     This function is only for Victoria, Campbell River, Point Atkinson and
@@ -446,11 +451,11 @@ def get_tides(name):
 
     :arg name: The name of the station.
     :type name: string
-    
-    :returns: DataFrame object (ttide) with tidal predictions and columns time, 
+
+    :returns: DataFrame object (ttide) with tidal predictions and columns time,
     pred_all, pred_8.
     """
-    
+
     # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
     path='/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
     filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
@@ -458,7 +463,7 @@ def get_tides(name):
     ttide,msl= stormtools.load_tidal_predictions(tfile)
 
     return ttide
-    
+
 def load_VENUS(station):
     """ Loads the most recent State of the Ocean data from the VENUS node
     indicated by station.
@@ -590,7 +595,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
         for ind in np.arange(ts.shape[0]):
             t = np.append(t, torig + datetime.timedelta(seconds = ts[ind]))
    return wind, direc, t, pr, tem, sol, the, qr, pre
-   
+
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model.
 
@@ -664,7 +669,7 @@ def plot_tides(ax, name, PST, MSL, color=predictions_c):
     :returns: DataFrame object (ttide) with tidal predictions and
     columns time, pred_all, pred_8.
     """
-    
+
     ttide=get_tides(name)
     ax.plot(ttide.time+PST*time_shift,ttide.pred_all+MSL_DATUMS[name]*MSL,c=color,
 		linewidth=2,label='Tidal predictions')
@@ -684,7 +689,7 @@ def plot_PA_observations(ax,PST):
 
   obs=load_PA_observations()
   ax.plot(obs.time +PST*time_shift,obs.wlev,color=observations_c,lw=2,label='Observations')
-  
+
 def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
   """Determines category (green, yellow, red)
   in which the max sea surface height at a station
@@ -692,14 +697,14 @@ def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
   """
   #load lats and longs of stations
   lats,lons=station_coords() #these should probably be constants
-  
+
   # Defining thresholds
   extreme_sshs = {'Point Atkinson': 5.61, 'Campbell River': 5.35, 'Victoria': 3.76}
   extreme_ssh = extreme_sshs[name]
   max_tides=max(ttide.pred_all) + MSL_DATUMS[name]
   mid_tides = 0.5*(extreme_ssh - max_tides)+max_tides
   max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]
-  
+
   # Threshold colors
   if max_ssh < (max_tides):
     threshold_c = 'green'
@@ -707,11 +712,11 @@ def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
     threshold_c = 'red'
   else:
     threshold_c = 'Gold'
-    
+
   ax.plot(lons[name],lats[name],marker=marker,
 			color=threshold_c,markersize=msize,markeredgewidth=2,
 			alpha=alpha)
-    
+
   return max_tides, mid_tides, extreme_ssh
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
@@ -745,36 +750,36 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     return lon, lat, depth
 
 def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
-  """ Plots a single wind vector at a station in an axis. Winds are averaged over the 
+  """ Plots a single wind vector at a station in an axis. Winds are averaged over the
   times represnted by the indices in inds[0] and inds[-1].
-  
+
   :arg ax: The axis for plotting.
   :type ax: an axis object
-  
+
   :arg name: The name of the station, can be Neah Bay, Point Atkinson, Campbell River,
   Victoria, Friday Harbor, Cherry Point, Sandheads.
   :type name: string
-  
+
   :arg t_orig: start time of the simulation.
   :type t_orig: datetime object
-  
+
   :arg t_final: end time fo simulation.
   :type t_final: datetime object
-  
+
   :arg model_path: path to the weather model data.
   :type model_path: string
-  
-  :arg inds: indices corresponding to the time range of desired wind plots. 
+
+  :arg inds: indices corresponding to the time range of desired wind plots.
   If inds='all', the average will span the entire simulation.
   :type inds: numpy array, or string 'all'
-  
+
   :arg scale: scale of arrows for plotting wind vector.
   :type scale: float
-  
+
   :returns: tplot, an array with the time range winds were averaged: tplot[0] and tplot[-1] .
   """
   [lats, lons] = station_coords()
-  
+
   [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(lons[name],lats[name],t_orig,t_final,model_path)
 
   if inds =='all':
@@ -787,39 +792,39 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
   ax.arrow(lons[name],  lats[name], scale*uwind[0], scale*vwind[0], head_width=0.05,
 		head_length=0.1, width=0.02, color='white',fc='DarkMagenta', ec='black')
   tplot=t[inds[0]:inds[-1]+1]
-  
+
   return tplot
 
 def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
-  """ Isolates indices timing of wind vectors. 
+  """ Isolates indices timing of wind vectors.
   The timing is based on x number of hours before the max water level at a station.
-  
+
   :arg name: The name of the station, Point Atkinson, Victora, Campbell River are good choices.
   :type name: string
-  
+
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
-  
+
   :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
   :type grid_B: :class:`netCDF4.Dataset`
-  
+
   :arg model_path: path to the weather model data.
   :type model_path: string
-  
+
   :arg t: An array of outut times from the NEMO model.
   :type t: numpy array consisting of datetime objects
-  
+
   :arg hour: The number of hours before max ssh to plt.
   :type hour: integer
-  
+
   :arg average: Flag to determine if plotting should be averaged over x hours before ssh or just a single time.
   :type average: Boolean (True=average over times, False = only a single time_counter
-  
+
   :returns: inds, an array with the start and end index for plotting winds.
   """
-  
+
   [lats, lons] = station_coords()
-  
+
   # Bathymetry
   bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
@@ -840,7 +845,7 @@ def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
     inds=np.array([0,ind_w]);
   if not(average):
     inds=np.array([inds[0]])
-    
+
   return inds
 
 def plot_map(ax, grid_B):
@@ -1407,31 +1412,31 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
 def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   """ Plots winds averaged over simulation time at individual or all
   stations.
-  
+
   This function applies to stations at Campbell River, Point Atkinson,
   Victoria, Cherry Point, Neah Bay, and Friday Harbor.
-  
+
   :arg grid_T: Hourly tracer results dataset from NEMO.
   :type grid_T: :class:`netCDF4.Dataset`
-  
+
   :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
   :type grid_B: :class:`netCDF4.Dataset`
-  
+
   :arg model_path: The directory where the model files are stored.
   :type model_path: string
-  
+
   :arg station: Name of one station or 'all' for all stations.
   :type station: string
-  
+
   :arg figsize:  Figure size (width, height) in inches.
   :type figsize: 2-tuple
-  
+
   :returns: matplotlib figure object instance (fig).
   """
-  
+
   # Stations information
   [lats, lons] = station_coords()
-  
+
   # Map
   fig = plt.figure(figsize=figsize)
   ax = fig.add_subplot(1, 1, 1)
@@ -1451,19 +1456,19 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
   else:
     names=[station]
     colors=['DarkMagenta']
-  
+
   # Loop through all stations to plot arrows and markers
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, 'all', scale)
     ax.plot(lons[name], lats[name], marker='D',color=station_c,
             markersize=14, markeredgewidth=2,label=name)
-    
+
   # Reference arrow
   ax.arrow(-122, 51, 0.*scale, -5.*scale,
            head_width=0.05, head_length=0.1, width=0.02,
            color='white',fc='DarkMagenta', ec='black')
   ax.text(-122.1, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
-  
+
   # Times for titles and legend
   t1=(plot_time[0] +time_shift).strftime('%d-%b-%Y %H:%M');
   t2=(plot_time[-1]+time_shift).strftime('%d-%b-%Y %H:%M')
@@ -1471,16 +1476,16 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
                      prop={'size':15}, title=r'Stations')
   legend.get_title().set_fontsize('20')
   ax.set_title('Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'.format(t1=t1,t2=t2),**title_font)
-  
+
   # Citation
   ax.text(0.6,-0.07,
           'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
           horizontalalignment='left',
           verticalalignment='top',
           transform=ax.transAxes, color = 'white')
-  
+
   axis_colors(ax, 'gray')
-  
+
   return fig
 
 def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
@@ -1540,12 +1545,12 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
 
   # Indices for plotting wind vectors
   inds = isolate_wind_timing('Point Atkinson',grid_T,grid_B,model_path,t,4,average=False)
-  
+
   # Loop through all stations to plot arrows and markers
   for name, station_c in zip (names, colors):
     plot_time=plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
     ax.plot(lons[name], lats[name], marker='D',
-	    color=station_c, markersize=14, markeredgewidth=2,label=name) 
+	    color=station_c, markersize=14, markeredgewidth=2,label=name)
 
   # Time for title and legend
   plot_time=(plot_time[0]+time_shift).strftime('%d-%b-%Y %H:%M')
