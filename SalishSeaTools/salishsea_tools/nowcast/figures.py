@@ -276,13 +276,13 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
 
     :arg station_no: NOAA station number.
-    :type station_no: integer
+    :type station_no: int
 
-    :arg start_date: The start of the date range eg. 01-Jan-2014.
-    :type start_date: string
+    :arg start_date: The start of the date range; e.g. 01-Jan-2014.
+    :type start_date: str
 
-    :arg end_date: The end of the date range eg. 02-Jan-2014.
-    :type end_date: string
+    :arg end_date: The end of the date range; e.g. 02-Jan-2014.
+    :type end_date: str
 
     :returns: DataFrame object (obs) with time and wlev columns,
     among others that are irrelevant.
