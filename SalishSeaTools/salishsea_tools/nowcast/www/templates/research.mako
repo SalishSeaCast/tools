@@ -18,7 +18,7 @@ Plots
         run_dmy = run_date.strftime('%d%b%y').lower()
     %>
     %for svg_file in svg_file_roots:
-    <object class="standard-plot" type="image/svg+xml"
+    <object class="img-responsive" type="image/svg+xml"
       data="../../../../_static/nemo/results_figures/${run_type}/${run_dmy}/${svg_file}_${run_dmy}.svg">
     </object>
     <hr>
