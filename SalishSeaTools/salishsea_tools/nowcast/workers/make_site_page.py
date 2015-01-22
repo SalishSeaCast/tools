@@ -271,7 +271,8 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     rst_file = os.path.join(rst_path, 'index.rst')
     fcst_date = (
         arrow.Arrow.fromdate(run_date).replace(days=+1)
-        if run_type != 'forecast2' else run_date.replace(days=+2))
+        if run_type != 'forecast2'
+        else arrow.Arrow.fromdate(run_date.replace(days=+2)))
     dates = arrow.Arrow.range(
         'day', fcst_date.replace(days=-(INDEX_GRID_COLS - 1)), fcst_date)
     if dates[0].month != dates[-1].month:
