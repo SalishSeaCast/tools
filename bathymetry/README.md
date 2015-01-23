@@ -8,34 +8,28 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ##[BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
     
-* ##[NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
+* ##[Thalweg Work.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
     
-    **NEMO Grid Bathymetry**  
-      
-    This notebook describes the creation  
-    of the `NEMO-forcing/grid/grid_bathy.nc` file  
-    containing the calculated grid level depths at each grid point  
-    that result from NEMO's partial z-step algorithm.  
-    The `grid_bathy.nc` is used to calculate initial conditions  
-    and boundary conditions temperature and salinity values that do not  
-    induce spurious transient flows at the topographic edges of the domain.  
+    Determine the Thalweg in more Detail and Channelize it  
+
+* ##[Bathymetry inside NEMO.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry inside NEMO.ipynb)  
+    
+    Notebook to look at the Bathymetry that NEMO actually uses after it does its processing  
+
+* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
+    
+* ##[Smooth, preserving thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Smooth, preserving thalweg.ipynb)  
+    
+    Smooth around the Thalweg  
 
 * ##[More Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
     Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
     We show below that this makes the Thalweg more rugged as it pulls shallow areas from the sides across the channel.  
 
-* ##[Untitled0.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Untitled0.ipynb)  
+* ##[SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
     
-* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
-    
-* ##[SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
-    
-    **Salish Sea NEMO Bathymetry**  
-      
-    This notebook documents the bathymetry used for the Salish Sea NEMO runs.  
-      
-    The first part of the notebook explores and plots the bathymetry.  
+    This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
 
 * ##[SalishSeaSubdomainBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)  
     
@@ -50,23 +44,41 @@ Descriptions below the links are from the first cell of the notebooks
     The second part records the manual smoothing that was done to  
     get the JPP M2 tidal forcing case to run.  
 
-* ##[SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
+* ##[Find TS for new Bathymetry.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Find TS for new Bathymetry.ipynb)  
     
-    This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
+* ##[SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
+    
+    **Salish Sea NEMO Bathymetry**  
+      
+    This notebook documents the bathymetry used for the Salish Sea NEMO runs.  
+      
+    The first part of the notebook explores and plots the bathymetry.  
+
+* ##[NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
+    
+    **NEMO Grid Bathymetry**  
+      
+    This notebook describes the creation  
+    of the `NEMO-forcing/grid/grid_bathy.nc` file  
+    containing the calculated grid level depths at each grid point  
+    that result from NEMO's partial z-step algorithm.  
+    The `grid_bathy.nc` is used to calculate initial conditions  
+    and boundary conditions temperature and salinity values that do not  
+    induce spurious transient flows at the topographic edges of the domain.  
+
+* ##[Thalweg Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Smoothing.ipynb)  
+    
+    Smooth the Thalweg  
 
 * ##[netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
     
     **Explore Changing Bathymetry Data Format**  
     **netCDF4 Instead of netCDF3_CLASSIC**  
 
-* ##[Thalweg Work.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
-    
-    Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more  
-
 
 ##License
 
-These notebooks and files are copyright 2013-2014
+These notebooks and files are copyright 2013-2015
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
