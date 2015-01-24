@@ -27,6 +27,7 @@ import traceback
 import arrow
 import matplotlib
 import netCDF4 as nc
+import scipy.io as sio
 import zmq
 
 matplotlib.use('Agg')
@@ -144,6 +145,7 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     if run_type in ['forecast', 'forecast2']:
         model_path = os.path.join(model_path, 'fcst/')
     bathy = nc.Dataset(config['bathymetry'])
+    coastline = sio.loadmat('/ocean/rich/more/mmapbase/bcgeo/PNW.mat')
 
     # configure plot directory for saving
     dmy = run_date.strftime('%d%b%y').lower()
@@ -151,9 +153,9 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     lib.mkdir(plots_dir, logger, grp_name='sallen')
 
     if plot_type == 'publish':
-        make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir)
+        make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline)
     else:
-        make_research_plots(dmy, model_path, bathy, results_dir, plots_dir)
+        make_research_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline)
 
     # Fix permissions on image files and copy them to salishsea site
     # prep directory
@@ -174,7 +176,7 @@ def make_plots(run_date, run_type, plot_type, config, socket):
             config['web']['www_path'],
             os.path.basename(config['web']['site_repo_url']),
             config['web']['site_storm_surge_plot_path'],
-            '.'.join((config['web']['site_storm_surge_plot'], 'svg'))
+            '.'.join((config['web']['site_storm_surge_plot'], 'png'))
             )
         f = '{plot_name}_{date}.svg'.format(
             plot_name=config['web']['site_storm_surge_plot'],
@@ -185,13 +187,18 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     return checklist
 
 
-def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir):
+def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline):
     '''Make the plots we wish to publish'''
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
 
     # do the plots
+    fig = figures.website_thumbnail(bathy, grid_T_hr, model_path, coastline, 0.1)
+    filename = os.path.join(
+        plots_dir, 'Website_thumbnail_{date}.png'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    
     fig = figures.plot_threshold_website(bathy, grid_T_hr, model_path)
     filename = os.path.join(
         plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
@@ -247,7 +254,7 @@ def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir):
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
 
-def make_research_plots(dmy, model_path, bathy, results_dir, plots_dir):
+def make_research_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline):
     '''Make the plots we wish to look at for research purposes'''
 
     # get the results
