@@ -17,7 +17,9 @@
 site from page templates.
 """
 import argparse
+from copy import copy
 import datetime
+from glob import glob
 import logging
 import os
 import shutil
@@ -66,7 +68,7 @@ def main():
             parsed_args.run_type, parsed_args.page_type, parsed_args.run_date,
             config)
         logger.info(
-            '{0.run_type} {0.page_type} page for salishsea site prepared'
+            '{0.run_type} {0.page_type} pages for salishsea site prepared'
             .format(parsed_args))
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.page_type}'.format(parsed_args)
@@ -266,9 +268,10 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     mako_file = os.path.join(config['web']['templates_path'], 'index.mako')
     tmpl = mako.template.Template(filename=mako_file)
     logger.debug(
-        '{run_type} {page_type}: read template: {mako_file}'
+        '{run_type} {page_type}: read index page template: {mako_file}'
         .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
-    rst_file = os.path.join(rst_path, 'index.rst')
+    # Calculate the date range to display in the grid and the number of
+    # columns for the month headings of the grid
     fcst_date = (
         arrow.Arrow.fromdate(run_date).replace(days=+1)
         if run_type != 'forecast2'
@@ -280,21 +283,57 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         last_month_cols = INDEX_GRID_COLS - this_month_cols
     else:
         this_month_cols, last_month_cols = INDEX_GRID_COLS, 0
+    # Replace dates for which there is no results page with None
+    prelim_fcst_dates = exclude_missing_dates(
+        copy(dates), run_type, 'publish', rst_path)
+    nowcast_pub_dates = (
+        copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
+        else copy(dates[:-2]))
+    nowcast_pub_dates = exclude_missing_dates(
+        nowcast_pub_dates, run_type, 'publish', rst_path)
+    nowcast_res_dates = (
+        copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
+        else copy(dates[:-2]))
+    nowcast_res_dates = exclude_missing_dates(
+        nowcast_res_dates, run_type, 'research', rst_path)
+    fcst_dates = copy(dates[:-1]) if run_type != 'forecast' else copy(dates)
+    fcst_dates = exclude_missing_dates(
+        fcst_dates, run_type, page_type, rst_path)
+    # Render the template using the calculated varible values to produce
+    # the index rst file
+    rst_file = os.path.join(rst_path, 'index.rst')
     vars = {
+        'first_date': dates[0],
+        'last_date': dates[-1],
         'this_month_cols': this_month_cols,
         'last_month_cols': last_month_cols,
-        'prelim_fcst_dates': dates,
-        'nowcast_dates': (dates[:-1] if run_type in 'nowcast forecast'.split()
-                          else dates[:-2]),
-        'fcst_dates': dates[:-1] if run_type != 'forecast' else dates,
+        'prelim_fcst_dates': prelim_fcst_dates,
+        'nowcast_pub_dates': nowcast_pub_dates,
+        'nowcast_res_dates': nowcast_res_dates,
+        'fcst_dates': fcst_dates,
     }
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
-        '{run_type} {page_type}: rendered page: {rst_file}'
+        '{run_type} {page_type}: rendered index page: {rst_file}'
         .format(run_type=run_type, page_type=page_type, rst_file=rst_file))
 
-    checklist = {'index page'.format(page_type): rst_file}
+    checklist = {
+        '{run_type} {page_type} index page'
+        .format(run_type=run_type, page_type=page_type): rst_file}
     return checklist
+
+
+def exclude_missing_dates(grid_dates, run_type, page_type, rst_path):
+    pages_pattern = os.path.join(
+        rst_path, run_type, '{}_*.rst'.format(page_type))
+    files = [os.path.basename(f) for f in glob(pages_pattern)]
+    file_date_strs = [
+        os.path.splitext(f)[0].split('_')[1].title() for f in files]
+    file_dates = [arrow.get(d, 'DDMMMYY').naive for d in file_date_strs]
+    for i, d in enumerate(grid_dates):
+        if d.naive not in file_dates:
+            grid_dates[i] = None
+    return grid_dates
 
 
 def tmpl_to_rst(tmpl, rst_file, vars, config):
