@@ -153,9 +153,11 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     lib.mkdir(plots_dir, logger, grp_name='sallen')
 
     if plot_type == 'publish':
-        make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline)
+        make_publish_plots(
+            dmy, model_path, bathy, results_dir, plots_dir, coastline)
     else:
-        make_research_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline)
+        make_research_plots(
+            dmy, model_path, bathy, results_dir, plots_dir, coastline)
 
     # Fix permissions on image files and copy them to salishsea site
     # prep directory
@@ -187,18 +189,22 @@ def make_plots(run_date, run_type, plot_type, config, socket):
     return checklist
 
 
-def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline):
-    '''Make the plots we wish to publish'''
+def make_publish_plots(
+    dmy, model_path, bathy, results_dir, plots_dir, coastline,
+):
+    """Make the plots we wish to publish.
+    """
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
 
     # do the plots
-    fig = figures.website_thumbnail(bathy, grid_T_hr, model_path, coastline, 0.1)
+    fig = figures.website_thumbnail(
+        bathy, grid_T_hr, model_path, coastline, 0.1)
     filename = os.path.join(
         plots_dir, 'Website_thumbnail_{date}.png'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
-    
+
     fig = figures.plot_threshold_website(bathy, grid_T_hr, model_path)
     filename = os.path.join(
         plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
@@ -254,8 +260,11 @@ def make_publish_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
 
-def make_research_plots(dmy, model_path, bathy, results_dir, plots_dir, coastline):
-    '''Make the plots we wish to look at for research purposes'''
+def make_research_plots(
+    dmy, model_path, bathy, results_dir, plots_dir, coastline,
+):
+    """Make the plots we wish to look at for research purposes.
+    """
 
     # get the results
     grid_T_dy = results_dataset('1d', 'grid_T', results_dir)
