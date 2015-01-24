@@ -180,7 +180,7 @@ def make_plots(run_date, run_type, plot_type, config, socket):
             config['web']['site_storm_surge_plot_path'],
             '.'.join((config['web']['site_storm_surge_plot'], 'png'))
             )
-        f = '{plot_name}_{date}.svg'.format(
+        f = '{plot_name}_{date}.png'.format(
             plot_name=config['web']['site_storm_surge_plot'],
             date=dmy)
         shutil.copy2(os.path.join(plots_dir, f), summary_plot)
