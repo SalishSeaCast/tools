@@ -250,6 +250,7 @@ def dateparse_PAObs(s1,s2,s3,s4):
 
   return  aware
 
+
 def load_PA_observations():
   """ Loads the recent water level observations at Point Atkinson.
 
@@ -597,6 +598,25 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
         for ind in np.arange(ts.shape[0]):
             t = np.append(t, torig + datetime.timedelta(seconds = ts[ind]))
    return wind, direc, t, pr, tem, sol, the, qr, pre
+   
+  
+def draw_coast(ax, PNW_coastline):
+  """  Plots the coastline of the Pacific Northwest  .
+  
+  :arg ax: The axis where coastline is drawn.
+  :type ax: axis object
+  
+  :arg PNW_coastline: Coastline dataset.
+  :type PNW_coastline: :class:`mat.Dataset`
+  
+  :returns: ax
+  """ 
+  coast={}
+  coast['lat'] = PNW_coastline['ncst'][:,1]
+  coast['lon'] = PNW_coastline['ncst'][:,0]
+  ax.plot(coast['lon'],coast['lat'],'-k',rasterized=True,markersize=1)
+    
+  return ax
 
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model.
@@ -868,6 +888,150 @@ def plot_map(ax, grid_B):
 
   return ax
 
+
+def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
+                           PST=1, figsize = (18, 20)):
+    """ Thumbnail for the UBC Storm Surge website includes 
+    the thresholds indicating the risk of flooding in three 
+    stations and the wind speeds and directions. It also 
+    includes a brief description of threshold colours.
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg model_path: The directory where the model wind files are stored.
+    :type model_path: string
+    
+    :arg PNW_coastline: Coastline dataset.
+    :type PNW_coastline: :class:`mat.Dataset`
+
+    :arg scale: scale factor or wind arrows
+    :type scale: float
+
+    :arg PST: Specifies if plot should be presented in PST.
+    1 = plot in PST, 0 = plot in UTC.
+    :type PST: 0 or 1
+
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: matplotlib figure object instance (fig).
+    """
+    
+    title_font_thumb = {
+    'fontname': 'Bitstream Vera Sans', 'size': '40', 'color': 'black',
+    'weight': 'medium'
+    }
+    axis_font_thumb = {'fontname': 'Bitstream Vera Sans', 'size': '30'}
+
+    # Stations information
+    [lats, lons] = station_coords()
+
+    # Bathymetry
+    bathy, X, Y = tidetools.get_bathy_data(grid_B)
+
+    # Time range
+    t_orig, t_final, t = get_model_time_variables(grid_T)
+
+    # Wind time
+    inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
+                               model_path, t, 4, average=True)
+
+    # Set up loop
+    names = ['Point Atkinson', 'Campbell River', 'Victoria']
+
+    # Set up Information
+    max_sshs = {}; max_times = {}; max_winds = {}
+
+    # Figure
+    fig = plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(2, 3, width_ratios=[1, 1, 1], height_ratios=[6, 1])
+    gs.update(hspace=0.15, wspace=0.05)
+    ax = fig.add_subplot(gs[0, :])
+    ax1 = fig.add_subplot(gs[1, 0])
+    ax2 = fig.add_subplot(gs[1, 1])
+    ax3 = fig.add_subplot(gs[1, 2])
+
+    # Map
+    viz_tools.set_aspect(ax)
+    viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
+    viz_tools.plot_coastline(ax,grid_B,coords='map')
+    draw_coast(ax, PNW_coastline)
+    ax.set_xlabel('Longitude',**axis_font_thumb)
+    ax.set_ylabel('Latitude',**axis_font_thumb)
+    ax.grid()
+    ax.set_xlim([-126.4,-121.3])
+    ax.set_ylim([46.8,51.1])
+
+    for name in names:
+        # Get sea surface height
+        [j, i] = tidetools.find_closest_model_point(lons[name], lats[name],
+                                            X, Y, bathy, allow_land=False)
+        ssh = grid_T.variables['sossheig']
+        ssh_loc = ssh[:, j, i]
+
+        # Get tides and ssh
+        ttide = get_tides(name)
+        sdt = t_orig.replace(minute=0)
+        edt = t_final + datetime.timedelta(minutes=30)
+        ssh_corr = stormtools.correct_model(ssh_loc, ttide, sdt, edt)
+
+        # Plot thresholds
+        plot_threshold_map(ax, ttide, ssh_corr, 'o', 70, 0.3, name)
+        # Plot winds
+        twind = plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+
+        # Information
+        res = compute_residual(ssh_loc, ttide, t_orig, t_final)
+        [max_ssh, index_ssh, tmax, max_res, max_wind, ind_w] = get_maxes(ssh_corr, t, res, lons[name], lats[name], model_path)
+        max_sshs[name] = max_ssh
+        max_times[name] = tmax
+        max_winds[name] = max_wind
+
+    # Add winds for other stations
+    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
+        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+
+    # Reference arrow
+    ax.arrow(-121.5, 50.9, 0.*scale, -5.*scale,
+              head_width=0.05, head_length=0.1, width=0.02,
+              color='white',fc='DarkMagenta', ec='black')
+    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize=20)
+
+    # Location labels
+    ax.text(-125.7, 47.8, 'Pacific\nOcean', fontsize=30, color='DimGray')
+    ax.text(-122.8, 50.1, '  British\nColumbia', fontsize=30, color='DimGray')
+    ax.text(-124.2, 47.3, 'Washington\n    State', fontsize=30, color='DimGray')
+    ax.text(-122.2, 47.6, ' Puget\nSound', fontsize=20, color='DimGray')
+    ax.text(-124.6, 48.1, 'Strait of\nJuan de Fuca', fontsize=20, color='DimGray', rotation=-18)
+    ax.text(-124.5, 49.1, 'Strait of \n Georgia', fontsize=20, color='DimGray', rotation=-18)
+
+    # Figure format
+    t = (twind[0]+PST*time_shift).strftime('%A, %B %d, %Y')
+    ax.set_title('Marine and Atmospheric Conditions\n {time}'.format(time=t), **title_font_thumb)
+    fig.patch.set_facecolor('#2B3E50')
+    axis_colors(ax, 'gray')
+
+    # Legend
+    axs = [ax1, ax2, ax3]
+    cs=['green','Gold','red']
+    for ax, name,thresh_c in zip (axs, names,cs):
+        plt.setp(ax.spines.values(), visible=False)
+        ax.xaxis.set_visible(False); ax.yaxis.set_visible(False)
+        axis_colors(ax, 'blue')
+        display_time=(max_times[name]+PST*time_shift).strftime('%H:%M')
+        ax.set_xlim([0, 1]); ax.set_ylim([0, 1])
+        ax.plot(0.2,0.5,marker='o', color=thresh_c,markersize=70,markeredgewidth=2, alpha=0.6)
+    ax1.text(0.4, 0.2, 'Green:\nNo flooding\nrisk', fontsize=25, color='w')
+    ax2.text(0.4, 0.2, 'Yellow:\nRisk of\nhigh water', fontsize=25, color='w')
+    ax3.text(0.4, 0.2, 'Red:\nExtreme risk\nof flooding', fontsize=25, color='w')
+
+    return fig
+  
+  
 def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
     """ Plots the tidal cycle at Point Atkinson during a 4 week period
     centred around the simulation start date.
