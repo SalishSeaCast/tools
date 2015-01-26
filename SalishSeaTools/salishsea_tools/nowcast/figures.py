@@ -314,17 +314,16 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     except ValueError:
         data = {'Date Time': st_ar.datetime, ' Water Level': float('NaN')}
         obs = pd.DataFrame(data=data, index=[0])
-    print 'Printing obs column headings (before rename): ', obs.columns
     obs = obs.rename(columns={'Date Time': 'time', ' Water Level': 'wlev'})
-    print 'Printing obs column headings (after rename): ', obs.columns
     return obs
 
 
 def get_NOAA_tides(station_no, start_date, end_date):
     """ Retrieves NOAA predicted tides from a station in a given date range.
 
-    NOAA predicted tides are at 6-minute intervals and are relative to mean sea level.
-    See: http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
+    NOAA predicted tides are at 6-minute intervals and are relative to
+    mean sea level. See:
+    http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels.
 
     :arg station_no: NOAA station number.
     :type station_no: integer
@@ -339,27 +338,30 @@ def get_NOAA_tides(station_no, start_date, end_date):
     """
 
     # Time range
-    st_ar=arrow.Arrow.strptime(start_date, '%d-%b-%Y')
-    end_ar=arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
+    end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
 
     base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL'
     params = {
-    'begin_date': st_ar.format('YYYYMMDD'),
-    'end_date': end_ar.format('YYYYMMDD'),
-    'datum':  'MSL',
-    'station': str(station_no),
-    'time_zone': 'GMT',
-    'units':'metric',
-    'interval': '',
-    'format': 'csv',}
+        'begin_date': st_ar.format('YYYYMMDD'),
+        'end_date': end_ar.format('YYYYMMDD'),
+        'datum':  'MSL',
+        'station': str(station_no),
+        'time_zone': 'GMT',
+        'units': 'metric',
+        'interval': '',
+        'format': 'csv', }
 
     response = requests.get(base_url, params=params)
 
     fakefile = StringIO(response.content)
-
-    tides = pd.read_csv(fakefile,parse_dates=[0],date_parser=dateparse_NOAA)
-    tides=tides.rename(columns={'Date Time': 'time', ' Prediction': 'pred'})
-
+    try:
+        tides = pd.read_csv(
+            fakefile, parse_dates=[0], date_parser=dateparse_NOAA)
+    except ValueError:
+        data = {'Date Time': st_ar.datetime, ' Prediction': float('NaN')}
+        tides = pd.DataFrame(data=data, index=[0])
+    tides = tides.rename(columns={'Date Time': 'time', ' Prediction': 'pred'})
     return tides
 
 
