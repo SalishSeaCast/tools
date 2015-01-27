@@ -285,20 +285,20 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         this_month_cols, last_month_cols = INDEX_GRID_COLS, 0
     # Replace dates for which there is no results page with None
     prelim_fcst_dates = exclude_missing_dates(
-        copy(dates), run_type, 'publish', rst_path)
+        copy(dates), 'forecast2', 'publish', rst_path)
     nowcast_pub_dates = (
         copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
         else copy(dates[:-2]))
     nowcast_pub_dates = exclude_missing_dates(
-        nowcast_pub_dates, run_type, 'publish', rst_path)
+        nowcast_pub_dates, 'nowcast', 'publish', rst_path)
     nowcast_res_dates = (
         copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
         else copy(dates[:-2]))
     nowcast_res_dates = exclude_missing_dates(
-        nowcast_res_dates, run_type, 'research', rst_path)
+        nowcast_res_dates, 'nowcast', 'research', rst_path)
     fcst_dates = copy(dates[:-1]) if run_type != 'forecast' else copy(dates)
     fcst_dates = exclude_missing_dates(
-        fcst_dates, run_type, page_type, rst_path)
+        fcst_dates, 'forecast', page_type, rst_path)
     # Render the template using the calculated varible values to produce
     # the index rst file
     rst_file = os.path.join(rst_path, 'index.rst')
