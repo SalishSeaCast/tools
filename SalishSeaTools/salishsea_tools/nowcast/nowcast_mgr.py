@@ -422,10 +422,8 @@ def after_make_forcing_links(worker, msg_type, payload, config):
         worker_loggers = {}
         for worker in 'run_NEMO watch_NEMO'.split():
             worker_loggers[worker] = logging.getLogger(worker)
-            if not worker_loggers[worker].handlers:
-                lib.configure_logging(
-                    config, worker_loggers[worker],
-                    config['logging']['console'])
+            lib.configure_logging(
+                config, worker_loggers[worker], config['logging']['console'])
         actions['success nowcast+'].append(
             (launch_worker,
              ['run_NEMO', config, ['nowcast'], config['run']['cloud host']]))
@@ -439,6 +437,9 @@ def after_make_forcing_links(worker, msg_type, payload, config):
 
 
 def after_run_NEMO(worker, msg_type, payload, config):
+    global worker_loggers
+    worker_loggers['run_NEMO'].removeHandler(
+        worker_loggers['run_NEMO'].handlers[0])
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
@@ -451,6 +452,9 @@ def after_run_NEMO(worker, msg_type, payload, config):
 
 
 def after_watch_NEMO(worker, msg_type, payload, config):
+    global worker_loggers
+    worker_loggers['watch_NEMO'].removeHandler(
+        worker_loggers['watch_NEMO'].handlers[0])
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
