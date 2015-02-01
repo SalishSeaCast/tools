@@ -407,7 +407,11 @@ def get_web_data(
     try:
         response.raise_for_status()
         return _handle_url_content(response, filepath)
-    except (requests.exceptions.HTTPError, socket.error) as e:
+    except (
+        requests.exceptions.ConnectionError,
+        requests.exceptions.HTTPError,
+        socket.error,
+    ) as e:
         logger.warning('received {0.message} from {url}'.format(e, url=url))
         delay = first_retry_delay
         retries = 0
