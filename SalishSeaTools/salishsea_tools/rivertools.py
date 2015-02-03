@@ -16,50 +16,45 @@
 """A collections of functions for working with river flow forcing data
 for the Salish Sea NEMO model.
 """
-
-
-import numpy as np
 import netCDF4 as NC
+import numpy as np
 
 
-def put_watershed_into_runoff(rivertype, watershedname, flux,
-                              runoff, run_depth, run_temp):
-    """define a function to fill the river file with the rivers of one watershed"""
-    # get the proportion that each river occupies in the watershed
+def put_watershed_into_runoff(
+    rivertype, watershedname, flux, runoff, run_depth, run_temp,
+):
+    """Fill the river file with the rivers of one watershed.
+    """
+    # Get the proportion that each river occupies in the watershed
     pd = get_watershed_prop_dict(watershedname)
     for key in pd:
         river = pd[key]
         if rivertype == 'constant':
-            fill_runoff_array(flux * river['prop'], river['i'],
-                              river['di'], river['j'], river['dj'],
-                              river['depth'], runoff, run_depth)
+            fill_runoff_array(
+                flux * river['prop'], river['i'],
+                river['di'], river['j'], river['dj'],
+                river['depth'], runoff, run_depth)
         if rivertype == 'monthly':
-            fill_runoff_array_monthly(flux * river['prop'], river['i'],
-                                      river['di'], river['j'], river['dj'],
-                                      river['depth'], runoff, run_depth,
-                                      run_temp)
+            fill_runoff_array_monthly(
+                flux * river['prop'], river['i'],
+                river['di'], river['j'], river['dj'],
+                river['depth'], runoff, run_depth,
+                run_temp)
     return runoff, run_depth, run_temp
 
 
 def get_watershed_prop_dict(watershedname):
-    """define a function to get the proportion that each river occupies in the watershed"""
+    """get the proportion that each river occupies in the watershed.
+    """
     if watershedname == 'howe':
         # dictionary of rivers in Howe watershed
         prop_dict = {
             'Squamish': {
-                'prop': 0.9,
-                'i': 532,
-                'j': 385,
-                'di': 1,
-                'dj': 2,
-                'depth': 3},
+                'prop': 0.9, 'i': 532, 'j': 385, 'di': 1, 'dj': 2, 'depth': 3,
+            },
             'Burrard': {
-                'prop': 0.1,
-                'i': 457,
-                'j': 343,
-                'di': 3,
-                'dj': 1,
-                'depth': 3}}
+                'prop': 0.1, 'i': 457, 'j': 343, 'di': 3, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'jdf':
         # Assume that 50% of the area of the JdF watershed defined by Morrison
         # et al (2011) is on north side of JdF (Canada side)
@@ -68,34 +63,88 @@ def get_watershed_prop_dict(watershedname):
         # al (2011) is on south side of JdF (US side)
         USFlux = 0.50
         # dictionary of rivers in Juan de Fuca watershed
-        prop_dict = {'SanJuan': {'prop': 0.33 * CAFlux, 'i': 402, 'j': 56, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Gordon': {'prop': 0.14 * CAFlux, 'i': 403, 'j': 56, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Loss': {'prop': 0.05 * CAFlux, 'i': 375, 'j': 71, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Jordan': {'prop': 0.05 * CAFlux, 'i': 348, 'j': 96, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Muir': {'prop': 0.05 * CAFlux, 'i': 326, 'j': 119, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Tugwell': {'prop': 0.05 * CAFlux, 'i': 325, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Sooke': {'prop': 0.33 * CAFlux, 'i': 308, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Elwha': {'prop': 0.60 * 0.50 * USFlux, 'i': 261, 'j': 134, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Tumwater': {'prop': 0.60 * 0.01 * USFlux, 'i': 248, 'j': 151, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Valley': {'prop': 0.60 * 0.01 * USFlux, 'i': 247, 'j': 152, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Ennis': {'prop': 0.60 * 0.02 * USFlux, 'i': 244, 'j': 156, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Morse': {'prop': 0.60 * 0.07 * USFlux, 'i': 240, 'j': 164, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Bagley': {'prop': 0.60 * 0.02 * USFlux, 'i': 239, 'j': 165, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Siebert': {'prop': 0.60 * 0.02 * USFlux, 'i': 235, 'j': 174, 'di': 1, 'dj': 1, 'depth': 3},
-                     'McDonald': {'prop': 0.60 * 0.03 * USFlux, 'i': 233, 'j': 183, 'di': 1, 'dj': 1, 'depth': 3},
-                     'DungenessMatriotti': {'prop': 0.60 * 0.30 * USFlux + 0.60 * 0.02 * USFlux, 'i': 231, 'j': 201, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Coville': {'prop': 0.40 * 0.05 * USFlux, 'i': 263, 'j': 128, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Salt': {'prop': 0.40 * 0.05 * USFlux, 'i': 275, 'j': 116, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Field': {'prop': 0.40 * 0.05 * USFlux, 'i': 281, 'j': 100, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Lyre': {'prop': 0.40 * 0.20 * USFlux, 'i': 283, 'j': 98, 'di': 1, 'dj': 1, 'depth': 3},
-                     'EastWestTwin': {'prop': 0.40 * 0.05 * USFlux, 'i': 293, 'j': 81, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Deep': {'prop': 0.40 * 0.05 * USFlux, 'i': 299, 'j': 72, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Pysht': {'prop': 0.40 * 0.10 * USFlux, 'i': 310, 'j': 65, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Clallom': {'prop': 0.40 * 0.10 * USFlux, 'i': 333, 'j': 45, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Hoko': {'prop': 0.40 * 0.20 * USFlux, 'i': 345, 'j': 35, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Sekiu': {'prop': 0.40 * 0.10 * USFlux, 'i': 348, 'j': 31, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Sail': {'prop': 0.40 * 0.05 * USFlux, 'i': 373, 'j': 17, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'SanJuan': {
+                'prop': 0.33 * CAFlux, 'i': 402, 'j': 56, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Gordon': {
+                'prop': 0.14 * CAFlux, 'i': 403, 'j': 56, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Loss': {
+                'prop': 0.05 * CAFlux, 'i': 375, 'j': 71, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Jordan': {
+                'prop': 0.05 * CAFlux, 'i': 348, 'j': 96, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Muir': {
+                'prop': 0.05 * CAFlux, 'i': 326, 'j': 119, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Tugwell': {
+                'prop': 0.05 * CAFlux, 'i': 325, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Sooke': {
+                'prop': 0.33 * CAFlux, 'i': 308, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Elwha': {
+                'prop': 0.60 * 0.50 * USFlux, 'i': 261, 'j': 134, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Tumwater': {
+                'prop': 0.60 * 0.01 * USFlux, 'i': 248, 'j': 151, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Valley': {
+                'prop': 0.60 * 0.01 * USFlux, 'i': 247, 'j': 152, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Ennis': {
+                'prop': 0.60 * 0.02 * USFlux, 'i': 244, 'j': 156, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Morse': {
+                'prop': 0.60 * 0.07 * USFlux, 'i': 240, 'j': 164, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Bagley': {
+                'prop': 0.60 * 0.02 * USFlux, 'i': 239, 'j': 165, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Siebert': {
+                'prop': 0.60 * 0.02 * USFlux, 'i': 235, 'j': 174, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'McDonald': {
+                'prop': 0.60 * 0.03 * USFlux, 'i': 233, 'j': 183, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'DungenessMatriotti': {
+                'prop': 0.60 * 0.30 * USFlux + 0.60 * 0.02 * USFlux, 'i': 231, 'j': 201, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Coville': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 263, 'j': 128, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Salt': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 275, 'j': 116, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Field': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 281, 'j': 100, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Lyre': {
+                'prop': 0.40 * 0.20 * USFlux, 'i': 283, 'j': 98, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'EastWestTwin': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 293, 'j': 81, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Deep': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 299, 'j': 72, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Pysht': {
+                'prop': 0.40 * 0.10 * USFlux, 'i': 310, 'j': 65, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Clallom': {
+                'prop': 0.40 * 0.10 * USFlux, 'i': 333, 'j': 45, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Hoko': {
+                'prop': 0.40 * 0.20 * USFlux, 'i': 345, 'j': 35, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Sekiu': {
+                'prop': 0.40 * 0.10 * USFlux, 'i': 348, 'j': 31, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Sail': {
+                'prop': 0.40 * 0.05 * USFlux, 'i': 373, 'j': 17, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'puget':
         # WRIA17 10% of Puget Sound Watershed
         WRIA17 = 0.10
@@ -117,86 +166,208 @@ def get_watershed_prop_dict(watershedname):
         WRIA9 = 0.10
         # WRIA8 10% of Puget Sound Watershed
         WRIA8 = 0.10
-
-        prop_dict = {'Johnson': {'prop': 0.05 * WRIA17, 'i': 207, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Jimmycomelately': {'prop': 0.05 * WRIA17, 'i': 199, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3},
-                     'SalmonSnow': {'prop': 0.25 * WRIA17, 'i': 182, 'j': 219, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Chimacum': {'prop': 0.20 * WRIA17, 'i': 185, 'j': 240, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Thorndike': {'prop': 0.05 * WRIA17, 'i': 137, 'j': 215, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Torboo': {'prop': 0.05 * WRIA17, 'i': 149, 'j': 208, 'di': 1, 'dj': 1, 'depth': 3},
-                     'LittleBigQuilcene': {'prop': 0.35 * WRIA17, 'i': 146, 'j': 199, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Dosewalips': {'prop': 0.20 * WRIA16, 'i': 124, 'j': 177, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Duckabush': {'prop': 0.14 * WRIA16, 'i': 119, 'j': 167, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Fulton': {'prop': 0.02 * WRIA16, 'i': 116, 'j': 156, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Waketick': {'prop': 0.02 * WRIA16, 'i': 108, 'j': 141, 'di': 1, 'dj': 1, 'depth': 3},
-                     'HammaHamma': {'prop': 0.14 * WRIA16, 'i': 107, 'j': 139, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Jorsted': {'prop': 0.02 * WRIA16, 'i': 104, 'j': 135, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Eagle': {'prop': 0.02 * WRIA16, 'i': 98, 'j': 127, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Lilliwaup': {'prop': 0.02 * WRIA16, 'i': 95, 'j': 118, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Finch': {'prop': 0.02 * WRIA16, 'i': 87, 'j': 108, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Skokomish': {'prop': 0.40 * WRIA16, 'i': 75, 'j': 103, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Rendsland': {'prop': 0.025 * WRIA15, 'i': 81, 'j': 107, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Tahuya': {'prop': 0.20 * WRIA15, 'i': 72, 'j': 114, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Mission': {'prop': 0.05 * WRIA15, 'i': 73, 'j': 149, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Union': {'prop': 0.10 * WRIA15, 'i': 74, 'j': 153, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Coulter': {'prop': 0.05 * WRIA15, 'i': 64, 'j': 153, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Minter': {'prop': 0.05 * WRIA15, 'i': 46, 'j': 168, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Butley': {'prop': 0.05 * WRIA15, 'i': 47, 'j': 178, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Olalla': {'prop': 0.05 * WRIA15, 'i': 48, 'j': 197, 'di': 1, 'dj': 1, 'depth': 3},
-                     'BlackjackClearBarkerBigValley1': {'prop': 0.1125 * WRIA15, 'i': 68, 'j': 210, 'di': 1, 'dj': 1, 'depth': 3},
-                     'BlackjackClearBarkerBigValley2': {'prop': 0.1125 * WRIA15, 'i': 108, 'j': 232, 'di': 1, 'dj': 1, 'depth': 3},
-                     'BigBear': {'prop': 0.05 * WRIA15, 'i': 112, 'j': 189, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Swaback': {'prop': 0.025 * WRIA15, 'i': 112, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Stavis': {'prop': 0.025 * WRIA15, 'i': 113, 'j': 174, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Anderson': {'prop': 0.05 * WRIA15, 'i': 107, 'j': 150, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Dewatta': {'prop': 0.05 * WRIA15, 'i': 94, 'j': 122, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Sherwood': {'prop': 0.15 * WRIA14, 'i': 60, 'j': 149, 'di': 1, 'dj': 1, 'depth': 3},
-                     'DeerJohnsGoldboroughMillSkookumKennedySchneider': {'prop': 0.375 * WRIA14, 'i': 47, 'j': 130, 'di': 1, 'dj': 1, 'depth': 3},
-                     'DeerJohnsGoldboroughMillSkookumKennedySchneiderPerry': {'prop': 0.475 * WRIA14, 'i': 20, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3},
-                     'McClaneDeschutesWoodwardWoodland': {'prop': 1.0 * WRIA13, 'i': 22, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Chambers': {'prop': 1.0 * WRIA12, 'i': 6, 'j': 162, 'di': 1, 'dj': 1, 'depth': 3},
-                     'NisquallyMcAllister': {'prop': 1.0 * WRIA11, 'i': 0, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Puyallup': {'prop': 0.995 * WRIA10, 'i': 10, 'j': 195, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Hylebas': {'prop': 0.005 * WRIA10, 'i': 13, 'j': 199, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Duwamish1': {'prop': 0.50 * WRIA9, 'i': 68, 'j': 243, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Duwamish2': {'prop': 0.50 * WRIA9, 'i': 68, 'j': 246, 'di': 1, 'dj': 1, 'depth': 3},
-                     'CedarSammamish': {'prop': 1.0 * WRIA8, 'i': 88, 'j': 246, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'Johnson': {
+                'prop': 0.05 * WRIA17, 'i': 207, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Jimmycomelately': {
+                'prop': 0.05 * WRIA17, 'i': 199, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'SalmonSnow': {
+                'prop': 0.25 * WRIA17, 'i': 182, 'j': 219, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Chimacum': {
+                'prop': 0.20 * WRIA17, 'i': 185, 'j': 240, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Thorndike': {
+                'prop': 0.05 * WRIA17, 'i': 137, 'j': 215, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Torboo': {
+                'prop': 0.05 * WRIA17, 'i': 149, 'j': 208, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'LittleBigQuilcene': {
+                'prop': 0.35 * WRIA17, 'i': 146, 'j': 199, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Dosewalips': {
+                'prop': 0.20 * WRIA16, 'i': 124, 'j': 177, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Duckabush': {
+                'prop': 0.14 * WRIA16, 'i': 119, 'j': 167, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Fulton': {
+                'prop': 0.02 * WRIA16, 'i': 116, 'j': 156, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Waketick': {
+                'prop': 0.02 * WRIA16, 'i': 108, 'j': 141, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'HammaHamma': {
+                'prop': 0.14 * WRIA16, 'i': 107, 'j': 139, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Jorsted': {
+                'prop': 0.02 * WRIA16, 'i': 104, 'j': 135, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Eagle': {
+                'prop': 0.02 * WRIA16, 'i': 98, 'j': 127, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Lilliwaup': {
+                'prop': 0.02 * WRIA16, 'i': 95, 'j': 118, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Finch': {
+                'prop': 0.02 * WRIA16, 'i': 87, 'j': 108, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Skokomish': {
+                'prop': 0.40 * WRIA16, 'i': 75, 'j': 103, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Rendsland': {
+                'prop': 0.025 * WRIA15, 'i': 81, 'j': 107, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Tahuya': {
+                'prop': 0.20 * WRIA15, 'i': 72, 'j': 114, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Mission': {
+                'prop': 0.05 * WRIA15, 'i': 73, 'j': 149, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Union': {
+                'prop': 0.10 * WRIA15, 'i': 74, 'j': 153, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Coulter': {
+                'prop': 0.05 * WRIA15, 'i': 64, 'j': 153, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Minter': {
+                'prop': 0.05 * WRIA15, 'i': 46, 'j': 168, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Butley': {
+                'prop': 0.05 * WRIA15, 'i': 47, 'j': 178, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Olalla': {
+                'prop': 0.05 * WRIA15, 'i': 48, 'j': 197, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'BlackjackClearBarkerBigValley1': {
+                'prop': 0.1125 * WRIA15, 'i': 68, 'j': 210, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'BlackjackClearBarkerBigValley2': {
+                'prop': 0.1125 * WRIA15, 'i': 108, 'j': 232, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'BigBear': {
+                'prop': 0.05 * WRIA15, 'i': 112, 'j': 189, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Swaback': {
+                'prop': 0.025 * WRIA15, 'i': 112, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Stavis': {
+                'prop': 0.025 * WRIA15, 'i': 113, 'j': 174, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Anderson': {
+                'prop': 0.05 * WRIA15, 'i': 107, 'j': 150, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Dewatta': {
+                'prop': 0.05 * WRIA15, 'i': 94, 'j': 122, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Sherwood': {
+                'prop': 0.15 * WRIA14, 'i': 60, 'j': 149, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'DeerJohnsGoldboroughMillSkookumKennedySchneider': {
+                'prop': 0.375 * WRIA14, 'i': 47, 'j': 130, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'DeerJohnsGoldboroughMillSkookumKennedySchneiderPerry': {
+                'prop': 0.475 * WRIA14, 'i': 20, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'McClaneDeschutesWoodwardWoodland': {
+                'prop': 1.0 * WRIA13, 'i': 22, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Chambers': {
+                'prop': 1.0 * WRIA12, 'i': 6, 'j': 162, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'NisquallyMcAllister': {
+                'prop': 1.0 * WRIA11, 'i': 0, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Puyallup': {
+                'prop': 0.995 * WRIA10, 'i': 10, 'j': 195, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Hylebas': {
+                'prop': 0.005 * WRIA10, 'i': 13, 'j': 199, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Duwamish1': {
+                'prop': 0.50 * WRIA9, 'i': 68, 'j': 243, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Duwamish2': {
+                'prop': 0.50 * WRIA9, 'i': 68, 'j': 246, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'CedarSammamish': {
+                'prop': 1.0 * WRIA8, 'i': 88, 'j': 246, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'skagit':
         WRIA4 = 0.33
         WRIA3 = 0.17
         WRIA5 = 0.17
         WRIA7 = 0.33
-
-        prop_dict = {'Skagit1': {'prop': 0.5 * (WRIA4 * 1.0 + WRIA3 * 0.75), 'i': 207, 'j': 326, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Skagit2': {'prop': 0.5 * (WRIA4 * 1.0 + WRIA3 * 0.75), 'i': 229, 'j': 319, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Samish': {'prop': WRIA3 * 0.20, 'i': 265, 'j': 348, 'di': 1, 'dj': 1, 'depth': 3},
-                     'JoeLeary': {'prop': WRIA3 * 0.05, 'i': 257, 'j': 339, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Stillaguamish1': {'prop': 0.7 * WRIA5 * 1.0, 'i': 186, 'j': 316, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Stillaguamish2': {'prop': 0.1 * WRIA5 * 1.0, 'i': 192, 'j': 315, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Stillaguamish3': {'prop': 0.2 * WRIA5 * 1.0, 'i': 200, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3},
-                     'SnohomishAllenQuilceda': {'prop': WRIA7 * 0.98, 'i': 143, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Tulalip': {'prop': WRIA7 * 0.01, 'i': 154, 'j': 311, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Mission': {'prop': WRIA7 * 0.01, 'i': 152, 'j': 312, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'Skagit1': {
+                'prop': 0.5 * (WRIA4 * 1.0 + WRIA3 * 0.75), 'i': 207, 'j': 326, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Skagit2': {
+                'prop': 0.5 * (WRIA4 * 1.0 + WRIA3 * 0.75), 'i': 229, 'j': 319, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Samish': {
+                'prop': WRIA3 * 0.20, 'i': 265, 'j': 348, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'JoeLeary': {
+                'prop': WRIA3 * 0.05, 'i': 257, 'j': 339, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Stillaguamish1': {
+                'prop': 0.7 * WRIA5 * 1.0, 'i': 186, 'j': 316, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Stillaguamish2': {
+                'prop': 0.1 * WRIA5 * 1.0, 'i': 192, 'j': 315, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Stillaguamish3': {
+                'prop': 0.2 * WRIA5 * 1.0, 'i': 200, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'SnohomishAllenQuilceda': {
+                'prop': WRIA7 * 0.98, 'i': 143, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Tulalip': {
+                'prop': WRIA7 * 0.01, 'i': 154, 'j': 311, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Mission': {
+                'prop': WRIA7 * 0.01, 'i': 152, 'j': 312, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'fraser':
         WRIA1 = 0.016
         Fraser = 1 - WRIA1
-
-        prop_dict = {'Dakota': {'prop': WRIA1 * 0.06, 'i': 362, 'j': 357, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Terrel': {'prop': WRIA1 * 0.04, 'i': 351, 'j': 345, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Nooksack': {'prop': WRIA1 * 0.75, 'i': 321, 'j': 347, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Squallum': {'prop': WRIA1 * 0.05, 'i': 305, 'j': 365, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Lakethingo': {'prop': WRIA1 * 0.06, 'i': 302, 'j': 367, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Chuckanut': {'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Fraser1': {'prop': Fraser * 0.75, 'i': 414, 'j': 334, 'di': 3, 'dj': 1, 'depth': 3},
-                     'Fraser2': {'prop': Fraser * 0.05, 'i': 411, 'j': 324, 'di': 2, 'dj': 1, 'depth': 3},
-                     'Fraser3': {'prop': Fraser * 0.05, 'i': 434, 'j': 318, 'di': 2, 'dj': 1, 'depth': 3},
-                     'Fraser4': {'prop': Fraser * 0.15, 'i': 440, 'j': 323, 'di': 1, 'dj': 2, 'depth': 3}}
-
+        prop_dict = {
+            'Dakota': {
+                'prop': WRIA1 * 0.06, 'i': 362, 'j': 357, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Terrel': {
+                'prop': WRIA1 * 0.04, 'i': 351, 'j': 345, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Nooksack': {
+                'prop': WRIA1 * 0.75, 'i': 321, 'j': 347, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Squallum': {
+                'prop': WRIA1 * 0.05, 'i': 305, 'j': 365, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Lakethingo': {
+                'prop': WRIA1 * 0.06, 'i': 302, 'j': 367, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Chuckanut': {
+                'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Fraser1': {
+                'prop': Fraser * 0.75, 'i': 414, 'j': 334, 'di': 3, 'dj': 1, 'depth': 3,
+            },
+            'Fraser2': {
+                'prop': Fraser * 0.05, 'i': 411, 'j': 324, 'di': 2, 'dj': 1, 'depth': 3,
+            },
+            'Fraser3': {
+                'prop': Fraser * 0.05, 'i': 434, 'j': 318, 'di': 2, 'dj': 1, 'depth': 3,
+            },
+            'Fraser4': {
+                'prop': Fraser * 0.15, 'i': 440, 'j': 323, 'di': 1, 'dj': 2, 'depth': 3,
+            }}
     if watershedname == 'evi_n':
         totalarea = 9709.0
-
         prop_dict = {'Oyster': {'prop': 363 / totalarea, 'i': 705, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3},
                      'Qunisam': {'prop': 1470 / totalarea, 'i': 749, 'j': 123, 'di': 2, 'dj': 1, 'depth': 3},
                      'Snowden': {'prop': 139 / totalarea, 'i': 770, 'j': 117, 'di': 1, 'dj': 1, 'depth': 3},
@@ -223,95 +394,167 @@ def get_watershed_prop_dict(watershedname):
         # Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis
         # watershed
         Jervis = 0.25
-
-        prop_dict = {'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood': {'prop': Jervis * 0.60, 'i': 648, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Glacial': {'prop': Jervis * 0.05, 'i': 647, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Seshal': {'prop': Jervis * 0.05, 'i': 650, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Brittain': {'prop': Jervis * 0.10, 'i': 650, 'j': 301, 'di': 1, 'dj': 1, 'depth': 3},
-                     'VancouverHigh': {'prop': Jervis * 0.10, 'i': 626, 'j': 311, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Perketts': {'prop': Jervis * 0.05, 'i': 619, 'j': 307, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Treat': {'prop': Jervis * 0.05, 'i': 612, 'j': 301, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Sechelt': {'prop': 0.17, 'i': 604, 'j': 280, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Powell': {'prop': 0.32, 'i': 666, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Lois': {'prop': 0.10, 'i': 629, 'j': 224, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Haslam': {'prop': 0.02, 'i': 632, 'j': 219, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Chapman': {'prop': 0.02, 'i': 522, 'j': 273, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Lapan': {'prop': 0.02, 'i': 619, 'j': 282, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Nelson': {'prop': 0.02, 'i': 599, 'j': 257, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Wakefield': {'prop': 0.02, 'i': 533, 'j': 263, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Halfmoon': {'prop': 0.02, 'i': 549, 'j': 253, 'di': 1, 'dj': 1, 'depth': 3},
-                     'MyersKleindaleAnderson': {'prop': 0.04, 'i': 571, 'j': 248, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood': {
+                'prop': Jervis * 0.60, 'i': 648, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Glacial': {
+                'prop': Jervis * 0.05, 'i': 647, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Seshal': {
+                'prop': Jervis * 0.05, 'i': 650, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Brittain': {
+                'prop': Jervis * 0.10, 'i': 650, 'j': 301, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'VancouverHigh': {
+                'prop': Jervis * 0.10, 'i': 626, 'j': 311, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Perketts': {
+                'prop': Jervis * 0.05, 'i': 619, 'j': 307, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Treat': {
+                'prop': Jervis * 0.05, 'i': 612, 'j': 301, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Sechelt': {
+                'prop': 0.17, 'i': 604, 'j': 280, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Powell': {
+                'prop': 0.32, 'i': 666, 'j': 202, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Lois': {
+                'prop': 0.10, 'i': 629, 'j': 224, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Haslam': {
+                'prop': 0.02, 'i': 632, 'j': 219, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Chapman': {
+                'prop': 0.02, 'i': 522, 'j': 273, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Lapan': {
+                'prop': 0.02, 'i': 619, 'j': 282, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Nelson': {
+                'prop': 0.02, 'i': 599, 'j': 257, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Wakefield': {
+                'prop': 0.02, 'i': 533, 'j': 263, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Halfmoon': {
+                'prop': 0.02, 'i': 549, 'j': 253, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'MyersKleindaleAnderson': {
+                'prop': 0.04, 'i': 571, 'j': 248, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'toba':
         prop_dict = {
             'Toba': {
-                'prop': 1.0,
-                'i': 746,
-                'j': 240,
-                'di': 1,
-                'dj': 3,
-                'depth': 3}}
-
+                'prop': 1.0, 'i': 746, 'j': 240, 'di': 1, 'dj': 3, 'depth': 3,
+            }}
     if watershedname == 'bute':
-        prop_dict = {'Homathko': {'prop': 0.58, 'i': 897, 'j': 294, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Southgate': {'prop': 0.35, 'i': 885, 'j': 296, 'di': 1, 'dj': 2, 'depth': 3},
-                     'Orford': {'prop': 0.07, 'i': 831, 'j': 249, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'Homathko': {
+                'prop': 0.58, 'i': 897, 'j': 294, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Southgate': {
+                'prop': 0.35, 'i': 885, 'j': 296, 'di': 1, 'dj': 2, 'depth': 3,
+            },
+            'Orford': {
+                'prop': 0.07, 'i': 831, 'j': 249, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     if watershedname == 'evi_s':
-        prop_dict = {'Cowichan': {'prop': 0.22, 'i': 383, 'j': 201, 'di': 1, 'dj': 2, 'depth': 3},
-                     'Chemanius1': {'prop': 0.5 * 0.13, 'i': 414, 'j': 211, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Chemanius2': {'prop': 0.5 * 0.13, 'i': 417, 'j': 212, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Nanaimo1': {'prop': 0.67 * 0.14, 'i': 478, 'j': 208, 'di': 1, 'dj': 2, 'depth': 3},
-                     'Nanaimo2': {'prop': 0.33 * 0.14, 'i': 477, 'j': 210, 'di': 1, 'dj': 1, 'depth': 3},
-                     'NorNanaimo': {'prop': 0.02, 'i': 491, 'j': 213, 'di': 3, 'dj': 1, 'depth': 3},
-                     'Goldstream': {'prop': 0.08, 'i': 334, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Nanoose': {'prop': 0.02, 'i': 518, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Englishman': {'prop': 0.05, 'i': 541, 'j': 175, 'di': 1, 'dj': 1, 'depth': 3},
-                     'FrenchCreek': {'prop': 0.01, 'i': 551, 'j': 168, 'di': 1, 'dj': 1, 'depth': 3},
-                     'LittleQualicum': {'prop': 0.05, 'i': 563, 'j': 150, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Qualicum': {'prop': 0.02, 'i': 578, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3},
-                     'SouthDenman': {'prop': 0.05, 'i': 602, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Tsable': {'prop': 0.03, 'i': 616, 'j': 120, 'di': 2, 'dj': 1, 'depth': 3},
-                     'Trent': {'prop': 0.01, 'i': 648, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Puntledge': {'prop': 0.14, 'i': 656, 'j': 119, 'di': 1, 'dj': 2, 'depth': 3},
-                     'BlackCreek': {'prop': 0.03, 'i': 701, 'j': 123, 'di': 1, 'dj': 1, 'depth': 3}}
-
+        prop_dict = {
+            'Cowichan': {
+                'prop': 0.22, 'i': 383, 'j': 201, 'di': 1, 'dj': 2, 'depth': 3,
+            },
+            'Chemanius1': {
+                'prop': 0.5 * 0.13, 'i': 414, 'j': 211, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Chemanius2': {
+                'prop': 0.5 * 0.13, 'i': 417, 'j': 212, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Nanaimo1': {
+                'prop': 0.67 * 0.14, 'i': 478, 'j': 208, 'di': 1, 'dj': 2, 'depth': 3,
+            },
+            'Nanaimo2': {
+                'prop': 0.33 * 0.14, 'i': 477, 'j': 210, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'NorNanaimo': {
+                'prop': 0.02, 'i': 491, 'j': 213, 'di': 3, 'dj': 1, 'depth': 3,
+            },
+            'Goldstream': {
+                'prop': 0.08, 'i': 334, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Nanoose': {
+                'prop': 0.02, 'i': 518, 'j': 185, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Englishman': {
+                'prop': 0.05, 'i': 541, 'j': 175, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'FrenchCreek': {
+                'prop': 0.01, 'i': 551, 'j': 168, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'LittleQualicum': {
+                'prop': 0.05, 'i': 563, 'j': 150, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Qualicum': {
+                'prop': 0.02, 'i': 578, 'j': 137, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'SouthDenman': {
+                'prop': 0.05, 'i': 602, 'j': 120, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Tsable': {
+                'prop': 0.03, 'i': 616, 'j': 120, 'di': 2, 'dj': 1, 'depth': 3,
+            },
+            'Trent': {
+                'prop': 0.01, 'i': 648, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3,
+            },
+            'Puntledge': {
+                'prop': 0.14, 'i': 656, 'j': 119, 'di': 1, 'dj': 2, 'depth': 3,
+            },
+            'BlackCreek': {
+                'prop': 0.03, 'i': 701, 'j': 123, 'di': 1, 'dj': 1, 'depth': 3,
+            }}
     print(watershedname + ' has ' + str(len(prop_dict.keys())) + ' rivers')
     return prop_dict
 
 
-def get_bathy_cell_size():
-    """define a function to get the bathymetry and size of each cell"""
-    fC = NC.Dataset(
-        '/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/coordinates_seagrid_SalishSea.nc',
-        'r')
-    e1t = fC.variables['e1t']
-    e2t = fC.variables['e2t']
+def get_bathy_cell_size(
+    grid='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+         'coordinates_seagrid_SalishSea.nc',
+):
+    """Get the bathymetry and size of each cell.
+    """
+    fc = NC.Dataset(grid)
+    e1t = fc.variables['e1t']
+    e2t = fc.variables['e2t']
     return e1t, e2t
 
 
-def init_runoff_array():
-    """define a function to initialise the runoff array"""
-
-    fB = NC.Dataset(
-        '/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc',
-        'r')
-    D = fB.variables['Bathymetry'][:]
-    ymax, xmax = D.shape
+def init_runoff_array(
+    bathy='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+          'bathy_meter_SalishSea.nc'
+):
+    """Initialise the runoff array.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
     runoff = np.zeros((ymax, xmax))
     run_depth = -np.ones((ymax, xmax))
     run_temp = -99 * np.ones((ymax, xmax))
     return runoff, run_depth, run_temp
 
 
-def init_runoff_array_monthly():
-    """define a function to initialise the runoff array for each month"""
-
-    fB = NC.Dataset(
-        '/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/bathy_meter_SalishSea.nc',
-        'r')
-    D = fB.variables['Bathymetry'][:]
-    ymax, xmax = D.shape
+def init_runoff_array_monthly(
+    bathy='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+          'bathy_meter_SalishSea.nc'
+):
+    """Initialise the runoff array for each month.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
     runoff = np.zeros((12, ymax, xmax))
     run_depth = -np.ones((12, ymax, xmax))
     run_temp = -99 * np.ones((12, ymax, xmax))
@@ -319,26 +562,29 @@ def init_runoff_array_monthly():
 
 
 def fill_runoff_array(
-        Flux, istart, di, jstart, dj, depth_of_flux, runoff, run_depth):
-    """define a function to fill the runoff array"""
-
+        flux, istart, di, jstart, dj, depth_of_flux, runoff, run_depth):
+    """Fill the runoff array.
+    """
     e1t, e2t = get_bathy_cell_size()
     number_cells = di * dj
     area = number_cells * e1t[0, istart, jstart] * e2t[0, istart, jstart]
-    w = Flux / area * 1000.   # w is in kg/s not m/s
+    w = flux / area * 1000.   # w is in kg/s not m/s
     runoff[istart:istart + di, jstart:jstart + dj] = w
     run_depth[istart:istart + di, jstart:jstart + dj] = depth_of_flux
     return runoff, run_depth
 
 
-def fill_runoff_array_monthly(Flux, istart, di, jstart, dj,
-                              depth_of_flux, runoff, run_depth, run_temp):
-    """define a function to fill the runoff array"""
+def fill_runoff_array_monthly(
+        flux, istart, di, jstart, dj,
+        depth_of_flux, runoff, run_depth, run_temp,
+):
+    """Fill the monthly runoff array.
+    """
     e1t, e2t = get_bathy_cell_size()
     number_cells = di * dj
     area = number_cells * e1t[0, istart, jstart] * e2t[0, istart, jstart]
     for month in range(1, 13):
-        w = Flux[month - 1] / area * 1000.   # w is in kg/s not m/s
+        w = flux[month - 1] / area * 1000.   # w is in kg/s not m/s
         runoff[(month - 1), istart:istart + di, jstart:jstart + dj] = w
         run_depth[(month - 1),
                   istart:istart + di,
@@ -349,38 +595,49 @@ def fill_runoff_array_monthly(Flux, istart, di, jstart, dj,
     return runoff, run_depth, run_temp
 
 
-def check_sum(runoff_orig, runoff_new, Flux):
-    """define a function to check the runoff adds up to what it should"""
+def check_sum(runoff_orig, runoff_new, flux):
+    """Check that the runoff adds up to what it should.
+"""
     e1t, e2t = get_bathy_cell_size()
-    print (np.sum(runoff_new) - runoff_orig.sum()) * \
-        e1t[0, 450, 200] * e2t[0, 450, 200] / 1000., Flux
+    print(
+        (np.sum(runoff_new) - runoff_orig.sum())
+        * e1t[0, 450, 200] * e2t[0, 450, 200] / 1000.,
+        flux)
 
 
-def check_sum_monthly(runoff_orig, runoff_new, Flux):
-    """define a function to check the runoff adds up per month to what
-    it should"""
+def check_sum_monthly(runoff_orig, runoff_new, flux):
+    """Check that the runoff adds up per month to what it should.
+    """
     e1t, e2t = get_bathy_cell_size()
-    print (np.sum(runoff_new) / 12 - runoff_orig.sum() / 12) * \
-        e1t[0, 450, 200] * e2t[0, 450, 200] / 1000., np.mean(Flux)
+    print(
+        (np.sum(runoff_new) / 12 - runoff_orig.sum() / 12)
+        * e1t[0, 450, 200] * e2t[0, 450, 200] / 1000.,
+        np.mean(flux))
 
 
 def rivertemp(month):
-    '''River temperature, based on Fraser River, see Allen and Wolfe (2013)
-    Temperature in NEMO is Celcius
-    '''
-    centerday = [15.5, 31 + 14, 31 + 28 + 15.5, 31 + 28 + 31 + 15, 31 + 28 + 31 + 30 + 15.5,
-                 31 + 28 + 31 + 30 + 31 + 15, 31 +
-                 28 + 31 + 30 + 31 + 30 + 15.5,
-                 31 + 28 + 31 + 30 + 31 + 30 + 31 + 15.5, 31 +
-                 28 + 31 + 30 + 31 + 30 + 31 + 31 + 15,
-                 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 15.5,
-                 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 15,
-                 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 15.5]
+    """River temperature, based on Fraser River, see Allen and Wolfe (2013).
+
+    Temperature in NEMO is in Celcius.
+    """
+    centerday = [
+        15.5,
+        31 + 14,
+        31 + 28 + 15.5,
+        31 + 28 + 31 + 15,
+        31 + 28 + 31 + 30 + 15.5,
+        31 + 28 + 31 + 30 + 31 + 15,
+        31 + 28 + 31 + 30 + 31 + 30 + 15.5,
+        31 + 28 + 31 + 30 + 31 + 30 + 31 + 15.5,
+        31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 15,
+        31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 15.5,
+        31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 15,
+        31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 15.5]
     yearday = centerday[month - 1]
     if (yearday < 52.8 or yearday > 334.4):
-        RiverTemp = 2.5
+        river_temp = 2.5
     elif (yearday < 232.9):
-        RiverTemp = 2.5 + (yearday - 52.8) * (19.3 - 2.5) / (232.9 - 52.8)
+        river_temp = 2.5 + (yearday - 52.8) * (19.3 - 2.5) / (232.9 - 52.8)
     else:
-        RiverTemp = 19.3 + (yearday - 232.9) * (2.5 - 19.3) / (334.4 - 232.9)
-    return RiverTemp
+        river_temp = 19.3 + (yearday - 232.9) * (2.5 - 19.3) / (334.4 - 232.9)
+    return river_temp
