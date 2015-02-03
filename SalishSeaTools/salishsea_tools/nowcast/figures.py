@@ -2142,9 +2142,11 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1,
     ax.text(-123.5, 48.2, 'Victoria', fontsize=20)
 
     # Figure format
-    ax.set_title('Station Locations', **title_font)
+    time = (twind[0]+PST*time_shift).strftime('%A, %B %d, %Y')
+    ax.set_title('Marine and Atmospheric Conditions\n {Time}'.format(Time=time), **title_font)
     fig.patch.set_facecolor('#2B3E50')
     axis_colors(ax, 'gray')
+
 
     # Citation
     t1 = (twind[0]+PST*time_shift).strftime('%Y/%m/%d %H:%M')
