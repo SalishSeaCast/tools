@@ -1405,7 +1405,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 1
   plot_map(ax0, grid_B)
   ax0.set_xlim(-125.4, -122.2)
   ax0.set_ylim(48, 50.3)
-  ax0.set_title('Station Locations',**title_font)
+  ax0.set_title('Degree of Flood Risk',**title_font)
   axis_colors(ax0, 'gray')
 
  # Stations information
