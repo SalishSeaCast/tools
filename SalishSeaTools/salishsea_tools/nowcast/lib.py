@@ -418,11 +418,15 @@ def get_web_data(
         while delay <= retry_time_limit:
             logger.debug('waiting {} seconds until retry'.format(delay))
             time.sleep(delay)
-            response = requests.get(url, stream=filepath is not None)
             try:
+                response = requests.get(url, stream=filepath is not None)
                 response.raise_for_status()
                 return _handle_url_content(response, filepath)
-            except (requests.exceptions.HTTPError, socket.error) as e:
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError,
+                socket.error,
+            ) as e:
                 logger.warning(
                     'received {0.message} from {url}'.format(e, url=url))
                 delay *= retry_backoff_factor
