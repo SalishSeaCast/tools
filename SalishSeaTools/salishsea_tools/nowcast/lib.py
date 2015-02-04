@@ -403,8 +403,8 @@ def get_web_data(
 
     :raises: :py:exc:`nowcast.lib.WorkerError`
     """
-    response = requests.get(url, stream=filepath is not None)
     try:
+        response = requests.get(url, stream=filepath is not None)
         response.raise_for_status()
         return _handle_url_content(response, filepath)
     except (
