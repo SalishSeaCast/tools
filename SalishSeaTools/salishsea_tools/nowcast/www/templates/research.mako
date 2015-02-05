@@ -8,7 +8,7 @@ ${results_date.strftime('%A, %d %B %Y')} -- Salish Sea Model Research Evaluation
 Disclaimer
 ==========
 
-This site presents output from a research project.
+This page presents output from a research project.
 Results on this page are either 1) not yet evaluated or 2) have been evaluated but do not agree well with observations.  For the latter we are working on model modifications.
 
 
