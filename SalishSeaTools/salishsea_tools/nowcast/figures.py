@@ -32,6 +32,7 @@ import matplotlib.cm as cm
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
@@ -617,8 +618,10 @@ def draw_coast(ax, PNW_coastline):
   coast['lat'] = PNW_coastline['ncst'][:,1]
   coast['lon'] = PNW_coastline['ncst'][:,0]
   ax.plot(coast['lon'],coast['lat'],'-k',rasterized=True,markersize=1)
+  ax.set_xlim([-126,-122])
+  ax.set_ylim([47.5,50.7])
     
-  return ax
+  return ax, coast
 
 def plot_corrected_model(ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
     """ Plots and returns corrected model.
@@ -872,7 +875,7 @@ def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
 
   return inds
 
-def plot_map(ax, grid_B):
+def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
   """ Plots map of Salish Sea region.
 
   :arg ax: Axis for map.
@@ -880,14 +883,43 @@ def plot_map(ax, grid_B):
 
   :returns: axis
   """
-
-  viz_tools.set_aspect(ax)
-  viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
-  viz_tools.plot_coastline(ax,grid_B,coords='map')
+  
+  #coastline
+  if coastline == 'partial':
+    viz_tools.plot_coastline(ax,grid_B,coords='map')
+  elif coastline == 'full':
+    [ax, coast]=draw_coast(ax, PNW_coastline)
+    
+  #fill
+  if fill == 1 and coastline == 'full':
+    def separate_polygons(a):
+      return [a[s] for s in np.ma.clump_unmasked(np.ma.masked_invalid(a))]
+    poly_lats = separate_polygons(coast['lat'])
+    poly_lons = separate_polygons(coast['lon'])
+    for x,y in zip(poly_lons,poly_lats):
+      poly=zip(x,y)
+      ax.add_patch(patches.Polygon(poly,closed=True,facecolor='burlywood'))
+  elif fill ==0:
+    pass
+  else:
+    pass
+    
+  #domain
+  if domain == 0:
+    pass
+  elif domain == 1:
+    viz_tools.plot_land_mask(ax, grid_B,color='#DBDEE1',coords='map')
+  elif domain == 2:
+    viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
+  elif domain == 3:
+    viz_tools.plot_land_mask(ax, grid_B,color='OliveDrab',coords='map')
+    
+  #labels
   ax.set_xlabel('Longitude',**axis_font)
   ax.set_ylabel('Latitude',**axis_font)
   ax.grid()
-
+  viz_tools.set_aspect(ax)
+  
   return ax
 
 
@@ -958,15 +990,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     ax3 = fig.add_subplot(gs[1, 2])
 
     # Map
-    viz_tools.set_aspect(ax)
-    viz_tools.plot_land_mask(ax, grid_B,color='burlywood',coords='map')
-    viz_tools.plot_coastline(ax,grid_B,coords='map')
-    draw_coast(ax, PNW_coastline)
-    ax.set_xlabel('Longitude',**axis_font_thumb)
-    ax.set_ylabel('Latitude',**axis_font_thumb)
-    ax.grid()
-    ax.set_xlim([-126.4,-121.3])
-    ax.set_ylim([46.8,51.1])
+    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
     for name in names:
         # Get sea surface height
@@ -998,18 +1022,18 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
-    ax.arrow(-121.5, 50.9, 0.*scale, -5.*scale,
+    ax.arrow(-122.2, 50.6, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize=20)
+    ax.text(-122.28, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
 
     # Location labels
-    ax.text(-125.7, 47.8, 'Pacific\nOcean', fontsize=30, color='DimGray')
-    ax.text(-122.8, 50.1, '  British\nColumbia', fontsize=30, color='DimGray')
-    ax.text(-124.2, 47.3, 'Washington\n    State', fontsize=30, color='DimGray')
-    ax.text(-122.2, 47.6, ' Puget\nSound', fontsize=20, color='DimGray')
-    ax.text(-124.6, 48.1, 'Strait of\nJuan de Fuca', fontsize=20, color='DimGray', rotation=-18)
-    ax.text(-124.5, 49.1, 'Strait of \n Georgia', fontsize=20, color='DimGray', rotation=-18)
+    ax.text(-125.7, 47.7, 'Pacific\nOcean', fontsize=30, color='DimGray')
+    ax.text(-123.2, 50.1, '  British\nColumbia', fontsize=30, color='DimGray')
+    ax.text(-124.2, 47.8, 'Washington\n    State', fontsize=30, color='DimGray')
+    ax.text(-122.3, 47.65, ' Puget\nSound', fontsize=20, color='DimGray')
+    ax.text(-124.35, 48.35, 'Strait of\nJuan de Fuca', fontsize=20, color='DimGray', rotation=-18)
+    ax.text(-124, 49.3, 'Strait of \n Georgia', fontsize=20, color='DimGray', rotation=-12)
 
     # Figure format
     t = (twind[0]+PST*time_shift).strftime('%A, %B %d, %Y')
@@ -1097,7 +1121,7 @@ def PA_tidal_predictions(grid_T,  PST=1, MSL=0, figsize=(20, 5)):
 
     return fig
 
-def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20, 15)):
+def compare_water_levels(grid_T, grid_B, PNW_coastline, PST=1, figsize=(20, 15)):
     """ Compares modelled water levels to observed water levels and tides
     at a NOAA station over one day.
 
@@ -1147,7 +1171,7 @@ def compare_water_levels(grid_T, grid_B, PST=1, figsize=(20, 15)):
 
     # Map
     ax0 = fig.add_subplot(gs[:,1])
-    plot_map(ax0, grid_B)
+    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
     ax0.set_xlim(-124.8, -122.2)
     ax0.set_ylim(48, 50)
     ax0.set_title('Station Locations',**title_font)
@@ -1363,7 +1387,7 @@ def compare_tidalpredictions_maxSSH(
 
     return fig
 
-def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 15.5)):
+def plot_thresholds_all(grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1, figsize=(20, 15.5)):
   """Plots sea surface height over one day with respect to warning thresholds.
 
   This function applies only to Point Atkinson, Campbell River, and Victoria.
@@ -1402,7 +1426,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 1
 
   # Map of region
   ax0=fig.add_subplot(gs[:, 1])
-  plot_map(ax0, grid_B)
+  plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
   ax0.set_xlim(-125.4, -122.2)
   ax0.set_ylim(48, 50.3)
   ax0.set_title('Degree of Flood Risk',**title_font)
@@ -1480,7 +1504,7 @@ def plot_thresholds_all(grid_T, grid_B, model_path, PST=1, MSL=1, figsize=(20, 1
 
   return fig
 
-def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
+def Sandheads_winds(grid_T, grid_B, model_path, PNW_coastline, PST=1, figsize=(20, 12)):
     """ Plots the observed and modelled winds at Sandheads during
     the simulation.
 
@@ -1557,7 +1581,7 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
     fig.autofmt_xdate()
 
     # Map
-    plot_map(ax0, grid_B)
+    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
     ax0.set_xlim([-124.8,-122.2])
     ax0.set_ylim([48,50])
     ax0.set_title('Station Locations',**title_font)
@@ -1577,7 +1601,7 @@ def Sandheads_winds(grid_T, grid_B, model_path, PST=1, figsize=(20, 12)):
 
     return fig
 
-def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 15)):
+def average_winds_at_station(grid_T, grid_B, model_path,  PNW_coastline, station, figsize=(20, 15)):
   """ Plots winds averaged over simulation time at individual or all
   stations.
 
@@ -1609,7 +1633,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
   fig = plt.figure(figsize=figsize)
   ax = fig.add_subplot(1, 1, 1)
   fig.patch.set_facecolor('#2B3E50')
-  plot_map(ax, grid_B)
+  plot_map(ax, grid_B, PNW_coastline,'full', 1, 0)
 
   # Arrow scale
   scale = 0.1
@@ -1632,10 +1656,10 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
             markersize=14, markeredgewidth=2,label=name)
 
   # Reference arrow
-  ax.arrow(-122, 51, 0.*scale, -5.*scale,
+  ax.arrow(-122.5, 50.65, 0.*scale, -5.*scale,
            head_width=0.05, head_length=0.1, width=0.02,
            color='white',fc='DarkMagenta', ec='black')
-  ax.text(-122.1, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
+  ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize = 14)
 
   # Times for titles and legend
   t1=(plot_time[0] +time_shift).strftime('%d-%b-%Y %H:%M');
@@ -1656,7 +1680,7 @@ def average_winds_at_station(grid_T, grid_B, model_path, station, figsize=(20, 1
 
   return fig
 
-def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
+def winds_at_max_ssh(grid_T, grid_B, model_path, PNW_coastline, station, figsize=(20, 15)):
   """ Plots winds at individual stations 4 hours before the
   maxmimum sea surface height at Point Atkinson.
 
@@ -1689,7 +1713,7 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   fig = plt.figure(figsize=figsize)
   ax = fig.add_subplot(1, 1, 1)
   fig.patch.set_facecolor('#2B3E50')
-  plot_map(ax, grid_B)
+  plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
   # Arrow scale
   scale = 0.1
@@ -1698,10 +1722,10 @@ def winds_at_max_ssh(grid_T, grid_B, model_path, station, figsize=(20, 15)):
   [t_orig,t_final,t] = get_model_time_variables(grid_T)
 
   # Reference arrow
-  ax.arrow(-122, 51, 0.*scale, -5.*scale,
+  ax.arrow(-122.5, 50.65, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-  ax.text(-122.1, 50.95, "Reference: 5 m/s", rotation=90, fontsize = 14)
+  ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize = 14)
 
   # Condition if plotting all stations or a single station
   if station == 'all':
@@ -2033,7 +2057,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     return fig
 
 
-def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1,
+def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
                            PST=1, figsize = (18, 20)):
     """ Overview image for Salish Sea website. Plots a map of the Salish Sea with
     markers indicating extreme water at Point Atkinson, Victoria nd Campbell
@@ -2091,7 +2115,7 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1,
     ax3 = fig.add_subplot(gs[1, 2])
 
     # Map
-    plot_map(ax, grid_B)
+    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
     for name in names:
         # Get sea surface height
@@ -2123,19 +2147,19 @@ def plot_threshold_website(grid_B, grid_T, model_path, scale=0.1,
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
-    ax.arrow(-121.5, 51, 0.*scale, -5.*scale,
+    ax.arrow(-122.2, 50.65, 0.*scale, -5.*scale,
               head_width=0.05, head_length=0.1, width=0.02,
               color='white',fc='DarkMagenta', ec='black')
-    ax.text(-121.6, 50.95, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.28, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
 
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
-    ax.text(-122.8, 50.1, 'British Columbia', fontsize=13)
-    ax.text(-123.8, 47.3, 'Washington \n State', fontsize=13)
+    ax.text(-123.1, 50.3, 'British Columbia', fontsize=13)
+    ax.text(-123.8, 47.8, 'Washington \n State', fontsize=13)
 
-    ax.text(-122.3, 47.6, 'Puget Sound', fontsize=13)
-    ax.text(-124.7, 48.45, 'Strait of Juan de Fuca', fontsize=13, rotation=-18)
-    ax.text(-123.95, 49.25, 'Strait of \n Georgia', fontsize=13, rotation=-2)
+    ax.text(-122.38, 47.68, 'Puget Sound', fontsize=13)
+    ax.text(-124.7, 48.47, 'Strait of Juan de Fuca', fontsize=13, rotation=-18)
+    ax.text(-123.95, 49.28, 'Strait of \n Georgia', fontsize=13, rotation=-2)
 
     ax.text(-123.1, 49.4, 'Point \n Atkinson', fontsize=20)
     ax.text(-125.9, 50.05, 'Campbell \n River', fontsize=20)
