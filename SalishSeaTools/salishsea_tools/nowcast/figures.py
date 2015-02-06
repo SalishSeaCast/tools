@@ -876,10 +876,27 @@ def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
   return inds
 
 def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
-  """ Plots map of Salish Sea region.
+  """ Plots map of Salish Sea region, including the options to add
+  a coastline, land colour(fill), or domain colour(domain). Note that fill
+  will only be applicable if coastline is not 'partial'.
 
   :arg ax: Axis for map.
   :type ax: axis object
+  
+  :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+  :type grid_B: :class:`netCDF4.Dataset`
+  
+  :arg PNW_coastline: Coastline dataset.
+  :type PNW_coastline: :class:`mat.Dataset`
+  
+  :arg coastline: Extent of coastline. 'full' for Pacific Northwest coast or 'partial' for model coastline.
+  :type coastline: string
+  
+  :arg fill: Option to colour the land. 1 for yes, 0 for no.
+  :type fill: 0 or 1
+  
+  :arg domain: Option to highlight domain area. 0 for no, 1 for gray, 2 for burlywood, 3 for green.
+  :type domain: 0, 1, 2, or 3
 
   :returns: axis
   """
