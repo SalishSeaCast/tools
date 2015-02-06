@@ -612,7 +612,7 @@ def draw_coast(ax, PNW_coastline):
   :arg PNW_coastline: Coastline dataset.
   :type PNW_coastline: :class:`mat.Dataset`
   
-  :returns: ax
+  :returns: ax, information about coastline (coast) 
   """ 
   coast={}
   coast['lat'] = PNW_coastline['ncst'][:,1]
@@ -889,7 +889,7 @@ def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
   :arg PNW_coastline: Coastline dataset.
   :type PNW_coastline: :class:`mat.Dataset`
   
-  :arg coastline: Extent of coastline. 'full' for Pacific Northwest coast or 'partial' for model coastline.
+  :arg coastline: Extent of coastline. 'full' for Pacific Northwest coast , 'partial' for model coastline, or 'none'.
   :type coastline: string
   
   :arg fill: Option to colour the land. 1 for yes, 0 for no.
