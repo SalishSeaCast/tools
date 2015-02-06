@@ -878,7 +878,7 @@ def isolate_wind_timing(name,grid_T,grid_B,model_path, t,hour=4,average=True):
 def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
   """ Plots map of Salish Sea region, including the options to add
   a coastline, land colour(fill), or domain colour(domain). Note that fill
-  will only be applicable if coastline is not 'partial'.
+  will only be applicable if coastline is 'full'.
 
   :arg ax: Axis for map.
   :type ax: axis object
@@ -906,6 +906,8 @@ def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
     viz_tools.plot_coastline(ax,grid_B,coords='map')
   elif coastline == 'full':
     [ax, coast]=draw_coast(ax, PNW_coastline)
+  elif coastline == 'none':
+    pass
     
   #fill
   if fill == 1 and coastline == 'full':
