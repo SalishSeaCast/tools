@@ -273,10 +273,13 @@ def load_PA_observations():
     :returns: DataFrame object (obs) with a time column and wlev column.
     """
 
-    filename = '/data/nsoontie/MEOPAR/analysis/Nancy/tides/PA_observations/ptatkin_rt.dat'
+    filename = (
+        '/data/nsoontie/MEOPAR/analysis/Nancy/tides/PA_observations/'
+        'ptatkin_rt.dat')
 
-    obs = pd.read_csv(filename, delimiter=' ', parse_dates=[[0, 1, 2, 3]], header=None,
-                      date_parser=dateparse_PAObs)
+    obs = pd.read_csv(
+        filename, delimiter=' ', parse_dates=[[0, 1, 2, 3]], header=None,
+        date_parser=dateparse_PAObs)
     obs = obs.rename(columns={'0_1_2_3': 'time', 4: 'wlev'})
 
     return obs
@@ -354,7 +357,9 @@ def get_NOAA_tides(station_no, start_date, end_date):
     st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
 
-    base_url = 'http://tidesandcurrents.noaa.gov/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL'
+    base_url = (
+        'http://tidesandcurrents.noaa.gov/api/datagetter'
+        '?product=predictions&application=NOS.COOPS.TAC.WL')
     params = {
         'begin_date': st_ar.format('YYYYMMDD'),
         'end_date': end_ar.format('YYYYMMDD'),
@@ -363,7 +368,8 @@ def get_NOAA_tides(station_no, start_date, end_date):
         'time_zone': 'GMT',
         'units': 'metric',
         'interval': '',
-        'format': 'csv', }
+        'format': 'csv',
+    }
 
     response = requests.get(base_url, params=params)
 
@@ -484,7 +490,9 @@ def get_tides(name):
     """
 
     # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
-    path = '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/tidal_predictions/'
+    path = (
+        '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
+        'tidal_predictions/')
     filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
     tfile = path + name + filename
     ttide, msl = stormtools.load_tidal_predictions(tfile)
@@ -530,20 +538,13 @@ def load_VENUS(station):
 
     # Parse data
     fakefile = StringIO(response.content)
-    data = pd.read_csv(fakefile, delimiter=' ,', skiprows=17,
-                       names=[
-                           'date',
-                           'pressure',
-                           'pflag',
-                           'temp',
-                           'tflag',
-                           'sal',
-                           'sflag',
-                           'sigmaT',
-                           'stflag',
-                           'oxygen',
-                           'oflag'],
-                       parse_dates=['date'], date_parser=dateparse, engine='python')
+    data = pd.read_csv(
+        fakefile, delimiter=' ,', skiprows=17,
+        names=[
+            'date', 'pressure', 'pflag', 'temp', 'tflag', 'sal', 'sflag',
+            'sigmaT', 'stflag', 'oxygen', 'oflag',
+        ],
+        parse_dates=['date'], date_parser=dateparse, engine='python')
 
     return data, lon, lat, depth
 
@@ -563,33 +564,20 @@ def get_weather_filenames(t_orig, t_final, model_path):
 
     :returns: list of files names (files) from the Operational model.
     """
-
     numdays = (t_final - t_orig).days
-
     dates = [
-        t_orig +
-        datetime.timedelta(
-            days=num) for num in range(
-            0,
-            numdays +
-            1)]
+        t_orig + datetime.timedelta(days=num)
+        for num in range(0, numdays + 1)]
     dates.sort()
 
-    allfiles = glob.glob(model_path + 'ops_y*')
-
-    sstr = model_path + 'ops_y' + \
-        dates[0].strftime(
-            '%Y') + 'm' + dates[0].strftime('%m') + 'd' + dates[0].strftime('%d') + '.nc'
-    estr = model_path + 'ops_y' + \
-        dates[-1].strftime('%Y') + 'm' + dates[-1].strftime('%m') + \
-        'd' + dates[-1].strftime('%d') + '.nc'
-
+    allfiles = glob.glob(os.path.join(model_path, 'ops_y*'))
+    sstr = os.path.join(model_path, dates[0].strftime('ops_y%Ym%md%d.nc'))
+    estr = os.path.join(model_path, dates[-1].strftime('ops_y%Ym%md%d.nc'))
     files = []
     for filename in allfiles:
         if filename >= sstr:
             if filename <= estr:
                 files.append(filename)
-
     files.sort(key=os.path.basename)
 
     return files
@@ -771,8 +759,10 @@ def plot_tides(ax, name, PST, MSL, color=predictions_c):
     """
 
     ttide = get_tides(name)
-    ax.plot(ttide.time + PST * time_shift, ttide.pred_all + MSL_DATUMS[name] * MSL, c=color,
-            linewidth=2, label='Tidal predictions')
+    ax.plot(
+        ttide.time + PST * time_shift,
+        ttide.pred_all + MSL_DATUMS[name] * MSL,
+        c=color, linewidth=2, label='Tidal predictions')
 
     return ttide
 
@@ -903,15 +893,19 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
         inds = np.array([0, np.shape(wind)[0] - 1])
     # Calculate U and V
     uwind = np.mean(
-        wind[inds[0]:inds[-1] + 1] * np.cos(np.radians(direc[inds[0]:inds[-1] + 1])))
+        wind[inds[0]:inds[-1] + 1]
+        * np.cos(np.radians(direc[inds[0]:inds[-1] + 1])))
     uwind = np.array([uwind])
     vwind = np.mean(
-        wind[inds[0]:inds[-1] + 1] * np.sin(np.radians(direc[inds[0]:inds[-1] + 1])))
+        wind[inds[0]:inds[-1] + 1]
+        * np.sin(np.radians(direc[inds[0]:inds[-1] + 1])))
     vwind = np.array([vwind])
 
     # Arrows
-    ax.arrow(lons[name], lats[name], scale * uwind[0], scale * vwind[0], head_width=0.05,
-             head_length=0.1, width=0.02, color='white', fc='DarkMagenta', ec='black')
+    ax.arrow(
+        lons[name], lats[name], scale * uwind[0], scale * vwind[0],
+        head_width=0.05, head_length=0.1, width=0.02,
+        color='white', fc='DarkMagenta', ec='black')
     tplot = t[inds[0]:inds[-1] + 1]
 
     return tplot
@@ -1136,8 +1130,8 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
 
     for name in names:
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(lons[name], lats[name],
-                                                    X, Y, bathy, allow_land=False)
+        [j, i] = tidetools.find_closest_model_point(
+            lons[name], lats[name], X, Y, bathy, allow_land=False)
         ssh = grid_T.variables['sossheig']
         ssh_loc = ssh[:, j, i]
 
@@ -1314,11 +1308,13 @@ def PA_tidal_predictions(grid_T, PST=1, MSL=0, figsize=(20, 5)):
     ax.set_xlabel('Time {}'.format(timezone), **axis_font)
     ax.grid()
     axis_colors(ax, 'gray')
-    ax.text(1., -0.2,
-            'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide',
-            horizontalalignment='right',
-            verticalalignment='top',
-            transform=ax.transAxes, color='white')
+    ax.text(
+        1., -0.2,
+        'Tidal predictions calculated with t_tide: '
+        'http://www.eos.ubc.ca/~rich/#T_Tide',
+        horizontalalignment='right',
+        verticalalignment='top',
+        transform=ax.transAxes, color='white')
 
     return fig
 
@@ -1381,11 +1377,13 @@ def compare_water_levels(
     axis_colors(ax0, 'gray')
 
     # Citation
-    ax0.text(0.03, -0.45,
-             'Observed water levels and tidal predictions from NOAA:\nhttp://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
-             horizontalalignment='left',
-             verticalalignment='top',
-             transform=ax0.transAxes, color='white')
+    ax0.text(
+        0.03, -0.45,
+        'Observed water levels and tidal predictions from NOAA:\n'
+        'http://tidesandcurrents.noaa.gov/stations.html?type=Water+Levels',
+        horizontalalignment='left',
+        verticalalignment='top',
+        transform=ax0.transAxes, color='white')
 
     m = np.arange(3)
     names = ['Neah Bay', 'Friday Harbor', 'Cherry Point']
@@ -1418,10 +1416,12 @@ def compare_water_levels(
             c=model_c,
             linewidth=2,
             label='Model')
-        ax.plot(obs.time[:] + time_shift * PST, obs.wlev, c=observations_c, linewidth=2,
-                label='Observed water levels')
-        ax.plot(tides.time + time_shift * PST, tides.pred, c=predictions_c, linewidth=2,
-                label='Tidal predictions')
+        ax.plot(
+            obs.time[:] + time_shift * PST, obs.wlev, c=observations_c,
+            linewidth=2, label='Observed water levels')
+        ax.plot(
+            tides.time + time_shift * PST, tides.pred, c=predictions_c,
+            linewidth=2, label='Tidal predictions')
 
         # Axis
         ax.set_xlim(t_orig + time_shift * PST, t_final + time_shift * PST)
@@ -1439,8 +1439,9 @@ def compare_water_levels(
         ax.xaxis.set_major_formatter(hfmt)
         fig.autofmt_xdate()
         if M == 0:
-            legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
-                               prop={'size': 15}, title=r'Legend')
+            legend = ax.legend(
+                bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
+                prop={'size': 15}, title=r'Legend')
             legend.get_title().set_fontsize('20')
 
     return fig
@@ -1539,8 +1540,8 @@ def compare_tidalpredictions_maxSSH(
     res = compute_residual(ssh_loc, ttide, t_orig, t_final)
 
     # Find maximim sea surface height and timing
-    max_ssh, index, tmax, max_res, max_wind, ind_w = get_maxes(ssh_corr, t, res,
-                                                               lons[name], lats[name], model_path)
+    max_ssh, index, tmax, max_res, max_wind, ind_w = get_maxes(
+        ssh_corr, t, res, lons[name], lats[name], model_path)
     ax0.text(0.05, 0.9, name, fontsize=20,
              horizontalalignment='left',
              verticalalignment='top', color='white')
@@ -1548,11 +1549,14 @@ def compare_tidalpredictions_maxSSH(
              'Max SSH: {:.2f} metres above mean sea level'.format(max_ssh),
              fontsize=15, horizontalalignment='left',
              verticalalignment='top', color='white')
-    ax0.text(0.05, 0.6,
-             'Time of max: {time} {timezone}'.format(time=tmax + PST * time_shift,
-                                                     timezone=PST * '[PST]' + abs((PST - 1)) * '[UTC]'),
-             fontsize=15, horizontalalignment='left',
-             verticalalignment='top', color='white')
+    ax0.text(
+        0.05, 0.6,
+        'Time of max: {time} {timezone}'
+        .format(
+            time=tmax + PST * time_shift,
+            timezone=PST * '[PST]' + abs((PST - 1)) * '[UTC]'),
+        fontsize=15, horizontalalignment='left',
+        verticalalignment='top', color='white')
     ax0.text(0.05, 0.45,
              'Residual: {:.2f} metres'.format(max_res),
              fontsize=15, horizontalalignment='left',
@@ -1631,7 +1635,9 @@ def compare_tidalpredictions_maxSSH(
 
 
 def plot_thresholds_all(
-        grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1, figsize=(20, 15.5)):
+    grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1,
+    figsize=(20, 15.5),
+):
     """Plots sea surface height over one day with respect to warning
     thresholds.
 
@@ -1677,7 +1683,7 @@ def plot_thresholds_all(
     ax0.set_title('Degree of Flood Risk', **title_font)
     axis_colors(ax0, 'gray')
 
-   # Stations information
+    # Stations information
     [lats, lons] = station_coords()
 
     # Bathymetry
@@ -1758,13 +1764,17 @@ def plot_thresholds_all(
 
         # Legend
         if M == 0:
-            legend = ax.legend(bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
-                               prop={'size': 15}, title=r'Legend')
+            legend = ax.legend(
+                bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
+                prop={'size': 15}, title=r'Legend')
             legend.get_title().set_fontsize('20')
 
     # Citation
     ax0.text(0.03, -0.45,
-             'Tidal predictions calculated with t_tide: http://www.eos.ubc.ca/~rich/#T_Tide \nObserved water levels from Fisheries and Oceans, Canada \nvia Scott Tinis at stormsurgebc.ca',
+             'Tidal predictions calculated with t_tide: '
+             'http://www.eos.ubc.ca/~rich/#T_Tide \n'
+             'Observed water levels from Fisheries and Oceans, Canada \n'
+             'via Scott Tinis at stormsurgebc.ca',
              horizontalalignment='left',
              verticalalignment='top',
              transform=ax0.transAxes, color='white')
@@ -1891,7 +1901,12 @@ def Sandheads_winds(
 
     # Citation
     ax0.text(0.0, -0.15,
-             'Observations from Environment Canada data. http://climate.weather.gc.ca/ \nModelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada.\nhttps://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+             'Observations from Environment Canada data. '
+             'http://climate.weather.gc.ca/ \n'
+             'Modelled winds are from the High Resolution Deterministic '
+             'Prediction System\n'
+             'of Environment Canada.\n'
+             'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
              horizontalalignment='left',
              verticalalignment='top',
              transform=ax0.transAxes, color='white')
@@ -1976,8 +1991,9 @@ def average_winds_at_station(
     # Times for titles and legend
     t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
     t2 = (plot_time[-1] + time_shift).strftime('%d-%b-%Y %H:%M')
-    legend = ax.legend(numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
-                       prop={'size': 15}, title=r'Stations')
+    legend = ax.legend(
+        numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
+        prop={'size': 15}, title=r'Stations')
     legend.get_title().set_fontsize('20')
     ax.set_title(
         'Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'.format(
@@ -1987,7 +2003,10 @@ def average_winds_at_station(
 
     # Citation
     ax.text(0.6, -0.07,
-            'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+            'Modelled winds are from the High Resolution Deterministic '
+            'Prediction System\n'
+            'of Environment Canada: '
+            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes, color='white')
@@ -2086,8 +2105,9 @@ def winds_at_max_ssh(
 
     # Time for title and legend
     plot_time = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
-    legend = ax.legend(numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
-                       prop={'size': 15}, title=r'Stations')
+    legend = ax.legend(
+        numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
+        prop={'size': 15}, title=r'Stations')
     legend.get_title().set_fontsize('20')
     ax.set_title(
         'Modelled winds at \n {time} [PST]'.format(
@@ -2096,7 +2116,10 @@ def winds_at_max_ssh(
 
     # Citation
     ax.text(0.6, -0.07,
-            'Modelled winds are from the High Resolution Deterministic Prediction System \nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+            'Modelled winds are from the High Resolution Deterministic '
+            'Prediction System\n'
+            'of Environment Canada: '
+            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes, color='white')
@@ -2106,8 +2129,10 @@ def winds_at_max_ssh(
     return fig
 
 
-def thalweg_salinity(grid_T_d, figsize=(
-        20, 8), cs = [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34]):
+def thalweg_salinity(
+    grid_T_d, figsize=(20, 8),
+    cs = [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
+):
     """Plots the daily average salinity field along the thalweg.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -2129,8 +2154,9 @@ def thalweg_salinity(grid_T_d, figsize=(
     sal_d = grid_T_d.variables['vosaline']
 
     # Call thalweg
-    lines = np.loadtxt('/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-                       delimiter=" ", unpack=False)
+    lines = np.loadtxt(
+        '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
+        delimiter=" ", unpack=False)
     lines = lines.astype(int)
 
     thalweg_lon = lon_d[lines[:, 0], lines[:, 1]]
@@ -2306,8 +2332,10 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     plt.axis((xmin, xmax, ymin, ymax))
     ax3.grid()
 
-    ax3.set_title('Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY') +
-                  u', depth\u2248{d:.2f} {z.units}'.format(d=zlevels[zlevel], z=zlevels), **title_font)
+    ax3.set_title(
+        'Average Velocity Field: ' + timestamp.format('DD-MMM-YYYY')
+        + u', depth\u2248{d:.2f} {z.units}'
+        .format(d=zlevels[zlevel], z=zlevels), **title_font)
     ax3.set_xlabel('X Index', **axis_font)
     ax3.set_ylabel('Y Index', **axis_font)
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data',
@@ -2402,7 +2430,8 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     results_date = nc_tools.timestamp(grid_T, 0).format('YYYY-MM-DD')
     ax.plot(ssh[:, 468, 328], 'o')
     ax.set_title(
-        'Hourly Sea Surface Height at Point Atkinson on {}'.format(results_date))
+        'Hourly Sea Surface Height at Point Atkinson on {}'
+        .format(results_date))
     ax.set_xlabel('UTC Hour from {}'.format(results_date))
     ax.set_ylabel(
         '{label} [{units}]'
@@ -2479,8 +2508,8 @@ def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
 
     for name in names:
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(lons[name], lats[name],
-                                                    X, Y, bathy, allow_land=False)
+        [j, i] = tidetools.find_closest_model_point(
+            lons[name], lats[name], X, Y, bathy, allow_land=False)
         ssh = grid_T.variables['sossheig']
         ssh_loc = ssh[:, j, i]
 
@@ -2564,7 +2593,10 @@ def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
             verticalalignment='top',
             transform=ax.transAxes, color='white', fontsize=14)
     ax.text(0.4, -0.29,
-            'Modelled winds are from the High Resolution Deterministic Prediction System\nof Environment Canada: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+            'Modelled winds are from the High Resolution Deterministic '
+            'Prediction System\n'
+            'of Environment Canada: '
+            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes, color='white', fontsize=14)
@@ -2578,13 +2610,20 @@ def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         axis_colors(ax, 'blue')
         display_time = (max_times[name] + PST * time_shift).strftime('%H:%M')
 
-        ax.text(0.05, 0.9, name, fontsize=20,
-                horizontalalignment='left', verticalalignment='top', color='w')
-        ax.text(0.05, 0.7, 'Maximum Water Level: {:.2f} m'.format(max_sshs[name] + MSL_DATUMS[name]), fontsize=15,
-                horizontalalignment='left', verticalalignment='top', color='w')
-        ax.text(0.05, 0.3, 'Time: {time} {tzone}'.format(time=display_time, tzone=timezone),
-                fontsize=15, horizontalalignment='left', verticalalignment='top', color='w')
-        ax.text(0.05, 0.5, 'Wind speed: {:.1f} m/s'.format(float(max_winds[name])), fontsize=15,
-                horizontalalignment='left', verticalalignment='top', color='w')
+        ax.text(
+            0.05, 0.9, name, fontsize=20,
+            horizontalalignment='left', verticalalignment='top', color='w')
+        ax.text(
+            0.05, 0.7, 'Maximum Water Level: {:.2f} m'
+            .format(max_sshs[name] + MSL_DATUMS[name]), fontsize=15,
+            horizontalalignment='left', verticalalignment='top', color='w')
+        ax.text(
+            0.05, 0.3, 'Time: {time} {tzone}'
+            .format(time=display_time, tzone=timezone), fontsize=15,
+            horizontalalignment='left', verticalalignment='top', color='w')
+        ax.text(
+            0.05, 0.5, 'Wind speed: {:.1f} m/s'
+            .format(float(max_winds[name])), fontsize=15,
+            horizontalalignment='left', verticalalignment='top', color='w')
 
     return fig
