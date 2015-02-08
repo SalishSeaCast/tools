@@ -186,7 +186,8 @@ def find_model_point(lon, lat, X, Y):
 def interpolate_depth(data, depth_array, depth_new):
     """Interpolates data field to a desired depth.
 
-    :arg data: The data to be interpolated. Should be one-dimensional over the z-axis.
+    :arg data: The data to be interpolated.
+               Should be one-dimensional over the z-axis.
     :type data: 1-d numpy array
 
     :arg depth_array: The z-axis for data.
@@ -195,7 +196,8 @@ def interpolate_depth(data, depth_array, depth_new):
     :arg depth_new: The new depth to which we want to interpolate.
     :type depth_new: float
 
-    :returns: float representing the field interpolated to the desired depth (data_interp).
+    :returns: float representing the field interpolated to the desired depth
+              (data_interp).
     """
 
     # Masked arrays are used for more accurate interpolation.
@@ -494,7 +496,8 @@ def load_VENUS(station):
     """Loads the most recent State of the Ocean data from the VENUS node
     indicated by station.
 
-    This data set includes pressure, temperature, and salinity among other things.
+    This data set includes pressure, temperature, and salinity among
+    other things.
     See: http://venus.uvic.ca/research/state-of-the-ocean/
 
     :arg station: The name of the station, either "East" or "Central".
@@ -742,7 +745,8 @@ def plot_tides(ax, name, PST, MSL, color=predictions_c):
     """Plots and returns the tidal predictions at a given station during the
     year of t_orig.
 
-    This function is only for Victoria, Campbell River, Point Atkinson and Patricia Bay.
+    This function is only for Victoria, Campbell River, Point Atkinson
+    and Patricia Bay.
     Tidal predictions are stored in a specific location.
 
     :arg ax: The axis where the tides are plotted.
@@ -858,14 +862,17 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
 
 
 def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
-    """ Plots a single wind vector at a station in an axis. Winds are averaged over the
-    times represnted by the indices in inds[0] and inds[-1].
+    """ Plots a single wind vector at a station in an axis.
+
+    Winds are averaged over the times represnted by the indices in
+    inds[0] and inds[-1].
 
     :arg ax: The axis for plotting.
     :type ax: an axis object
 
-    :arg name: The name of the station, can be Neah Bay, Point Atkinson, Campbell River,
-    Victoria, Friday Harbor, Cherry Point, Sandheads.
+    :arg name: The name of the station, can be Neah Bay, Point Atkinson,
+               Campbell River, Victoria, Friday Harbor, Cherry Point,
+               Sandheads.
     :type name: string
 
     :arg t_orig: start time of the simulation.
@@ -884,7 +891,8 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
     :arg scale: scale of arrows for plotting wind vector.
     :type scale: float
 
-    :returns: tplot, an array with the time range winds were averaged: tplot[0] and tplot[-1] .
+    :returns: tplot, an array with the time range winds were averaged:
+              tplot[0] and tplot[-1] .
     """
     [lats, lons] = station_coords()
 
@@ -914,7 +922,8 @@ def isolate_wind_timing(
     """Isolates indices timing of wind vectors. The timing is based on x number
     of hours before the max water level at a station.
 
-    :arg name: The name of the station, Point Atkinson, Victora, Campbell River are good choices.
+    :arg name: The name of the station, Point Atkinson, Victora,
+               Campbell River are good choices.
     :type name: string
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
@@ -932,8 +941,11 @@ def isolate_wind_timing(
     :arg hour: The number of hours before max ssh to plt.
     :type hour: integer
 
-    :arg average: Flag to determine if plotting should be averaged over x hours before ssh or just a single time.
-    :type average: Boolean (True=average over times, False = only a single time_counter
+    :arg average: Flag to determine if plotting should be averaged over
+                  x hours before ssh or just a single time.
+    :type average: Boolean
+                   (True=average over times,
+                    False = only a single time_counter)
 
     :returns: inds, an array with the start and end index for plotting winds.
     """
@@ -991,13 +1003,16 @@ def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
     :arg PNW_coastline: Coastline dataset.
     :type PNW_coastline: :class:`mat.Dataset`
 
-    :arg coastline: Extent of coastline. 'full' for Pacific Northwest coast , 'partial' for model coastline, or 'none'.
+    :arg coastline: Extent of coastline.
+                    'full' for Pacific Northwest coast,
+                    'partial' for model coastline, or 'none'.
     :type coastline: string
 
     :arg fill: Option to colour the land. 1 for yes, 0 for no.
     :type fill: 0 or 1
 
-    :arg domain: Option to highlight domain area. 0 for no, 1 for gray, 2 for burlywood, 3 for green.
+    :arg domain: Option to highlight domain area.
+                 0 for no, 1 for gray, 2 for burlywood, 3 for green.
     :type domain: 0, 1, 2, or 3
 
     :returns: axis
@@ -1987,9 +2002,10 @@ def winds_at_max_ssh(
     """Plots winds at individual stations 4 hours before the maxmimum sea
     surface height at Point Atkinson.
 
-    If that data is not available then the plot is generated at the start of the simulation.
-    This function applies to stations at Campbell River, Point Atkinson, Victoria,
-    Cherry Point, Neah Bay, and Friday Harbor.
+    If that data is not available then the plot is generated at the
+    start of the simulation.
+    This function applies to stations at Campbell River, Point Atkinson,
+    Victoria, Cherry Point, Neah Bay, and Friday Harbor.
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
