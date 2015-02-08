@@ -103,13 +103,15 @@ def configure_argparser(prog, description, parents):
     parser = argparse.ArgumentParser(
         prog=prog, description=description, parents=parents)
     parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast', 'forecast2',)),
+        'run_type',
+        choices=set(('nowcast', 'forecast', 'forecast2',)),
         help='''
         Type of run that the results come from.
         '''
     )
     parser.add_argument(
-        'page_type', choices=set(('publish', 'research')),
+        'page_type',
+        choices=set(('index', 'publish', 'research',)),
         help='''
         Type of page to render from template to salishsea site prep directory.
         '''
@@ -169,8 +171,11 @@ def make_site_page(run_type, page_type, run_date, config):
     results_pages_path = os.path.join(
         repo_path,
         config['web']['site_nemo_results_path'])
-    checklist = render_rst[run_type](
-        tmpl, page_type, run_date, svg_file_roots, results_pages_path, config)
+    checklist = {}
+    if page_type != 'index':
+        checklist.update(render_rst[run_type](
+            tmpl, page_type, run_date, svg_file_roots, results_pages_path,
+            config))
     # Render index page template to rst
     checklist.update(
         render_index_rst(
