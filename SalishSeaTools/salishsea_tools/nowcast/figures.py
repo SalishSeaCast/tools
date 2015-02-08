@@ -1093,7 +1093,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         'fontname': 'Bitstream Vera Sans', 'size': '40', 'color': 'black',
         'weight': 'medium'
     }
-    axis_font_thumb = {'fontname': 'Bitstream Vera Sans', 'size': '30'}
 
     # Stations information
     [lats, lons] = station_coords()
@@ -1219,7 +1218,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         axis_colors(ax, 'blue')
-        display_time = (max_times[name] + PST * time_shift).strftime('%H:%M')
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])
         ax.plot(
@@ -1283,7 +1281,7 @@ def PA_tidal_predictions(grid_T, PST=1, MSL=0, figsize=(20, 5)):
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
-    ttide = plot_tides(ax, 'Point Atkinson', PST, MSL, 'black')
+    plot_tides(ax, 'Point Atkinson', PST, MSL, 'black')
 
     # Line indicating current date
     ax.plot([t_orig +
@@ -2148,8 +2146,6 @@ def thalweg_salinity(
     """
 
     # Tracer data
-    lon_d = grid_T_d.variables['nav_lon']
-    lat_d = grid_T_d.variables['nav_lat']
     dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline']
 
@@ -2158,9 +2154,6 @@ def thalweg_salinity(
         '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
         delimiter=" ", unpack=False)
     lines = lines.astype(int)
-
-    thalweg_lon = lon_d[lines[:, 0], lines[:, 1]]
-    thalweg_lat = lat_d[lines[:, 0], lines[:, 1]]
 
     ds = np.arange(0, lines.shape[0], 1)
     XX, ZZ = np.meshgrid(ds, -dep_d[:])
@@ -2289,7 +2282,6 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     ugrid = grid_U_d.variables['vozocrtx']
     vgrid = grid_V_d.variables['vomecrty']
     zlevels = grid_U_d.variables['depthu']
-    timesteps = grid_U_d.variables['time_counter']
     t, zlevel = 0, 0
 
     y_slice = np.arange(0, ugrid.shape[2])
@@ -2441,8 +2433,10 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
     return fig
 
 
-def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
-                           PST=1, figsize=(18, 20)):
+def plot_threshold_website(
+    grid_B, grid_T, model_path, PNW_coastline, scale=0.1, PST=1,
+    figsize=(18, 20),
+):
     """Overview image for Salish Sea website.
 
     Plots a map of the Salish Sea with markers indicating extreme water
