@@ -85,7 +85,7 @@ def save_image(fig, filename, **kwargs):
     :arg kwargs: Keyword argument names and values to control how fig
                  is rendered;
                  e.g. :kbd:`facecolor=fig.get_facecolor()`,
-                 :kbd:`bbox_inches='tight', etc.
+                 :kbd:`bbox_inches='tight'`, etc.
                  See the matplotlib docs for details.
     :type kwargs: dict
     """
@@ -219,7 +219,7 @@ def get_model_time_variables(grid_T):
     :type grid_T: :class:`netCDF4.Dataset`
 
     :returns: simulation star time (t_orig), simulation end time (t_final),
-    and array (t) of output times all as datetime objects.
+              and array (t) of output times all as datetime objects.
     """
 
     # Time range
@@ -301,7 +301,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     :type end_date: str
 
     :returns: DataFrame object (obs) with time and wlev columns,
-    among others that are irrelevant.
+              among others that are irrelevant.
     """
 
     # Time range
@@ -406,8 +406,9 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     :type model_path: string
 
     :returns: maxmimum ssh (max_ssh), index of maximum ssh (index_ssh),
-    time of maximum ssh (tmax), residual at that time (max_res), wind
-    speed at that time (max_wind), and the index of that wind speed (ind_w).
+              time of maximum ssh (tmax), residual at that time (max_res),
+              wind speed at that time (max_wind),
+              and the index of that wind speed (ind_w).
     """
 
     # Index when sea surface height is at its maximum at Point Atkinson
@@ -482,7 +483,7 @@ def get_tides(name):
     :type name: string
 
     :returns: DataFrame object (ttide) with tidal predictions and columns time,
-    pred_all, pred_8.
+              pred_all, pred_8.
     """
 
     # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
@@ -508,7 +509,8 @@ def load_VENUS(station):
     :type station: string
 
     :returns: DataFrame (data) with the VENUS data,
-    longitude (lon), latitude (lat), and depth (depth) of the node in metres.
+              longitude (lon), latitude (lat),
+              and depth (depth) of the node in metres.
     """
 
     # Define location
@@ -597,8 +599,8 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
     :type model_path: string
 
     :returns: wind speed (wind), wind direction (direc), time (t),
-    pressure (pr), temperature (tem), solar radiation (sol),
-    thermal radiation (the),humidity (qr), precipitation (pre).
+              pressure (pr), temperature (tem), solar radiation (sol),
+              thermal radiation (the),humidity (qr), precipitation (pre).
     """
 
     # Weather file names
@@ -690,11 +692,11 @@ def plot_corrected_model(
     :type t_final: datetime object
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg MSL: Specifies if the plot should be centred about mean sea level.
-    1=centre about MSL, 0=centre about 0.
+              1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg msl: The mean sea level for centring the plot.
@@ -731,18 +733,18 @@ def plot_tides(ax, name, PST, MSL, color=predictions_c):
     :type name: string
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg MSL: Specifies if the plot should be centred about mean sea level.
-    1=centre about MSL, 0=centre about 0.
+              1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg color: The color for the tidal predictions plot.
     :type color: string
 
     :returns: DataFrame object (ttide) with tidal predictions and
-    columns time, pred_all, pred_8.
+              columns time, pred_all, pred_8.
     """
 
     ttide = get_tides(name)
@@ -761,7 +763,7 @@ def plot_PA_observations(ax, PST):
     :type ax: axis object
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
     """
 
@@ -774,7 +776,8 @@ def plot_PA_observations(ax, PST):
 
 def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
     """Determines category (green, yellow, red) in which the max sea surface
-    height at a station falls."""
+    height at a station falls.
+    """
     # load lats and longs of stations
     lats, lons = station_coords()  # these should probably be constants
 
@@ -823,7 +826,7 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     :type end: datetime object
 
     :returns: longitude (lon), latitude (lat), and depth (depth)
-    of the VENUS station.
+              of the VENUS station.
     """
 
     [data, lon, lat, depth] = load_VENUS(station)
@@ -859,7 +862,7 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
     :type model_path: string
 
     :arg inds: indices corresponding to the time range of desired wind plots.
-    If inds='all', the average will span the entire simulation.
+               If inds='all', the average will span the entire simulation.
     :type inds: numpy array, or string 'all'
 
     :arg scale: scale of arrows for plotting wind vector.
@@ -923,7 +926,7 @@ def isolate_wind_timing(
                   x hours before ssh or just a single time.
     :type average: Boolean
                    (True=average over times,
-                    False = only a single time_counter)
+                   False = only a single time_counter)
 
     :returns: inds, an array with the start and end index for plotting winds.
     """
@@ -1055,7 +1058,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     :type scale: float
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
@@ -1203,11 +1206,11 @@ def PA_tidal_predictions(grid_T, PST=1, MSL=0, figsize=(20, 5)):
     :type grid_T: :class:`netCDF4.Dataset`
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg MSL: Specifies if the plot should be centred about mean sea level.
-    1=centre about MSL, 0=centre about 0.
+              1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
@@ -1276,7 +1279,7 @@ def compare_water_levels(
     :type grid_B: :class:`netCDF4.Dataset`
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches.
@@ -1407,11 +1410,11 @@ def compare_tidalpredictions_maxSSH(
     :type model_path: string
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg MSL: Specifies if the plot should be centred about mean sea level.
-    1=centre about MSL, 0=centre about 0.
+              1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg name: Name of station.
@@ -1579,11 +1582,11 @@ def plot_thresholds_all(
     :type model_path: string
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg MSL: Specifies if the plot should be centred about mean sea level.
-    1=centre about MSL, 0=centre about 0.
+              1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches.
@@ -1715,7 +1718,7 @@ def Sandheads_winds(
     :type model_path: string
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg figsize:  Figure size (width, height) in inches.
@@ -2091,7 +2094,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     :type grid_B: :class:`netCDF4.Dataset`
 
     :arg limits: Figure limits [xmin,xmax,ymin,ymax]
-                           or 'default' for entire region.
+                 or 'default' for entire region.
     :type limits: 2-tuple
 
     :arg figsize: Figure size (width, height) in inches or 'default'.
@@ -2348,7 +2351,7 @@ def plot_threshold_website(
     :type scale: float
 
     :arg PST: Specifies if plot should be presented in PST.
-    1 = plot in PST, 0 = plot in UTC.
+              1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
 
     :arg figsize: Figure size (width, height) in inches.
