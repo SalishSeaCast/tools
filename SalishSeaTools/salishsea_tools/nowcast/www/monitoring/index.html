@@ -22,12 +22,58 @@
 </head>
 
 <body>
+<h1>Salish Sea NEMO Nowcast Monitoring Information</h1>
 <p>
-  This is a temporary, initial page that publishes information from the
-  <a href="http://salishsea.eos.ubc.ca/nemo.html">Salish Sea NEMO model</a> nowcast effort.
-</P>
+  This page presents monitoring information from the
+  <a href="http://salishsea.eos.ubc.ca/nemo/">Salish Sea NEMO model</a>
+  daily nowcast and forecast runs.
+  It is primarily intended for members of the Salish Sea NEMO modeling team.
+  Public results of the preceding 21 days runs are linked from
+  <a href="http://salishsea.eos.ubc.ca/nemo/results/">
+    http://salishsea.eos.ubc.ca/nemo/results/
+  </a>.
+</p>
+<p>
+  On this page are links to the preceding 7 days
+  <a href="#log-files">log files</a>
+  and images produced from the
+  <a href="#grib_to_netcdf-image">weather forcing dataset</a>
+  and the <a href="#get_NeahBay_ssh-image">sea surface height</a>
+  used to force the western boundary of the model at the mouth of the
+  Strait of Juan de Fuca.
+</p>
+<p>
+  Also here (for now) are links to
+  <a href="#archival-results-plots-pages">archival results plots pages</a>
+  for the period from 17-Nov-2014 until 18-Jan-2015.
+  Those pages (mostly iPython Notebooks) were created by team members
+  prior to the nowcast software automation being extended to production
+  and publication of results pages.
+</p>
+<p>
+  Team members can access the run results files at these locations on the
+  <code>ocean</code> filesystem:
+  <dl>
+    <dt>nowcast</dt>
+    <dd><code>/data/dlatorne/MEOPAR/SalishSea/nowcast/</code></dd>
+    <dt>forecast</dt>
+    <dd><code>/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/</code></dd>
+    <dt>forecast2</dt>
+    <dd><code>/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/</code></dd>
+  </dl>
+  Within those directories the results files are contained in directories
+  named for the run date; e.g. <code>09feb15/</code>.
+  Those directories contain the netCDF4 results files from the run,
+  other NEMO output files,
+  the configuration files used to produce the run,
+  and metadata files that identify the Mercurial revisions of the code
+  and forcing data repos used for the runs.
+  Each day's results directory also contains a <code>figures/</code>
+  subdirectory where SVG renderings of the day's results page(s) plots
+  can be found.
+</p>
 
-<h1>Log Files</h1>
+<h2 id="log-files">Log Files</h2>
   <p>
     The log files contain messages from the nowcast automation workers and manager processes.
     Each day's run is in a separate log file.
@@ -70,7 +116,9 @@
   </ul>
 
 
-<h1>Daily Analysis and Run Monitoring Figures</h1>
+<h2 id="archival-results-plots-pages">
+  Archival Daily Results Pages (Pre-Automation)
+</h2>
 
 <table>
   <tr>
@@ -376,10 +424,10 @@
 </table>
 
 
-  <h2>grib_to_netcdf Worker Monitoring Plots</h2>
-    <img src="wg.png" alt="grib_to_netcdf Worker Plots">
+<h2 id="grib_to_netcdf-image">grib_to_netcdf Worker Monitoring Plots</h2>
+  <img src="wg.png" alt="grib_to_netcdf Worker Plots">
 
-  <h2>get_NeahBay_ssh Worker Monitoring Plots</h2>
-    <img src="NBssh.png" alt="get_NeahBay_ssh Worker Plots">
+<h2 id="get_NeahBay_ssh-image">get_NeahBay_ssh Worker Monitoring Plots</h2>
+  <img src="NBssh.png" alt="get_NeahBay_ssh Worker Plots">
 </body>
 </html>
