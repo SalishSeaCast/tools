@@ -15,7 +15,8 @@
 
 
 """A collection of Python functions to produce model results visualization
-figures for analysis and model evaluation of daily nowcast/forecast runs."""
+figures for analysis and model evaluation of daily nowcast/forecast runs.
+"""
 from __future__ import division
 
 from cStringIO import StringIO
@@ -129,9 +130,10 @@ def axis_colors(ax, plot):
 
 
 def station_coords():
-    """Returns the longitudes and latitudes for  key stations. Stations are
-    Campbell River, Point Atkinson, Victoria, Cherry Point, Neah Bay, Friday
-    Harbor, and Sandheads.
+    """Returns the longitudes and latitudes for key stations.
+
+    Stations are Campbell River, Point Atkinson, Victoria, Cherry Point,
+    Neah Bay, Friday Harbor, and Sandheads.
 
     :returns: coordinates (lats, lons).
     """
@@ -657,7 +659,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
 
 
 def draw_coast(ax, PNW_coastline):
-    """Plots the coastline of the Pacific Northwest  .
+    """Plots the coastline of the Pacific Northwest.
 
     :arg ax: The axis where coastline is drawn.
     :type ax: axis object
@@ -976,8 +978,9 @@ def isolate_wind_timing(
 
 def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
     """Plots map of Salish Sea region, including the options to add a
-    coastline, land colour(fill), or domain colour(domain). Note that fill will
-    only be applicable if coastline is 'full'.
+    coastline, land colour(fill), or domain colour(domain).
+
+    Note that fill will only be applicable if coastline is 'full'.
 
     :arg ax: Axis for map.
     :type ax: axis object
@@ -2395,10 +2398,13 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
 def plot_threshold_website(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
                            PST=1, figsize=(18, 20)):
-    """Overview image for Salish Sea website. Plots a map of the Salish Sea
-    with markers indicating extreme water at Point Atkinson, Victoria nd
-    Campbell River. Also plots wind vectors averaged over 4 ours before the max
-    ssh at Point Atkinson. Includes text boxes with max water level and timing.
+    """Overview image for Salish Sea website.
+
+    Plots a map of the Salish Sea with markers indicating extreme water
+    at Point Atkinson, Victoria and Campbell River.
+    Also plots wind vectors averaged over 4 ours before the max ssh at
+    Point Atkinson.
+    Includes text boxes with max water level and timing.
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
