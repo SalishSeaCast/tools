@@ -26,7 +26,6 @@ import os
 
 import arrow
 from dateutil import tz
-import matplotlib
 from matplotlib.backends import backend_agg as backend
 import matplotlib.cm as cm
 import matplotlib.dates as mdates
