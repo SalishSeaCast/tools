@@ -73,46 +73,48 @@
   can be found.
 </p>
 
+
 <h2 id="log-files">Log Files</h2>
   <p>
     The log files contain messages from the nowcast automation workers and manager processes.
-    Each day's run is in a separate log file.
-    When the worker-automated part of the run is completed the log file is rolled over,
+    Each day's nowcast processing is in a separate log file.
+    When the day's processing is completed the log file is rolled over,
     as are the previous log files.
-    The log for the current day's run (nowcast.log) is rolled over to nowcast.log.1,
-    and the previous nowcast.log.1 is rolled over to nowcast.log.2,
+    The log for the current day's run (<code>nowcast.log</code>) is rolled over to <code>nowcast.log.1</code>,
+    and the previous <code>nowcast.log.1</code> is rolled over to <code>nowcast.log.2</code>,
     etc.
     A total of 7 day's log files are retained.
   </p>
   <p>
-    At present all of the pre-processing steps are included in the worker automation,
-    as are launching of the nowcast and forecast runs on west.cloud,
-    the run results downloading step,
-    and parts of the generation of the
-    <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> storm surge
-    <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">forecast page</a>.
-    The log file rollovers happen after the generation of the figure images for the forecast page.
+    The log file rollovers happen after the forecast run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
+    <a href="http://salishsea.eos.ubc.ca/nemo/results/">results page</a>
+    and as the storm surge
+    <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">
+    forecast page</a>.
   </p>
   <dl>
-    <dt><a href="nowcast.log">nowcast.log</a></dt>
+    <dt><a href="nowcast.log"><code>nowcast.log</code></a></dt>
     <dd>
       Current log file.
-      Nearly empty after generation of the figure images for the <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">forecast page</a> is completed and the current day's run log file is rolled over to <a href="nowcast.log.1">nowcast.log.1</a>.
+      Nearly empty after the forecast run results have been pushed to the
+      <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
+      and the current day's run log file is rolled over to
+      <a href="nowcast.log.1"><code>nowcast.log.1</code></a>.
       </dd>
-    <dt><a href="nowcast.log.1">nowcast.log.1</a></dt>
+    <dt><a href="nowcast.log.1"><code>nowcast.log.1</code></a></dt>
     <dd>
       Previous log file.
-      Rolls over to <a href="nowcast.log.2">nowcast.log.2</a> when nowcast.log rolls over to nowcast.log.1.
+      Rolls over to <a href="nowcast.log.2"><code>nowcast.log.2</code></a> when <code>nowcast.log</code> rolls over to <code>nowcast.log.1</code>.
     </dd>
   </dl>
   <p>Older log files:</p>
   <ul>
-    <li><a href="nowcast.log.2">nowcast.log.2</a></li>
-    <li><a href="nowcast.log.3">nowcast.log.3</a></li>
-    <li><a href="nowcast.log.4">nowcast.log.4</a></li>
-    <li><a href="nowcast.log.5">nowcast.log.5</a></li>
-    <li><a href="nowcast.log.6">nowcast.log.6</a></li>
-    <li><a href="nowcast.log.7">nowcast.log.7</a></li>
+    <li><a href="nowcast.log.2"><code>nowcast.log.2</code></a></li>
+    <li><a href="nowcast.log.3"><code>nowcast.log.3</code></a></li>
+    <li><a href="nowcast.log.4"><code>nowcast.log.4</code></a></li>
+    <li><a href="nowcast.log.5"><code>nowcast.log.5</code></a></li>
+    <li><a href="nowcast.log.6"><code>nowcast.log.6</code></a></li>
+    <li><a href="nowcast.log.7"><code>nowcast.log.7</code></a></li>
   </ul>
 
 
