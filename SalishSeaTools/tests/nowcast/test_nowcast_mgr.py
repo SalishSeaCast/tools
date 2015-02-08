@@ -341,6 +341,7 @@ class TestIsCloudReady(object):
     ('after_make_plots', 'failure forecast publish'),
     ('after_make_plots', 'failure forecast2 publish'),
     ('after_make_plots', 'crash'),
+    ('after_make_site_page', 'failure index'),
     ('after_make_site_page', 'failure publish'),
     ('after_make_site_page', 'failure research'),
     ('after_make_site_page', 'crash'),
@@ -805,6 +806,18 @@ def test_success_nowcast_research_next_steps(
 class TestAfterMakeSitePage(object):
     """Unit tests for after_make_site_page() function.
     """
+    def test_success_index_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = Mock(name='config')
+        next_steps = nowcast_mgr_module.after_make_site_page(
+            'make_site_page', 'success index', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['make_site_page', 'salishsea site pages', payload]),
+            (nowcast_mgr_module.launch_worker, ['push_to_web', config]),
+        ]
+        assert next_steps == expected
+
     def test_success_publish_next_steps(self, nowcast_mgr_module):
         payload = Mock(name='payload')
         config = Mock(name='config')
@@ -814,6 +827,19 @@ class TestAfterMakeSitePage(object):
             (nowcast_mgr_module.update_checklist,
              ['make_site_page', 'salishsea site pages', payload]),
             (nowcast_mgr_module.launch_worker, ['push_to_web', config]),
+        ]
+        assert next_steps == expected
+
+    def test_success_research_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = Mock(name='config')
+        next_steps = nowcast_mgr_module.after_make_site_page(
+            'make_site_page', 'success research', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['make_site_page', 'salishsea site pages', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['make_plots', config, ['nowcast', 'publish']]),
         ]
         assert next_steps == expected
 
