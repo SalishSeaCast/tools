@@ -490,8 +490,8 @@ def get_tides(name):
     path = (
         '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
         'tidal_predictions/')
-    filename = '_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'
-    tfile = os.path.join(path, name, filename)
+    filename = '{}_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
+    tfile = os.path.join(path, filename)
     ttide, msl = stormtools.load_tidal_predictions(tfile)
 
     return ttide
@@ -1011,7 +1011,8 @@ def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
                 patches.Polygon(
                     poly,
                     closed=True,
-                    facecolor='burlywood'))
+                    facecolor='burlywood',
+                    rasterized=True))
     elif fill == 0:
         pass
     else:
