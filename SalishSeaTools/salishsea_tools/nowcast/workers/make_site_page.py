@@ -343,7 +343,7 @@ def exclude_missing_dates(grid_dates, run_type, page_type, rst_path):
 def tmpl_to_rst(tmpl, rst_file, vars, config):
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
-    lib.fix_perms(rst_file, grp_name=config['file group'])
+#    lib.fix_perms(rst_file, grp_name=config['file group'])
 
 
 if __name__ == '__main__':
