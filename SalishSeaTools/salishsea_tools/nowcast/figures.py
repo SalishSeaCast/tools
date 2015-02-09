@@ -1314,7 +1314,7 @@ def compare_water_levels(
 
     # Map
     ax0 = fig.add_subplot(gs[:, 1])
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax0, grid_B, PNW_coastline, 'partial', 1, 0)
     ax0.set_xlim(-124.8, -122.2)
     ax0.set_ylim(48, 50)
     ax0.set_title('Station Locations', **title_font)
@@ -1604,7 +1604,7 @@ def plot_thresholds_all(
 
     # Map of region
     ax0 = fig.add_subplot(gs[:, 1])
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax0, grid_B, PNW_coastline, 'partial', 1, 0)
     ax0.set_xlim(-125.4, -122.2)
     ax0.set_ylim(48, 50.3)
     ax0.set_title('Degree of Flood Risk', **title_font)
@@ -1785,7 +1785,7 @@ def Sandheads_winds(
     fig.autofmt_xdate()
 
     # Map
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax0, grid_B, PNW_coastline, 'partial', 1, 0)
     ax0.set_xlim([-124.8, -122.2])
     ax0.set_ylim([48, 50])
     ax0.set_title('Station Locations', **title_font)
@@ -1847,7 +1847,7 @@ def average_winds_at_station(
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline, 'full', 0, 0)
 
     # Arrow scale
     scale = 0.1
@@ -1947,7 +1947,7 @@ def winds_at_max_ssh(
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline, 'full', 0, 0)
 
     # Arrow scale
     scale = 0.1
@@ -2392,7 +2392,7 @@ def plot_threshold_website(
     ax3 = fig.add_subplot(gs[1, 2])
 
     # Map
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline, 'full', 0, 0)
 
     for name in names:
         # Get sea surface height
