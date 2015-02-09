@@ -118,19 +118,19 @@ def configure_argparser(prog, description, parents):
     )
     parser.add_argument(
         '--run-date', type=lib.arrow_date,
-        default=arrow.now().date(),
+        default=arrow.now().floor('day'),
         help='''
         Date of the run to download results files from;
         use YYYY-MM-DD format.
-        Defaults to %(default)s.
-        ''',
+        Defaults to {}.
+        '''.format(arrow.now().floor('day').format('YYYY-MM-DD')),
     )
     return parser
 
 
 def make_site_page(run_type, page_type, run_date, config):
     if run_type == 'forecast2':
-        run_date = run_date + datetime.timedelta(days=-1)
+        run_date = run_date.replace(days=-1)
     svg_file_roots = {
         'publish': [
             'Threshold_website',
@@ -201,7 +201,8 @@ def render_nowcast_rst(
 ):
     rst_filename = (
         '{page_type}_{dmy}.rst'
-        .format(page_type=page_type, dmy=run_date.strftime('%d%b%y').lower()))
+        .format(page_type=page_type,
+                dmy=run_date.format('DDMMMYY').lower()))
     rst_file = os.path.join(rst_path, 'nowcast', rst_filename)
     vars = {
         'run_date': run_date,
@@ -221,11 +222,11 @@ def render_nowcast_rst(
 def render_forecast_rst(
     tmpl, page_type, run_date, svg_file_roots, rst_path, config,
 ):
-    results_date = run_date + datetime.timedelta(days=1)
+    results_date = run_date.replace(days=1)
     rst_filename = (
         '{page_type}_{dmy}.rst'
         .format(page_type=page_type,
-                dmy=results_date.strftime('%d%b%y').lower()))
+                dmy=results_date.format('DDMMMYY').lower()))
     rst_file = os.path.join(rst_path, 'forecast', rst_filename)
     vars = {
         'run_date': run_date,
@@ -248,11 +249,11 @@ def render_forecast_rst(
 def render_forecast2_rst(
     tmpl, page_type, run_date, svg_file_roots, rst_path, config,
 ):
-    results_date = run_date + datetime.timedelta(days=2)
+    results_date = run_date.replace(days=2)
     rst_filename = (
         '{page_type}_{dmy}.rst'
         .format(page_type=page_type,
-                dmy=results_date.strftime('%d%b%y').lower()))
+                dmy=results_date.format('DDMMMYY').lower()))
     rst_file = os.path.join(rst_path, 'forecast2', rst_filename)
     vars = {
         'run_date': run_date,
@@ -278,9 +279,8 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     # Calculate the date range to display in the grid and the number of
     # columns for the month headings of the grid
     fcst_date = (
-        arrow.Arrow.fromdate(run_date).replace(days=+1)
-        if run_type != 'forecast2'
-        else arrow.Arrow.fromdate(run_date).replace(days=+2))
+        run_date.replace(days=+1) if run_type != 'forecast2'
+        else run_date.replace(days=+2))
     dates = arrow.Arrow.range(
         'day', fcst_date.replace(days=-(INDEX_GRID_COLS - 1)), fcst_date)
     if dates[0].month != dates[-1].month:
@@ -344,7 +344,7 @@ def exclude_missing_dates(grid_dates, run_type, page_type, rst_path):
 def tmpl_to_rst(tmpl, rst_file, vars, config):
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
-    # lib.fix_perms(rst_file, grp_name=config['file group'])
+    lib.fix_perms(rst_file, grp_name=config['file group'])
 
 
 if __name__ == '__main__':
