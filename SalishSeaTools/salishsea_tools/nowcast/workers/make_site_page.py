@@ -18,7 +18,6 @@ site from page templates.
 """
 import argparse
 from copy import copy
-import datetime
 from glob import glob
 import logging
 import os
