@@ -327,11 +327,6 @@ class TestIsCloudReady(object):
     ('after_make_forcing_links', 'failure nowcast+'),
     ('after_make_forcing_links', 'failure forecast2'),
     ('after_make_forcing_links', 'crash'),
-    ('after_run_NEMO', 'failure'),
-    ('after_run_NEMO', 'crash'),
-    ('after_watch_NEMO', 'failure nowcast'),
-    ('after_watch_NEMO', 'failure forecast'),
-    ('after_watch_NEMO', 'crash'),
     ('after_download_results', 'failure nowcast'),
     ('after_download_results', 'failure forecast'),
     ('after_download_results', 'failure forecast2'),
@@ -696,46 +691,146 @@ class TestAfterMakeForcingLinks(object):
         assert next_steps == expected
 
 
-def test_run_NEMO_success_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = {'run': {'cloud host': 'west.cloud'}}
-    next_steps = nowcast_mgr_module.after_run_NEMO(
-        'run_NEMO', 'success', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['run_NEMO', 'NEMO run', payload]),
-    ]
-    assert next_steps == expected
+class TestAfterRunNEMO(object):
+    """Unit tests for after_run_NEMO() function.
+    """
+    def test_success_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            run_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_run_NEMO(
+                'run_NEMO', 'success', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['run_NEMO', 'NEMO run', payload]),
+        ]
+        assert next_steps == expected
+
+    def test_failure_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            run_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_run_NEMO(
+                'run_NEMO', 'failure', payload, config)
+        assert next_steps is None
+
+    def test_crash_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            run_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_run_NEMO(
+                'run_NEMO', 'crash', payload, config)
+        assert next_steps is None
 
 
-def test_after_watch_NEMO_success_nowcast_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = {'run': {'cloud host': 'west.cloud'}}
-    next_steps = nowcast_mgr_module.after_watch_NEMO(
-        'watch_NEMO', 'success nowcast', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['watch_NEMO', 'NEMO run', payload]),
-        (nowcast_mgr_module.launch_worker,
-         ['get_NeahBay_ssh', config, ['forecast']]),
-        (nowcast_mgr_module.launch_worker,
-         ['download_results', config, ['west.cloud', 'nowcast']]),
-    ]
-    assert next_steps == expected
+class TestAfterWatchNEMO(object):
+    """Unit tests for after_watch_NEMO() function.
+    """
+    def test_success_nowcast_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'success nowcast', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['watch_NEMO', 'NEMO run', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['get_NeahBay_ssh', config, ['forecast']]),
+            (nowcast_mgr_module.launch_worker,
+             ['download_results', config, ['west.cloud', 'nowcast']]),
+        ]
+        assert next_steps == expected
 
+    def test_failure_nowcast_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'failure nowcast', payload, config)
+        assert next_steps is None
 
-def test_after_watch_NEMO_success_forecast_next_steps(nowcast_mgr_module):
-    payload = Mock(name='payload')
-    config = {'run': {'cloud host': 'west.cloud'}}
-    next_steps = nowcast_mgr_module.after_watch_NEMO(
-        'watch_NEMO', 'success forecast', payload, config)
-    expected = [
-        (nowcast_mgr_module.update_checklist,
-         ['watch_NEMO', 'NEMO run', payload]),
-        (nowcast_mgr_module.launch_worker,
-         ['download_results', config, ['west.cloud', 'forecast']]),
-    ]
-    assert next_steps == expected
+    def test_success_forecast_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'success forecast', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['watch_NEMO', 'NEMO run', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['download_results', config, ['west.cloud', 'forecast']]),
+        ]
+        assert next_steps == expected
+
+    def test_failure_forecast_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'failure forecast', payload, config)
+        assert next_steps is None
+
+    def test_success_forecast2_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'success forecast2', payload, config)
+        expected = [
+            (nowcast_mgr_module.update_checklist,
+             ['watch_NEMO', 'NEMO run', payload]),
+            (nowcast_mgr_module.launch_worker,
+             ['download_results', config, ['west.cloud', 'forecast2']]),
+        ]
+        assert next_steps == expected
+
+    def test_failure_forecast2_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'failure forecast2', payload, config)
+        assert next_steps is None
+
+    def test_crash_next_steps(self, nowcast_mgr_module):
+        payload = Mock(name='payload')
+        config = {'run': {'cloud host': 'west.cloud'}}
+        p_worker_loggers = patch.dict(
+            'salishsea_tools.nowcast.nowcast_mgr.worker_loggers',
+            watch_NEMO=Mock(handlers=['handler']))
+        with p_worker_loggers:
+            next_steps = nowcast_mgr_module.after_watch_NEMO(
+                'watch_NEMO', 'crash', payload, config)
+        assert next_steps is None
 
 
 def test_download_results_success_nowcast_next_steps(nowcast_mgr_module):
