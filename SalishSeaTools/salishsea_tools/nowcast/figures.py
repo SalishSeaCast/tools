@@ -2488,7 +2488,14 @@ def plot_threshold_website(
             'Modelled winds are from the High Resolution Deterministic '
             'Prediction System\n'
             'of Environment Canada: '
-            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html.',
+            horizontalalignment='left',
+            verticalalignment='top',
+            transform=ax.transAxes, color='white', fontsize=14)
+    ax.text(0.4, -0.35,
+            'Pacific North-West coastline was created from '
+            'BC Freshwater Atlas Coastline\n and WA Marine Shorelines files '
+            'and compiled by Rich Pawlowicz.',
             horizontalalignment='left',
             verticalalignment='top',
             transform=ax.transAxes, color='white', fontsize=14)
