@@ -1660,9 +1660,13 @@ def plot_thresholds_all(
         fig.autofmt_xdate()
 
         # Map
-        bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
-        ax0.annotate(name, (lons[name] - 0.05, lats[name] - 0.18), fontsize=15,
-                     color='black', bbox=bbox_args)
+        bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.3)
+        ax0.annotate('Point Atkinson', (-123.1, 49.4),
+                     fontsize=15, color='black', bbox=bbox_args)
+        ax0.annotate('Campbell River', (-125.1, 50.1),
+                     fontsize=15, color='black', bbox=bbox_args)
+        ax0.annotate('Victoria', (-124, 48.43),
+                     fontsize=15, color='black', bbox=bbox_args)
 
         # Define thresholds in sea surface height plots
         [max_tides, mid_tides, extreme_ssh] = plot_threshold_map(
@@ -2455,9 +2459,9 @@ def plot_threshold_website(
     ax.text(-124.7, 48.47, 'Strait of Juan de Fuca', fontsize=13, rotation=-18)
     ax.text(-123.95, 49.28, 'Strait of \n Georgia', fontsize=13, rotation=-2)
 
-    ax.text(-123.1, 49.4, 'Point \n Atkinson', fontsize=20)
-    ax.text(-125.9, 50.05, 'Campbell \n River', fontsize=20)
-    ax.text(-123.5, 48.2, 'Victoria', fontsize=20)
+    ax.text(-123.21, 49.4, ' Point\nAtkinson', fontsize=20)
+    ax.text(-125.76, 50.05, 'Campbell\n River', fontsize=20)
+    ax.text(-123.8, 48.43, 'Victoria', fontsize=20)
 
     # Figure format
     time = (twind[0] + PST * time_shift).strftime('%A, %B %d, %Y')
