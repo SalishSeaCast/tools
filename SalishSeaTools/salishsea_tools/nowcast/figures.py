@@ -2398,6 +2398,29 @@ def plot_threshold_website(
     # Map
     plot_map(ax, grid_B, PNW_coastline, 'full', 0, 0)
 
+    # Legend
+    handles, labels = ax.get_legend_handles_labels()
+    display = (0, 1, 2)
+    green = plt.Line2D((0, 0), (0, 1),
+                       color='green', marker='o', linestyle='', markersize=25,
+                       alpha=0.5)
+    yellow = plt.Line2D((0, 0), (0, 1),
+                        color='Gold', marker='o', linestyle='', markersize=25,
+                        alpha=0.5)
+    red = plt.Line2D((0, 0), (0, 1),
+                     color='red', marker='o', linestyle='', markersize=25,
+                     alpha=0.5)
+    legend = ax.legend([handle for j, handle in enumerate(handles)
+                        if j in display] + [green, yellow, red],
+                       [label for j, label in enumerate(labels)
+                        if j in display] + ['No flooding\nrisk',
+                                            'Risk of\nhigh water',
+                                            'Extreme risk\nof flooding'],
+                       numpoints=1, prop={'size': 15},
+                       bbox_to_anchor=(0.9, 1.05), loc=2,
+                       title=' Possible\nWarnings')
+    legend.get_title().set_fontsize('20')
+
     for name in names:
         # Get sea surface height
         [j, i] = tidetools.find_closest_model_point(
@@ -2445,14 +2468,14 @@ def plot_threshold_website(
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
-    ax.arrow(-122.2, 50.65, 0. * scale, -5. * scale,
+    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.28, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
 
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
-    ax.text(-123.1, 50.3, 'British Columbia', fontsize=13)
+    ax.text(-123.3, 50.3, 'British Columbia', fontsize=13)
     ax.text(-123.8, 47.8, 'Washington \n State', fontsize=13)
 
     ax.text(-122.38, 47.68, 'Puget Sound', fontsize=13)
