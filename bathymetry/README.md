@@ -22,6 +22,16 @@ Descriptions below the links are from the first cell of the notebooks
     
     Smooth around the Thalweg  
 
+* ##[bathyImage.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathyImage.ipynb)  
+    
+    This notebook creates an image of the bathymetry and coastlines. Includes:  
+      
+    1. Bathymetry  
+    2. Location of Rivers  
+    3. Storm Surge points  
+      
+    Other important points?  
+
 * ##[More Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
     Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
