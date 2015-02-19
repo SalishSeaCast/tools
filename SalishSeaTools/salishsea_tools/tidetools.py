@@ -359,6 +359,47 @@ def get_subdomain_bathy_data():
     return bathy, X, Y
 
 
+def find_model_level(depth, model_depths, fractional=False):
+    """ Returns the index of the model level closest to a specified depth.
+    The model level can be fractional (ie between two grid points).
+    If depth is between 0 and first model level the result is negative.
+    If depth is greater than the max depth the lowest level is returned.
+    A python index is returned (count starting at 0). Add 1 for Fortran.
+
+    :arg depth: The specified depth
+    :type depth: float > 0
+
+    :arg model_depths: array of model depths
+    :type model_depths: numpy array (one dimensional)
+
+    :arg fractional: a flag that specifies if a fractional model level
+                     is desired
+    :type fractional: boolean
+
+    :returns: idx, the model level index
+    """
+
+    # index for closest value
+    idx = (np.abs(depth-model_depths)).argmin()
+
+    # If a fractional index is requried...
+    if fractional:
+        sign = np.sign(depth-model_depths[idx])
+        idxpm = idx + sign*1
+        # Check not to go out of bounds
+        if idxpm < model_depths.shape[0] and idxpm >= 0:
+            m = (idx-idxpm)/(model_depths[idx] -
+                             model_depths[idxpm])*(depth-model_depths[idx])
+            idx = m + idx
+        # If idxpm < 0 then we are between z=0 and depth of first gridcell
+        if idxpm < 0:
+            # assume z=0 correspons to idx = -model_depths[0]
+            idxpm = -model_depths[0]
+            m = (idx-idxpm)/(model_depths[idx]-0)*(depth-model_depths[idx])
+            idx = m+idx
+    return idx
+
+
 def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
                              lat_tol=0.00189, allow_land=False):
     """Returns the grid co-ordinates of the closest non-land model point
