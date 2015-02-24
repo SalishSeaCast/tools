@@ -57,7 +57,16 @@ MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
-def get_filenames(t_orig, t_final, period, grid, model_path):
+def all_paths():
+    """ Returns paths for nowcast, forecast, and forecast2.
+    """
+
+    paths = {'nowcast':'/data/dlatorne/MEOPAR/SalishSea/nowcast/',
+             'forecast':'/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/',
+             'forecast2':'/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/'}
+    return paths
+
+def get_filenames(t_orig, t_final, period, grid, mode):
   """Returns a list with the filenames for all files over the
   defined period of time and sorted in chronological order.
   
@@ -73,12 +82,15 @@ def get_filenames(t_orig, t_final, period, grid, model_path):
   :arg grid: Type of model results (eg. grid_T, grid_U, etc).
   :type grid: string
   
-  :arg model	_path: The directory where the model files are stored.
+  :arg mode: Defines the path used (eg. nowcast)
   :type model_path: string
   
   :returns: list of strings (files).
   """
   
+  paths = all_paths()
+  model_path = paths[mode]
+
   numdays=(t_final-t_orig).days
   dates = [ t_orig + datetime.timedelta(days=num) for num in range(0,numdays+1)]
   dates.sort();
@@ -168,7 +180,9 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
   
   :returns: matplotlib figure object instance (fig) and axis object (ax).
   """
-    
+
+  variables = {'sossheig':'Sea Surface Height', 'vosaline':'Salinity', 'votemper':'Temperature', 'vozocrtx':'Velocity U-component', 'vomecrty': 'Velocity V-component'}  
+  
   # Stations information
   [lats, lons] = figures.station_coords()
     
@@ -185,12 +199,13 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
   fig, ax=plt.subplots(1,1,figsize=figsize)
   
   #Plot
-  ax.plot(time,var_ary)
+  ax.plot(time,var_ary, label='Model')
   
+  # Figure format
   ax_start = t_orig
   ax_end = t_final + datetime.timedelta(days=1)
   ax.set_xlim(ax_start, ax_end)
- 
+  ax.set_title('Modelled {variable}: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(variable=variables[var], t_start=t_orig, t_end=t_final))
   hfmt = mdates.DateFormatter('%m/%d %H:%M')
   ax.xaxis.set_major_formatter(hfmt)
   fig.autofmt_xdate()
@@ -198,12 +213,18 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
   return fig, ax
   
 def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
-    
+
+  # Model    
   fig, ax = plot_files(grid_B, files, 'sossheig', 'None', t_orig, t_final, name)
-  
+  # Tides
   figures.plot_tides(ax, name, PST, MSL, color='green')
   
+  # Figure format
   ax_start = t_orig
   ax_end = t_final + datetime.timedelta(days=1)
   ax.set_xlim(ax_start, ax_end)
+  ax.set_title('Modelled Sea Surface Height versus Predicted Tides: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
+  ax.legend(loc=3, ncol=2)
+
+  return fig
   
