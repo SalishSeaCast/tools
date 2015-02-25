@@ -2431,9 +2431,7 @@ def plot_threshold_website(
 
         # Get tides and ssh
         ttide = get_tides(name)
-        sdt = t_orig.replace(minute=0)
-        edt = t_final + datetime.timedelta(minutes=30)
-        ssh_corr = stormtools.correct_model(ssh_loc, ttide, sdt, edt)
+        ssh_corr = correct_model_ssh(ssh_loc, t, ttide)
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 55, 0.3, name)
@@ -2550,3 +2548,70 @@ def plot_threshold_website(
             horizontalalignment='left', verticalalignment='top', color='w')
 
     return fig
+
+
+def interp_to_model_time(time_model, varp, tp):
+    """
+    Interpolates a variable to model ouput times.
+
+    :arg model_time: array of model ouput times as datetime objects
+    :type model_time: array with datetimes
+
+    :arg varp: array of variable to be interpolated
+    :type varp: array
+
+    :arg tp: array of times associated with variable
+    :type tp: array
+
+    :returns: varp_interp, the variable interpolated to model_times
+    """
+    # Strategy: convert times to seconds past a reference value.
+    # Use this as the independent variable in interpolation.
+    # Set epoc (reference) time.
+    epoc = time_model[0]
+
+    #  Determine tp times wrt epc
+    tp_wrt_epoc = []
+    for t in tp:
+        tp_wrt_epoc.append((t-epoc).total_seconds())
+
+    # Interpolate observations to model times
+    varp_interp = []
+    for t in time_model:
+        mod_wrt_epoc = (t-epoc).total_seconds()
+        varp_interp.append(np.interp(mod_wrt_epoc, tp_wrt_epoc, varp))
+
+    return varp_interp
+
+
+def correct_model_ssh(ssh_model, t_model, ttide):
+    """
+    Adjusts model output by correcting for error in using only 8 constituents.
+    Based on stormtools.correct_model()
+
+    :arg ssh_model: an array with model ssh data
+    :type ssh_model: array of numbers
+
+    :arg t_model: model output times as datetime objects
+    :type t_model: array of datetime objects
+
+    :arg ttide: struc with tidal predictions.
+    :type ttide: struc with dimension time, pred_all, pred_8
+
+    :arg sdt: datetime object representing start date of simulation
+    :type sdt: datetime object
+
+    :arg edt: datetime object representing end date of simulation
+    :type edt: datetime object
+
+    :returns: corr_model: the corrected model output
+    """
+    # difference in tidal predictions
+    difference = ttide.pred_all-ttide.pred_8
+    difference = np.array(difference)
+    # interpolate difference onto model times
+    corr = interp_to_model_time(t_model, difference, ttide.time)
+
+    corr_model = ssh_model + corr
+
+    return corr_model
