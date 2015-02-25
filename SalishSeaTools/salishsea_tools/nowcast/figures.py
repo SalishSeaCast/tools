@@ -434,7 +434,7 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     return max_ssh, index_ssh, tmax, max_res, max_wind, ind_w
 
 
-def compute_residual(ssh, ttide, t_orig, t_final):
+def compute_residual(ssh, t_model, ttide):
     """Compute the difference between modelled ssh and tidal predictions for a
     range of dates.
 
@@ -443,32 +443,19 @@ def compute_residual(ssh, ttide, t_orig, t_final):
     :arg ssh: The modelled ssh (without corrections).
     :type ssh: numpy array
 
+    :arg t_model: model output times
+    :type t_model: array of datetime objects
+
     :arg ttide: The tidal predictions.
     :type ttide: DateFrame object with columns time, pred_all and pred_8
-
-    :arg t_orig: The start of the date range.
-    :type t_orig: datetime object
-
-    :arg t_final: The end of the date range.
-    :type t_final: datetime object
 
     :returns: numpy array for residual (res).
     """
 
-    # Time range
-    sdt = t_orig.replace(minute=0)
-    edt = t_final + datetime.timedelta(minutes=30)
+    # interpolate tides to model time
+    tides_interp = interp_to_model_time(t_model, ttide.pred_8, ttide.time)
 
-    # Index of ttide.time at start and end
-    inds = ttide.time[ttide.time == sdt].index[0]
-    inde = ttide.time[ttide.time == edt].index[0]
-
-    tides = np.array(ttide.pred_8)
-
-    # Average tides over two times to shift to the model 1/2 outputs
-    shift = 0.5 * (tides[inds:inde] + tides[inds + 1:inde + 1])
-
-    res = ssh - shift
+    res = ssh - tides_interp
 
     return res
 
@@ -668,7 +655,7 @@ def draw_coast(ax, PNW_coastline):
 
 
 def plot_corrected_model(
-        ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, msl):
+        ax, t, ssh_loc, ttide, PST, MSL, msl):
     """Plots and returns corrected model.
 
     The model is corrected for the tidal constituents that are not included
@@ -685,12 +672,6 @@ def plot_corrected_model(
 
     :arg ttide: The tidal predictions with columns time, pred_all, pred_8.
     :type ttide: DataFrame object
-
-    :arg t_orig: The start time of the simulation.
-    :type t_orig: datetime object
-
-    :arg t_final: The end time of the simulation.
-    :type t_final: datetime object
 
     :arg PST: Specifies if plot should be presented in PST.
               1 = plot in PST, 0 = plot in UTC.
@@ -1123,7 +1104,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
             ax, name, t_orig, t_final, model_path, inds, scale)
 
         # Information
-        res = compute_residual(ssh_loc, ttide, t_orig, t_final)
+        res = compute_residual(ssh_loc, t, ttide)
         [max_ssh,
          index_ssh,
          tmax,
@@ -1459,13 +1440,13 @@ def compare_tidalpredictions_maxSSH(
     # Sea surface height plot
     ttide = plot_tides(ax1, name, PST, MSL)
     ssh_corr = plot_corrected_model(
-        ax1, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, MSL_DATUMS[name])
+        ax1, t, ssh_loc, ttide, PST, MSL, MSL_DATUMS[name])
     ax1.plot(
         t + PST * time_shift, ssh_loc,
         '--', c=model_c, linewidth=1, label='Model')
 
     # Compute residual
-    res = compute_residual(ssh_loc, ttide, t_orig, t_final)
+    res = compute_residual(ssh_loc, t, ttide)
 
     # Find maximim sea surface height and timing
     max_ssh, index, tmax, max_res, max_wind, ind_w = get_maxes(
@@ -1637,7 +1618,7 @@ def plot_thresholds_all(
             plot_PA_observations(ax, PST)
         ttide = plot_tides(ax, name, PST, MSL)
         ssh_corr = plot_corrected_model(
-            ax, t, ssh_loc, ttide, t_orig, t_final, PST, MSL, MSL_DATUMS[name])
+            ax, t, ssh_loc, ttide, PST, MSL, MSL_DATUMS[name])
         ax.plot(
             t + PST * time_shift, ssh_loc + MSL_DATUMS[name] * MSL,
             '--', c=model_c, linewidth=1, label='Model')
@@ -2442,7 +2423,7 @@ def plot_threshold_website(
             scale)
 
         # Information
-        res = compute_residual(ssh_loc, ttide, t_orig, t_final)
+        res = compute_residual(ssh_loc, t, ttide)
         [max_ssh,
          index_ssh,
          tmax,
