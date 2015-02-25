@@ -29,116 +29,142 @@ import pandas as pd
 from salishsea_tools import tidetools
 import csv
 
+
 def convert_date_seconds(times, start):
     """
     This function converts model output time in seconds to datetime objects.
     Note: Doug has a better version of this in nc_tools.timestamp
 
-    :arg times: array of seconds since the start date of a simulation. From time_counter in model output.
+    :arg times: array of seconds since the start date of a simulation.
+    From time_counter in model output.
     :type times: int
 
-    :arg start: string containing the start date of the simulation in format '01-Nov-2006'
+    :arg start: string containing the start date of the simulation in
+    format '01-Nov-2006'
     :type start: str
 
-    :arg diff: string indicating the time step in the times data E.g. months, seconds, days
+    :arg diff: string indicating the time step in the times data
+    E.g. months, seconds, days
     :type diff: str
 
     :returns: array of datetime objects representing the time of model outputs.
     """
-    arr_times=[]
-    for ii in range(0,len(times)):
-        arr_start =arrow.Arrow.strptime(start,'%d-%b-%Y')
-        arr_new=arr_start.replace(seconds=times[ii])
+    arr_times = []
+    for ii in range(0, len(times)):
+        arr_start = arrow.Arrow.strptime(start, '%d-%b-%Y')
+        arr_new = arr_start.replace(seconds=times[ii])
         arr_times.append(arr_new.datetime)
 
     return arr_times
+
 
 def convert_date_hours(times, start):
     """
     This function converts model output time in hours to datetime objects.
 
-    :arg times: array of hours since the start date of a simulation. From time_counter in model output.
+    :arg times: array of hours since the start date of a simulation.
+    From time_counter in model output.
     :type times: int
 
-    :arg start: string containing the start date of the simulation in format '01-Nov-2006'
+    :arg start: string containing the start date of the simulation in
+    format '01-Nov-2006'
     :type start: str
 
     :returns: array of datetime objects representing the time of model outputs.
     """
-    arr_times=[]
-    for ii in range(0,len(times)):
-        arr_start =arrow.Arrow.strptime(start,'%d-%b-%Y')
-        arr_new=arr_start.replace(hours=times[ii])
+
+    arr_times = []
+    for ii in range(0, len(times)):
+        arr_start = arrow.Arrow.strptime(start, '%d-%b-%Y')
+        arr_new = arr_start.replace(hours=times[ii])
         arr_times.append(arr_new.datetime)
 
     return arr_times
 
-def get_CGRF_weather(start,end,grid):
+
+def get_CGRF_weather(start, end, grid):
     """
-    Returns the CGRF weather between the dates start and end at the grid point defined in grid.
+    Returns the CGRF weather between the dates start and end at the
+    grid point defined in grid.
 
-    :arg start: string containing the start date of the CGRF collection in format '01-Nov-2006'
+    :arg start: string containing the start date of the CGRF collection in
+    format '01-Nov-2006'
     :type start: str
 
-    :arg start: string containing the end date of the CGRF collection in format '01-Nov-2006'
+    :arg start: string containing the end date of the CGRF collection in
+    format '01-Nov-2006'
     :type start: str
 
-    :arg grid: array of the CGRF grid coordinates for the point of interest eg. [244,245]
+    :arg grid: array of the CGRF grid coordinates for the point of interest
+    eg. [244,245]
     :arg type: arr of ints
 
-    :returns: windspeed, winddir pressure and time array from CGRF data for the times indicated
+    :returns: windspeed, winddir pressure and time array from CGRF data for
+    the times indicated
     """
-    u10=[]; v10=[]; pres=[]; time=[];
-    st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
-    end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
+    u10 = []
+    v10 = []
+    pres = []
+    time = []
+    st_ar = arrow.Arrow.strptime(start, '%d-%b-%Y')
+    end_ar = arrow.Arrow.strptime(end, '%d-%b-%Y')
 
     CGRF_path = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
 
     for r in arrow.Arrow.range('day', st_ar, end_ar):
-        #u
-	m=r.month;
-	if m<10:
-	  mstr='0' + str(m)
-	else:
-	  mstr=str(m)
-	d=r.day;
-	if d<10:
-	  dstr='0' + str(d)
-	else:
-	  dstr=str(d)
-        strU='u10_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
-        fU=NC.Dataset(CGRF_path+strU)
-        var=fU.variables['u_wind'][:,grid[0],grid[1]]; u10.extend(var[:])
+        mstr = "{0:02d}".format(r.month)
+        dstr = "{0:02d}".format(r.day)
 
-        #time
-        tim=fU.variables['time_counter']; time.extend(tim[:] + (r.day-st_ar.day)*24)
-        times =convert_date_hours(time,start)
+        # u
+        strU = 'u10_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
+        fU = NC.Dataset(CGRF_path+strU)
+        var = fU.variables['u_wind'][:, grid[0], grid[1]]
+        u10.extend(var[:])
 
-        #v
-        strV='v10_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
-        fV=NC.Dataset(CGRF_path+strV)
-        var=fV.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])
+        # time
+        tim = fU.variables['time_counter']
+        time.extend(tim[:] + (r.day-st_ar.day)*24)
+        times = convert_date_hours(time, start)
 
-        #pressure
-        strP='slp_corr_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
-        fP=NC.Dataset(CGRF_path+strP)
-        var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
+        # v
+        strV = 'v10_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
+        fV = NC.Dataset(CGRF_path+strV)
+        var = fV.variables['v_wind'][:, grid[0], grid[1]]
+        v10.extend(var[:])
 
-        u10s=np.array(u10); v10s=np.array(v10); press=np.array(pres)
-        windspeed=np.sqrt(u10s**2+v10s**2)
-	winddir=np.arctan2(v10,u10) * 180 / np.pi
-	winddir=winddir + 360 * (winddir<0)
+        # pressure
+        strP = 'slp_corr_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
+        fP = NC.Dataset(CGRF_path+strP)
+        var = fP.variables['atmpres'][:, grid[0], grid[1]]
+        pres.extend(var[:])
+
+        u10s = np.array(u10)
+        v10s = np.array(v10)
+        press = np.array(pres)
+        windspeed = np.sqrt(u10s**2+v10s**2)
+
+    winddir = np.arctan2(v10, u10) * 180 / np.pi
+    winddir = winddir + 360 * (winddir < 0)
+
     return windspeed, winddir, press, times
+
 
 def combine_data(data_list):
     """
-    This function combines output from a list of netcdf files into a dict objects of model fields.
+    This function combines output from a list of netcdf files into a
+    dict objects of model fields.
     It is used for easy handling of output from thalweg and surge stations.
 
-    :arg data_list: dict object that contains the netcdf handles for the files to be combined. e.g {'Thelweg1': f1, 'Thalweg2': f2,...} where f1 = NC.Dataset('1h_Thalweg1.nc','r')
+    :arg data_list: dict object that contains the netcdf handles for the files
+    to be combined.e.g {'Thalweg1': f1, 'Thalweg2': f2,...} where
+    f1 = NC.Dataset('1h_Thalweg1.nc','r')
     :type data_list: dict object
 
-    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs with the zonal velocity, meridional velocity, latitude, longitude, salinity, temperature, and sea surface height for each station. The keys are the same as those in data_list. For example, us['Thalweg1'] contains the zonal velocity from the Thalweg 1 station.
+    :returns: dict objects us, vs, lats, lons, sals, tmps, sshs
+    with the zonal velocity, meridional velocity, latitude, longitude,
+    salinity, temperature, and sea surface height for each station.
+    The keys are the same as those in data_list. For example, us['Thalweg1']
+    contains the zonal velocity from the Thalweg 1 station.
 
     """
 
@@ -446,7 +472,8 @@ def correct_model(ssh,ttide,sdt,edt):
     :arg ssh: an array with model ssh data
     :type ssh: array of numbers
 
-    :arg ttide: struc with tidal predictions
+    :arg ttide: struc with tidal predictions. Assumes tidal predictions
+    are on the the hour can model output is on the 1/2 hour.
     :type ttide: struc with dimension time, pred_all, pred_8
 
     :arg sdt: datetime object representing start date of simulation
@@ -464,6 +491,7 @@ def correct_model(ssh,ttide,sdt,edt):
     difference = ttide.pred_all-ttide.pred_8
     difference = np.array(difference)
     #average correction over two times to shift to the model 1/2 outputs
+    #question: should I reconsider this caclulation by interpolating?
     corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
 
     corr_model = ssh+corr
@@ -471,7 +499,7 @@ def correct_model(ssh,ttide,sdt,edt):
 
 def surge_tide(ssh,ttide,sdt,edt):
     """
-    Calculates the sea surface height from the model run with surge only. That is, addes tidal prediction to modelled surge.
+    Calculates the sea surface height from the model run with surge only. That is, adds tidal prediction to modelled surge.
     :arg ssh: shh from surge only model run
     :type ssh: array of numbers
 
@@ -531,25 +559,25 @@ def get_statistics(obs, model, t_obs, t_model, sdt, edt):
         model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
     trun_model = trun_model[:-1]
     trun_tm = trun_tm[:-1]
-    # truncate observations
-    trun_obs, trun_to = truncate(obs, t_obs, sdt, edt)
+    #  truncate and interpolate observations
+    obs_interp = interp_to_model_time(trun_tm, obs, t_obs)
     # rebase observations
-    rbase_obs, rbase_to = rebase_obs(trun_obs, trun_to)
-    error = trun_model-rbase_obs
+    # rbase_obs, rbase_to = rebase_obs(trun_obs, trun_to)
+    error = trun_model-obs_interp
     # calculate statisitcs
-    gamma2 = np.var(error)/np.var(rbase_obs)
+    gamma2 = np.var(error)/np.var(obs_interp)
     mean_error = np.mean(error)
     mean_abs_error = np.mean(np.abs(error))
     rms_error = _rmse(error)
-    corr = np.corrcoef(rbase_obs, trun_model)
-    max_obs, tmax_obs = _find_max(rbase_obs, rbase_to)
+    corr = np.corrcoef(obs_interp, trun_model)
+    max_obs, tmax_obs = _find_max(obs_interp, trun_tm)
     max_model, tmax_model = _find_max(trun_model, trun_tm)
-    mean_obs = np.mean(rbase_obs)
+    mean_obs = np.mean(obs_interp)
     mean_model = np.mean(trun_model)
-    std_obs = np.std(rbase_obs)
+    std_obs = np.std(obs_interp)
     std_model = np.std(trun_model)
 
-    ws = willmott_skill(rbase_obs, trun_model)
+    ws = willmott_skill(obs_interp, trun_model)
 
     return (
         max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error,
@@ -709,56 +737,97 @@ def get_NOAA_predictions(station_no, start_date, end_date):
     with open(outfile, 'w') as f:
         f.write(r.text)
 
-def get_operational_weather(start,end,grid):
+
+def get_operational_weather(start, end, grid):
     """
-    Returns the CGRF weather between the dates start and end at the grid point defined in grid.
+    Returns the operational weather between the dates start and end at
+    the grid point defined in grid.
 
-    :arg start: string containing the start date of the CGRF collection in format '01-Nov-2006'
+    :arg start: string containing the start date of the weather collection
+    in format '01-Nov-2006'
     :type start: str
 
-    :arg start: string containing the end date of the CGRF collection in format '01-Nov-2006'
+    :arg start: string containing the end date of the weather collection in
+    format '01-Nov-2006'
     :type start: str
 
-    :arg grid: array of the CGRF grid coordinates for the point of interest eg. [244,245]
+    :arg grid: array of the operationa grid coordinates for the point of
+    interest eg. [244,245]
     :arg type: arr of ints
 
-    :returns: windspeed, winddir pressure and time array from CGRF data for the times indicated
+    :returns: windspeed, winddir pressure and time array from weather data
+    for the times indicated
     """
-    u10=[]; v10=[]; pres=[]; time=[];
-    st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
-    end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
+    u10 = []
+    v10 = []
+    pres = []
+    time = []
+    st_ar = arrow.Arrow.strptime(start, '%d-%b-%Y')
+    end_ar = arrow.Arrow.strptime(end, '%d-%b-%Y')
 
     ops_path = '/ocean/sallen/allen/research/Meopar/Operational/'
     opsp_path = '/ocean/nsoontie/MEOPAR/GEM2.5/ops/'
 
     for r in arrow.Arrow.range('day', st_ar, end_ar):
-        #u
-	m=r.month;
-	if m<10:
-	  mstr='0' + str(m)
-	else:
-	  mstr=str(m)
-	d=r.day;
-	if d<10:
-	  dstr='0' + str(d)
-	else:
-	  dstr=str(d)
-        fstr='ops_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
-        f=NC.Dataset(ops_path+fstr)
-	#u        
-	var=f.variables['u_wind'][:,grid[0],grid[1]]; u10.extend(var[:])
-	#v
-	var=f.variables['v_wind'][:,grid[0],grid[1]]; v10.extend(var[:])    
-	#pressure    
-	fpstr = 'slp_corr_ops_y' + str(r.year) +'m' +mstr + 'd'+ dstr +'.nc'
-        fP=NC.Dataset(opsp_path+fpstr)
-        var=fP.variables['atmpres'][:,grid[0],grid[1]]; pres.extend(var[:])
-        #time
-        tim=f.variables['time_counter']; time.extend(tim[:])
-        times =convert_date_seconds(time,'01-Jan-1970')
+        mstr = "{0:02d}".format(r.month)
+        dstr = "{0:02d}".format(r.day)
+        fstr = 'ops_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
+        f = NC.Dataset(ops_path+fstr)
+        # u
+        var = f.variables['u_wind'][:, grid[0], grid[1]]
+        u10.extend(var[:])
+        # v
+        var = f.variables['v_wind'][:, grid[0], grid[1]]
+        v10.extend(var[:])
+        # pressure
+        fpstr = 'slp_corr_ops_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
+        fP = NC.Dataset(opsp_path+fpstr)
+        var = fP.variables['atmpres'][:, grid[0], grid[1]]
+        pres.extend(var[:])
+        # time
+        tim = f.variables['time_counter']
+        time.extend(tim[:])
+        times = convert_date_seconds(time, '01-Jan-1970')
 
-        u10s=np.array(u10); v10s=np.array(v10); press=np.array(pres)
-        windspeed=np.sqrt(u10s**2+v10s**2)
-	winddir=np.arctan2(v10,u10) * 180 / np.pi
-	winddir=winddir + 360 * (winddir<0)
+        u10s = np.array(u10)
+        v10s = np.array(v10)
+        press = np.array(pres)
+
+    windspeed = np.sqrt(u10s**2+v10s**2)
+    winddir = np.arctan2(v10, u10) * 180 / np.pi
+    winddir = winddir + 360 * (winddir < 0)
     return windspeed, winddir, press, times
+
+
+def interp_to_model_time(time_model, varp, tp):
+    """
+    Interpolates a variable to model ouput times.
+
+    :arg model_time: array of model ouput times as datetime objects
+    :type model_time: array with datetimes
+
+    :arg varp: array of variable to be interpolated
+    :type varp: array
+
+    :arg tp: array of times associated with variable
+    :type tp: array
+
+    :returns: varp_interp, the variable interpolated to model_times
+    """
+    # Strategy: convert times to seconds past a reference value.
+    # Use this as the independent variable in interpolation.
+    # Set epoc (reference) time.
+    epoc=time_model[0];
+
+    #  Determine tp times wrt epc
+    tp_wrt_epoc=[]
+    for t in tp:
+        tp_wrt_epoc.append((t-epoc).total_seconds())
+
+    # Interpolate observations to model times
+    varp_interp=[]
+    for  t in time_model:
+        mod_wrt_epoc=(t-epoc).total_seconds();
+        varp_interp.append(np.interp(mod_wrt_epoc,tp_wrt_epoc,varp))
+
+    return varp_interp
