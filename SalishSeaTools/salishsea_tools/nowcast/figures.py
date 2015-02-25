@@ -151,6 +151,7 @@ def station_coords():
 
 def find_model_point(lon, lat, X, Y):
     """Finds a model grid point close to a specified latitude and longitude.
+    Should be used for non-NEMO grids like the atmospheric forcing grid.
 
     :arg lon: The longitude we are trying to match.
     :type lon: float
