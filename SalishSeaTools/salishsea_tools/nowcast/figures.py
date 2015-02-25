@@ -706,10 +706,8 @@ def plot_corrected_model(
     :returns: corrected model output (ssh_corr).
     """
 
-    # Adjust dates for matching with tides dates.
-    sdt = t_orig.replace(minute=0)
-    edt = t_final + datetime.timedelta(minutes=30)
-    ssh_corr = stormtools.correct_model(ssh_loc, ttide, sdt, edt)
+    # Correct the ssh
+    ssh_corr = correct_model_ssh(ssh_loc, t, ttide)
 
     ax.plot(
         t + PST * time_shift,
@@ -1116,9 +1114,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
 
         # Get tides and ssh
         ttide = get_tides(name)
-        sdt = t_orig.replace(minute=0)
-        edt = t_final + datetime.timedelta(minutes=30)
-        ssh_corr = stormtools.correct_model(ssh_loc, ttide, sdt, edt)
+        ssh_corr = correct_model_ssh(ssh_loc, t, ttide)
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 70, 0.3, name)
