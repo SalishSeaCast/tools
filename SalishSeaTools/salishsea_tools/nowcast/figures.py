@@ -165,7 +165,7 @@ def find_model_point(lon, lat, X, Y):
     :arg Y: The model latitude grid.
     :type Y: numpy array
 
-    :returns: x-index (x1) and y-index (y1) of the closest model grid point.
+    :returns: j-index and i-index of the closest model grid point.
     """
 
     # Tolerance for searching for grid points
@@ -175,12 +175,12 @@ def find_model_point(lon, lat, X, Y):
 
     # Search for a grid point with longitude or latitude within
     # tolerance of measured location
-    x1, y1 = np.where(
+    j, i = np.where(
         np.logical_and(
             (np.logical_and(X > lon - tol1, X < lon + tol1)),
             (np.logical_and(Y > lat - tol2, Y < lat + tol2))))
 
-    return x1[0], y1[0]
+    return j, i
 
 
 def interpolate_depth(data, depth_array, depth_new):
