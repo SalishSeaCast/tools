@@ -70,7 +70,7 @@ def all_paths():
     return paths
 
 
-def get_filenames(t_orig, t_final, period, grid, mode):
+def get_filenames(t_orig, t_final, period, grid, model_path):
     """Returns a list with the filenames for all files over the
     defined period of time and sorted in chronological order.
 
@@ -86,14 +86,11 @@ def get_filenames(t_orig, t_final, period, grid, mode):
     :arg grid: Type of model results (eg. grid_T, grid_U, etc).
     :type grid: string
 
-    :arg mode: Defines the path used (eg. nowcast)
+    :arg model_path: Defines the path used (eg. nowcast)
     :type model_path: string
 
     :returns: files, a list of filenames
     """
-
-    paths = all_paths()
-    model_path = paths[mode]
 
     numdays = (t_final-t_orig).days
     dates = [t_orig + datetime.timedelta(days=num)
@@ -151,13 +148,12 @@ def combine_files(files, var, depth, j, i):
             var_tmp = G.variables[var][:, j, i]
         else:
             var_tmp = G.variables[var][:, depth, j, i]
-
-    var_ary = np.append(var_ary, var_tmp, axis=0)
-    t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
-    for ind in range(len(t)):
-        t[ind] = t[ind].datetime
-
-    time = np.append(time, t)
+    
+    	var_ary = np.append(var_ary, var_tmp, axis=0)
+    	t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
+        for ind in range(len(t)):
+            t[ind] = t[ind].datetime
+        time = np.append(time, t)
 
     return var_ary, time
 
