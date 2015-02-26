@@ -57,104 +57,113 @@ MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+
 def all_paths():
     """ Returns paths for nowcast, forecast, and forecast2.
     """
 
-    paths = {'nowcast':'/data/dlatorne/MEOPAR/SalishSea/nowcast/',
-             'forecast':'/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/',
-             'forecast2':'/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/'}
+    paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
+             'forecast': '/ocean/sallen/allen/research/MEOPAR'
+                         '/SalishSea/forecast/',
+             'forecast2': '/ocean/sallen/allen/research/MEOPAR'
+                          '/SalishSea/forecast2/'}
     return paths
 
-def get_filenames(t_orig, t_final, period, grid, mode):
-  """Returns a list with the filenames for all files over the
-  defined period of time and sorted in chronological order.
-  
-  :arg t_orig: The beginning of the date range of interest.
-  :type t_orig: datetime object
-  
-  :arg t_final: The end of the date range of interest.
-  :type t_final: datetime object
-  
-  :arg period: Time interval of model results (eg. 1h or 1d).
-  :type period: string
-  
-  :arg grid: Type of model results (eg. grid_T, grid_U, etc).
-  :type grid: string
-  
-  :arg mode: Defines the path used (eg. nowcast)
-  :type model_path: string
-  
-  :returns: list of strings (files).
-  """
-  
-  paths = all_paths()
-  model_path = paths[mode]
 
-  numdays=(t_final-t_orig).days
-  dates = [ t_orig + datetime.timedelta(days=num) for num in range(0,numdays+1)]
-  dates.sort();
-  
-  allfiles=glob.glob(model_path+'*/SalishSea_'+period+'*_'+grid+'.nc')
-  sstr ='SalishSea_'+period+ '_'+dates[0].strftime('%Y%m%d') +'_'+dates[0].strftime('%Y%m%d') +'_'+grid+'.nc'
-  estr ='SalishSea_'+period+ '_'+dates[-1].strftime('%Y%m%d') +'_'+dates[-1].strftime('%Y%m%d') +'_'+grid+'.nc'
-  
-  files=[]
-  for filename in allfiles:
-    if os.path.basename(filename) >= sstr:
-      if os.path.basename(filename) <= estr:
-	files.append(filename)
-	
-  files.sort(key=os.path.basename)
-  
-  return files
-  
+def get_filenames(t_orig, t_final, period, grid, mode):
+    """Returns a list with the filenames for all files over the
+    defined period of time and sorted in chronological order.
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg t_final: The end of the date range of interest.
+    :type t_final: datetime object
+
+    :arg period: Time interval of model results (eg. 1h or 1d).
+    :type period: string
+
+    :arg grid: Type of model results (eg. grid_T, grid_U, etc).
+    :type grid: string
+
+    :arg mode: Defines the path used (eg. nowcast)
+    :type model_path: string
+
+    :returns: files, a list of filenames
+    """
+
+    paths = all_paths()
+    model_path = paths[mode]
+
+    numdays = (t_final-t_orig).days
+    dates = [t_orig + datetime.timedelta(days=num)
+             for num in range(0, numdays+1)]
+    dates.sort()
+
+    allfiles = glob.glob(model_path+'*/SalishSea_'+period+'*_'+grid+'.nc')
+    sdt = dates[0].strftime('%Y%m%d')
+    edt = dates[-1].strftime('%Y%m%d')
+    sstr = 'SalishSea_{}_{}_{}_{}.nc'.format(period, sdt, sdt, grid)
+    estr = 'SalishSea_{}_{}_{}_{}.nc'.format(period, edt, edt, grid)
+
+    files = []
+    for filename in allfiles:
+        if os.path.basename(filename) >= sstr:
+            if os.path.basename(filename) <= estr:
+                files.append(filename)
+
+    files.sort(key=os.path.basename)
+
+    return files
+
+
 def combine_files(files, var, depth, j, i):
-  """Returns the value of the variable entered over 
-  multiple files covering a certain period of time.
-  
-  :arg files: Multiple result files in chronological order.
-  :type files: list
-  
-  :arg var: Name of variable (sossheig = sea surface height,
+    """Returns the value of the variable entered over
+    multiple files covering a certain period of time.
+
+    :arg files: Multiple result files in chronological order.
+    :type files: list
+
+    :arg var: Name of variable (sossheig = sea surface height,
                       vosaline = salinity, votemper = temperature,
                       vozocrtx = Velocity U-component,
                       vomecrty = Velocity V-component).
-  :type var: string
-  
-  :arg depth: Depth of model results ('None' if var=sossheig).
-  :type depth: integer or string
-  
-  :arg j: Longitude index of location.
-  :type j: integer
-  
-  :arg i: Latitude index of location.
-  :type i: integer
-  
-  :returns: array of model results (var_ary and time).
-  """
-  
-  time=np.array([]); 
-  var_ary=np.array([]);
-  
-  for f in files:
-    G=nc.Dataset(f)
-    if depth=='None':
-      var_tmp=G.variables[var][:,j,i]
-    else:
-      var_tmp=G.variables[var][:,depth,j,i]
-    
-    var_ary=np.append(var_ary,var_tmp,axis=0)
-    t=nc_tools.timestamp(G,np.arange(var_tmp.shape[0]))
+    :type var: string
+
+    :arg depth: Depth of model results ('None' if var=sossheig).
+    :type depth: integer or string
+
+    :arg j: Longitude index of location.
+    :type j: integer
+
+    :arg i: Latitude index of location.
+    :type i: integer
+
+    :returns: var_ary, time - array of model results and time.
+    """
+
+    time = np.array([])
+    var_ary = np.array([])
+
+    for f in files:
+        G = nc.Dataset(f)
+        if depth == 'None':
+            var_tmp = G.variables[var][:, j, i]
+        else:
+            var_tmp = G.variables[var][:, depth, j, i]
+
+    var_ary = np.append(var_ary, var_tmp, axis=0)
+    t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
     for ind in range(len(t)):
-      t[ind]=t[ind].datetime
-    
-    time=np.append(time,t)
-	
-  return var_ary,time
+        t[ind] = t[ind].datetime
+
+    time = np.append(time, t)
+
+    return var_ary, time
+
 
 def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5)):
-  """Plots values of  variable over multiple files covering 
+  """Plots values of  variable over multiple files covering
   a certain period of time.
   
   :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
@@ -212,6 +221,7 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
     
   return fig, ax
   
+
 def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
 
   # Model    
@@ -228,3 +238,4 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
 
   return fig
   
+
