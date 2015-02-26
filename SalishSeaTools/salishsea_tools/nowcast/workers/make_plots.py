@@ -208,7 +208,7 @@ def make_publish_plots(
     fig = figures.plot_threshold_website(bathy, grid_T_hr, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
     fig = figures.PA_tidal_predictions(grid_T_hr)
     filename = os.path.join(
@@ -236,28 +236,28 @@ def make_publish_plots(
     fig = figures.compare_water_levels(grid_T_hr, bathy, coastline)
     filename = os.path.join(
         plots_dir, 'NOAA_ssh_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
     fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
     fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'SH_wind_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
     fig = figures.average_winds_at_station(
         grid_T_hr, bathy, model_path, coastline, station='all')
     filename = os.path.join(
         plots_dir, 'Avg_wind_vectors_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
     fig = figures.winds_at_max_ssh(grid_T_hr, bathy, model_path, coastline, station='all')
     filename = os.path.join(
         plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
-    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    fig.savefig(filename, facecolor=fig.get_facecolor())
 
 
 def make_research_plots(
