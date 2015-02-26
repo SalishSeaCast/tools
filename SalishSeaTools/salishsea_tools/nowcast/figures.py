@@ -478,8 +478,12 @@ def get_tides(name):
     path = (
         '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
         'tidal_predictions/')
-    filename = '{}_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
-    tfile = os.path.join(path, filename)
+    if name == 'Point Atkinson':
+        # Point Atkinson tides calculated with constituents by CHS
+        fname = '{}_atide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
+    else:
+        fname = '{}_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
+    tfile = os.path.join(path, fname)
     ttide, msl = stormtools.load_tidal_predictions(tfile)
 
     return ttide
