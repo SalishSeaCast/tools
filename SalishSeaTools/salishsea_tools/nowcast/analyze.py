@@ -15,7 +15,8 @@
 
 
 """A collection of Python functions to produce model results visualization
-figures for analysis and model evaluation of daily nowcast runs.
+figures for analysis and model evaluation of nowcast, forecast, and
+forecast2 runs.
 """
 
 from __future__ import division
@@ -26,6 +27,7 @@ import glob
 import os
 
 import arrow
+import pytz
 from dateutil import tz
 import matplotlib
 from matplotlib.backends import backend_agg as backend
@@ -48,26 +50,12 @@ from salishsea_tools import (
 
 from salishsea_tools.nowcast import figures
 
-# Time shift for plotting in PST
-time_shift = datetime.timedelta(hours=-8)
 
 # Average mean sea level calculated over 1983-2001
 # (To be used to centre model output about mean sea level)
 MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
-
-
-def all_paths():
-    """ Returns paths for nowcast, forecast, and forecast2.
-    """
-
-    paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
-             'forecast': '/ocean/sallen/allen/research/MEOPAR'
-                         '/SalishSea/forecast/',
-             'forecast2': '/ocean/sallen/allen/research/MEOPAR'
-                          '/SalishSea/forecast2/'}
-    return paths
 
 
 def get_filenames(t_orig, t_final, period, grid, model_path):
@@ -148,9 +136,9 @@ def combine_files(files, var, depth, j, i):
             var_tmp = G.variables[var][:, j, i]
         else:
             var_tmp = G.variables[var][:, depth, j, i]
-    
-    	var_ary = np.append(var_ary, var_tmp, axis=0)
-    	t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
+
+        var_ary = np.append(var_ary, var_tmp, axis=0)
+        t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
         for ind in range(len(t)):
             t[ind] = t[ind].datetime
         time = np.append(time, t)
@@ -159,79 +147,81 @@ def combine_files(files, var, depth, j, i):
 
 
 def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5)):
-  """Plots values of  variable over multiple files covering
-  a certain period of time.
-  
-  :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-  :type grid_B: :class:`netCDF4.Dataset`
-    
-  :arg files: Multiple result files in chronological order.
-  :type files: list
-    
-  :arg var: Name of variable (sossheig = sea surface height,
+    """Plots values of  variable over multiple files covering
+    a certain period of time.
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg files: Multiple result files in chronological order.
+    :type files: list
+
+    :arg var: Name of variable (sossheig = sea surface height,
                       vosaline = salinity, votemper = temperature,
                       vozocrtx = Velocity U-component,
                       vomecrty = Velocity V-component).
-  :type var: string
-    
-  :arg depth: Depth of model results ('None' if var=sossheig).
-  :type depth: integer or string
-    
-  :arg name: The name of the station.
-  :type name: string
-    
-  :arg figsize: Figure size (width, height) in inches.
-  :type figsize: 2-tuple
-  
-  :returns: matplotlib figure object instance (fig) and axis object (ax).
-  """
+    :type var: string
 
-  variables = {'sossheig':'Sea Surface Height', 'vosaline':'Salinity', 'votemper':'Temperature', 'vozocrtx':'Velocity U-component', 'vomecrty': 'Velocity V-component'}  
-  
-  # Stations information
-  [lats, lons] = figures.station_coords()
-    
-  # Bathymetry
-  bathy, X, Y = tidetools.get_bathy_data(grid_B)
-    
-  # Get index
-  [j,i]=tidetools.find_closest_model_point(lons[name],lats[name],X,Y,bathy,allow_land=False)
-    
-  # Call function
-  var_ary, time= combine_files(files, var, depth, j, i)
-    
-  #Figure
-  fig, ax=plt.subplots(1,1,figsize=figsize)
-  
-  #Plot
-  ax.plot(time,var_ary, label='Model')
-  
-  # Figure format
-  ax_start = t_orig
-  ax_end = t_final + datetime.timedelta(days=1)
-  ax.set_xlim(ax_start, ax_end)
-  ax.set_title('Modelled {variable}: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(variable=variables[var], t_start=t_orig, t_end=t_final))
-  hfmt = mdates.DateFormatter('%m/%d %H:%M')
-  ax.xaxis.set_major_formatter(hfmt)
-  fig.autofmt_xdate()
-    
-  return fig, ax
-  
+    :arg depth: Depth of model results ('None' if var=sossheig).
+    :type depth: integer or string
+
+    :arg name: The name of the station.
+    :type name: string
+
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: matplotlib figure object instance (fig) and axis object (ax).
+    """
+
+    variables = {'sossheig': 'Sea Surface Height', 'vosaline': 'Salinity',
+                 'votemper': 'Temperature', 'vozocrtx': 'Velocity U-component',
+                 'vomecrty': 'Velocity V-component'}
+
+    # Stations information
+    [lats, lons] = figures.station_coords()
+
+    # Bathymetry
+    bathy, X, Y = tidetools.get_bathy_data(grid_B)
+
+    # Get index
+    [j, i] = tidetools.find_closest_model_point(lons[name], lats[name], X, Y,
+                                                bathy, allow_land=False)
+
+    # Call function
+    var_ary, time = combine_files(files, var, depth, j, i)
+
+    # Figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+    # Plot
+    ax.plot(time, var_ary, label='Model')
+
+    # Figure format
+    ax_start = t_orig
+    ax_end = t_final + datetime.timedelta(days=1)
+    ax.set_xlim(ax_start, ax_end)
+    ax.set_title('Modelled {variable}: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(variable=variables[var], t_start=t_orig, t_end=t_final))
+    hfmt = mdates.DateFormatter('%m/%d %H:%M')
+    ax.xaxis.set_major_formatter(hfmt)
+    fig.autofmt_xdate()
+
+    return fig, ax
+
 
 def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
 
-  # Model    
-  fig, ax = plot_files(grid_B, files, 'sossheig', 'None', t_orig, t_final, name)
-  # Tides
-  figures.plot_tides(ax, name, PST, MSL, color='green')
-  
-  # Figure format
-  ax_start = t_orig
-  ax_end = t_final + datetime.timedelta(days=1)
-  ax.set_xlim(ax_start, ax_end)
-  ax.set_title('Modelled Sea Surface Height versus Predicted Tides: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
-  ax.legend(loc=3, ncol=2)
+    # Model
+    fig, ax = plot_files(grid_B, files, 'sossheig', 'None',
+                         t_orig, t_final, name)
+    # Tides
+    figures.plot_tides(ax, name, PST, MSL, color='green')
 
-  return fig
-  
+    # Figure format
+    ax_start = t_orig
+    ax_end = t_final + datetime.timedelta(days=1)
+    ax.set_xlim(ax_start, ax_end)
+    ax.set_title('Modelled Sea Surface Height versus Predicted Tides: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
+    ax.legend(loc=3, ncol=2)
 
+    return fig
