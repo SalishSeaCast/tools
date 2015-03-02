@@ -28,9 +28,9 @@ Descriptions under the links below are from the first cell of the notebooks
 
 * ##[SSH_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/SSH_Template.ipynb)
 
-* ##[DevelopingAnalyzeFunctions.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingAnalyzeFunctions.ipynb)
+* ##[DevelopingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingAnalyzeModule.ipynb)
 
-* ##[Test_analyze_module.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Test_analyze_module.ipynb)
+* ##[TestingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TestingAnalyzeModule.ipynb)
 
 
 ##License
