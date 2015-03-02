@@ -27,7 +27,6 @@ import glob
 import os
 
 import arrow
-import pytz
 from dateutil import tz
 import matplotlib
 from matplotlib.backends import backend_agg as backend
@@ -351,7 +350,7 @@ def plot_wlev_residual(t_orig, elements, figsize=(20, 5)):
                 'ForestGreen', label='Pred Tides', linewidth=2)
     if elements == 'residual':
         pass
-    ax.legend()
+    ax.legend(loc=2, ncol=3)
     hfmt = mdates.DateFormatter('%m/%d %H:%M')
     ax.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
@@ -551,3 +550,81 @@ def retrieve_surge(data, run_date):
             surge.append(feet_to_metres(obs-tide))
 
     return surge, times
+
+
+def plot_forced_residual(modes_all, t_orig, figsize):
+    """ Plots observed water level residual (calculate_wlev_residual)
+    at Neah Bay against forced residuals using surge data (retrieve_surge)
+    from existing .txt files for Neah Bay. Function may produce none, any,
+    or all (nowcast, forecast, forecast 2) forced residuals depending on
+    availability for specified date.
+
+    :arg mode: Any or all modes of results - nowcast, forecast, forecast2.
+    :type mode: string
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: figure
+    """
+
+    t_forcing_start = t_orig
+    t_forcing_end = t_forcing_start + datetime.timedelta(days=1)
+
+    colours = {'observed': 'DimGray', 'nowcast': 'DodgerBlue',
+               'forecast': 'ForestGreen', 'forecast2': 'MediumVioletRed'}
+
+    # Figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+    # Residual
+    residual, obs, tides = calculate_wlev_residual('Neah Bay', t_forcing_start)
+    ax.plot(obs.time, residual, colours['observed'], label='observed',
+            linewidth=2.5)
+
+    # Nowcast and Forecasts
+    for mode in modes_all:
+        try:
+            filename_NB, run_date = create_path_sshNB(mode, t_orig)
+            data = load_surge_data(filename_NB)
+            surge, dates = retrieve_surge(data, run_date)
+            ax.plot(dates, surge, label=mode, linewidth=2.5,
+                    color=colours[mode])
+        except IndexError:
+            pass
+
+    # Figure format
+    ax.set_xlim([t_forcing_start, t_forcing_end])
+    ax.set_ylim([-0.4, 0.2])
+    ax.set_xlabel('[hrs]')
+    ax.set_ylabel('[m]')
+    ax.set_title('Comparison of observed and forced sea surface height residuals: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
+    ax.legend(loc=2, ncol=4)
+    ax.grid()
+
+    return fig
+
+
+def plot_forced_residual_all(t_orig, figsize=(20, 7)):
+
+    """Similar to the function plot_forced_residual, except this is designed
+    to execute the plot function for all forced residuals as long as their
+    respective runs have been verified to exist.
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: figure
+    """
+
+    runs_list = verified_runs(t_orig)
+
+    fig = plot_forced_residual(runs_list, t_orig, figsize=figsize)
+
+    return fig
