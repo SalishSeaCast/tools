@@ -118,10 +118,10 @@ def combine_files(files, var, depth, j, i):
     :arg depth: Depth of model results ('None' if var=sossheig).
     :type depth: integer or string
 
-    :arg j: Longitude index of location.
+    :arg j: Latitude (y) index of location (<=897).
     :type j: integer
 
-    :arg i: Latitude index of location.
+    :arg i: Longitude (x) index of location (<=397).
     :type i: integer
 
     :returns: var_ary, time - array of model results and time.
@@ -146,7 +146,8 @@ def combine_files(files, var, depth, j, i):
     return var_ary, time
 
 
-def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5)):
+def plot_files(grid_B, files, var, depth, t_orig, t_final, name,
+               figsize=(20, 5)):
     """Plots values of  variable over multiple files covering
     a certain period of time.
 
@@ -164,6 +165,12 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
 
     :arg depth: Depth of model results ('None' if var=sossheig).
     :type depth: integer or string
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg t_final: The end of the date range of interest.
+    :type t_final: datetime object
 
     :arg name: The name of the station.
     :type name: string
@@ -210,6 +217,32 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name, figsize=(20,5))
 
 
 def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
+    """
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg files: Multiple result files in chronological order.
+    :type files: list
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg t_final: The end of the date range of interest.
+    :type t_final: datetime object
+
+    :arg name: Name of station.
+    :type name: string
+
+    :arg PST: Specifies if plot should be presented in PST.
+              1 = plot in PST, 0 = plot in UTC.
+    :type PST: 0 or 1
+
+    :arg MSL: Specifies if the plot should be centred about mean sea level.
+              1=centre about MSL, 0=centre about 0.
+    :type MSL: 0 or 1
+
+    :returns: matplotlib figure object instance (fig).
+    """
 
     # Model
     fig, ax = plot_files(grid_B, files, 'sossheig', 'None',
@@ -221,7 +254,7 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
     ax_start = t_orig
     ax_end = t_final + datetime.timedelta(days=1)
     ax.set_xlim(ax_start, ax_end)
-    ax.set_title('Modelled Sea Surface Height versus Predicted Tides: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
+    ax.set_title('Modelled Sea Surface Height versus Predicted Tides:{t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
     ax.legend(loc=3, ncol=2)
 
     return fig
