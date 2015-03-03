@@ -169,7 +169,8 @@ def combine_files(files, var, depth, j, i):
     return var_ary, time
 
 
-def plot_files(ax, grid_B, files, var, depth, t_orig, t_final, name):
+def plot_files(ax, grid_B, files, var, depth, t_orig, t_final,
+               name, label, colour):
     """Plots values of  variable over multiple files covering
     a certain period of time.
 
@@ -200,6 +201,12 @@ def plot_files(ax, grid_B, files, var, depth, t_orig, t_final, name):
     :arg name: The name of the station.
     :type name: string
 
+    :arg label: Label for plot line.
+    :type label: string
+
+    :arg colour: Colour of plot lines.
+    :type colour: string
+
     :returns: matplotlib figure object instance (fig) and axis object (ax).
     """
 
@@ -217,7 +224,7 @@ def plot_files(ax, grid_B, files, var, depth, t_orig, t_final, name):
     var_ary, time = combine_files(files, var, depth, j, i)
 
     # Plot
-    ax.plot(time, var_ary, label='Model')
+    ax.plot(time, var_ary, label=label, color=colour, linewidth=2)
 
     # Figure format
     ax_start = t_orig
@@ -266,7 +273,7 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
 
     # Model
     ax = plot_files(ax, grid_B, files, 'sossheig', 'None',
-                    t_orig, t_final, name)
+                    t_orig, t_final, name, 'Model', 'DodgerBlue')
     # Tides
     figures.plot_tides(ax, name, PST, MSL, color='green')
 
