@@ -554,7 +554,7 @@ def retrieve_surge(data, run_date):
     return surge, times
 
 
-def plot_forced_residual(modes_all, t_orig, figsize):
+def plot_forced_residual(ax, modes_all, t_orig):
     """ Plots observed water level residual (calculate_wlev_residual)
     at Neah Bay against forced residuals using surge data (retrieve_surge)
     from existing .txt files for Neah Bay. Function may produce none, any,
@@ -578,9 +578,6 @@ def plot_forced_residual(modes_all, t_orig, figsize):
 
     colours = {'observed': 'DimGray', 'nowcast': 'DodgerBlue',
                'forecast': 'ForestGreen', 'forecast2': 'MediumVioletRed'}
-
-    # Figure
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Residual
     residual, obs, tides = calculate_wlev_residual('Neah Bay', t_forcing_start)
@@ -607,7 +604,7 @@ def plot_forced_residual(modes_all, t_orig, figsize):
     ax.legend(loc=2, ncol=4)
     ax.grid()
 
-    return fig
+    return ax
 
 
 def plot_forced_residual_all(t_orig, figsize=(20, 7)):
@@ -627,6 +624,8 @@ def plot_forced_residual_all(t_orig, figsize=(20, 7)):
 
     runs_list = verified_runs(t_orig)
 
-    fig = plot_forced_residual(runs_list, t_orig, figsize=figsize)
+    # Figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    ax = plot_forced_residual(ax, runs_list, t_orig)
 
     return fig
