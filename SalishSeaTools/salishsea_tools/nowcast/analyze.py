@@ -169,10 +169,12 @@ def combine_files(files, var, depth, j, i):
     return var_ary, time
 
 
-def plot_files(grid_B, files, var, depth, t_orig, t_final, name,
-               figsize=(20, 5)):
+def plot_files(ax, grid_B, files, var, depth, t_orig, t_final, name):
     """Plots values of  variable over multiple files covering
     a certain period of time.
+
+    :arg ax: The axis where the variable is plotted.
+    :type ax: axis object
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
@@ -198,15 +200,8 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name,
     :arg name: The name of the station.
     :type name: string
 
-    :arg figsize: Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
     :returns: matplotlib figure object instance (fig) and axis object (ax).
     """
-
-    variables = {'sossheig': 'Sea Surface Height', 'vosaline': 'Salinity',
-                 'votemper': 'Temperature', 'vozocrtx': 'Velocity U-component',
-                 'vomecrty': 'Velocity V-component'}
 
     # Stations information
     [lats, lons] = figures.station_coords()
@@ -221,9 +216,6 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name,
     # Call function
     var_ary, time = combine_files(files, var, depth, j, i)
 
-    # Figure
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
-
     # Plot
     ax.plot(time, var_ary, label='Model')
 
@@ -231,15 +223,14 @@ def plot_files(grid_B, files, var, depth, t_orig, t_final, name,
     ax_start = t_orig
     ax_end = t_final + datetime.timedelta(days=1)
     ax.set_xlim(ax_start, ax_end)
-    ax.set_title('Modelled {variable}: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(variable=variables[var], t_start=t_orig, t_end=t_final))
     hfmt = mdates.DateFormatter('%m/%d %H:%M')
     ax.xaxis.set_major_formatter(hfmt)
-    fig.autofmt_xdate()
 
-    return fig, ax
+    return ax
 
 
-def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
+def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
+                      figsize=(20, 5)):
     """
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
@@ -264,19 +255,23 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0):
               1=centre about MSL, 0=centre about 0.
     :type MSL: 0 or 1
 
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
     :returns: matplotlib figure object instance (fig).
     """
 
+    # Figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+
     # Model
-    fig, ax = plot_files(grid_B, files, 'sossheig', 'None',
-                         t_orig, t_final, name)
+    ax = plot_files(ax, grid_B, files, 'sossheig', 'None',
+                    t_orig, t_final, name)
     # Tides
     figures.plot_tides(ax, name, PST, MSL, color='green')
 
     # Figure format
-    ax_start = t_orig
-    ax_end = t_final + datetime.timedelta(days=1)
-    ax.set_xlim(ax_start, ax_end)
+    fig.autofmt_xdate()
     ax.set_title('Modelled Sea Surface Height versus Predicted Tides:{t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
     ax.legend(loc=3, ncol=2)
 
