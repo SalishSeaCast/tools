@@ -265,6 +265,75 @@ def dateparse_PAObs(s1, s2, s3, s4):
     return aware
 
 
+def dateparse_archive_obs(s):
+    """Function to make datetime object aware of time zone
+    e.g. date_parser=dateParserMeasured('2014/05/31 11:42')
+
+    :arg s: string of date and time
+    :type s: str
+
+    :returns: datetime object that is timezone aware
+    """
+    PST_tz = tz.tzoffset("PST", -28800)
+    # Convert the string to a datetime object
+    unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
+    # Add in the local time zone (Canada/Pacific)
+    aware = unaware.replace(tzinfo=PST_tz)
+    # Convert to UTC
+    return aware.astimezone(tz.tzutc())
+
+
+def load_archived_observations(name, start_date, end_date):
+    """
+    Loads tidal observations from the DFO archive website
+
+    :arg name: a string representing the location for observations
+    :type name: a string from the following - Point Atkinson, Victoria,
+     Campbell River
+
+    :arg start_date: a string representing the starting date of the
+     observations.
+    :type start_date: string in format %d-%b-%Y
+
+    :arg end: a string representing the end date of the observations.
+    :type end: string in format %d-%b-%Y
+
+    :returns: wlev_meas: a dict object with the water level measurements
+     reference to Chart Datum. Columns are time and wlev. Time is in UTC.
+    """
+
+    # constant?
+    stations = {'Point Atkinson': 7795, 'Victoria': 7120, 'Campbell River': 8074}
+
+    station_no = stations[name]
+    base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
+    form_handler = (
+        'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='
+        + str(station_no))
+    sitedata = {
+        'start_period': start_date,
+        'end_period': end_date,
+        'resolution': 'h',
+        'time_zone': 'l',
+    }
+    data_provider = (
+        'download-telecharger.asp'
+        '?File=E:%5Ciusr_tmpfiles%5CTWL%5C'
+        + str(station_no) + '-'+start_date + '_slev.csv'
+        '&Name=' + str(station_no) + '-'+start_date+'_slev.csv')
+    # Go get the data from the DFO site
+    with requests.Session() as s:
+        s.post(base_url + form_handler, data=sitedata)
+        r = s.get(base_url + data_provider)
+    # Write the data to a fake file
+    fakefile = StringIO(r.content)
+    # Read the fake file
+    wlev_meas = pd.read_csv(fakefile,skiprows=7,parse_dates=[0],date_parser=dateparse_archive_obs)
+    wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'wlev'})
+
+    return wlev_meas
+
+
 def load_PA_observations():
     """Loads the recent water level observations at Point Atkinson.
 
