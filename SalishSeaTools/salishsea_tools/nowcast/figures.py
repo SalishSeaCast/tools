@@ -285,7 +285,9 @@ def dateparse_archive_obs(s):
 
 def load_archived_observations(name, start_date, end_date):
     """
-    Loads tidal observations from the DFO archive website
+    Loads tidal observations from the DFO archive website.
+    Note: only archived observations can be loaded. This usually means
+    at least one month old.
 
     :arg name: a string representing the location for observations
     :type name: a string from the following - Point Atkinson, Victoria,
