@@ -85,6 +85,7 @@ run:
   orcinus-nowcast:
     ssh key name:
       nowcast: /home/dlatorne/.ssh/SalishSeaNEMO-nowcast_id_rsa
+      # Susan's is /home/sallen/.ssh/id_rsa
     rivers_dir: /home/sallen/MEOPAR/rivers/
     # Location of rivers runoff monthly climatology file
     rivers_month.nc: /home/dlatorne/MEOPAR/NEMO-forcing/rivers/rivers_month.nc
@@ -206,6 +207,10 @@ msg_types:
     success ssh: sea surface height forcing files for forecast uploaded
     failure ssh: sea surface height forcing files for forecast upload failed
     crash: upload_forcing worker crashed
+  upload_all_files:
+    success: all files for nowcast uploaded
+    failure: uploading all files filed
+    crash: upload_all_files worker crashed
   make_forcing_links:
     success nowcast+: forcing file links for nowcast/forecast created
     failure nowcast+: forcing file links for nowcast/forecast failed
