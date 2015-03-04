@@ -285,7 +285,7 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
     return fig
 
 
-def calculate_wlev_residual(name, t_orig):
+def calculate_wlev_residual_NOAA(name, t_orig):
     """ Calculates the residual of the observed water levels with respect
     to the predicted tides at a specific station and for a specific date.
 
@@ -319,10 +319,10 @@ def calculate_wlev_residual(name, t_orig):
     return residual, obs, tides
 
 
-def plot_wlev_residual(t_orig, elements, figsize=(20, 5)):
+def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 5)):
     """ Plots the water level residual as calculated by the function
-    calculate_wlev_residual and has the option to also plot the observed
-    water levels and predicted tides over the course of one day.
+    calculate_wlev_residual_NOAA and has the option to also plot the
+    observed water levels and predicted tides over the course of one day.
 
     :arg t_orig: The beginning of the date range of interest.
     :type t_orig: datetime object
@@ -338,7 +338,7 @@ def plot_wlev_residual(t_orig, elements, figsize=(20, 5)):
     :returns: fig
     """
 
-    residual, obs, tides = calculate_wlev_residual('Neah Bay', t_orig)
+    residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay', t_orig)
 
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -555,7 +555,7 @@ def retrieve_surge(data, run_date):
 
 
 def plot_forced_residual(ax, modes_all, t_orig):
-    """ Plots observed water level residual (calculate_wlev_residual)
+    """ Plots observed water level residual (calculate_wlev_residual_NOAA)
     at Neah Bay against forced residuals using surge data (retrieve_surge)
     from existing .txt files for Neah Bay. Function may produce none, any,
     or all (nowcast, forecast, forecast 2) forced residuals depending on
@@ -580,7 +580,7 @@ def plot_forced_residual(ax, modes_all, t_orig):
                'forecast': 'ForestGreen', 'forecast2': 'MediumVioletRed'}
 
     # Residual
-    residual, obs, tides = calculate_wlev_residual('Neah Bay', t_forcing_start)
+    residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay', t_forcing_start)
     ax.plot(obs.time, residual, colours['observed'], label='observed',
             linewidth=2.5)
 
