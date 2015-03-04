@@ -287,7 +287,8 @@ def load_archived_observations(name, start_date, end_date):
     """
     Loads tidal observations from the DFO archive website.
     Note: only archived observations can be loaded. This usually means
-    at least one month old.
+    at least one month old. If data is not available, a DataFrame with
+    one NaN recording is returned.
 
     :arg name: a string representing the location for observations
     :type name: a string from the following - Point Atkinson, Victoria,
@@ -305,7 +306,8 @@ def load_archived_observations(name, start_date, end_date):
     """
 
     # constant?
-    stations = {'Point Atkinson': 7795, 'Victoria': 7120, 'Campbell River': 8074}
+    stations = {
+        'Point Atkinson': 7795, 'Victoria': 7120, 'Campbell River': 8074}
 
     station_no = stations[name]
     base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
@@ -330,8 +332,17 @@ def load_archived_observations(name, start_date, end_date):
     # Write the data to a fake file
     fakefile = StringIO(r.content)
     # Read the fake file
-    wlev_meas = pd.read_csv(fakefile,skiprows=7,parse_dates=[0],date_parser=dateparse_archive_obs)
-    wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time', 'SLEV(metres)': 'wlev'})
+    try:
+        wlev_meas = pd.read_csv(
+            fakefile, skiprows=7, parse_dates=[0],
+            date_parser=dateparse_archive_obs)
+    except pd.parser.CParserError:
+        data = {'Obs_date': datetime.datetime.strptime(start_date, '%d-%b-%Y'),
+                'SLEV(metres)': float('NaN')}
+        wlev_meas = pd.DataFrame(data=data, index=[0])
+
+    wlev_meas = wlev_meas.rename(
+        columns={'Obs_date': 'time', 'SLEV(metres)': 'wlev'})
 
     return wlev_meas
 
