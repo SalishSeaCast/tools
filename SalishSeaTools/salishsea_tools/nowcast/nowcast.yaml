@@ -46,9 +46,9 @@ run:
     nodes: 9
     mpi decomposition: 8x18
     images:
-      head node: nowcast-head-node-v3
-      compute node: nowcast-compute-node-v3
-    flavor name: m1.xlarge
+      head node: nowcast-head-node-v4
+      compute node: nowcast-compute-node-v4
+    flavor name: c16-30g-200
     network label: NEMO-network
     ssh key name:
       image: doug-nefos
