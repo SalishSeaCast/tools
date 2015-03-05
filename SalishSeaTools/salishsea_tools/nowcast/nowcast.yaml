@@ -43,8 +43,8 @@ run:
   # Remove or comment out the next line to prevent running in the cloud
   cloud host: west.cloud-nowcast
   west.cloud-nowcast:
-    nodes: 11
-    mpi decomposition: 6x14
+    nodes: 9
+    mpi decomposition: 8x18
     images:
       head node: nowcast-head-node-v3
       compute node: nowcast-compute-node-v3
