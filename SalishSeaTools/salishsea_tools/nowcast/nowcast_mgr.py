@@ -374,24 +374,29 @@ def after_mount_sshfs(worker, msg_type, payload, config):
 
 
 def after_upload_forcing(worker, msg_type, payload, config):
+    try:
+        host_name = payload.keys()[0]
+    except KeyError:
+        # No host name in payload; upload_forcing worker probably crashed
+        return None
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast+': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config, [payload.keys()[0], 'nowcast+']]),
+             ['make_forcing_links', config, [host_name, 'nowcast+']]),
         ],
         'failure nowcast+': None,
         'success forecast2': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config, [payload.keys()[0], 'forecast2']]),
+             ['make_forcing_links', config, [host_name, 'forecast2']]),
         ],
         'failure forecast2': None,
         'success ssh': [
             (update_checklist, [worker, 'forcing upload', payload]),
             (launch_worker,
-             ['make_forcing_links', config, [payload.keys()[0], 'ssh']]),
+             ['make_forcing_links', config, [host_name, 'ssh']]),
         ],
         'failure ssh': None,
         'crash': None,
