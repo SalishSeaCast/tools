@@ -56,19 +56,19 @@ MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+# Paths for model results
+paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
+         'forecast': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/',
+         'forecast2': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/'}
 
-def model_paths():
-    """ A dictionary of paths containing model results for
-    nowcasts, forecasts and forecasts 2.
-
-    :returns: paths (dictionary)
-    """
-
-    paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
-             'forecast': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/',
-             'forecast2': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/'}
-
-    return paths
+# Colours for plots
+colours = {'nowcast': 'DodgerBlue',
+           'forecast': 'ForestGreen',
+           'forecast2': 'MediumVioletRed',
+           'observed': 'RoyalBlue',
+           'predicted': 'SeaGreen',
+           'model': 'Indigo',
+           'residual': 'DimGray'}
 
 
 def feet_to_metres(feet):
@@ -273,9 +273,9 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
 
     # Model
     ax = plot_files(ax, grid_B, files, 'sossheig', 'None',
-                    t_orig, t_final, name, 'Model', 'DodgerBlue')
+                    t_orig, t_final, name, 'Model', colours['model'])
     # Tides
-    figures.plot_tides(ax, name, PST, MSL, color='green')
+    figures.plot_tides(ax, name, PST, MSL, color=colours['predicted'])
 
     # Figure format
     fig.autofmt_xdate()
@@ -344,12 +344,13 @@ def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 5)):
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Plot
-    ax.plot(obs.time, residual, 'Gray', label='Obs Residual', linewidth=2)
+    ax.plot(obs.time, residual, colours['residual'], label='Obs Residual',
+            linewidth=2)
     if elements == 'all':
         ax.plot(obs.time, obs.wlev,
-                'DodgerBlue', label='Obs Water Level', linewidth=2)
+                colours['observed'], label='Obs Water Level', linewidth=2)
         ax.plot(tides.time, tides.pred[tides.time == obs.time],
-                'ForestGreen', label='Pred Tides', linewidth=2)
+                colours['predicted'], label='Pred Tides', linewidth=2)
     if elements == 'residual':
         pass
     ax.legend(loc=2, ncol=3)
@@ -374,9 +375,6 @@ def create_path_sshNB(mode, t_orig):
     :returns: filename_NB (path including filename)
               and run_date, a datetime object of the simulation run date
     """
-
-    # All paths
-    paths = model_paths()
 
     run_date = t_orig
 
@@ -414,9 +412,6 @@ def create_path_results(mode, t_orig):
 
     :returns: filenames (list of paths including filenames)
     """
-
-    # All paths
-    paths = model_paths()
 
     run_date = t_orig
 
@@ -554,7 +549,7 @@ def retrieve_surge(data, run_date):
     return surge, times
 
 
-def plot_forced_residual(ax, modes_all, t_orig):
+def plot_forced_residual(t_orig, figsize=(20, 7)):
     """ Plots observed water level residual (calculate_wlev_residual_NOAA)
     at Neah Bay against forced residuals using surge data (retrieve_surge)
     from existing .txt files for Neah Bay. Function may produce none, any,
@@ -573,19 +568,21 @@ def plot_forced_residual(ax, modes_all, t_orig):
     :returns: figure
     """
 
+    runs_list = verified_runs(t_orig)
+
     t_forcing_start = t_orig
     t_forcing_end = t_forcing_start + datetime.timedelta(days=1)
 
-    colours = {'observed': 'DimGray', 'nowcast': 'DodgerBlue',
-               'forecast': 'ForestGreen', 'forecast2': 'MediumVioletRed'}
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Residual
-    residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay', t_forcing_start)
-    ax.plot(obs.time, residual, colours['observed'], label='observed',
+    residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay',
+                                                        t_forcing_start)
+    ax.plot(obs.time, residual, colours['residual'], label='observed',
             linewidth=2.5)
 
     # Nowcast and Forecasts
-    for mode in modes_all:
+    for mode in runs_list:
         try:
             filename_NB, run_date = create_path_sshNB(mode, t_orig)
             data = load_surge_data(filename_NB)
@@ -603,29 +600,5 @@ def plot_forced_residual(ax, modes_all, t_orig):
     ax.set_title('Comparison of observed and forced sea surface height residuals: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
     ax.legend(loc=2, ncol=4)
     ax.grid()
-
-    return ax
-
-
-def plot_forced_residual_all(t_orig, figsize=(20, 7)):
-
-    """Similar to the function plot_forced_residual, except this is designed
-    to execute the plot function for all forced residuals as long as their
-    respective runs have been verified to exist.
-
-    :arg t_orig: The beginning of the date range of interest.
-    :type t_orig: datetime object
-
-    :arg figsize: Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: figure
-    """
-
-    runs_list = verified_runs(t_orig)
-
-    # Figure
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
-    ax = plot_forced_residual(ax, runs_list, t_orig)
 
     return fig
