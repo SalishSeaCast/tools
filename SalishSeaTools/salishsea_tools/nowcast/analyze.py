@@ -65,8 +65,8 @@ paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
 colours = {'nowcast': 'DodgerBlue',
            'forecast': 'ForestGreen',
            'forecast2': 'MediumVioletRed',
-           'observed': 'RoyalBlue',
-           'predicted': 'SeaGreen',
+           'observed': 'DodgerBlue',
+           'predicted': 'ForestGreen',
            'model': 'Indigo',
            'residual': 'DimGray'}
 
@@ -224,7 +224,7 @@ def plot_files(ax, grid_B, files, var, depth, t_orig, t_final,
     var_ary, time = combine_files(files, var, depth, j, i)
 
     # Plot
-    ax.plot(time, var_ary, label=label, color=colour, linewidth=2)
+    ax.plot(time, var_ary, label=label, color=colour, linewidth=2.5)
 
     # Figure format
     ax_start = t_orig
@@ -237,7 +237,7 @@ def plot_files(ax, grid_B, files, var, depth, t_orig, t_final,
 
 
 def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
-                      figsize=(20, 5)):
+                      figsize=(20, 6)):
     """
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
@@ -278,9 +278,11 @@ def compare_ssh_tides(grid_B, files, t_orig, t_final, name, PST=0, MSL=0,
     figures.plot_tides(ax, name, PST, MSL, color=colours['predicted'])
 
     # Figure format
-    fig.autofmt_xdate()
-    ax.set_title('Modelled Sea Surface Height versus Predicted Tides:{t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(t_start=t_orig, t_end=t_final))
-    ax.legend(loc=3, ncol=2)
+    ax.set_title('Modelled Sea Surface Height versus Predicted Tides at {station}: {t_start:%d-%b-%Y} to {t_end:%d-%b-%Y}'.format(station=name, t_start=t_orig, t_end=t_final))
+    ax.set_ylim([-3.0, 3.0])
+    ax.set_xlabel('[hrs]')
+    ax.legend(loc=2, ncol=2)
+    ax.grid()
 
     return fig
 
@@ -319,7 +321,7 @@ def calculate_wlev_residual_NOAA(name, t_orig):
     return residual, obs, tides
 
 
-def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 5)):
+def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 6)):
     """ Plots the water level residual as calculated by the function
     calculate_wlev_residual_NOAA and has the option to also plot the
     observed water levels and predicted tides over the course of one day.
@@ -344,20 +346,23 @@ def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 5)):
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Plot
-    ax.plot(obs.time, residual, colours['residual'], label='Obs Residual',
-            linewidth=2)
+    ax.plot(obs.time, residual, colours['residual'], label='Observed Residual',
+            linewidth=2.5)
     if elements == 'all':
         ax.plot(obs.time, obs.wlev,
-                colours['observed'], label='Obs Water Level', linewidth=2)
+                colours['observed'], label='Observed Water Level', linewidth=2.5)
         ax.plot(tides.time, tides.pred[tides.time == obs.time],
-                colours['predicted'], label='Pred Tides', linewidth=2)
+                colours['predicted'], label='Tidal Predictions', linewidth=2.5)
     if elements == 'residual':
         pass
-    ax.legend(loc=2, ncol=3)
+    ax.set_title('Residual of the observed water levels at Neah Bay: {t:%d-%b-%Y}'.format(t=t_orig))
+    ax.set_ylim([-3.0, 3.0])
+    ax.set_xlabel('[hrs]')
     hfmt = mdates.DateFormatter('%m/%d %H:%M')
     ax.xaxis.set_major_formatter(hfmt)
-    fig.autofmt_xdate()
-
+    ax.legend(loc=2, ncol=3)
+    ax.grid()
+    
     return fig
 
 
@@ -549,7 +554,7 @@ def retrieve_surge(data, run_date):
     return surge, times
 
 
-def plot_forced_residual(t_orig, figsize=(20, 7)):
+def plot_forced_residual(t_orig, figsize=(20, 6)):
     """ Plots observed water level residual (calculate_wlev_residual_NOAA)
     at Neah Bay against forced residuals using surge data (retrieve_surge)
     from existing .txt files for Neah Bay. Function may produce none, any,
@@ -594,10 +599,12 @@ def plot_forced_residual(t_orig, figsize=(20, 7)):
 
     # Figure format
     ax.set_xlim([t_forcing_start, t_forcing_end])
-    ax.set_ylim([-0.4, 0.2])
+    ax.set_ylim([-0.3, 0.3])
     ax.set_xlabel('[hrs]')
     ax.set_ylabel('[m]')
-    ax.set_title('Comparison of observed and forced sea surface height residuals: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
+    ax.set_title('Comparison of observed and forced sea surface height residuals at Neah Bay: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
+    hfmt = mdates.DateFormatter('%m/%d %H:%M')
+    ax.xaxis.set_major_formatter(hfmt)
     ax.legend(loc=2, ncol=4)
     ax.grid()
 
