@@ -65,9 +65,9 @@ paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
 colours = {'nowcast': 'DodgerBlue',
            'forecast': 'ForestGreen',
            'forecast2': 'MediumVioletRed',
-           'observed': 'DodgerBlue',
+           'observed': 'Indigo',
            'predicted': 'ForestGreen',
-           'model': 'Indigo',
+           'model': 'blue',
            'residual': 'DimGray'}
 
 
@@ -554,7 +554,7 @@ def retrieve_surge(data, run_date):
     return surge, times
 
 
-def plot_forced_residual(t_orig, figsize=(20, 6)):
+def plot_forced_residual(ax, t_orig):
     """ Plots observed water level residual (calculate_wlev_residual_NOAA)
     at Neah Bay against forced residuals using surge data (retrieve_surge)
     from existing .txt files for Neah Bay. Function may produce none, any,
@@ -574,16 +574,12 @@ def plot_forced_residual(t_orig, figsize=(20, 6)):
     """
 
     runs_list = verified_runs(t_orig)
-
     t_forcing_start = t_orig
-    t_forcing_end = t_forcing_start + datetime.timedelta(days=1)
-
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     # Residual
     residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay',
                                                         t_forcing_start)
-    ax.plot(obs.time, residual, colours['residual'], label='observed',
+    ax.plot(obs.time, residual, colours['observed'], label='observed',
             linewidth=2.5)
 
     # Nowcast and Forecasts
@@ -598,8 +594,9 @@ def plot_forced_residual(t_orig, figsize=(20, 6)):
             pass
 
     # Figure format
-    ax.set_xlim([t_forcing_start, t_forcing_end])
-    ax.set_ylim([-0.3, 0.3])
+    ax.set_xlim(t_orig + datetime.timedelta(minutes=30),
+                t_orig + datetime.timedelta(days=1, minutes=30))
+    ax.set_ylim([-0.4, 0.4])
     ax.set_xlabel('[hrs]')
     ax.set_ylabel('[m]')
     ax.set_title('Comparison of observed and forced sea surface height residuals at Neah Bay: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
@@ -608,4 +605,4 @@ def plot_forced_residual(t_orig, figsize=(20, 6)):
     ax.legend(loc=2, ncol=4)
     ax.grid()
 
-    return fig
+    return ax
