@@ -69,6 +69,46 @@ MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
+# Constant with station information: mean sea level, latitude,
+# longitude, station number, historical extreme ssh, etc.
+# Extreme ssh from DFO website
+# Mean sea level calculated over 1983-2001
+SITES = {
+    'Point Atkinson': {
+        'lat': 49.33,
+        'lon': -125.25,
+        'msl': 3.10,
+        'stn_no': 7795,
+        'extreme_ssh': 5.61},
+    'Victoria': {
+        'lat': 48.41,
+        'lon': -123.36,
+        'msl': 1.90,
+        'stn_no': 7120,
+        'extreme_ssh': 3.76},
+    'Campbell River': {
+        'lat': 50.04,
+        'lon': -125.24,
+        'msl': 2.89,
+        'stn_no': 8074,
+        'extreme_ssh': 5.35},
+    'Neah Bay': {
+        'lat': 48.4,
+        'lon': -124.6,
+        'stn_no':  9443090},
+    'Friday Harbor': {
+        'lat': 48.55,
+        'lon': -123.016667,
+        'stn_no': 9449880},
+    'Cherry Point': {
+        'lat': 48.866667,
+        'lon': -122.766667,
+        'stn_no': 9449424},
+    'Sandheads': {
+        'lat': 49.10,
+        'lon': -123.30}
+    }
+
 
 def save_image(fig, filename, **kwargs):
     """Save fig as an image file in filename.
