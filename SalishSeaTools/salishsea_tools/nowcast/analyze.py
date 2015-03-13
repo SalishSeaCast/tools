@@ -597,7 +597,7 @@ def plot_forced_residual(ax, t_orig):
     ax.set_xlim(t_orig + datetime.timedelta(minutes=30),
                 t_orig + datetime.timedelta(days=1, minutes=30))
     ax.set_ylim([-0.4, 0.4])
-    ax.set_xlabel('[hrs]')
+    ax.set_xlabel('[hrs UTC]')
     ax.set_ylabel('[m]')
     ax.set_title('Comparison of observed and forced sea surface height residuals at Neah Bay: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
     hfmt = mdates.DateFormatter('%m/%d %H:%M')
