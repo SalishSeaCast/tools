@@ -1776,7 +1776,7 @@ def plot_thresholds_all(
         fig.autofmt_xdate()
 
     # Map
-    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.3)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax0.annotate('Point Atkinson', (-123.1, 49.4),
                  fontsize=15, color='black', bbox=bbox_args)
     ax0.annotate('Campbell River', (-125.1, 50.1),
