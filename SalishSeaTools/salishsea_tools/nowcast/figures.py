@@ -1736,7 +1736,7 @@ def plot_thresholds_all(
         ssh_corr = plot_corrected_model(
             ax, t, ssh_loc, ttide, PST, MSL, SITES[name]['msl'])
         ax.plot(
-            t + t_shift, ssh_loc + SITES[name]['msl'],
+            t + t_shift, ssh_loc + SITES[name]['msl']*MSL,
             '--', c=model_c, linewidth=1, label='Model')
 
         # Define thresholds in sea surface height plots
