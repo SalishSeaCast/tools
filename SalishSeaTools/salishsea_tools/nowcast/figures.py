@@ -76,7 +76,7 @@ MSL_DATUMS = {
 SITES = {
     'Point Atkinson': {
         'lat': 49.33,
-        'lon': -125.25,
+        'lon': -123.25,
         'msl': 3.10,
         'stn_no': 7795,
         'extreme_ssh': 5.61},
@@ -1712,27 +1712,21 @@ def plot_thresholds_all(
         xlim=(-125.4, -122.2), ylim=(48, 50.3))
 
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
+    t_orig, t_final, t = get_model_time_variables(grid_T)
+    tzone = '[PST]' if PST else '[UTC]'
 
-    m = np.arange(3)
     names = ['Point Atkinson', 'Campbell River', 'Victoria']
+    for M, name in enumerate(names):
 
-    for M, name in zip(m, names):
+        ax = fig.add_subplot(gs[M, 0])
 
         # Get sea surface height
         j, i = tidetools.find_closest_model_point(
             SITES[name]['lon'], SITES[name]['lat'],
             X, Y, bathy, allow_land=False)
-
         ssh_loc = grid_T.variables['sossheig'][:, j, i]
         # ssh_loc += SITES[name]['msl'] if MSL else 0
         # need to revise other functions to use this
-
-        # Time range
-        t_orig, t_final, t = get_model_time_variables(grid_T)
-        tzone = PST * '[PST]' + abs((PST - 1)) * '[UTC]'
-
-        # Sea surface height plot
-        ax = fig.add_subplot(gs[M, 0])
 
         # Plot tides, corrected model and original model
         if name == 'Point Atkinson':
@@ -1743,29 +1737,6 @@ def plot_thresholds_all(
         ax.plot(
             t + PST * time_shift, ssh_loc + SITES[name]['msl'],
             '--', c=model_c, linewidth=1, label='Model')
-
-        # Axis
-        ax.set_xlim(t_orig + PST * time_shift, t_final + PST * time_shift)
-        ax.set_ylim([-1, 6])
-        ax.set_title(
-            'Hourly Sea Surface Height at {name}: {t_orig:%d-%b-%Y}'
-            .format(name=name, t_orig=t_orig),
-            **title_font)
-        ax.set_xlabel('Time {}'.format(tzone), **axis_font)
-        ax.set_ylabel('Water Level above Chart Datum (m)', **axis_font)
-        ax.grid()
-        axis_colors(ax, 'gray')
-        ax.xaxis.set_major_formatter(hfmt)
-        fig.autofmt_xdate()
-
-        # Map
-        bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.3)
-        ax0.annotate('Point Atkinson', (-123.1, 49.4),
-                     fontsize=15, color='black', bbox=bbox_args)
-        ax0.annotate('Campbell River', (-125.1, 50.1),
-                     fontsize=15, color='black', bbox=bbox_args)
-        ax0.annotate('Victoria', (-124, 48.43),
-                     fontsize=15, color='black', bbox=bbox_args)
 
         # Define thresholds in sea surface height plots
         [max_tides, mid_tides, extreme_ssh] = plot_threshold_map(
@@ -1789,6 +1760,29 @@ def plot_thresholds_all(
                 bbox_to_anchor=(1.285, 1), loc=2, borderaxespad=0.,
                 prop={'size': 15}, title=r'Legend')
             legend.get_title().set_fontsize('20')
+
+        # Axis
+        ax.set_xlim(t_orig + PST * time_shift, t_final + PST * time_shift)
+        ax.set_ylim([-1, 6])
+        ax.set_title(
+            'Hourly Sea Surface Height at {name}: {t_orig:%d-%b-%Y}'
+            .format(name=name, t_orig=t_orig),
+            **title_font)
+        ax.set_xlabel('Time {}'.format(tzone), **axis_font)
+        ax.set_ylabel('Water Level above Chart Datum (m)', **axis_font)
+        ax.grid()
+        axis_colors(ax, 'gray')
+        ax.xaxis.set_major_formatter(hfmt)
+        fig.autofmt_xdate()
+
+    # Map
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.3)
+    ax0.annotate('Point Atkinson', (-123.1, 49.4),
+                 fontsize=15, color='black', bbox=bbox_args)
+    ax0.annotate('Campbell River', (-125.1, 50.1),
+                 fontsize=15, color='black', bbox=bbox_args)
+    ax0.annotate('Victoria', (-124, 48.43),
+                 fontsize=15, color='black', bbox=bbox_args)
 
     # Citation
     ax0.text(0.03, -0.45,
