@@ -1066,7 +1066,7 @@ def isolate_wind_timing(
     return inds
 
 
-def plot_map(ax, grid_B, PNW_coastline, coastline, fill, domain):
+def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
     """Plots map of Salish Sea region, including the options to add a
     coastline, land colour(fill), or domain colour(domain).
 
@@ -1708,11 +1708,9 @@ def plot_thresholds_all(
 
     # Map of region
     ax0 = fig.add_subplot(gs[:, 1])
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
-    ax0.set_xlim(-125.4, -122.2)
-    ax0.set_ylim(48, 50.3)
-    ax0.set_title('Degree of Flood Risk', **title_font)
-    axis_colors(ax0, 'gray')
+    _plot_stations_map(
+        ax0, grid_B, PNW_coastline, title='Degree of Flood Risk',
+        xlim=(-125.4, -122.2), ylim=(48, 50.3))
 
     # Stations information
     [lats, lons] = station_coords()
@@ -2718,3 +2716,37 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     corr_model = ssh_model + corr
 
     return corr_model
+
+
+def _plot_stations_map(
+    ax, grid_B, PNW_coastline, title, xlim=(-125.4, -122.2), ylim=(48, 50.3)
+):
+    """Plots map of Salish Sea region, including the options to add a
+    coastline, land colour(fill), or domain colour(domain).
+
+    Note that fill will only be applicable if coastline is 'full'.
+
+    :arg ax: Axis for map.
+    :type ax: axis object
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg PNW_coastline: Coastline dataset.
+    :type PNW_coastline: :class:`mat.Dataset`
+
+    :arg title: An informative title for the axis
+    :type title: string
+
+    :arg xlim: limits of the x-axis
+    :type xlim: 2-tuple
+
+    :arg ylim: limits of the y-axis
+    :type ylim: 2-tuple
+    """
+
+    plot_map(ax, grid_B, PNW_coastline)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_title(title, **title_font)
+    axis_colors(ax, 'gray')
