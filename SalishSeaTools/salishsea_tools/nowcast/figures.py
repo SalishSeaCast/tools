@@ -1711,23 +1711,21 @@ def plot_thresholds_all(
         ax0, grid_B, PNW_coastline, title='Degree of Flood Risk',
         xlim=(-125.4, -122.2), ylim=(48, 50.3))
 
-    # Stations information
-    [lats, lons] = station_coords()
-
-    # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
     m = np.arange(3)
     names = ['Point Atkinson', 'Campbell River', 'Victoria']
-    extreme_sshs = [5.61, 5.35, 3.76]
 
-    for M, name, extreme_ssh in zip(m, names, extreme_sshs):
+    for M, name in zip(m, names):
 
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(
-            lons[name], lats[name], X, Y, bathy, allow_land=False)
-        ssh = grid_T.variables['sossheig']
-        ssh_loc = ssh[:, j, i]
+        j, i = tidetools.find_closest_model_point(
+            SITES[name]['lon'], SITES[name]['lat'],
+            X, Y, bathy, allow_land=False)
+
+        ssh_loc = grid_T.variables['sossheig'][:, j, i]
+        # ssh_loc += SITES[name]['msl'] if MSL else 0
+        # need to revise other functions to use this
 
         # Time range
         t_orig, t_final, t = get_model_time_variables(grid_T)
@@ -1741,9 +1739,9 @@ def plot_thresholds_all(
             plot_PA_observations(ax, PST)
         ttide = plot_tides(ax, name, PST, MSL)
         ssh_corr = plot_corrected_model(
-            ax, t, ssh_loc, ttide, PST, MSL, MSL_DATUMS[name])
+            ax, t, ssh_loc, ttide, PST, MSL, SITES[name]['msl'])
         ax.plot(
-            t + PST * time_shift, ssh_loc + MSL_DATUMS[name] * MSL,
+            t + PST * time_shift, ssh_loc + SITES[name]['msl'],
             '--', c=model_c, linewidth=1, label='Model')
 
         # Axis
