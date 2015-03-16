@@ -1714,6 +1714,7 @@ def plot_thresholds_all(
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
     t_orig, t_final, t = get_model_time_variables(grid_T)
     tzone = '[PST]' if PST else '[UTC]'
+    t_shift = time_shift if PST else 0
 
     names = ['Point Atkinson', 'Campbell River', 'Victoria']
     for M, name in enumerate(names):
@@ -1735,7 +1736,7 @@ def plot_thresholds_all(
         ssh_corr = plot_corrected_model(
             ax, t, ssh_loc, ttide, PST, MSL, SITES[name]['msl'])
         ax.plot(
-            t + PST * time_shift, ssh_loc + SITES[name]['msl'],
+            t + t_shift, ssh_loc + SITES[name]['msl'],
             '--', c=model_c, linewidth=1, label='Model')
 
         # Define thresholds in sea surface height plots
@@ -1762,7 +1763,7 @@ def plot_thresholds_all(
             legend.get_title().set_fontsize('20')
 
         # Axis
-        ax.set_xlim(t_orig + PST * time_shift, t_final + PST * time_shift)
+        ax.set_xlim(t_orig + t_shift, t_final + t_shift)
         ax.set_ylim([-1, 6])
         ax.set_title(
             'Hourly Sea Surface Height at {name}: {t_orig:%d-%b-%Y}'
