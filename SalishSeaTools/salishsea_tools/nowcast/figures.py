@@ -1701,8 +1701,7 @@ def plot_thresholds_all(
     """
 
     # Figure
-    fig = plt.figure(figsize=figsize)
-    fig.patch.set_facecolor('#2B3E50')
+    fig = plt.figure(figsize=figsize, facecolor='#2B3E50')
     gs = gridspec.GridSpec(3, 2, width_ratios=[1.5, 1])
     gs.update(wspace=0.13, hspace=0.2)
 
