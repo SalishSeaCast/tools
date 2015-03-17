@@ -1418,11 +1418,7 @@ def compare_water_levels(
 
     # Map
     ax0 = fig.add_subplot(gs[:, 1])
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
-    ax0.set_xlim(-124.8, -122.2)
-    ax0.set_ylim(48, 50)
-    ax0.set_title('Station Locations', **title_font)
-    axis_colors(ax0, 'gray')
+    _plot_stations_map(ax0, grid_B, PNW_coastline, title='Station Locations')
 
     # Citation
     ax0.text(
@@ -1883,11 +1879,7 @@ def Sandheads_winds(
     fig.autofmt_xdate()
 
     # Map
-    plot_map(ax0, grid_B, PNW_coastline, 'full', 1, 0)
-    ax0.set_xlim([-124.8, -122.2])
-    ax0.set_ylim([48, 50])
-    ax0.set_title('Station Locations', **title_font)
-    axis_colors(ax0, 'gray')
+    _plot_stations_map(ax0, grid_B, PNW_coastline, title='Station Locations')
 
     ax0.plot(
         lon, lat,
