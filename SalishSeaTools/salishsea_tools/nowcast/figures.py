@@ -1735,21 +1735,13 @@ def plot_thresholds_all(
             t + t_shift, ssh_loc + SITES[name]['msl']*MSL,
             '--', c=model_c, linewidth=1, label='Model')
 
-        # Define thresholds in sea surface height plots
-        [max_tides, mid_tides, extreme_ssh] = plot_threshold_map(
+        # Define and plot thresholds in sea surface height plots
+        thresholds = plot_threshold_map(
             ax0, ttide, ssh_corr, 'D', 10, 1.0, name)
-
-        # Plot thresholds in sea surface height plots
-        ax.axhline(
-            y=max_tides,
-            color='Gold', linewidth=2, ls='solid', label='Maximum tides')
-        ax.axhline(
-            y=mid_tides,
-            color='Red', linewidth=2, ls='solid', label='Extreme water')
-        ax.axhline(
-            y=extreme_ssh,
-            color='DarkRed', linewidth=2, ls='solid',
-            label='Historical maximum')
+        colors = ['Gold', 'Red', 'DarkRed']
+        labels = ['Maximum tides', 'Extreme water', 'Historical maximum']
+        for wlev, color, label in zip(thresholds, colors, labels):
+            ax.axhline(y=wlev, color=color, lw=2, ls='solid', label=label)
 
         # Legend
         if M == 0:
