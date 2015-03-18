@@ -139,6 +139,7 @@ def message_processor(config, message):
         'set_mpi_hosts': after_set_mpi_hosts,
         'mount_sshfs': after_mount_sshfs,
         'upload_forcing': after_upload_forcing,
+        'upload_all_files': after_upload_all_files,
         'make_forcing_links': after_make_forcing_links,
         'run_NEMO': after_run_NEMO,
         'watch_NEMO': after_watch_NEMO,
@@ -399,6 +400,15 @@ def after_upload_forcing(worker, msg_type, payload, config):
              ['make_forcing_links', config, [host_name, 'ssh']]),
         ],
         'failure ssh': None,
+        'crash': None,
+    }
+    return actions[msg_type]
+
+
+def after_upload_all_files(worker, msg_type, payload, config):
+    actions = {
+        'success': None,
+        'failure': None,
         'crash': None,
     }
     return actions[msg_type]
