@@ -377,8 +377,9 @@ def after_mount_sshfs(worker, msg_type, payload, config):
 def after_upload_forcing(worker, msg_type, payload, config):
     try:
         host_name = payload.keys()[0]
-    except KeyError:
-        # No host name in payload; upload_forcing worker probably crashed
+    except (AttributeError, IndexError):
+        # Malformed payload of no host name in payload;
+        # upload_forcing worker probably crashed
         return None
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
