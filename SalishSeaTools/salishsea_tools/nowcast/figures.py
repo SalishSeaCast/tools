@@ -1682,6 +1682,9 @@ def plot_thresholds_all(
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
 
+    :arg PNW_coastline: Coastline dataset.
+    :type PNW_coastline: :class:`mat.Dataset`
+
     :arg PST: Specifies if plot should be presented in PST.
               1 = plot in PST, 0 = plot in UTC.
     :type PST: 0 or 1
@@ -1696,10 +1699,11 @@ def plot_thresholds_all(
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Figure
+    # Figure set up
     fig = plt.figure(figsize=figsize, facecolor='#2B3E50')
     gs = gridspec.GridSpec(3, 2, width_ratios=[1.5, 1])
     gs.update(wspace=0.13, hspace=0.2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
 
     # Map of region
     ax0 = fig.add_subplot(gs[:, 1])
@@ -1714,9 +1718,6 @@ def plot_thresholds_all(
 
     names = ['Point Atkinson', 'Campbell River', 'Victoria']
     for M, name in enumerate(names):
-
-        ax = fig.add_subplot(gs[M, 0])
-
         # Get sea surface height
         j, i = tidetools.find_closest_model_point(
             SITES[name]['lon'], SITES[name]['lat'],
@@ -1726,6 +1727,7 @@ def plot_thresholds_all(
         # need to revise other functions to use this
 
         # Plot tides, corrected model and original model
+        ax = fig.add_subplot(gs[M, 0])
         if name == 'Point Atkinson':
             plot_PA_observations(ax, PST)
         ttide = plot_tides(ax, name, PST, MSL)
@@ -1735,9 +1737,13 @@ def plot_thresholds_all(
             t + t_shift, ssh_loc + SITES[name]['msl']*MSL,
             '--', c=model_c, linewidth=1, label='Model')
 
-        # Define and plot thresholds in sea surface height plots
+        # Define and plot thresholds on map and in sea surface height plots
         thresholds = plot_threshold_map(
             ax0, ttide, ssh_corr, 'D', 10, 1.0, name)
+        ax0.annotate(
+            name, (SITES[name]['lon'], SITES[name]['lat']),
+            fontsize=15, color='black', bbox=bbox_args,
+            textcoords='offset points', xytext=(15, 0.8))
         colors = ['Gold', 'Red', 'DarkRed']
         labels = ['Maximum tides', 'Extreme water', 'Historical maximum']
         for wlev, color, label in zip(thresholds, colors, labels):
@@ -1750,7 +1756,7 @@ def plot_thresholds_all(
                 prop={'size': 15}, title=r'Legend')
             legend.get_title().set_fontsize('20')
 
-        # Axis
+        # Axis formatting
         ax.set_xlim(t_orig + t_shift, t_final + t_shift)
         ax.set_ylim([-1, 6])
         ax.set_title(
@@ -1762,16 +1768,6 @@ def plot_thresholds_all(
         ax.grid()
         axis_colors(ax, 'gray')
         ax.xaxis.set_major_formatter(hfmt)
-        fig.autofmt_xdate()
-
-    # Map
-    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
-    ax0.annotate('Point Atkinson', (-123.1, 49.4),
-                 fontsize=15, color='black', bbox=bbox_args)
-    ax0.annotate('Campbell River', (-125.1, 50.1),
-                 fontsize=15, color='black', bbox=bbox_args)
-    ax0.annotate('Victoria', (-124, 48.43),
-                 fontsize=15, color='black', bbox=bbox_args)
 
     # Citation
     ax0.text(0.03, -0.45,
@@ -1782,6 +1778,7 @@ def plot_thresholds_all(
              horizontalalignment='left',
              verticalalignment='top',
              transform=ax0.transAxes, color='white')
+    fig.autofmt_xdate()
 
     return fig
 
