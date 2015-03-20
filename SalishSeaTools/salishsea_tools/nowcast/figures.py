@@ -106,7 +106,9 @@ SITES = {
         'stn_no': 9449424},
     'Sandheads': {
         'lat': 49.10,
-        'lon': -123.30}
+        'lon': -123.30},
+    'Tofino': {
+        'stn_no': 8615}
     }
 
 
@@ -345,11 +347,7 @@ def load_archived_observations(name, start_date, end_date):
      reference to Chart Datum. Columns are time and wlev. Time is in UTC.
     """
 
-    # constant?
-    stations = {
-        'Point Atkinson': 7795, 'Victoria': 7120, 'Campbell River': 8074}
-
-    station_no = stations[name]
+    station_no = SITES[name]['stn_no']
     base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
     form_handler = (
         'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='
