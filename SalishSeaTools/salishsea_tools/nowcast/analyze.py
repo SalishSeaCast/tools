@@ -21,40 +21,24 @@ forecast2 runs.
 
 from __future__ import division
 
-from cStringIO import StringIO
 import datetime
 import glob
 import os
 
-import arrow
 from dateutil import tz
-import matplotlib
-from matplotlib.backends import backend_agg as backend
-import matplotlib.cm as cm
 import matplotlib.dates as mdates
-import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
-import requests
-from scipy import interpolate as interp
 
 from salishsea_tools import (
     nc_tools,
-    viz_tools,
-    stormtools,
     tidetools,
 )
 
 from salishsea_tools.nowcast import figures
 
-
-# Average mean sea level calculated over 1983-2001
-# (To be used to centre model output about mean sea level)
-MSL_DATUMS = {
-    'Point Atkinson': 3.10, 'Victoria': 1.90,
-    'Campbell River': 2.89, 'Patricia Bay': 2.30}
 
 # Paths for model results
 paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
@@ -69,17 +53,6 @@ colours = {'nowcast': 'DodgerBlue',
            'predicted': 'ForestGreen',
            'model': 'blue',
            'residual': 'DimGray'}
-
-
-def feet_to_metres(feet):
-    """ Converts feet to metres.
-
-    :returns: metres
-    """
-
-    metres = feet*0.3048
-    return metres
-
 
 def get_filenames(t_orig, t_final, period, grid, model_path):
     """Returns a list with the filenames for all files over the
@@ -362,65 +335,35 @@ def plot_wlev_residual_NOAA(t_orig, elements, figsize=(20, 6)):
     ax.xaxis.set_major_formatter(hfmt)
     ax.legend(loc=2, ncol=3)
     ax.grid()
-    
+
     return fig
 
 
-def create_path_sshNB(mode, t_orig):
-    """ Creates a complete path to the .txt file containing
-    predicted water levels at Neah Bay for the specified date
-    and for the mode chosen.
+def create_path(mode, t_orig, file_part):
+    """ Creates a path to a file associated with a simulation for date t_orig.
+    E.g.
+    create_path('nowcast',datatime.datetime(2015,1,1),'SalishSea_1h*grid_T.nc')
+    gives
+    /data/dlatorne/MEOPAR/SalishSea/nowcast/01jan15/SalishSea_1h_20150101_20150101_grid_T.nc
 
     :arg mode: Mode of results - nowcast, forecast, forecast2.
     :type mode: string
 
-    :arg t_orig: The beginning of the date range of interest.
+    :arg t_orig: The simulation start date.
     :type t_orig: datetime object
 
-    :returns: filename_NB (path including filename)
-              and run_date, a datetime object of the simulation run date
+
+    :arg file_part: Identifier for type of file.
+    E.g. SalishSea_1h*grid_T.nc or ssh*.txt
+    :type grid: string
+
+    :returns: filename, run_date
+    filename is the path of the file or empty list if the file does not exist.
+    run_date is a datetime object that represents the date the simulation ran
     """
 
     run_date = t_orig
 
-    # Directory housing all daily nowcast or forecast folders
-    if mode == 'nowcast':
-        results_home = paths['nowcast']
-    elif mode == 'forecast':
-        results_home = paths['forecast']
-        run_date = run_date + datetime.timedelta(days=-1)
-    elif mode == 'forecast2':
-        results_home = paths['forecast2']
-        run_date = run_date + datetime.timedelta(days=-2)
-
-    # Directory housing all result files for one day
-    results_dir = os.path.join(results_home,
-                               run_date.strftime('%d%b%y').lower())
-
-    # Directory and filename
-    filename_NB = glob.glob(results_dir+'/ssh*')
-    filename_NB = filename_NB[0]
-
-    return filename_NB, run_date
-
-
-def create_path_results(mode, t_orig):
-    """ Compiles a list of complete paths to the various
-    model result .nc files (both 1d and 1h and grid U, V, W and T)
-    for the specified mode and date.
-
-    :arg mode: Mode of results - nowcast, forecast, forecast2.
-    :type mode: string
-
-    :arg t_orig: The beginning of the date range of interest.
-    :type t_orig: datetime object
-
-    :returns: filenames (list of paths including filenames)
-    """
-
-    run_date = t_orig
-
-    # Directory housing all daily nowcast or forecast folders
     if mode == 'nowcast':
         results_home = paths['nowcast']
     elif mode == 'forecast':
@@ -432,177 +375,81 @@ def create_path_results(mode, t_orig):
 
     results_dir = os.path.join(results_home,
                                run_date.strftime('%d%b%y').lower())
-    filenames = glob.glob(results_dir+'/SalishSea_*_grid_*.nc')
 
-    return filenames
+    filename = glob.glob(os.path.join(results_dir, file_part))
+
+    try:
+        filename = filename[-1]
+    except IndexError:
+        pass
+
+    return filename, run_date
+
+
+def truncate_data(data, time, sdt, edt):
+    """ Truncates data for a desired time range: sdt <= time <= edt
+    data and time must be numpy arrays.
+    sdt, edt, and times in time must all have a timezone or all be naive.
+
+    :arg data: the data to be truncated
+    :type data: numpy array
+
+    :arg time: array of times associated with data
+    :type time: numpy array
+
+    :arg sdt: the start time of the tuncation
+    :type sdt: datetime object
+
+    :arg edt: the end time of the truncation
+    :type edt: datetime object
+
+    :returns: data_trun, time_trun, the truncated data and time arrays
+    """
+
+    inds = np.where(np.logical_and(time <= edt, time >= sdt))
+
+    return data[inds], time[inds]
 
 
 def verified_runs(t_orig):
     """ Compiles a list of run types (nowcast, forecast, and/or forecast 2)
     that have been verified as complete by checking if their corresponding
-    .nc files for that day (generated by create_path_results) exist.
+    .nc files for that day (generated by create_path) exist.
 
-    :arg t_orig: The beginning of the date range of interest.
+    :arg t_orig:
     :type t_orig: datetime object
 
-    :returns: runs_list (list of strings)
+    :returns: runs_list, list strings representing the runs that completed
     """
 
     runs_list = []
     for mode in ['nowcast', 'forecast', 'forecast2']:
-        files = create_path_results(mode, t_orig)
+        files, run_date = create_path(mode, t_orig, 'SalishSea*grid_T.nc')
         if files:
             runs_list.append(mode)
 
     return runs_list
 
 
-def load_surge_data(filename_NB):
-    """Loads the textfile with surge predictions for Neah Bay.
+def calculate_error(res_mod, time_mod, res_obs, time_obs):
+    """ Calculates the model or forcing residual error.
 
-    :arg filename_NB: Path to file of predicted water levels at Neah Bay.
-    :type filename_NB: string
+    :arg res_mod: Residual for model ssh or NB surge data.
+    :type res_mod: numpy array
 
-    :returns: data (data structure)
+    :arg time_mod: Time of model output.
+    :type time_mod: numpy array
+
+    :arg res_obs: Observed residual (archived or at Neah Bay)
+    :type res_obs: numpy array
+
+    :arg time_obs: Time corresponding to observed residual.
+    :type time_obs: numpy array
+
+    :return: error
     """
 
-    # Loading the data from that text file.
-    data = pd.read_csv(filename_NB, skiprows=3,
-                       names=['date', 'surge', 'tide', 'obs',
-                              'fcst', 'anom', 'comment'], comment='#')
-    # Drop rows with all Nans
-    data = data.dropna(how='all')
+    res_obs_interp = figures.interp_to_model_time(time_mod, res_obs, time_obs)
+    error = res_mod - res_obs_interp
 
-    return data
-
-
-def to_datetime(datestr, year, isDec, isJan):
-    """ Converts the string given by datestr to a datetime object.
-    The year is an argument because the datestr in the NOAA data
-    doesn't have a year. Times are in UTC/GMT.
-
-    :arg datestr: Date of data.
-    :type datestr: datetime object
-
-    :arg year: Year of data.
-    :type year: datetime object
-
-    :arg isDec: True if run date was December.
-    :type isDec: Boolean
-
-    :arg isJan: True if run date was January.
-    :type isJan: Boolean
-
-    :returns: dt (datetime representation of datestr)
-    """
-
-    dt = datetime.datetime.strptime(datestr, '%m/%d %HZ')
-    # Dealing with year changes.
-    if isDec and dt.month == 1:
-        dt = dt.replace(year=year+1)
-    elif isJan and dt.month == 12:
-        dt = dt.replace(year=year-1)
-    else:
-        dt = dt.replace(year=year)
-    dt = dt.replace(tzinfo=tz.tzutc())
-
-    return dt
-
-
-def retrieve_surge(data, run_date):
-    """ Gathers the surge information a forcing file from on run_date.
-
-    :arg data: Surge predictions data.
-    :type data: data structure
-
-    :arg run_date: Simulation run date.
-    :type run_date: datetime object
-
-    :returns: surges (meteres), times (array with time_counter)
-    """
-
-    surge = []
-    times = []
-    isDec, isJan = False, False
-    if run_date.month == 1:
-        isJan = True
-    if run_date.month == 12:
-        isDec = True
-    # Convert datetime to string for comparing with times in data
-    for d in data.date:
-
-        dt = to_datetime(d, run_date.year, isDec, isJan)
-        times.append(dt)
-        daystr = dt.strftime('%m/%d %HZ')
-        tide = data.tide[data.date == daystr].item()
-        obs = data.obs[data.date == daystr].item()
-        fcst = data.fcst[data.date == daystr].item()
-        if obs == 99.90:
-            # Fall daylight savings
-            if fcst == 99.90:
-                # If surge is empty, just append 0
-                if not surge:
-                    surge.append(0)
-                else:
-                    # Otherwise append previous value
-                    surge.append(surge[-1])
-            else:
-                surge.append(feet_to_metres(fcst-tide))
-        else:
-            surge.append(feet_to_metres(obs-tide))
-
-    return surge, times
-
-
-def plot_forced_residual(ax, t_orig):
-    """ Plots observed water level residual (calculate_wlev_residual_NOAA)
-    at Neah Bay against forced residuals using surge data (retrieve_surge)
-    from existing .txt files for Neah Bay. Function may produce none, any,
-    or all (nowcast, forecast, forecast 2) forced residuals depending on
-    availability for specified date.
-
-    :arg mode: Any or all modes of results - nowcast, forecast, forecast2.
-    :type mode: string
-
-    :arg t_orig: The beginning of the date range of interest.
-    :type t_orig: datetime object
-
-    :arg figsize: Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: figure
-    """
-
-    runs_list = verified_runs(t_orig)
-    t_forcing_start = t_orig
-
-    # Residual
-    residual, obs, tides = calculate_wlev_residual_NOAA('Neah Bay',
-                                                        t_forcing_start)
-    ax.plot(obs.time, residual, colours['observed'], label='observed',
-            linewidth=2.5)
-
-    # Nowcast and Forecasts
-    for mode in runs_list:
-        try:
-            filename_NB, run_date = create_path_sshNB(mode, t_orig)
-            data = load_surge_data(filename_NB)
-            surge, dates = retrieve_surge(data, run_date)
-            ax.plot(dates, surge, label=mode, linewidth=2.5,
-                    color=colours[mode])
-        except IndexError:
-            pass
-
-    # Figure format
-    ax.set_xlim(t_orig + datetime.timedelta(minutes=30),
-                t_orig + datetime.timedelta(days=1, minutes=30))
-    ax.set_ylim([-0.4, 0.4])
-    ax.set_xlabel('[hrs UTC]')
-    ax.set_ylabel('[m]')
-    ax.set_title('Comparison of observed and forced sea surface height residuals at Neah Bay: {t_forcing:%d-%b-%Y}'.format(t_forcing=t_forcing_start))
-    hfmt = mdates.DateFormatter('%m/%d %H:%M')
-    ax.xaxis.set_major_formatter(hfmt)
-    ax.legend(loc=2, ncol=4)
-    ax.grid()
-
-    return ax
+    return error
