@@ -975,10 +975,11 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
     :returns: tplot, an array with the time range winds were averaged:
               tplot[0] and tplot[-1] .
     """
-    [lats, lons] = station_coords()
+    lat = SITES[name]['lat']
+    lon = SITES[name]['lon']
 
     [wind, direc, t, pr, tem, sol, the, qr, pre] = get_model_winds(
-        lons[name], lats[name], t_orig, t_final, model_path)
+        lon, lat, t_orig, t_final, model_path)
 
     if inds == 'all':
         inds = np.array([0, np.shape(wind)[0] - 1])
@@ -994,7 +995,7 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
 
     # Arrows
     ax.arrow(
-        lons[name], lats[name], scale * uwind[0], scale * vwind[0],
+        lon, lat, scale * uwind[0], scale * vwind[0],
         head_width=0.05, head_length=0.1, width=0.02,
         color='white', fc='DarkMagenta', ec='black')
     tplot = t[inds[0]:inds[-1] + 1]
@@ -1035,14 +1036,15 @@ def isolate_wind_timing(
     :returns: inds, an array with the start and end index for plotting winds.
     """
 
-    [lats, lons] = station_coords()
+    lat = SITES[name]['lat']
+    lon = SITES[name]['lon']
 
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
     # Get sea surface height
-    [j, i] = tidetools.find_closest_model_point(
-        lons[name], lats[name], X, Y, bathy, allow_land=False)
+    j, i = tidetools.find_closest_model_point(
+        lon, lat, X, Y, bathy, allow_land=False)
     ssh = grid_T.variables['sossheig'][:, j, i]
 
     # "Place holder" residual so function can be used
@@ -1050,9 +1052,9 @@ def isolate_wind_timing(
 
     # Index at which sea surface height is at its maximum at Point Atkinson
     max_ssh, index_ssh, tmax, max_res, max_wind, ind_w = get_maxes(
-        ssh, t, placeholder_res, lons[name], lats[name], model_path)
+        ssh, t, placeholder_res, lon, lat, model_path)
 
-    # Build indices based in x hours before max ssh if possible. If not, start
+    # Build indices based on x hours before max ssh if possible. If not, start
     # at beginning of file.
     if ind_w > hour:
         inds = np.array([ind_w[0] - hour, ind_w])
@@ -1177,9 +1179,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         'weight': 'medium'
     }
 
-    # Stations information
-    [lats, lons] = station_coords()
-
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
@@ -1211,11 +1210,12 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
     for name in names:
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(
-            lons[name], lats[name], X, Y, bathy, allow_land=False)
-        ssh = grid_T.variables['sossheig']
-        ssh_loc = ssh[:, j, i]
+        j, i = tidetools.find_closest_model_point(
+            lon, lat, X, Y, bathy, allow_land=False)
+        ssh_loc = grid_T.variables['sossheig'][:, j, i]
 
         # Get tides and ssh
         ttide = get_tides(name)
@@ -1235,7 +1235,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
          max_res,
          max_wind,
          ind_w] = get_maxes(
-            ssh_corr, t, res, lons[name], lats[name], model_path)
+            ssh_corr, t, res, lon, lat, model_path)
         max_sshs[name] = max_ssh
         max_times[name] = tmax
         max_winds[name] = max_wind
@@ -1391,14 +1391,6 @@ def compare_water_levels(
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Stations information
-    [lats, lons] = station_coords()
-    stations = {
-        'Cherry Point': 9449424,
-        'Neah Bay': 9443090,
-        'Friday Harbor': 9449880,
-    }
-
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
@@ -1431,21 +1423,22 @@ def compare_water_levels(
     names = ['Neah Bay', 'Friday Harbor', 'Cherry Point']
 
     for name, M in zip(names, m):
-
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
         # Map
-        ax0.plot(lons[name], lats[name], marker='D', color='DarkMagenta',
+        ax0.plot(lon, lat, marker='D', color='DarkMagenta',
                  markersize=10, markeredgewidth=2)
         bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
-        ax0.annotate(name, (lons[name] - 0.05, lats[name] - 0.15), fontsize=15,
+        ax0.annotate(name, (lon - 0.05, lat - 0.15), fontsize=15,
                      color='black', bbox=bbox_args)
 
         # NOAA
-        obs = get_NOAA_wlevels(stations[name], start_date, end_date)
-        tides = get_NOAA_tides(stations[name], start_date, end_date)
+        obs = get_NOAA_wlevels(SITES[name]['stn_no'], start_date, end_date)
+        tides = get_NOAA_tides(SITES[name]['stn_no'], start_date, end_date)
 
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(
-            lons[name], lats[name], X, Y, bathy, allow_land=False)
+        j, i = tidetools.find_closest_model_point(
+            lon, lat, X, Y, bathy, allow_land=False)
         ssh = grid_T.variables['sossheig'][:, j, i]
 
         # Sea surface height plots
@@ -1526,7 +1519,8 @@ def compare_tidalpredictions_maxSSH(
     """
 
     # Stations information
-    [lats, lons] = station_coords()
+    lat = SITES[name]['lat']
+    lon = SITES[name]['lon']
 
     # Time range
     t_orig, t_final, t = get_model_time_variables(grid_T)
@@ -1536,8 +1530,8 @@ def compare_tidalpredictions_maxSSH(
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
     # Get sea surface height
-    [j, i] = tidetools.find_closest_model_point(
-        lons[name], lats[name], X, Y, bathy, allow_land=False)
+    j, i = tidetools.find_closest_model_point(
+        lon, lat, X, Y, bathy, allow_land=False)
     ssh = grid_T.variables['sossheig']
     ssh_loc = ssh[:, j, i]
 
@@ -1570,7 +1564,7 @@ def compare_tidalpredictions_maxSSH(
 
     # Find maximim sea surface height and timing
     max_ssh, index, tmax, max_res, max_wind, ind_w = get_maxes(
-        ssh_corr, t, res, lons[name], lats[name], model_path)
+        ssh_corr, t, res, lon, lat, model_path)
     ax0.text(0.05, 0.9, name, fontsize=20,
              horizontalalignment='left',
              verticalalignment='top', color='white')
@@ -1917,9 +1911,6 @@ def average_winds_at_station(
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Stations information
-    [lats, lons] = station_coords()
-
     # Map
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
@@ -1949,10 +1940,12 @@ def average_winds_at_station(
 
     # Loop through all stations to plot arrows and markers
     for name, station_c in zip(names, colors):
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
         plot_time = plot_wind_vector(
             ax, name, t_orig, t_final, model_path, 'all', scale)
         ax.plot(
-            lons[name], lats[name],
+            lon, lat,
             marker='D', markersize=14, markeredgewidth=2,
             color=station_c, label=name)
 
@@ -2017,9 +2010,6 @@ def winds_at_max_ssh(
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Stations information
-    [lats, lons] = station_coords()
-
     # Map
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
@@ -2065,10 +2055,12 @@ def winds_at_max_ssh(
 
     # Loop through all stations to plot arrows and markers
     for name, station_c in zip(names, colors):
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
         plot_time = plot_wind_vector(
             ax, name, t_orig, t_final, model_path, inds, scale)
         ax.plot(
-            lons[name], lats[name],
+            lon, lat,
             marker='D', markersize=14, markeredgewidth=2,
             color=station_c, label=name)
 
@@ -2438,9 +2430,6 @@ def plot_threshold_website(
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Stations information
-    [lats, lons] = station_coords()
-
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
@@ -2496,10 +2485,11 @@ def plot_threshold_website(
 
     for name in names:
         # Get sea surface height
-        [j, i] = tidetools.find_closest_model_point(
-            lons[name], lats[name], X, Y, bathy, allow_land=False)
-        ssh = grid_T.variables['sossheig']
-        ssh_loc = ssh[:, j, i]
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
+        j, i = tidetools.find_closest_model_point(
+            lon, lat, X, Y, bathy, allow_land=False)
+        ssh_loc = grid_T.variables['sossheig'][:, j, i]
 
         # Get tides and ssh
         ttide = get_tides(name)
@@ -2527,8 +2517,8 @@ def plot_threshold_website(
          ind_w] = get_maxes(ssh_corr,
                             t,
                             res,
-                            lons[name],
-                            lats[name],
+                            lon,
+                            lat,
                             model_path)
         max_sshs[name] = max_ssh
         max_times[name] = tmax
