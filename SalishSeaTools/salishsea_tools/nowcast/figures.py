@@ -856,7 +856,7 @@ def plot_tides(ax, name, PST, MSL, color=predictions_c):
     ttide = get_tides(name)
     ax.plot(
         ttide.time + PST * time_shift,
-        ttide.pred_all + MSL_DATUMS[name] * MSL,
+        ttide.pred_all + SITES[name]['msl'] * MSL,
         c=color, linewidth=2, label='Tidal predictions')
 
     return ttide
@@ -884,18 +884,16 @@ def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
     """Determines category (green, yellow, red) in which the max sea surface
     height at a station falls.
     """
-    # load lats and longs of stations
-    lats, lons = station_coords()  # these should probably be constants
+    # Easy access to several constants
+    lat = SITES[name]['lat']
+    lon = SITES[name]['lon']
+    msl = SITES[name]['msl']
+    extreme_ssh = SITES[name]['extreme_ssh']
 
-    # Defining thresholds
-    extreme_sshs = {
-        'Point Atkinson': 5.61,
-        'Campbell River': 5.35,
-        'Victoria': 3.76}
-    extreme_ssh = extreme_sshs[name]
-    max_tides = max(ttide.pred_all) + MSL_DATUMS[name]
+    # Determine thresholds
+    max_tides = max(ttide.pred_all) + msl
     mid_tides = 0.5 * (extreme_ssh - max_tides) + max_tides
-    max_ssh = np.max(ssh_corr) + MSL_DATUMS[name]
+    max_ssh = np.max(ssh_corr) + msl
 
     # Threshold colors
     if max_ssh < (max_tides):
@@ -906,7 +904,7 @@ def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
         threshold_c = 'Gold'
 
     ax.plot(
-        lons[name], lats[name],
+        lon, lat,
         marker=marker, markersize=msize, markeredgewidth=2,
         color=threshold_c, alpha=alpha)
 
@@ -1562,7 +1560,7 @@ def compare_tidalpredictions_maxSSH(
     # Sea surface height plot
     ttide = plot_tides(ax1, name, PST, MSL)
     ssh_corr = plot_corrected_model(
-        ax1, t, ssh_loc, ttide, PST, MSL, MSL_DATUMS[name])
+        ax1, t, ssh_loc, ttide, PST, MSL, SITES[name]['msl'])
     ax1.plot(
         t + PST * time_shift, ssh_loc,
         '--', c=model_c, linewidth=1, label='Model')
@@ -1711,6 +1709,7 @@ def plot_thresholds_all(
         ax0, grid_B, PNW_coastline, title='Degree of Flood Risk',
         xlim=(-125.4, -122.2), ylim=(48, 50.3))
 
+    # Bathymetry and model time
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
     t_orig, t_final, t = get_model_time_variables(grid_T)
     tzone = '[PST]' if PST else '[UTC]'
@@ -1723,8 +1722,7 @@ def plot_thresholds_all(
             SITES[name]['lon'], SITES[name]['lat'],
             X, Y, bathy, allow_land=False)
         ssh_loc = grid_T.variables['sossheig'][:, j, i]
-        # ssh_loc += SITES[name]['msl'] if MSL else 0
-        # need to revise other functions to use this
+        msl = SITES[name]['msl']
 
         # Plot tides, corrected model and original model
         ax = fig.add_subplot(gs[M, 0])
@@ -1732,10 +1730,10 @@ def plot_thresholds_all(
             plot_PA_observations(ax, PST)
         ttide = plot_tides(ax, name, PST, MSL)
         ssh_corr = plot_corrected_model(
-            ax, t, ssh_loc, ttide, PST, MSL, SITES[name]['msl'])
+            ax, t, ssh_loc, ttide, PST, MSL, msl)
         ax.plot(
-            t + t_shift, ssh_loc + SITES[name]['msl']*MSL,
-            '--', c=model_c, linewidth=1, label='Model')
+            t + t_shift, ssh_loc + msl*MSL,
+            '--', c=model_c, lw=1, label='Model')
 
         # Define and plot thresholds on map and in sea surface height plots
         thresholds = plot_threshold_map(
@@ -2610,7 +2608,7 @@ def plot_threshold_website(
             horizontalalignment='left', verticalalignment='top', color='w')
         ax.text(
             0.05, 0.7, 'Maximum Water Level: {:.2f} m'
-            .format(max_sshs[name] + MSL_DATUMS[name]), fontsize=15,
+            .format(max_sshs[name] + SITES[name]['msl']), fontsize=15,
             horizontalalignment='left', verticalalignment='top', color='w')
         ax.text(
             0.05, 0.3, 'Time: {time} {tzone}'
