@@ -1723,11 +1723,10 @@ def plot_thresholds_all(
         if name == 'Point Atkinson':
             plot_PA_observations(ax, PST)
         ttide = plot_tides(ax, name, PST, MSL)
-        ssh_corr = plot_corrected_model(
-            ax, t, ssh_loc, ttide, PST, MSL, msl)
+        ssh_corr = plot_corrected_model(ax, t, ssh_loc, ttide, PST, MSL, msl)
         ax.plot(
-            t + t_shift, ssh_loc + msl*MSL,
-            '--', c=model_c, lw=1, label='Model')
+            t + t_shift, ssh_loc + msl*MSL, '--',
+            c=model_c, lw=1, label='Model')
 
         # Define and plot thresholds on map and in sea surface height plots
         thresholds = plot_threshold_map(
