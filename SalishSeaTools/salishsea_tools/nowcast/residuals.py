@@ -422,7 +422,7 @@ def combine_errors(name, mode, dates, grid_B):
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset
 
-    :returns: model, force, time, daily_time.
+    :returns: force, model, time, daily_time.
     model and force are dictionaries with keys 'error' and 'daily'.
     Each key corresponds to array of error time series and daily means.
     time is an array of times correspinding to error caclulations
