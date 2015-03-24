@@ -32,6 +32,8 @@ Descriptions under the links below are from the first cell of the notebooks
 
 * ##[TestingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TestingAnalyzeModule.ipynb)
 
+* ##[ExamineResiduals.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/ExamineResiduals.ipynb)
+
 
 ##License
 
