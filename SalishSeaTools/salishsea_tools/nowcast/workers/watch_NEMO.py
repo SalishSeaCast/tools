@@ -109,7 +109,7 @@ def configure_argparser(prog, description, parents):
 def watch_NEMO(run_type, pid, config, socket):
     # Ensure that the run is in progress
     if not pid_exists(pid):
-        msg = 'NEMO run pid {} does not exist'.format(pid)
+        msg = '{}: NEMO run pid {} does not exist'.format(run_type, pid)
         logger.error(msg)
         lib.tell_manager(worker_name, 'log.error', config, logger, socket, msg)
         raise lib.WorkerError()
@@ -137,13 +137,15 @@ def watch_NEMO(run_type, pid, config, socket):
                 .format('YYYY-MM-DD HH:mm:ss UTC'))
             fraction_done = (time_step - it000) / (itend - it000)
             msg = (
-                'timestep: {} = {}, {:.1%} complete'
-                .format(time_step, model_time, fraction_done))
+                '{}: timestep: {} = {}, {:.1%} complete'
+                .format(run_type, time_step, model_time, fraction_done))
         except IOError:
             # time.step file not found; assument that run is young and it
             # hasn't been created yet, or has finished and it has been
             # moved to the results directory
-            msg = 'time.step not found; continuing to watch...'
+            msg = (
+                '{}: time.step not found; continuing to watch...'
+                .format(run_type))
         logger.debug(msg)
         lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
         time.sleep(POLL_INTERVAL)

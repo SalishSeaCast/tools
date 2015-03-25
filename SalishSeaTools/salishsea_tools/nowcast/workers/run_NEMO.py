@@ -135,13 +135,13 @@ def run_NEMO(host_name, run_type, config, socket):
     run_desc_file = '{}.yaml'.format(run_id)
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
-    msg = 'run description file: {}'.format(run_desc_file)
+    msg = '{}: run description file: {}'.format(run_type, run_desc_file)
     logger.debug(msg)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Create and populate the temporary run directory
     run_dir = salishsea_cmd.api.prepare(run_desc_file, 'iodef.xml')
-    msg = 'temporary run directory: {}'.format(run_dir)
+    msg = '{}: temporary run directory: {}'.format(run_type, run_dir)
     logger.debug(msg)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     os.unlink(run_desc_file)
@@ -155,36 +155,41 @@ def run_NEMO(host_name, run_type, config, socket):
     with open('SalishSeaNEMO.sh', 'wt') as f:
         f.write(script)
     lib.fix_perms('SalishSeaNEMO.sh', mode=lib.PERMS_RWX_RWX_R)
-    msg = 'run script: {}'.format(os.path.join(run_dir, 'SalishSeaNEMO.sh'))
+    msg = (
+        '{}: run script: {}'
+        .format(run_type, os.path.join(run_dir, 'SalishSeaNEMO.sh')))
     logger.debug(msg)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Launch the bash script
-    msg = 'launching ./SalishSeaNEMO.sh run script on {}'.format(host_name)
+    msg = (
+        '{}: launching ./SalishSeaNEMO.sh run script on {}'
+        .format(run_type, host_name))
     logger.info(msg)
     lib.tell_manager(worker_name, 'log.info', config, logger, socket, msg)
     cmd = shlex.split('./SalishSeaNEMO.sh')
-    msg = 'running command in subprocess: {}'.format(cmd)
+    msg = '{}: running command in subprocess: {}'.format(run_type, cmd)
     logger.debug(cmd)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     run_process = subprocess.Popen(cmd)
-    msg = 'run pid: {.pid}'.format(run_process)
+    msg = '{}: run pid: {.pid}'.format(run_type, run_process)
     logger.debug(msg)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
 
     # Launch the run watcher worker
-    logger.info('launching watch_NEMO worker on {}'.format(host_name))
-    logger.debug(cmd)
+    msg = 'launching watch_NEMO worker on {}'.format(run_type, host_name)
+    logger.info(msg)
+    lib.tell_manager(worker_name, 'log.info', config, logger, socket, msg)
     cmd = shlex.split(
         'python -m salishsea_tools.nowcast.workers.watch_NEMO '
         '/home/ubuntu/MEOPAR/nowcast/nowcast.yaml '
         '{run_type} {pid}'.format(run_type=run_type, pid=run_process.pid)
     )
-    msg = 'running command in subprocess: {}'.format(cmd)
+    msg = '{}: running command in subprocess: {}'.format(run_type, cmd)
     logger.debug(cmd)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     watcher_process = subprocess.Popen(cmd)
-    msg = 'watcher pid: {.pid}'.format(watcher_process)
+    msg = '{}: watcher pid: {.pid}'.format(run_type, watcher_process)
     logger.debug(msg)
     lib.tell_manager(worker_name, 'log.debug', config, logger, socket, msg)
     return {run_type: {
