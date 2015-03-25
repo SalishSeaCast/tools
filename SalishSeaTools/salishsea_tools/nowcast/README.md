@@ -12,32 +12,60 @@ The links below are to static renderings of the notebooks via
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[TracerCurrents_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TracerCurrents_Template.ipynb)
+* ##[In_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/In_Template.ipynb)  
+    
+    Reasearch figures template  
 
-* ##[DevelopingNowcastFigureFunctions.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingNowcastFigureFunctions.ipynb)
-    This notebook describes the recommended process for development of
-    functions for the `salishsea_tools.nowcast.figures` module,
-    and provides an example of development of such a function.
+* ##[Salininty_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Salininty_Template.ipynb)  
+    
+    Salinity ferry data template  
 
-* ##[DailyNowcastFigures.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DailyNowcastFigures.ipynb)
-    Template notebook for creation of notebooks that show daily figures
-    from most recent Salish Sea NEMO model real-time (nowcast) run.
+* ##[TofinoWaterLevels.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TofinoWaterLevels.ipynb)  
+    
+    Notebook to compare Tofino water levels to previous years.  
 
-    This is an interim step toward fully automated web publication of
-    analysis and monitoring figures from nowcast runs.
+* ##[DevelopingNowcastFigureFunctions.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingNowcastFigureFunctions.ipynb)  
+    
+    This notebook describes the recommended process for development of  
+    functions for the `salishsea_tools.nowcast.figures` module,  
+    and provides an example of development of such a function.  
 
-* ##[SSH_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/SSH_Template.ipynb)
+* ##[ExamineResiduals.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/ExamineResiduals.ipynb)  
+    
+    Notebook for examinng residuals and error in residuals  
 
-* ##[DevelopingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingAnalyzeModule.ipynb)
+* ##[FCST_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/FCST_Template.ipynb)  
+    
+    Forecast template  
 
-* ##[TestingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TestingAnalyzeModule.ipynb)
+* ##[TestingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TestingAnalyzeModule.ipynb)  
+    
+    Noteboook to test analyze.py functions  
 
-* ##[ExamineResiduals.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/ExamineResiduals.ipynb)
+* ##[Original_DailyNowcastFigures.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Original_DailyNowcastFigures.ipynb)  
+    
+    Template notebook for creation of notebooks that show daily figures  
+    from most recent Salish Sea NEMO model real-time (nowcast) run.  
+      
+    This is an interim step toward fully automated web publication of  
+    analysis and monitoring figures from nowcast runs.  
+
+* ##[DevelopingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingAnalyzeModule.ipynb)  
+    
+    Notebook for developing functions in analyze.py  
+
+* ##[DailyNowcastFigures.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DailyNowcastFigures.ipynb)  
+    
+    Template for daily nowcast figure generation.  
+
+* ##[Out_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Out_Template.ipynb)  
+    
+    Production template  
 
 
 ##License
 
-These notebooks and files are copyright 2014
+These notebooks and files are copyright 2015
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
