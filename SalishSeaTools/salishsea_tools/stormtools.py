@@ -36,15 +36,15 @@ def convert_date_seconds(times, start):
     Note: Doug has a better version of this in nc_tools.timestamp
 
     :arg times: array of seconds since the start date of a simulation.
-    From time_counter in model output.
+                From time_counter in model output.
     :type times: int
 
     :arg start: string containing the start date of the simulation in
-    format '01-Nov-2006'
+                format '01-Nov-2006'
     :type start: str
 
     :arg diff: string indicating the time step in the times data
-    E.g. months, seconds, days
+               E.g. months, seconds, days
     :type diff: str
 
     :returns: array of datetime objects representing the time of model outputs.
@@ -63,11 +63,11 @@ def convert_date_hours(times, start):
     This function converts model output time in hours to datetime objects.
 
     :arg times: array of hours since the start date of a simulation.
-    From time_counter in model output.
+                From time_counter in model output.
     :type times: int
 
     :arg start: string containing the start date of the simulation in
-    format '01-Nov-2006'
+                format '01-Nov-2006'
     :type start: str
 
     :returns: array of datetime objects representing the time of model outputs.
@@ -88,19 +88,19 @@ def get_CGRF_weather(start, end, grid):
     grid point defined in grid.
 
     :arg start: string containing the start date of the CGRF collection in
-    format '01-Nov-2006'
+                format '01-Nov-2006'
     :type start: str
 
     :arg start: string containing the end date of the CGRF collection in
-    format '01-Nov-2006'
+                format '01-Nov-2006'
     :type start: str
 
     :arg grid: array of the CGRF grid coordinates for the point of interest
-    eg. [244,245]
+               eg. [244,245]
     :arg type: arr of ints
 
     :returns: windspeed, winddir pressure and time array from CGRF data for
-    the times indicated
+              the times indicated
     """
     u10 = []
     v10 = []
@@ -155,16 +155,19 @@ def combine_data(data_list):
     dict objects of model fields.
     It is used for easy handling of output from thalweg and surge stations.
 
-    :arg data_list: dict object that contains the netcdf handles for the files
-    to be combined.e.g {'Thalweg1': f1, 'Thalweg2': f2,...} where
-    f1 = NC.Dataset('1h_Thalweg1.nc','r')
+    :arg data_list: dict object that contains the netcdf handles for the
+                    files to be combined;
+                    e.g. {'Thalweg1': f1, 'Thalweg2': f2,...}
+                    where f1 = NC.Dataset('1h_Thalweg1.nc','r')
     :type data_list: dict object
 
     :returns: dict objects us, vs, lats, lons, sals, tmps, sshs
-    with the zonal velocity, meridional velocity, latitude, longitude,
-    salinity, temperature, and sea surface height for each station.
-    The keys are the same as those in data_list. For example, us['Thalweg1']
-    contains the zonal velocity from the Thalweg 1 station.
+              with the zonal velocity, meridional velocity, latitude,
+              longitude, salinity, temperature, and sea surface height
+              for each station.
+              The keys are the same as those in data_list.
+              For example, us['Thalweg1'] contains the zonal velocity
+              from the Thalweg 1 station.
 
     """
 
@@ -473,7 +476,7 @@ def correct_model(ssh,ttide,sdt,edt):
     :type ssh: array of numbers
 
     :arg ttide: struc with tidal predictions. Assumes tidal predictions
-    are on the the hour can model output is on the 1/2 hour.
+                are on the the hour can model output is on the 1/2 hour.
     :type ttide: struc with dimension time, pred_all, pred_8
 
     :arg sdt: datetime object representing start date of simulation
@@ -744,19 +747,19 @@ def get_operational_weather(start, end, grid):
     the grid point defined in grid.
 
     :arg start: string containing the start date of the weather collection
-    in format '01-Nov-2006'
+                in format '01-Nov-2006'
     :type start: str
 
     :arg start: string containing the end date of the weather collection in
-    format '01-Nov-2006'
+                format '01-Nov-2006'
     :type start: str
 
     :arg grid: array of the operationa grid coordinates for the point of
-    interest eg. [244,245]
+               interest eg. [244,245]
     :arg type: arr of ints
 
     :returns: windspeed, winddir pressure and time array from weather data
-    for the times indicated
+              for the times indicated
     """
     u10 = []
     v10 = []
