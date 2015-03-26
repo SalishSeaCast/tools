@@ -185,14 +185,10 @@ def after_download_weather(worker, msg_type, payload, config):
         'success 06': [
             (update_checklist, [worker, 'weather', payload]),
             (launch_worker, ['make_runoff_file', config]),
-            (launch_worker, ['get_NeahBay_ssh', config, ['forecast2']]),
-            (launch_worker, ['grib_to_netcdf', config, ['forecast2']]),
         ],
         'failure 06': None,
         'success 12': [
             (update_checklist, [worker, 'weather', payload]),
-            (launch_worker, ['get_NeahBay_ssh', config, ['nowcast']]),
-            (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
         ],
         'failure 12': None,
         'success 18': [
@@ -201,6 +197,16 @@ def after_download_weather(worker, msg_type, payload, config):
         'failure 18': None,
         'crash': None,
     }
+    if 'forecast2' in config['run_types']:
+        actions['success 06'].extend([
+            (launch_worker, ['get_NeahBay_ssh', config, ['forecast2']]),
+            (launch_worker, ['grib_to_netcdf', config, ['forecast2']]),
+        ])
+    if 'nowcast' in config['run_types']:
+        actions['success 12'].extend([
+            (launch_worker, ['get_NeahBay_ssh', config, ['nowcast']]),
+            (launch_worker, ['grib_to_netcdf', config, ['nowcast+']]),
+        ])
     return actions[msg_type]
 
 
@@ -221,11 +227,11 @@ def after_get_NeahBay_ssh(worker, msg_type, payload, config):
         'failure forecast2': None,
         'crash': None,
     }
-    if 'hpc host' in config['run']:
+    if 'hpc host' in config['run'] and 'forecast' in config['run_types']:
         actions['success forecast'].append(
             (launch_worker, [
              'upload_forcing', config, [config['run']['hpc host'], 'ssh']]))
-    if 'cloud host' in config['run']:
+    if 'cloud host' in config['run'] and 'forecast' in config['run_types']:
         actions['success forecast'].append(
             (launch_worker, [
              'upload_forcing', config, [config['run']['cloud host'], 'ssh']]))
@@ -258,23 +264,27 @@ def after_grib_to_netcdf(worker, msg_type, payload, config):
         'crash': None,
     }
     if 'hpc host' in config['run']:
-        actions['success nowcast+'].append(
-            (launch_worker, [
-                'upload_forcing', config,
-                [config['run']['hpc host'], 'nowcast+']]))
-        actions['success forecast2'].append(
-            (launch_worker, [
-                'upload_forcing', config,
-                [config['run']['hpc host'], 'forecast2']]))
+        if 'nowcast' in config['run_types']:
+            actions['success nowcast+'].append(
+                (launch_worker, [
+                    'upload_forcing', config,
+                    [config['run']['hpc host'], 'nowcast+']]))
+        if 'forecast2' in config['run_types']:
+            actions['success forecast2'].append(
+                (launch_worker, [
+                    'upload_forcing', config,
+                    [config['run']['hpc host'], 'forecast2']]))
     if 'cloud host' in config['run']:
-        actions['success nowcast+'].append(
-            (launch_worker, [
-             'upload_forcing', config,
-             [config['run']['cloud host'], 'nowcast+']]))
-        actions['success forecast2'].append(
-            (launch_worker, [
-             'upload_forcing', config,
-             [config['run']['cloud host'], 'forecast2']]))
+        if 'nowcast' in config['run_types']:
+            actions['success nowcast+'].append(
+                (launch_worker, [
+                 'upload_forcing', config,
+                 [config['run']['cloud host'], 'nowcast+']]))
+        if 'forecast2' in config['run_types']:
+            actions['success forecast2'].append(
+                (launch_worker, [
+                 'upload_forcing', config,
+                 [config['run']['cloud host'], 'forecast2']]))
     return actions[msg_type]
 
 
@@ -385,24 +395,33 @@ def after_upload_forcing(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast+': [
             (update_checklist, [worker, 'forcing upload', payload]),
-            (launch_worker,
-             ['make_forcing_links', config, [host_name, 'nowcast+']]),
         ],
         'failure nowcast+': None,
         'success forecast2': [
             (update_checklist, [worker, 'forcing upload', payload]),
-            (launch_worker,
-             ['make_forcing_links', config, [host_name, 'forecast2']]),
         ],
         'failure forecast2': None,
         'success ssh': [
             (update_checklist, [worker, 'forcing upload', payload]),
-            (launch_worker,
-             ['make_forcing_links', config, [host_name, 'ssh']]),
         ],
         'failure ssh': None,
         'crash': None,
     }
+    if 'nowcast' in config['run_types']:
+        actions['success nowcast+'].append(
+            (launch_worker,
+             ['make_forcing_links', config, [host_name, 'nowcast+']]),
+        )
+    if 'forecast' in config['run_types']:
+        actions['success ssh'].append(
+            (launch_worker,
+             ['make_forcing_links', config, [host_name, 'ssh']]),
+        )
+    if 'forecast2' in config['run_types']:
+        actions['success forecast2'].append(
+            (launch_worker,
+             ['make_forcing_links', config, [host_name, 'forecast2']]),
+        )
     return actions[msg_type]
 
 

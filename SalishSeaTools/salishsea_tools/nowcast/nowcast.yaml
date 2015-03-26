@@ -35,6 +35,13 @@ weather:
   # Location of Pramod Thupaki's grid_defn.pl script
   grid_defn.pl: /ocean/sallen/allen/research/MEOPAR/private-tools/PThupaki/grid_defn.pl
 
+run_types:
+  # List of run types to execute
+  # Note that forecast requires a nowcast to have been completed,
+  # and forecast2 requires a forecast to have been completed.
+  - nowcast
+  - forecast
+  - forecast2
 
 run:
   # If the `cloud host` key is present, the cloud will be prepared
