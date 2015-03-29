@@ -118,8 +118,8 @@ below.
         parsed_args = parser.parse_args()
         config = lib.load_config(parsed_args.config_file)
         lib.configure_logging(config, logger, parsed_args.debug)
-        logger.info('running in process {}'.format(os.getpid()))
-        logger.info('read config from {.config_file}'.format(parsed_args))
+        logger.debug('running in process {}'.format(os.getpid()))
+        logger.debug('read config from {.config_file}'.format(parsed_args))
         lib.install_signal_handlers(logger, context)
         socket = lib.init_zmq_req_rep_worker(context, config, logger)
 
@@ -147,7 +147,7 @@ below.
 
         # Finish up
         context.destroy()
-        logger.info('task completed; shutting down')
+        logger.debug('task completed; shutting down')
 
 
     def worker_function(config, ...):
@@ -262,8 +262,8 @@ Lines 39 to 41 configure the logging system and start logging messages about wha
 .. code-block:: python
 
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
 
 The settings that define where the log files are stored,
 how their contents are formatted,
@@ -275,7 +275,7 @@ The :option:`--debug` on the command-line sets the value of :kbd:`parsed_arg.deb
 (it defaults to :py:obj:`False`).
 
 The :py:data:`logger` instance has a variety of method for sending messages to the logging system at different levels of importance.
-We mostly use :py:meth:`logging.info` for generally informative methods,
+We mostly use :py:meth:`logging.info` for generally informative messages,
 :py:meth:`logging.debug` for message about deeper levels of execution,
 and :py:meth:`logging.error` for error message.
 

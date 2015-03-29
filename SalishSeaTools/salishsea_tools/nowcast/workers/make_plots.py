@@ -56,10 +56,10 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info(
+    logger.debug(
         '{0.plot_type} {0.run_type}: running in process {pid}'
         .format(parsed_args, pid=os.getpid()))
-    logger.info(
+    logger.debug(
         '{0.plot_type} {0.run_type}: read config from {0.config_file}'
         .format(parsed_args))
     lib.install_signal_handlers(logger, context)
@@ -98,7 +98,7 @@ def main():
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info(
+    logger.debug(
         '{0.plot_type} {0.run_type}: task completed; shutting down'
         .format(parsed_args))
 

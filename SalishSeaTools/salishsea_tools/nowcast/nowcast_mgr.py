@@ -54,8 +54,8 @@ def main():
     config = lib.load_config(parsed_args.config_file)
     config['logging']['console'] = parsed_args.debug
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
 
     # Set up interrupt and kill signal handlers
     lib.install_signal_handlers(logger, context)
@@ -64,7 +64,7 @@ def main():
     socket = context.socket(zmq.REP)
     backend_port = config['zmq']['ports']['backend']
     socket.connect('tcp://localhost:{}'.format(backend_port))
-    logger.info('connected to port {}'.format(backend_port))
+    logger.debug('connected to port {}'.format(backend_port))
 
     if not parsed_args.ignore_checklist:
         # Load the serialized checklist left by a previous instance of
@@ -74,7 +74,7 @@ def main():
                 global checklist
                 checklist = yaml.load(f)
                 logger.info('checklist read from disk')
-                logger.debug(
+                logger.info(
                     'checklist:\n{}'.format(pprint.pformat(checklist)))
         except IOError as e:
             logger.warning('checklist load failed: {.message}'.format(e))
@@ -82,7 +82,7 @@ def main():
 
     while True:
         # Process messages from workers
-        logger.info('listening...')
+        logger.debug('listening...')
         try:
             message = socket.recv()
             reply, next_steps = message_processor(config, message)
@@ -156,7 +156,7 @@ def message_processor(config, message):
         reply = lib.serialize_message(mgr_name, 'undefined msg')
         return reply, None
     # Recognized message type
-    logger.info(
+    logger.debug(
         'received message from {worker}: ({msg_type}) {msg_words}'
         .format(worker=worker,
                 msg_type=msg_type,
@@ -616,9 +616,9 @@ def update_checklist(worker, key, worker_checklist):
         checklist[key].update(worker_checklist)
     except (KeyError, ValueError, AttributeError):
         checklist[key] = worker_checklist
-    logger.debug('checklist:\n{}'.format(pprint.pformat(checklist)))
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
+    logger.info('checklist:\n{}'.format(pprint.pformat(checklist)))
     with open('nowcast_checklist.yaml', 'wt') as f:
         yaml.dump(checklist, f)
 
@@ -681,7 +681,7 @@ def rotate_log_file(config):
             level = logging.getLevelName(handler.level).lower()
             lib.fix_perms(config['logging']['log_files'][level])
             logger.info('log file rotated')
-            logger.info('running in process {}'.format(os.getpid()))
+            logger.debug('running in process {}'.format(os.getpid()))
     except AttributeError:
         # Logging handler has no rollover; probably a StreamHandler
         pass

@@ -75,8 +75,8 @@ def main():
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
     configure_wgrib2_logging(config)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -106,7 +106,7 @@ def main():
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.debug('task completed; shutting down')
 
 
 def configure_argparser(prog, description, parents):
@@ -198,7 +198,7 @@ def define_forecast_segments_nowcast():
     p1 = os.path.join(yesterday.format('YYYYMMDD'), '18')
     p2 = os.path.join(today.format('YYYYMMDD'), '00')
     p3 = os.path.join(today.format('YYYYMMDD'), '12')
-    logger.info('forecast sections: {} {} {}'.format(p1, p2, p3))
+    logger.debug('forecast sections: {} {} {}'.format(p1, p2, p3))
     fcst_section_hrs_arr[0] = OrderedDict([
         # (part, (dir, real start hr, forecast start hr, end hr))
         ('section 1', (p1, -1, 24-18-1, 24-18+0)),
@@ -212,7 +212,7 @@ def define_forecast_segments_nowcast():
 
     # tomorrow (forecast)
     p1 = os.path.join(today.format('YYYYMMDD'), '12')
-    logger.info('tomorrow forecast section: {}'.format(p1))
+    logger.debug('tomorrow forecast section: {}'.format(p1))
     fcst_section_hrs_arr[1] = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24-12-1, 24+23-12)),
@@ -224,7 +224,7 @@ def define_forecast_segments_nowcast():
 
     # next day (forecast)
     p1 = os.path.join(today.format('YYYYMMDD'), '12')
-    logger.info('next day forecast section: {}'.format(p1))
+    logger.debug('next day forecast section: {}'.format(p1))
     fcst_section_hrs_arr[2] = OrderedDict([
         # (part, (dir, start hr, end hr))
         ('section 1', (p1, -1, 24+24-12-1, 24+24+12-12)),
@@ -323,7 +323,7 @@ def rotate_grib_wind(config, fcst_section_hrs):
             lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outuv)
     os.unlink('wgrib2')
-    logger.info('consolidated and rotated wind components')
+    logger.debug('consolidated and rotated wind components')
 
 
 def collect_grib_scalars(config, fcst_section_hrs):
@@ -369,7 +369,7 @@ def collect_grib_scalars(config, fcst_section_hrs):
             lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outscalar)
     os.unlink('wgrib2')
-    logger.info('consolidated and re-gridded scalar variables')
+    logger.debug('consolidated and re-gridded scalar variables')
 
 
 def concat_hourly_gribs(config, ymd, fcst_section_hrs):
@@ -415,10 +415,10 @@ def concat_hourly_gribs(config, ymd, fcst_section_hrs):
                 lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outuvrot)
             os.remove(outscalargrid)
-    logger.info(
+    logger.debug(
         'concatenated variables in hour order from hourly files '
         'to daily file {}'.format(outgrib))
-    logger.info(
+    logger.debug(
         'created zero-hour file for initialization of accumulated -> '
         'instantaneous values calculations: {}'.format(outzeros))
     return outgrib, outzeros
@@ -440,12 +440,12 @@ def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib,
     jstr = '{jst}:{jen}'.format(jst=jst, jen=jen)
     cmd = [wgrib2, outgrib, '-ijsmall_grib', istr, jstr, newgrib]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
-    logger.info(
+    logger.debug(
         'cropped hourly file to watersheds sub-region: {}'
         .format(newgrib))
     cmd = [wgrib2, outzeros, '-ijsmall_grib', istr, jstr, newzeros]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
-    logger.info(
+    logger.debug(
         'cropped zero-hour file to watersheds sub-region: {}'
         .format(newgrib))
     os.remove(outgrib)
@@ -463,13 +463,13 @@ def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
                               'oper_000_{ymd}.nc'.format(ymd=ymd))
     cmd = [wgrib2, outgrib, '-netcdf', outnetcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
-    logger.info(
+    logger.debug(
         'created hourly netCDF classic file: {}'
         .format(outnetcdf))
     lib.fix_perms(outnetcdf, grp_name=config['file group'])
     cmd = [wgrib2, outzeros, '-netcdf', out0netcdf]
     lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
-    logger.info(
+    logger.debug(
         'created zero-hour netCDF classic file: {}'
         .format(out0netcdf))
     os.remove(outgrib)
@@ -517,7 +517,7 @@ def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     for var in acc_vars:
         data.variables[var][:] = acc_values['inst'][var][:]
     data.close()
-    logger.info(
+    logger.debug(
         'calculated instantaneous values from forecast accumulated values '
         'for precipitation and long- & short-wave radiation')
 
@@ -538,7 +538,7 @@ def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     data.renameVariable('TMP_2maboveground', 'tair')
     data.renameVariable('PRMSL_meansealevel', 'atmpres')
     data.renameVariable('APCP_surface', 'precip')
-    logger.info('changed variable names to their NEMO names')
+    logger.debug('changed variable names to their NEMO names')
 
     Temp = data.variables['tair'][:]
     axs[0, ip].pcolormesh(Temp[0])
@@ -577,7 +577,7 @@ def netCDF4_deflate(outnetcdf):
     cmd = ['ncks', '-4', '-L4', '-O', outnetcdf, outnetcdf]
     try:
         lib.run_in_subprocess(cmd, logger.debug, logger.error)
-        logger.info('netCDF4 deflated {}'.format(outnetcdf))
+        logger.debug('netCDF4 deflated {}'.format(outnetcdf))
     except lib.WorkerError:
         raise
 

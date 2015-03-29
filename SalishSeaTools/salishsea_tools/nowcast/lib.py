@@ -257,7 +257,7 @@ def init_zmq_req_rep_worker(context, config, logger, mgr_host='localhost'):
     port = config['zmq']['ports']['frontend']
     socket.connect(
         'tcp://{mgr_host}:{port}'.format(mgr_host=mgr_host, port=port))
-    logger.info(
+    logger.debug(
         'connected to {mgr_host} port {port}'
         .format(mgr_host=mgr_host, port=port))
     return socket
@@ -298,7 +298,7 @@ def tell_manager(
     # Send message to nowcast manager
     message = serialize_message(worker_name, msg_type, payload)
     socket.send(message)
-    logger.info(
+    logger.debug(
         'sent message: ({msg_type}) {msg_words}'
         .format(
             msg_type=msg_type,
@@ -308,7 +308,7 @@ def tell_manager(
     message = deserialize_message(msg)
     source = message['source']
     msg_type = message['msg_type']
-    logger.info(
+    logger.debug(
         'received message from {source}: ({msg_type}) {msg_words}'
         .format(source=source,
                 msg_type=message['msg_type'],
@@ -413,7 +413,7 @@ def get_web_data(
         requests.exceptions.HTTPError,
         socket.error,
     ) as e:
-        logger.warning('received {0.message} from {url}'.format(e, url=url))
+        logger.debug('received {0.message} from {url}'.format(e, url=url))
         delay = first_retry_delay
         retries = 0
         while delay <= retry_time_limit:
@@ -428,7 +428,7 @@ def get_web_data(
                 requests.exceptions.HTTPError,
                 socket.error,
             ) as e:
-                logger.warning(
+                logger.debug(
                     'received {0.message} from {url}'.format(e, url=url))
                 delay *= retry_backoff_factor
                 retries += 1
