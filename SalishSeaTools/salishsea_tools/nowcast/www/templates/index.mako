@@ -35,6 +35,7 @@ Log files from the model run automation system and forcing data monitoring plots
             <th>Tracers &amp; Currents</th>
           </tr>
           ${grid_row("Nowcast", nowcast_res_dates, "nowcast", "research")}
+          ${ipynb_row("Surface Salinity", sal_comp_dates, sal_comp_path, sal_comp_fileroot)}
         </table>
       </div>
     </div>
@@ -61,6 +62,24 @@ Log files from the model run automation system and forcing data monitoring plots
           &nbsp;
         %else:
           <a href="${run_type}/${page_type}_${d.format("DDMMMYY").lower()}.html">
+            ${d.format("D")}
+          </a>
+        %endif
+      </td>
+    %endfor
+  </tr>
+</%def>
+
+
+<%def name="ipynb_row(title, dates, path, fileroot)">
+  <tr>
+    <td class="text-right">${title}</td>
+    %for d in dates:
+      <td class="text-center">
+        %if d is None:
+          &nbsp;
+        %else:
+          <a href="http://nbviewer.ipython.org/url/${path}/${fileroot}_${d.format("DDMMMYY").lower()}.ipynb">
             ${d.format("D")}
           </a>
         %endif
