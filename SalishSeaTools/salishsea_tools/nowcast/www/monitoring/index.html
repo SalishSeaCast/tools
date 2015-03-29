@@ -86,6 +86,20 @@
     A total of 7 day's log files are retained.
   </p>
   <p>
+    There are 2 flavours of log files:
+    <ul>
+      <li>
+        <code>nowcast.log</code> which contains messages logged at the <code>info</code> level and above
+        (<code>warning</code>, <code>error</code>, etc.).
+        This is the most concise log file.
+      </li>
+      <li>
+        <code>nowcast.debug.log</code> which contains messages logged at the <code>debug</code> level and above;
+i.e. all of the nitty-gritty details.
+      </li>
+    </ul>
+  </p>
+  <p>
     The log file rollovers happen after the forecast run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
     <a href="http://salishsea.eos.ubc.ca/nemo/results/">results page</a>
     and as the storm surge
@@ -93,28 +107,64 @@
     forecast page</a>.
   </p>
   <dl>
-    <dt><a href="nowcast.log"><code>nowcast.log</code></a></dt>
+    <dt>
+      <a href="nowcast.log"><code>nowcast.log</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log"><code>nowcast.debug.log</code></a>
+    </dt>
     <dd>
-      Current log file.
+      Current log files.
       Nearly empty after the forecast run results have been pushed to the
       <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
-      and the current day's run log file is rolled over to
-      <a href="nowcast.log.1"><code>nowcast.log.1</code></a>.
+      and the current day's run log files are rolled over to
+      <a href="nowcast.log.1"><code>nowcast.log.1</code></a>
+      and <a href="nowcast.debug.log.1"><code>nowcast.debug.log.1</code></a>.
       </dd>
-    <dt><a href="nowcast.log.1"><code>nowcast.log.1</code></a></dt>
+    <dt>
+      <a href="nowcast.log.1"><code>nowcast.log.1</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.1"><code>nowcast.debug.log.1</code></a>
+    </dt>
     <dd>
-      Previous log file.
-      Rolls over to <a href="nowcast.log.2"><code>nowcast.log.2</code></a> when <code>nowcast.log</code> rolls over to <code>nowcast.log.1</code>.
+      Previous log files.
+      Roll over to
+      <a href="nowcast.log.2"><code>nowcast.log.2</code></a>
+      and <a href="nowcast.debug.log.2"><code>nowcast.debug.log.2</code></a>
+      when <code>nowcast.log</code> rolls over to <code>nowcast.log.1</code>.
     </dd>
   </dl>
   <p>Older log files:</p>
   <ul>
-    <li><a href="nowcast.log.2"><code>nowcast.log.2</code></a></li>
-    <li><a href="nowcast.log.3"><code>nowcast.log.3</code></a></li>
-    <li><a href="nowcast.log.4"><code>nowcast.log.4</code></a></li>
-    <li><a href="nowcast.log.5"><code>nowcast.log.5</code></a></li>
-    <li><a href="nowcast.log.6"><code>nowcast.log.6</code></a></li>
-    <li><a href="nowcast.log.7"><code>nowcast.log.7</code></a></li>
+    <li>
+      <a href="nowcast.log.2"><code>nowcast.log.2</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.2"><code>nowcast.debug.log.2</code></a>
+    </li>
+    <li>
+      <a href="nowcast.log.3"><code>nowcast.log.3</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.3"><code>nowcast.debug.log.3</code></a>
+    </li>
+    <li>
+      <a href="nowcast.log.4"><code>nowcast.log.4</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.4"><code>nowcast.debug.log.4</code></a>
+    </li>
+    <li>
+      <a href="nowcast.log.5"><code>nowcast.log.5</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.5"><code>nowcast.debug.log.5</code></a>
+    </li>
+    <li>
+      <a href="nowcast.log.6"><code>nowcast.log.6</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.6"><code>nowcast.debug.log.6</code></a>
+    </li>
+    <li>
+      <a href="nowcast.log.7"><code>nowcast.log.7</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast.debug.log.7"><code>nowcast.debug.log.7</code></a>
+    </li>
   </ul>
 
 
