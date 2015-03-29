@@ -678,7 +678,8 @@ def rotate_log_file(config):
         for handler in logger.handlers:
             logger.info('rotating log file')
             handler.doRollover()
-            lib.fix_perms(config['logging']['log_file'])
+            level = logging.getLevelName(handler.level).lower()
+            lib.fix_perms(config['logging']['log_files'][level])
             logger.info('log file rotated')
             logger.info('running in process {}'.format(os.getpid()))
     except AttributeError:
