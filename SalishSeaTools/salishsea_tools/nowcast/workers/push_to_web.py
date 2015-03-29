@@ -39,8 +39,8 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -66,7 +66,7 @@ def main():
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.debug('task completed; shutting down')
 
 
 def push_to_web(config):
@@ -101,12 +101,12 @@ def hg_update(repo_url, www_path):
     repo = os.path.join(www_path, repo_name)
     if os.path.exists(repo):
         cmd = ['hg', 'pull', '--update', '--cwd', repo]
-        logger.info('pulling updates from {}'.format(repo_url))
+        logger.debug('pulling updates from {}'.format(repo_url))
     else:
         cmd = ['hg', 'clone', repo_url, repo]
-        logger.info('cloning{}'.format(repo_url))
+        logger.debug('cloning{}'.format(repo_url))
     lib.run_in_subprocess(cmd, logger.debug, logger.error)
-    logger.info('updated {}'.format(repo))
+    logger.info('hg updated {}'.format(repo))
     return repo
 
 
@@ -117,6 +117,7 @@ def sphinx_build(repo_path):
     site_path = os.path.join(repo_path, 'site')
     build_path = os.path.join(site_path, '_build')
     html_path = os.path.join(build_path, 'html')
+    logger.debug('starting sphinx-build of {}'.format(site_path))
     cmd = 'rm -rf {}'.format(os.path.join(build_path, '*'))
     subprocess.check_call(cmd, shell=True)
     cmd = [
@@ -142,7 +143,8 @@ def rsync_to_site(html_path, results_pages, plots_paths, server_path):
             server_path,
         ]
         lib.run_in_subprocess(cmd, logger.debug, logger.error)
-        logger.info('pushed results pages to {}/'.format(server_path))
+        logger.info(
+            'pushed {} results pages to {}/'.format(results_path, server_path))
     for plots_path in plots_paths:
         cmd = [
             'rsync', '-rRtv',
@@ -150,7 +152,7 @@ def rsync_to_site(html_path, results_pages, plots_paths, server_path):
             server_path,
         ]
         lib.run_in_subprocess(cmd, logger.debug, logger.error)
-        logger.info('pushed plots to {}/'.format(server_path))
+        logger.info('pushed {} plots to {}/'.format(plots_path, server_path))
 
 
 if __name__ == '__main__':

@@ -68,8 +68,8 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -100,7 +100,7 @@ def main():
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.debug('task completed; shutting down')
 
 
 def configure_argparser(prog, description, parents):

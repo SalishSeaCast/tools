@@ -49,8 +49,8 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.info('running in process {}'.format(os.getpid()))
-    logger.info('read config from {.config_file}'.format(parsed_args))
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
@@ -77,7 +77,7 @@ def main():
         lib.tell_manager(worker_name, 'crash', config, logger, socket)
     # Finish up
     context.destroy()
-    logger.info('task completed; shutting down')
+    logger.debug('task completed; shutting down')
 
 
 def make_runoff_file(config):
@@ -100,7 +100,9 @@ def make_runoff_file(config):
     criverflow, lat, lon, riverdepth = get_river_climatology(config)
     # Interpolate to today
     driverflow = calculate_daily_flow(yesterday, criverflow)
-    logger.debug('Getting file for {yesterday}'.format(yesterday=yesterday))
+    logger.debug(
+        'Getting file for {yesterday}'
+        .format(yesterday=yesterday.format('YYYY-MM-DD')))
     # Get Fraser Watershed Climatology without Fraser
     otherratio, fraserratio, nonFraser, afterHope = fraser_climatology(config)
     # Calculate combined runoff
@@ -115,7 +117,7 @@ def make_runoff_file(config):
     filepath = os.path.join(directory, filename)
     write_file(filepath, yesterday, runoff, lat, lon, riverdepth)
     logger.debug(
-        'File written to {directory} as {filename}'
+        'File written to {directory}/{filename}'
         .format(directory=directory, filename=filename))
     return filepath
 
