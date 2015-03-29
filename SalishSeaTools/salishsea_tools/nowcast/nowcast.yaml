@@ -130,7 +130,11 @@ web:
 logging:
   # Log files are created in the same directory as the nowcast YAML
   # config file that is used for the nowcast_mgr process
-  log_file: nowcast.log
+  log_files:
+    # Keys are the logging level that messages at and above will be sent
+    # to the file named in the value
+    debug: nowcast.debug.log
+    info: nowcast.log
   backup_count: 7
   wgrib2_log_file: wgrib2.log
   # Format strings must be quoted to protect % characters

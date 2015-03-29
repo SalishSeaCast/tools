@@ -184,18 +184,19 @@ def configure_logging(config, logger, debug):
     :type debug: boolean
     """
     logger.setLevel(logging.DEBUG)
-    log_file = os.path.join(
-        os.path.dirname(config['config_file']), config['logging']['log_file'])
-    handler = (
-        logging.StreamHandler() if debug
-        else logging.handlers.RotatingFileHandler(
-            log_file, backupCount=config['logging']['backup_count']))
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        config['logging']['message_format'],
-        datefmt=config['logging']['datetime_format'])
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    for level, filename in config['logging']['log_files'].items():
+        log_file = os.path.join(
+            os.path.dirname(config['config_file']), filename)
+        handler = (
+            logging.StreamHandler() if debug
+            else logging.handlers.RotatingFileHandler(
+                log_file, backupCount=config['logging']['backup_count']))
+        handler.setLevel(getattr(logging, level.upper()))
+        formatter = logging.Formatter(
+            config['logging']['message_format'],
+            datefmt=config['logging']['datetime_format'])
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
 
 def install_signal_handlers(logger, context):
