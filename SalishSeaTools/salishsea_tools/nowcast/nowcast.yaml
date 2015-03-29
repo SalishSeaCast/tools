@@ -125,6 +125,10 @@ web:
   www_path: www
   templates_path: www/templates
   server_path: shelob-salishsea:/www/salishsea/data
+  salinity_comparison:
+    web_path: eoas.ubc.ca/~jieliu/MEOPAR/nowcast
+    filesystem_path: /home/jieliu/public_html/MEOPAR/nowcast
+    fileroot: SaliCom
 
 
 logging:

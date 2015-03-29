@@ -289,20 +289,31 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         this_month_cols, last_month_cols = INDEX_GRID_COLS, 0
     # Replace dates for which there is no results page with None
     prelim_fcst_dates = exclude_missing_dates(
-        copy(dates), 'forecast2', 'publish', rst_path)
+        copy(dates), os.path.join(rst_path, 'forecast2', 'publish_*.rst'))
     nowcast_pub_dates = (
         copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
         else copy(dates[:-2]))
     nowcast_pub_dates = exclude_missing_dates(
-        nowcast_pub_dates, 'nowcast', 'publish', rst_path)
+        nowcast_pub_dates, os.path.join(rst_path, 'nowcast', 'publish_*.rst'))
+#        nowcast_pub_dates, 'nowcast', 'publish', rst_path)
     nowcast_res_dates = (
         copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
         else copy(dates[:-2]))
     nowcast_res_dates = exclude_missing_dates(
-        nowcast_res_dates, 'nowcast', 'research', rst_path)
+        nowcast_res_dates, os.path.join(rst_path, 'nowcast', 'research_*.rst'))
     fcst_dates = copy(dates[:-1]) if run_type != 'forecast' else copy(dates)
     fcst_dates = exclude_missing_dates(
-        fcst_dates, 'forecast', page_type, rst_path)
+        fcst_dates,
+        os.path.join(rst_path, 'forecast', '{}_*.rst'.format(page_type)))
+    sal_comp_dates = (
+        copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
+        else copy(dates[:-2]))
+    sal_comp_fileroot = config['web']['salinity_comparison']['fileroot']
+    sal_comp_dates = exclude_missing_dates(
+        sal_comp_dates,
+        os.path.join(
+            config['web']['salinity_comparison']['filesystem_path'],
+            '{}_*.ipynb'.format(sal_comp_fileroot)))
     # Render the template using the calculated varible values to produce
     # the index rst file
     rst_file = os.path.join(rst_path, 'index.rst')
@@ -315,6 +326,9 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         'nowcast_pub_dates': nowcast_pub_dates,
         'nowcast_res_dates': nowcast_res_dates,
         'fcst_dates': fcst_dates,
+        'sal_comp_dates': sal_comp_dates,
+        'sal_comp_path': config['web']['salinity_comparison']['web_path'],
+        'sal_comp_fileroot': sal_comp_fileroot,
     }
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
@@ -327,10 +341,8 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     return checklist
 
 
-def exclude_missing_dates(grid_dates, run_type, page_type, rst_path):
-    pages_pattern = os.path.join(
-        rst_path, run_type, '{}_*.rst'.format(page_type))
-    files = [os.path.basename(f) for f in glob(pages_pattern)]
+def exclude_missing_dates(grid_dates, file_pattern):
+    files = [os.path.basename(f) for f in glob(file_pattern)]
     file_date_strs = [
         os.path.splitext(f)[0].split('_')[1].title() for f in files]
     file_dates = [arrow.get(d, 'DDMMMYY').naive for d in file_date_strs]
