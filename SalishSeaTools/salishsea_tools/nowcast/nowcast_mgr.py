@@ -473,8 +473,8 @@ def after_make_forcing_links(worker, msg_type, payload, config):
 
 def after_run_NEMO(worker, msg_type, payload, config):
     global worker_loggers
-    worker_loggers['run_NEMO'].removeHandler(
-        worker_loggers['run_NEMO'].handlers[0])
+    for handler in worker_loggers['run_NEMO'].handlers:
+        worker_loggers['run_NEMO'].removeHandler(handler)
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success': [
@@ -488,8 +488,8 @@ def after_run_NEMO(worker, msg_type, payload, config):
 
 def after_watch_NEMO(worker, msg_type, payload, config):
     global worker_loggers
-    worker_loggers['watch_NEMO'].removeHandler(
-        worker_loggers['watch_NEMO'].handlers[0])
+    for handler in worker_loggers['watch_NEMO'].handlers:
+        worker_loggers['watch_NEMO'].removeHandler(handler)
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
