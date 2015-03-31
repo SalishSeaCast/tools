@@ -65,6 +65,7 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
 # Average mean sea level calculated over 1983-2001
 # (To be used to centre model output about mean sea level)
+# Do not use this. Will be removed once all dependencies are modified.
 MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
     'Campbell River': 2.89, 'Patricia Bay': 2.30}
@@ -72,24 +73,24 @@ MSL_DATUMS = {
 # Constant with station information: mean sea level, latitude,
 # longitude, station number, historical extreme ssh, etc.
 # Extreme ssh from DFO website
-# Mean sea level calculated over 1983-2001
+# Mean sea level calculated over from CHS tidal constiuents.
 SITES = {
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25,
-        'msl': 3.10,
+        'msl': 3.09,
         'stn_no': 7795,
         'extreme_ssh': 5.61},
     'Victoria': {
         'lat': 48.41,
         'lon': -123.36,
-        'msl': 1.90,
+        'msl': 1.8810,
         'stn_no': 7120,
         'extreme_ssh': 3.76},
     'Campbell River': {
         'lat': 50.04,
         'lon': -125.24,
-        'msl': 2.89,
+        'msl': 2.916,
         'stn_no': 8074,
         'extreme_ssh': 5.35},
     'Neah Bay': {
@@ -594,15 +595,11 @@ def get_tides(name):
               pred_all, pred_8.
     """
 
-    # Tide file covers 2014 and 2015. Harmonics were from a 2013 time series.
+    # Tide file covers 2014 and 2015. Harmonics were from CHS.
     path = (
         '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
         'tidal_predictions/')
-    if name == 'Point Atkinson':
-        # Point Atkinson tides calculated with constituents by CHS
-        fname = '{}_atide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
-    else:
-        fname = '{}_t_tide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
+    fname = '{}_atide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
     tfile = os.path.join(path, fname)
     ttide, msl = stormtools.load_tidal_predictions(tfile)
 
