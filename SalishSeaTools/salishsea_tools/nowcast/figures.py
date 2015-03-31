@@ -64,7 +64,6 @@ title_font = {
 axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
 # Average mean sea level calculated over 1983-2001
-# (To be used to centre model output about mean sea level)
 # Do not use this. Will be removed once all dependencies are modified.
 MSL_DATUMS = {
     'Point Atkinson': 3.10, 'Victoria': 1.90,
@@ -73,7 +72,7 @@ MSL_DATUMS = {
 # Constant with station information: mean sea level, latitude,
 # longitude, station number, historical extreme ssh, etc.
 # Extreme ssh from DFO website
-# Mean sea level calculated over from CHS tidal constiuents.
+# Mean sea level from CHS tidal constiuents.
 SITES = {
     'Point Atkinson': {
         'lat': 49.33,
@@ -1352,7 +1351,8 @@ def PA_tidal_predictions(grid_T, PST=1, MSL=0, figsize=(20, 5)):
     ax.text(
         1., -0.2,
         'Tidal predictions calculated with t_tide: '
-        'http://www.eos.ubc.ca/~rich/#T_Tide',
+        'http://www.eos.ubc.ca/~rich/#T_Tide\n'
+        'using CHS tidal constituents',
         horizontalalignment='right',
         verticalalignment='top',
         transform=ax.transAxes, color='white')
@@ -1759,6 +1759,7 @@ def plot_thresholds_all(
     ax0.text(0.03, -0.45,
              'Tidal predictions calculated with t_tide: '
              'http://www.eos.ubc.ca/~rich/#T_Tide \n'
+             'using CHS tidal constituents \n'
              'Observed water levels from Fisheries and Oceans, Canada \n'
              'via Scott Tinis at stormsurgebc.ca',
              horizontalalignment='left',
