@@ -20,6 +20,14 @@ Descriptions under the links below are from the first cell of the notebooks
     
     Salinity ferry data template  
 
+* ##[ExamineResiduals-no correction.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/ExamineResiduals-no correction.ipynb)  
+    
+    Notebook for examinng residuals and error in residuals  
+
+* ##[ExamineResiduals-CHS tides.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/ExamineResiduals-CHS tides.ipynb)  
+    
+    Notebook for examinng residuals and error in residuals  
+
 * ##[TofinoWaterLevels.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/TofinoWaterLevels.ipynb)  
     
     Notebook to compare Tofino water levels to previous years.  
