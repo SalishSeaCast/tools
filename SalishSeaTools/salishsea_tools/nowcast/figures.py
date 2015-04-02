@@ -1912,13 +1912,14 @@ def average_winds_at_station(
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
-    # Arrow scale
+    # Reference arrow
     scale = 0.1
+    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
 
-    # Time range
-    t_orig, t_final, t = get_model_time_variables(grid_T)
-
-    # Condition if plotting all stations or a single station
+    # Stations
     if station == 'all':
         names = [
             'Neah Bay',
@@ -1933,7 +1934,8 @@ def average_winds_at_station(
         names = [station]
         colors = ['DarkMagenta']
 
-    # Loop through all stations to plot arrows and markers
+    # Plot
+    t_orig, t_final, t = get_model_time_variables(grid_T)
     for name, station_c in zip(names, colors):
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
@@ -1942,15 +1944,9 @@ def average_winds_at_station(
         ax.plot(
             lon, lat,
             marker='D', markersize=14, markeredgewidth=2,
-            color=station_c, label=name)
+            color=station_c, label=name)  
 
-    # Reference arrow
-    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
-             head_width=0.05, head_length=0.1, width=0.02,
-             color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-
-    # Times for titles and legend
+    # Figure format
     t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
     t2 = (plot_time[-1] + time_shift).strftime('%d-%b-%Y %H:%M')
     legend = ax.legend(
@@ -2004,26 +2000,21 @@ def winds_at_max_ssh(
 
     :returns: matplotlib figure object instance (fig).
     """
-
+    
     # Map
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
 
-    # Arrow scale
-    scale = 0.1
-
-    # Time range
-    [t_orig, t_final, t] = get_model_time_variables(grid_T)
-
     # Reference arrow
+    scale = 0.1
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-
-    # Condition if plotting all stations or a single station
+    
+    # Stations
     if station == 'all':
         names = [
             'Neah Bay',
@@ -2038,7 +2029,8 @@ def winds_at_max_ssh(
         names = [station]
         colors = ['DarkMagenta']
 
-    # Indices for plotting wind vectors
+    # Indices
+    [t_orig, t_final, t] = get_model_time_variables(grid_T)
     inds = isolate_wind_timing(
         'Point Atkinson',
         grid_T,
@@ -2048,7 +2040,7 @@ def winds_at_max_ssh(
         4,
         average=False)
 
-    # Loop through all stations to plot arrows and markers
+    # Plot
     for name, station_c in zip(names, colors):
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
@@ -2059,7 +2051,7 @@ def winds_at_max_ssh(
             marker='D', markersize=14, markeredgewidth=2,
             color=station_c, label=name)
 
-    # Time for title and legend
+    # Figure format
     plot_time = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
     legend = ax.legend(
         numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
@@ -2081,6 +2073,111 @@ def winds_at_max_ssh(
             transform=ax.transAxes, color='white')
 
     axis_colors(ax, 'gray')
+
+    return fig
+
+
+def winds_average_max(
+        grid_T, grid_B, model_path, PNW_coastline, station, wind_type, figsize=(20, 15)):
+    """Doc string
+
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg model_path: The directory where the model files are stored.
+    :type model_path: string
+
+    :arg station: Name of one station or 'all' for all stations.
+    :type station: string
+
+    :arg figsize:  Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: matplotlib figure object instance (fig).
+    """
+
+    # Map
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(1, 1, 1)
+    fig.patch.set_facecolor('#2B3E50')
+    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    scale = 0.1
+    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+
+    # Stations
+    if station == 'all':
+        names = [
+            'Neah Bay',
+            'Victoria',
+            'Friday Harbor',
+            'Cherry Point',
+            'Sandheads',
+            'Point Atkinson',
+            'Campbell River']
+        colors = stations_c
+    else:
+        names = [station]
+        colors = ['DarkMagenta']
+
+    # Indices
+    t_orig, t_final, t = get_model_time_variables(grid_T)
+    if wind_type == 'max':
+        inds = isolate_wind_timing(
+        'Point Atkinson',
+        grid_T,
+        grid_B,
+        model_path,
+        t,
+        4,
+        average=False)
+    elif wind_type == 'average':
+        inds = 'all'
+
+    # Plot
+    for name, station_c in zip(names, colors):
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
+        plot_time = plot_wind_vector(
+            ax, name, t_orig, t_final, model_path, inds, scale)
+        ax.plot(
+            lon, lat,
+            marker='D', markersize=14, markeredgewidth=2,
+            color=station_c, label=name)  
+
+    # Figure format
+    t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
+    t2 = (plot_time[-1] + time_shift).strftime('%d-%b-%Y %H:%M')
+    legend = ax.legend(
+        numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
+        prop={'size': 15}, title=r'Stations')
+    legend.get_title().set_fontsize('20')
+    if wind_type == 'max':
+        ax.set_title(
+        'Modelled winds at \n {time} [PST]'.format(
+            time=t1),
+        **title_font)
+    elif wind_type == 'average':
+        ax.set_title(
+        'Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'
+        .format(t1=t1, t2=t2),
+        **title_font)
+    axis_colors(ax, 'gray')
+
+    # Citation
+    ax.text(0.6, -0.07,
+            'Modelled winds are from the High Resolution Deterministic '
+            'Prediction System\n'
+            'of Environment Canada: '
+            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
+            horizontalalignment='left',
+            verticalalignment='top',
+            transform=ax.transAxes, color='white')
 
     return fig
 
