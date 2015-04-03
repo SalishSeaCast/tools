@@ -1084,8 +1084,8 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
     :type fill: 0 or 1
 
     :arg domain: Option to highlight domain area.
-                 0 for no, 1 for gray, 2 for burlywood, 3 for green.
-    :type domain: 0, 1, 2, or 3
+                 0 for none or string of color code or name.
+    :type domain: 0 or string
 
     :returns: axis
     """
@@ -1121,12 +1121,8 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
     # domain
     if domain == 0:
         pass
-    elif domain == 1:
-        viz_tools.plot_land_mask(ax, grid_B, color='#DBDEE1', coords='map')
-    elif domain == 2:
-        viz_tools.plot_land_mask(ax, grid_B, color='burlywood', coords='map')
-    elif domain == 3:
-        viz_tools.plot_land_mask(ax, grid_B, color='OliveDrab', coords='map')
+    else:
+        viz_tools.plot_land_mask(ax, grid_B, color=domain, coords='map')
 
     # labels
     ax.set_xlabel('Longitude', **axis_font)
@@ -1201,7 +1197,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     ax3 = fig.add_subplot(gs[1, 2])
 
     # Map
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline)
 
     for name in names:
         lat = SITES[name]['lat']
@@ -1910,7 +1906,7 @@ def average_winds_at_station(
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline)
 
     # Reference arrow
     scale = 0.1
@@ -2005,7 +2001,7 @@ def winds_at_max_ssh(
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline)
 
     # Reference arrow
     scale = 0.1
@@ -2104,7 +2100,7 @@ def winds_average_max(
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline)
     scale = 0.1
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
@@ -2549,7 +2545,7 @@ def plot_threshold_website(
     ax3 = fig.add_subplot(gs[1, 2])
 
     # Map
-    plot_map(ax, grid_B, PNW_coastline, 'full', 1, 0)
+    plot_map(ax, grid_B, PNW_coastline)
 
     # Legend
     handles, labels = ax.get_legend_handles_labels()
