@@ -1060,11 +1060,9 @@ def isolate_wind_timing(
     return inds
 
 
-def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
+def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', domain_c='none'):
     """Plots map of Salish Sea region, including the options to add a
-    coastline, land colour(fill), or domain colour(domain).
-
-    Note that fill will only be applicable if coastline is 'full'.
+    coastline, colour of the land, and colour of the domain.
 
     :arg ax: Axis for map.
     :type ax: axis object
@@ -1080,12 +1078,11 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
                     'partial' for model coastline, or 'none'.
     :type coastline: string
 
-    :arg fill: Option to colour the land. 1 for yes, 0 for no.
-    :type fill: 0 or 1
+    :arg land_c: 'none' or colour of land if coastline is 'full'.
+    :type land_c: string
 
-    :arg domain: Option to highlight domain area.
-                 0 for none or string of color code or name.
-    :type domain: 0 or string
+    :arg domain_c: 'none' or colour of domain area.
+    :type domain_c: string
 
     :returns: axis
     """
@@ -1098,10 +1095,9 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
     elif coastline == 'none':
         pass
 
-    # fill
-    # thresold area for plotting a polygon
+    # land_c - thresold area for plotting a polygon
     thres = 1e-4
-    if fill == 1 and coastline == 'full':
+    if coastline == 'full':
         k = PNW_coastline['k']
         Area = PNW_coastline['Area']
         for ks, ke, A in zip(k[0:-1], k[1:], Area[0, :]):
@@ -1111,18 +1107,11 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', fill=1, domain=0):
                     patches.Polygon(
                         poly,
                         closed=True,
-                        facecolor='burlywood',
+                        facecolor=land_c,
                         rasterized=True))
-    elif fill == 0:
-        pass
-    else:
-        pass
 
-    # domain
-    if domain == 0:
-        pass
-    else:
-        viz_tools.plot_land_mask(ax, grid_B, color=domain, coords='map')
+    # domain_c
+    viz_tools.plot_land_mask(ax, grid_B, color=domain_c, coords='map')
 
     # labels
     ax.set_xlabel('Longitude', **axis_font)
