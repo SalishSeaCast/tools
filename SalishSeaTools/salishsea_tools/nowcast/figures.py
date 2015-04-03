@@ -1944,7 +1944,7 @@ def average_winds_at_station(
         ax.plot(
             lon, lat,
             marker='D', markersize=14, markeredgewidth=2,
-            color=station_c, label=name)  
+            color=station_c, label=name)
 
     # Figure format
     t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
@@ -2000,7 +2000,7 @@ def winds_at_max_ssh(
 
     :returns: matplotlib figure object instance (fig).
     """
-    
+
     # Map
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(1, 1, 1)
@@ -2013,7 +2013,7 @@ def winds_at_max_ssh(
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-    
+
     # Stations
     if station == 'all':
         names = [
@@ -2078,7 +2078,8 @@ def winds_at_max_ssh(
 
 
 def winds_average_max(
-        grid_T, grid_B, model_path, PNW_coastline, station, wind_type, figsize=(20, 15)):
+        grid_T, grid_B, model_path, PNW_coastline, station, wind_type,
+        figsize=(20, 15)):
     """Doc string
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
@@ -2129,13 +2130,13 @@ def winds_average_max(
     t_orig, t_final, t = get_model_time_variables(grid_T)
     if wind_type == 'max':
         inds = isolate_wind_timing(
-        'Point Atkinson',
-        grid_T,
-        grid_B,
-        model_path,
-        t,
-        4,
-        average=False)
+            'Point Atkinson',
+            grid_T,
+            grid_B,
+            model_path,
+            t,
+            4,
+            average=False)
     elif wind_type == 'average':
         inds = 'all'
 
@@ -2148,7 +2149,7 @@ def winds_average_max(
         ax.plot(
             lon, lat,
             marker='D', markersize=14, markeredgewidth=2,
-            color=station_c, label=name)  
+            color=station_c, label=name)
 
     # Figure format
     t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
@@ -2158,15 +2159,13 @@ def winds_average_max(
         prop={'size': 15}, title=r'Stations')
     legend.get_title().set_fontsize('20')
     if wind_type == 'max':
-        ax.set_title(
-        'Modelled winds at \n {time} [PST]'.format(
-            time=t1),
-        **title_font)
+        ax.set_title('Modelled winds at \n {time} [PST]'
+                     .format(time=t1),
+                     **title_font)
     elif wind_type == 'average':
-        ax.set_title(
-        'Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'
-        .format(t1=t1, t2=t2),
-        **title_font)
+        ax.set_title('Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'
+                     .format(t1=t1, t2=t2),
+                     **title_font)
     axis_colors(ax, 'gray')
 
     # Citation
