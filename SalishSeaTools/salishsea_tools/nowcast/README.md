@@ -68,7 +68,9 @@ Descriptions under the links below are from the first cell of the notebooks
 
 * ##[Out_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Out_Template.ipynb)  
     
-    Production template  
+    Production template
+
+* ##[DevelopingSalinityTemplate.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingSalinityTemplate.ipynb)   
 
 
 ##License
