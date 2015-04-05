@@ -81,7 +81,8 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     try:
-        checklist = grib_to_netcdf(parsed_args.runtype, config)
+        checklist = grib_to_netcdf(parsed_args.runtype,
+                                   parsed_args.run_date, config)
         logger.info('NEMO-atmos forcing file completed for run type {.runtype}'
                     .format(parsed_args))
         # Exchange success messages with the nowcast manager process
@@ -118,6 +119,15 @@ def configure_argparser(prog, description, parents):
         'nowcast+' means nowcast & 1st forecast runs,
         'forecast2' means 2nd forecast run.''',
     )
+    parser.add_argument(
+        '--run-date', type=lib.arrow_date, default=arrow.now(),
+        help='''
+        Date of the run to make the grib files for;
+        use YYYY-MM-DD format.
+        Note: for forecast2 use the date it would usually run on
+        Defaults to %(default)s.
+        ''',
+    )
     return parser
 
 
@@ -135,17 +145,17 @@ def configure_wgrib2_logging(config):
     wgrib2_logger.addHandler(handler)
 
 
-def grib_to_netcdf(runtype, config):
+def grib_to_netcdf(runtype, rundate, config):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
 
     if runtype == 'nowcast+':
         (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday) = define_forecast_segments_nowcast()
+         yearmonthday) = define_forecast_segments_nowcast(rundate)
     elif runtype == 'forecast2':
         (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday) = define_forecast_segments_forecast2()
+         yearmonthday) = define_forecast_segments_forecast2(rundate)
 
     # set-up plotting
     fig, axs = set_up_plotting()
@@ -183,12 +193,12 @@ def grib_to_netcdf(runtype, config):
     return checklist
 
 
-def define_forecast_segments_nowcast():
+def define_forecast_segments_nowcast(rundate):
     """Define segments of forecasts to build into working weather files
     for nowcast and a following forecast
     """
 
-    today = arrow.utcnow().to('Canada/Pacific')
+    today = rundate
     yesterday = today.replace(days=-1)
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days=+2)
@@ -237,13 +247,13 @@ def define_forecast_segments_nowcast():
             yearmonthday)
 
 
-def define_forecast_segments_forecast2():
+def define_forecast_segments_forecast2(rundate):
     """Define segments of forecasts to build into working weather files
     for the extend forecast i.e. forecast2
     """
 
     # today is the day after this nowcast/forecast sequence started
-    today = arrow.utcnow()
+    today = rundate
     tomorrow = today.replace(days=+1)
     nextday = today.replace(days=+2)
 
@@ -307,12 +317,14 @@ def rotate_grib_wind(config, fcst_section_hrs):
             except OSError:
                 pass
             # Consolidate u and v wind component values into one file
-            fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*UGRD*'))
-            cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
-            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
-            fn = glob.glob(os.path.join(GRIBdir, day_fcst, sfhour, '*VGRD*'))
-            cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
-            lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
+            for fpattern in ['*UGRD*', '*VGRD*']:
+                fn = glob.glob(
+                    os.path.join(GRIBdir, day_fcst, sfhour, fpattern))
+                if os.stat(fn[0]).st_size == 0:
+                    logger.critical('Problem, 0 size file {}'.format(fn[0]))
+                    raise lib.WorkerError
+                cmd = [wgrib2, fn[0], '-append', '-grib', outuv]
+                lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             # rotate
             GRIDspec = subprocess.check_output([grid_defn, outuv])
             cmd = [wgrib2, outuv]
