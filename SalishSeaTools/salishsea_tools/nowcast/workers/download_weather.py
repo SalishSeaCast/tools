@@ -138,10 +138,14 @@ def get_grib(forecast, config):
                 forecast=forecast, hour=sfhour, filename=filename)
             headers = lib.get_web_data(
                 fileURL, logger, filename, retry_time_limit=9000)
+            size = headers['Content-Length']
             logger.debug(
                 'downloaded {bytes} bytes from {fileURL}'.format(
-                    bytes=headers['Content-Length'],
+                    bytes=size,
                     fileURL=fileURL))
+            if size == 0:
+                logger.critical('Problen, 0 size file {}'.format(fileURL))
+                raise lib.WorkerError
             lib.fix_perms(filename)
         os.chdir('..')
     os.chdir('..')
