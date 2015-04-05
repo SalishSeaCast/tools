@@ -158,7 +158,7 @@ def upload_file(sftp_client, host_name, localpath, remotepath):
 
 
 def make_remote_directory(sftp_client, host_name, remote_dir):
-    sftp_client.mkdir(remote_dir, mode=lib.PERMS_RWX_RWX_R)
+    sftp_client.mkdir(remote_dir, mode=lib.PERMS_RWX_RWX_R_X)
     logger.debug(
         '{remote} directory made on {host}'
         .format(remote=remote_dir, host=host_name))
