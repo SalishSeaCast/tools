@@ -151,7 +151,10 @@ def watch_NEMO(run_type, pid, config, socket):
         time.sleep(POLL_INTERVAL)
     # TODO: confirm that the run and subsequent results gathering
     # completed successfully
-    return {run_type: {'completed': True}}
+    return {run_type: {
+        'run_date': run_info[run_type]['run_date'],
+        'completed': True,
+    }}
 
 
 def pid_exists(pid):
