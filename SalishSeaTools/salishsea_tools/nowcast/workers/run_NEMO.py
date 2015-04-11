@@ -118,21 +118,26 @@ def run_NEMO(host_name, run_type, config, socket):
     host = config['run'][host_name]
 
     # Create the run description data structure and dump it to a YAML file
-    os.chdir(host['run_prep_dir'])
-    today = datetime.date.today()
-    if run_type == 'forecast2':
-        today = today + datetime.timedelta(days=-1)
-    dmy = today.strftime('%d%b%y').lower()
+    if run_type == 'nowcast':
+        run_date = datetime.date.today()
+    else:
+        # Get date that nowcast was run on
+        run_info = lib.tell_manager(
+            worker_name, 'need', config, logger, socket, 'NEMO run')
+        run_date = datetime.datetime.strptime(
+            run_info[run_type]['run_date'], '%Y-%m-%d')
+    dmy = run_date.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
     run_days = {
-        'nowcast': today,
-        'forecast': today + datetime.timedelta(days=1),
-        'forecast2': today + datetime.timedelta(days=2),
+        'nowcast': run_date,
+        'forecast': run_date + datetime.timedelta(days=1),
+        'forecast2': run_date + datetime.timedelta(days=2),
     }
-    restart_timestep = update_time_namelist(host, run_type, today)
+    restart_timestep = update_time_namelist(host, run_type, run_date)
     run_desc = run_description(
         host, run_type, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
+    os.chdir(host['run_prep_dir'])
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
     msg = '{}: run description file: {}'.format(run_type, run_desc_file)
@@ -195,7 +200,8 @@ def run_NEMO(host_name, run_type, config, socket):
     return {run_type: {
         'run dir': run_dir,
         'pid': run_process.pid,
-        'watcher pid': watcher_process.pid
+        'watcher pid': watcher_process.pid,
+        'run_date': run_date.strftime('%Y-%m-%d'),
     }}
 
 
