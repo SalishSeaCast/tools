@@ -495,23 +495,23 @@ def after_watch_NEMO(worker, msg_type, payload, config):
         'success nowcast': [
             (update_checklist, [worker, 'NEMO run', payload]),
             (launch_worker, ['get_NeahBay_ssh', config, ['forecast']]),
-            (launch_worker, [
-             'download_results', config,
-             [config['run']['cloud host'], 'nowcast']]),
+            (launch_worker, ['download_results', config,
+                             [config['run']['cloud host'], 'nowcast',
+                              '--run-date', payload['run_date']]]),
         ],
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'NEMO run', payload]),
-            (launch_worker, [
-             'download_results', config,
-             [config['run']['cloud host'], 'forecast']]),
+            (launch_worker, ['download_results', config,
+                             [config['run']['cloud host'], 'forecast',
+                              '--run-date', payload['run_date']]]),
         ],
         'failure forecast': None,
         'success forecast2': [
             (update_checklist, [worker, 'NEMO run', payload]),
-            (launch_worker, [
-             'download_results', config,
-             [config['run']['cloud host'], 'forecast2']]),
+            (launch_worker, ['download_results', config,
+                             [config['run']['cloud host'], 'forecast2',
+                              '--run-date', payload['run_date']]]),
         ],
         'failure forecast2': None,
         'crash': None,
@@ -520,21 +520,25 @@ def after_watch_NEMO(worker, msg_type, payload, config):
 
 
 def after_download_results(worker, msg_type, payload, config):
+    global checklist
     actions = {
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_plots', config, ['nowcast', 'research']]),
+            (launch_worker, ['make_plots', config, ['nowcast', 'research',
+             '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
         ],
         'failure nowcast': None,
         'success forecast': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_plots', config, ['forecast', 'publish']]),
+            (launch_worker, ['make_plots', config, ['forecast', 'publish',
+             '--run-date', checklist['NEMO run']['forecast']['run_date']]]),
         ],
         'failure forecast': None,
         'success forecast2': [
             (update_checklist, [worker, 'results files', payload]),
-            (launch_worker, ['make_plots', config, ['forecast2', 'publish']]),
+            (launch_worker, ['make_plots', config, ['forecast2', 'publish',
+             '--run-date', checklist['NEMO run']['forecast2']['run_date']]]),
         ],
         'failure forecast2': None,
         'crash': None,
@@ -547,26 +551,26 @@ def after_make_plots(worker, msg_type, payload, config):
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success nowcast research': [
             (update_checklist, [worker, 'plots', payload]),
-            (launch_worker, ['make_site_page', config,
-                             ['nowcast', 'research']]),
+            (launch_worker, ['make_site_page', config, ['nowcast', 'research',
+             '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
         ],
         'failure nowcast research': None,
         'success nowcast publish': [
             (update_checklist, [worker, 'plots', payload]),
-            (launch_worker, ['make_site_page', config,
-                             ['nowcast', 'publish']]),
+            (launch_worker, ['make_site_page', config, ['nowcast', 'publish',
+             '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
         ],
         'failure nowcast publish': None,
         'success forecast publish': [
             (update_checklist, [worker, 'plots', payload]),
-            (launch_worker, ['make_site_page', config,
-                             ['forecast', 'publish']]),
+            (launch_worker, ['make_site_page', config, ['forecast', 'publish',
+             '--run-date', checklist['NEMO run']['forecast']['run_date']]]),
         ],
         'failure forecast publish': None,
         'success forecast2 publish': [
             (update_checklist, [worker, 'plots', payload]),
-            (launch_worker, ['make_site_page', config,
-                             ['forecast2', 'publish']]),
+            (launch_worker, ['make_site_page', config, ['forecast2', 'publish',
+             '--run-date', checklist['NEMO run']['forecast2']['run_date']]]),
         ],
         'failure forecast2 publish': None,
         'crash': None,
@@ -589,7 +593,8 @@ def after_make_site_page(worker, msg_type, payload, config):
         'failure publish': None,
         'success research': [
             (update_checklist, [worker, 'salishsea site pages', payload]),
-            (launch_worker, ['make_plots', config, ['nowcast', 'publish']]),
+            (launch_worker, ['make_plots', config, ['nowcast', 'publish',
+             '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
         ],
         'failure research': None,
         'crash': None,
@@ -612,6 +617,7 @@ def after_push_to_web(worker, msg_type, payload, config):
 
 
 def update_checklist(worker, key, worker_checklist):
+    global checklist
     try:
         checklist[key].update(worker_checklist)
     except (KeyError, ValueError, AttributeError):
