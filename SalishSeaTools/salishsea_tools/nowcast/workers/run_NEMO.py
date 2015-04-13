@@ -133,11 +133,11 @@ def run_NEMO(host_name, run_type, config, socket):
         'forecast': run_date + datetime.timedelta(days=1),
         'forecast2': run_date + datetime.timedelta(days=2),
     }
+    os.chdir(host['run_prep_dir'])
     restart_timestep = update_time_namelist(host, run_type, run_date)
     run_desc = run_description(
         host, run_type, run_days[run_type], run_id, restart_timestep)
     run_desc_file = '{}.yaml'.format(run_id)
-    os.chdir(host['run_prep_dir'])
     with open(run_desc_file, 'wt') as f:
         yaml.dump(run_desc, f, default_flow_style=False)
     msg = '{}: run description file: {}'.format(run_type, run_desc_file)
