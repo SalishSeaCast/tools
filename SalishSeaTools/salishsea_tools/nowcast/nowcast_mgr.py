@@ -491,115 +491,152 @@ def after_watch_NEMO(worker, msg_type, payload, config):
     for handler in worker_loggers['watch_NEMO'].handlers:
         worker_loggers['watch_NEMO'].removeHandler(handler)
     actions = {
+        'crash': None,
+        'failure nowcast': None,
+        'failure forecast': None,
+        'failure forecast2': None,
+    }
+    try:
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast': [
+        actions['success nowcast'] = [
             (update_checklist, [worker, 'NEMO run', payload]),
             (launch_worker, ['get_NeahBay_ssh', config, ['forecast']]),
             (launch_worker, ['download_results', config,
                              [config['run']['cloud host'], 'nowcast',
                               '--run-date', payload['nowcast']['run_date']]]),
-        ],
-        'failure nowcast': None,
-        'success forecast': [
+        ]
+    except KeyError:
+        # No nowcast run date in payload so not handling a nowcat run
+        pass
+    try:
+        actions['success forecast'] = [
             (update_checklist, [worker, 'NEMO run', payload]),
             (launch_worker, ['download_results', config,
                              [config['run']['cloud host'], 'forecast',
                               '--run-date', payload['forecast']['run_date']]]),
-        ],
-        'failure forecast': None,
-        'success forecast2': [
+        ]
+    except KeyError:
+        pass
+    try:
+        actions['success forecast2'] = [
             (update_checklist, [worker, 'NEMO run', payload]),
             (launch_worker, [
                 'download_results', config,
                 [config['run']['cloud host'], 'forecast2',
                  '--run-date', payload['forecast2']['run_date']]]),
-        ],
-        'failure forecast2': None,
-        'crash': None,
-    }
+        ]
+    except KeyError:
+        pass
     return actions[msg_type]
 
 
 def after_download_results(worker, msg_type, payload, config):
     global checklist
     actions = {
+        'crash': None,
+        'failure nowcast': None,
+        'failure forecast': None,
+        'failure forecast2': None,
+    }
+    try:
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast': [
+        actions['success nowcast'] = [
             (update_checklist, [worker, 'results files', payload]),
             (launch_worker, ['make_plots', config, ['nowcast', 'research',
              '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
-        ],
-        'failure nowcast': None,
-        'success forecast': [
+        ]
+    except KeyError:
+        # No nowcast run date in checklist, so not handling a nowcast run
+        pass
+    try:
+        actions['success forecast'] = [
             (update_checklist, [worker, 'results files', payload]),
             (launch_worker, ['make_plots', config, ['forecast', 'publish',
              '--run-date', checklist['NEMO run']['forecast']['run_date']]]),
-        ],
-        'failure forecast': None,
-        'success forecast2': [
+        ]
+    except KeyError:
+        pass
+    try:
+        actions['success forecast2'] = [
             (update_checklist, [worker, 'results files', payload]),
             (launch_worker, ['make_plots', config, ['forecast2', 'publish',
              '--run-date', checklist['NEMO run']['forecast2']['run_date']]]),
-        ],
-        'failure forecast2': None,
-        'crash': None,
-    }
+        ]
+    except KeyError:
+        pass
     return actions[msg_type]
 
 
 def after_make_plots(worker, msg_type, payload, config):
     actions = {
+        'crash': None,
+        'failure nowcast research': None,
+        'failure nowcast publish': None,
+        'failure forecast publish': None,
+        'failure forecast2 publish': None,
+    }
+    try:
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
-        'success nowcast research': [
+        actions['success nowcast research'] = [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config, ['nowcast', 'research',
              '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
-        ],
-        'failure nowcast research': None,
-        'success nowcast publish': [
+        ]
+    except KeyError:
+        # No nowcast run_date value in checklist
+        pass
+    try:
+        actions['success nowcast publish'] = [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config, ['nowcast', 'publish',
              '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
-        ],
-        'failure nowcast publish': None,
-        'success forecast publish': [
+        ]
+    except KeyError:
+        pass
+    try:
+        actions['success forecast publish'] = [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config, ['forecast', 'publish',
              '--run-date', checklist['NEMO run']['forecast']['run_date']]]),
-        ],
-        'failure forecast publish': None,
-        'success forecast2 publish': [
+        ]
+    except KeyError:
+        pass
+    try:
+        actions['success forecast2 publish'] = [
             (update_checklist, [worker, 'plots', payload]),
             (launch_worker, ['make_site_page', config, ['forecast2', 'publish',
              '--run-date', checklist['NEMO run']['forecast2']['run_date']]]),
-        ],
-        'failure forecast2 publish': None,
-        'crash': None,
-    }
+        ]
+    except KeyError:
+        pass
     return actions[msg_type]
 
 
 def after_make_site_page(worker, msg_type, payload, config):
     actions = {
+        'crash': None,
+        'failure index': None,
+        'failure publish': None,
+        'failure research': None,
         # msg type: [(step, [step_args, [step_extra_arg1, ...]])]
         'success index': [
             (update_checklist, [worker, 'salishsea site pages', payload]),
             (launch_worker, ['push_to_web', config]),
         ],
-        'failure index': None,
         'success publish': [
             (update_checklist, [worker, 'salishsea site pages', payload]),
             (launch_worker, ['push_to_web', config]),
         ],
-        'failure publish': None,
-        'success research': [
+    }
+    try:
+        actions['success research'] = [
             (update_checklist, [worker, 'salishsea site pages', payload]),
             (launch_worker, ['make_plots', config, ['nowcast', 'publish',
              '--run-date', checklist['NEMO run']['nowcast']['run_date']]]),
-        ],
-        'failure research': None,
-        'crash': None,
-    }
+        ]
+    except KeyError:
+        # No nowcat run date in checklist
+        pass
     return actions[msg_type]
 
 
