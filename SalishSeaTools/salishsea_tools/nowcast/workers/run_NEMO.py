@@ -125,7 +125,7 @@ def run_NEMO(host_name, run_type, config, socket):
         run_info = lib.tell_manager(
             worker_name, 'need', config, logger, socket, 'NEMO run')
         run_date = datetime.datetime.strptime(
-            run_info[run_type]['run_date'], '%Y-%m-%d')
+            run_info['nowcast']['run_date'], '%Y-%m-%d')
     dmy = run_date.strftime('%d%b%y').lower()
     run_id = '{dmy}{run_type}'.format(dmy=dmy, run_type=run_type)
     run_days = {
