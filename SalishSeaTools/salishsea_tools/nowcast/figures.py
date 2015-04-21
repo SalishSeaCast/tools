@@ -548,7 +548,7 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     # (Find a match between the year, month, day and hour)
     ind_w = np.where(
         t_wind == datetime.datetime(
-            tmax.year, tmax.month, tmax.day, tmax.hour))
+            tmax.year, tmax.month, tmax.day, tmax.hour))[0]
     max_wind = wind[ind_w]
 
     return max_ssh, index_ssh, tmax, max_res, max_wind, ind_w
@@ -939,7 +939,7 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
 def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
     """ Plots a single wind vector at a station in an axis.
 
-    Winds are averaged over the times represnted by the indices in
+    Winds are averaged over the times represented by the indices in
     inds[0] and inds[-1].
 
     :arg ax: The axis for plotting.
