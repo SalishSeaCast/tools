@@ -2429,7 +2429,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
 
     # Axis
     ax_sal.set_title('VENUS - {}'.format(station), **title_font)
-    ax_sal.set_ylim([30, 32])
+    ax_sal.set_ylim([29, 32])
     ax_sal.set_ylabel('Practical Salinity [psu]', **axis_font)
     ax_sal.legend(loc=0)
     ax_temp.set_ylim([7, 11])
