@@ -95,8 +95,8 @@ def get_CGRF_weather(start,end,grid):
     st_ar=arrow.Arrow.strptime(start, '%d-%b-%Y')
     end_ar=arrow.Arrow.strptime(end, '%d-%b-%Y')
 
-    CGRF_path = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
-
+   # CGRF_path = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
+    CGRF_path = '/ocean/nsoontie/MEOPAR/CGRF/NEMO-atmos/'
     for r in arrow.Arrow.range('day', st_ar, end_ar):
         #u
 	m=r.month;
