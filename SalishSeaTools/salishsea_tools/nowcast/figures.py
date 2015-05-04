@@ -1244,7 +1244,8 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
             fontsize=20, color='DimGray', rotation=-12)
 
     # Figure format
-    t = (twind[0] + PST * time_shift).strftime('%A, %B %d, %Y')
+    # Don't shift to PST because we want the date to represent the model run
+    t = (twind[0]).strftime('%A, %B %d, %Y')
     ax.set_title(
         'Marine and Atmospheric Conditions\n {time}'.format(
             time=t),
@@ -2624,7 +2625,8 @@ def plot_threshold_website(
     ax.text(-123.8, 48.43, 'Victoria', fontsize=20)
 
     # Figure format
-    time = (twind[0] + PST * time_shift).strftime('%A, %B %d, %Y')
+    # Don't shift to PST because we want the date to represent the model run.
+    time = (twind[0]).strftime('%A, %B %d, %Y')
     ax.set_title(
         'Marine and Atmospheric Conditions\n {Time}'.format(
             Time=time),
