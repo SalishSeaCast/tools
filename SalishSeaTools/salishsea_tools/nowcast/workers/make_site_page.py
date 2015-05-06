@@ -240,7 +240,6 @@ def render_forecast_rst(
         .format(page_type=page_type, rst_file=rst_file))
     checklist = {
         'forecast {}'.format(page_type): rst_file,
-        'finish the day': True,
     }
     return checklist
 
@@ -265,7 +264,10 @@ def render_forecast2_rst(
     logger.debug(
         'forecast2 {page_type}: rendered page: {rst_file}'
         .format(page_type=page_type, rst_file=rst_file))
-    checklist = {'forecast2 {}'.format(page_type): rst_file}
+    checklist = {
+        'forecast2 {}'.format(page_type): rst_file,
+        'finish the day': True,
+    }
     return checklist
 
 
