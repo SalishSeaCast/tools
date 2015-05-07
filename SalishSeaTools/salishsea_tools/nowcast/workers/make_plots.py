@@ -134,9 +134,6 @@ def configure_argparser(prog, description, parents):
 
 
 def make_plots(run_date, run_type, plot_type, config, socket):
-
-    if run_type == 'forecast2':
-        run_date = run_date + datetime.timedelta(days=-1)
     # set-up, read from config file
     results_home = config['run']['results archive'][run_type]
     results_dir = os.path.join(
