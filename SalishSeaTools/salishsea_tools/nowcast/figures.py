@@ -1854,7 +1854,9 @@ def Sandheads_winds(
 def winds_average_max(
         grid_T, grid_B, model_path, PNW_coastline, station, wind_type,
         figsize=(20, 15)):
-    """Doc string
+    """Plots wind vectors at several stations over domain. Wind vecors can be
+    averaged over the entire simulation or plotted at 4 hours before max ssh
+    at Point Atkinson
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
@@ -1867,6 +1869,9 @@ def winds_average_max(
 
     :arg station: Name of one station or 'all' for all stations.
     :type station: string
+
+    :arg wind_type: specifies average winds or max winds
+    :type wind_type: string, 'average' or 'max'
 
     :arg figsize:  Figure size (width, height) in inches.
     :type figsize: 2-tuple
@@ -2123,7 +2128,7 @@ def plot_surface(
     speeds = np.sqrt(np.square(u_tzyx) + np.square(v_tzyx))
 
     # Colormap
-    cs = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+    cs = np.arange(0, .65, .05)
 
     # Plot velocity
     quiver = ax3.quiver(x_slice_a[1:], y_slice_a[1:], u_tzyx, v_tzyx, speeds,
