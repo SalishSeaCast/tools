@@ -63,16 +63,11 @@ title_font = {
 }
 axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
-# Average mean sea level calculated over 1983-2001
-# Do not use this. Will be removed once all dependencies are modified.
-MSL_DATUMS = {
-    'Point Atkinson': 3.10, 'Victoria': 1.90,
-    'Campbell River': 2.89, 'Patricia Bay': 2.30}
-
 # Constant with station information: mean sea level, latitude,
 # longitude, station number, historical extreme ssh, etc.
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
+# VENUS coordinates from the VENUS website. Depth is in meters.
 SITES = {
     'Point Atkinson': {
         'lat': 49.33,
@@ -108,7 +103,17 @@ SITES = {
         'lat': 49.10,
         'lon': -123.30},
     'Tofino': {
-        'stn_no': 8615}
+        'stn_no': 8615},
+    'VENUS': {
+        'East': {
+            'lat': 49.0419,
+            'lon': -123.3176,
+            'depth': 170},
+        'Central': {
+            'lat': 49.0401,
+            'lon': -123.4261,
+            'depth': 300}
+        }
     }
 
 
@@ -168,27 +173,6 @@ def axis_colors(ax, plot):
     ax.title.set_color('white')
 
     return ax
-
-
-def station_coords():
-    """Returns the longitudes and latitudes for key stations.
-
-    Stations are Campbell River, Point Atkinson, Victoria, Cherry Point,
-    Neah Bay, Friday Harbor, and Sandheads.
-
-    :returns: coordinates (lats, lons).
-    """
-
-    lats = {'Campbell River': 50.04, 'Point Atkinson': 49.33,
-            'Victoria': 48.41, 'Cherry Point': 48.866667,
-            'Neah Bay': 48.4, 'Friday Harbor': 48.55,
-            'Sandheads': 49.10}
-    lons = {'Campbell River': -125.24, 'Point Atkinson': -123.25,
-            'Victoria': -123.36, 'Cherry Point': -122.766667,
-            'Neah Bay': -124.6, 'Friday Harbor': -123.016667,
-            'Sandheads': -123.30}
-
-    return lats, lons
 
 
 def find_model_point(lon, lat, X, Y):
@@ -1863,202 +1847,6 @@ def Sandheads_winds(
              horizontalalignment='left',
              verticalalignment='top',
              transform=ax0.transAxes, color='white')
-
-    return fig
-
-
-def average_winds_at_station(
-        grid_T, grid_B, model_path, PNW_coastline, station, figsize=(20, 15)):
-    """Plots winds averaged over simulation time at individual or all stations.
-
-    This function applies to stations at Campbell River, Point Atkinson,
-    Victoria, Cherry Point, Neah Bay, and Friday Harbor.
-
-    :arg grid_T: Hourly tracer results dataset from NEMO.
-    :type grid_T: :class:`netCDF4.Dataset`
-
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-
-    :arg model_path: The directory where the model files are stored.
-    :type model_path: string
-
-    :arg station: Name of one station or 'all' for all stations.
-    :type station: string
-
-    :arg figsize:  Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: matplotlib figure object instance (fig).
-    """
-
-    # Map
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(1, 1, 1)
-    fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline)
-
-    # Reference arrow
-    scale = 0.1
-    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
-             head_width=0.05, head_length=0.1, width=0.02,
-             color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-
-    # Stations
-    if station == 'all':
-        names = [
-            'Neah Bay',
-            'Victoria',
-            'Friday Harbor',
-            'Cherry Point',
-            'Sandheads',
-            'Point Atkinson',
-            'Campbell River']
-        colors = stations_c
-    else:
-        names = [station]
-        colors = ['DarkMagenta']
-
-    # Plot
-    t_orig, t_final, t = get_model_time_variables(grid_T)
-    for name, station_c in zip(names, colors):
-        lat = SITES[name]['lat']
-        lon = SITES[name]['lon']
-        plot_time = plot_wind_vector(
-            ax, name, t_orig, t_final, model_path, 'all', scale)
-        ax.plot(
-            lon, lat,
-            marker='D', markersize=14, markeredgewidth=2,
-            color=station_c, label=name)
-
-    # Figure format
-    t1 = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
-    t2 = (plot_time[-1] + time_shift).strftime('%d-%b-%Y %H:%M')
-    legend = ax.legend(
-        numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
-        prop={'size': 15}, title=r'Stations')
-    legend.get_title().set_fontsize('20')
-    ax.set_title(
-        'Modelled winds averaged over \n {t1} [PST] to {t2} [PST]'
-        .format(t1=t1, t2=t2),
-        **title_font)
-
-    # Citation
-    ax.text(0.6, -0.07,
-            'Modelled winds are from the High Resolution Deterministic '
-            'Prediction System\n'
-            'of Environment Canada: '
-            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
-            horizontalalignment='left',
-            verticalalignment='top',
-            transform=ax.transAxes, color='white')
-
-    axis_colors(ax, 'gray')
-
-    return fig
-
-
-def winds_at_max_ssh(
-        grid_T, grid_B, model_path, PNW_coastline, station, figsize=(20, 15)):
-    """Plots winds at individual stations 4 hours before the maxmimum sea
-    surface height at Point Atkinson.
-
-    If that data is not available then the plot is generated at the
-    start of the simulation.
-    This function applies to stations at Campbell River, Point Atkinson,
-    Victoria, Cherry Point, Neah Bay, and Friday Harbor.
-
-    :arg grid_T: Hourly tracer results dataset from NEMO.
-    :type grid_T: :class:`netCDF4.Dataset`
-
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-
-    :arg model_path: The directory where the model files are stored.
-    :type model_path: string
-
-    :arg station: Name of the station.
-    :type station: string
-
-    :arg figsize:  Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: matplotlib figure object instance (fig).
-    """
-
-    # Map
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(1, 1, 1)
-    fig.patch.set_facecolor('#2B3E50')
-    plot_map(ax, grid_B, PNW_coastline)
-
-    # Reference arrow
-    scale = 0.1
-    ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
-             head_width=0.05, head_length=0.1, width=0.02,
-             color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-
-    # Stations
-    if station == 'all':
-        names = [
-            'Neah Bay',
-            'Victoria',
-            'Friday Harbor',
-            'Cherry Point',
-            'Sandheads',
-            'Point Atkinson',
-            'Campbell River']
-        colors = stations_c
-    else:
-        names = [station]
-        colors = ['DarkMagenta']
-
-    # Indices
-    [t_orig, t_final, t] = get_model_time_variables(grid_T)
-    inds = isolate_wind_timing(
-        'Point Atkinson',
-        grid_T,
-        grid_B,
-        model_path,
-        t,
-        4,
-        average=False)
-
-    # Plot
-    for name, station_c in zip(names, colors):
-        lat = SITES[name]['lat']
-        lon = SITES[name]['lon']
-        plot_time = plot_wind_vector(
-            ax, name, t_orig, t_final, model_path, inds, scale)
-        ax.plot(
-            lon, lat,
-            marker='D', markersize=14, markeredgewidth=2,
-            color=station_c, label=name)
-
-    # Figure format
-    plot_time = (plot_time[0] + time_shift).strftime('%d-%b-%Y %H:%M')
-    legend = ax.legend(
-        numpoints=1, bbox_to_anchor=(0.9, 1.05), loc=2, borderaxespad=0.,
-        prop={'size': 15}, title=r'Stations')
-    legend.get_title().set_fontsize('20')
-    ax.set_title(
-        'Modelled winds at \n {time} [PST]'.format(
-            time=plot_time),
-        **title_font)
-
-    # Citation
-    ax.text(0.6, -0.07,
-            'Modelled winds are from the High Resolution Deterministic '
-            'Prediction System\n'
-            'of Environment Canada: '
-            'https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html',
-            horizontalalignment='left',
-            verticalalignment='top',
-            transform=ax.transAxes, color='white')
-
-    axis_colors(ax, 'gray')
 
     return fig
 
