@@ -225,6 +225,35 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     return fig
 
 
+def unstag_rot(ugrid, vgrid, i, j):
+    """Interpolate u and v component values to values at grid cell centre.
+    Then rotates the grid cells to align with N/E orientation.
+
+    :arg ugrid: u velocity component values with axes (..., y, x)
+    :type ugrid: :py:class:`numpy.ndarray`
+
+    :arg vgrid: v velocity component values with axes (..., y, x)
+    :type vgrid: :py:class:`numpy.ndarray`
+
+    :arg station: Name of the station ('East' or 'Central')
+    :type station: string
+
+    :returns u_E, v_N, depths: u_E and v_N velocties is the North and East
+     directions at the cell center,
+    and the depth of the station
+    """
+
+    # We need to access the u velocity that is between i and i-1
+    u_t = (ugrid[:, :, j, i-1] + ugrid[:, :, j, i]) / 2
+    v_t = (vgrid[:, :, j, i] + vgrid[:, :, j-1, i]) / 2
+    theta = 29
+    theta_rad = theta * np.pi / 180
+
+    u_E = u_t * np.cos(theta_rad) - v_t * np.sin(theta_rad)
+    v_N = u_t * np.sin(theta_rad) + v_t * np.cos(theta_rad)
+
+    return u_E, v_N
+
 def unstag_rot_gridded(ugrid, vgrid, station):
     """Interpolate u and v component values to values at grid cell centre.
     Then rotates the grid cells to align with N/E orientation.
@@ -260,21 +289,15 @@ def unstag_rot_gridded(ugrid, vgrid, station):
     return u_E, v_N, depths
 
 
-def plot_vel_NE_gridded(station, grid, figsize):
+def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
     """Plots the hourly averaged North/South and East/West velocities at a chosen
     VENUS node station using data that is calculated every 15 minutes.
 
     :arg station: Name of the station ('East' or 'Central')
     :type station: string
 
-    :arg grid_U_h: Hourly zonal velocity results dataset from NEMO.
-    :type grid_U_h: :class:`netCDF4.Dataset`
-
-    :arg grid_V_h: Hourly meridional velocity results dataset from NEMO.
-    :type grid_V_h: :class:`netCDF4.Dataset`
-
-    :arg grid_W_h: Hourly vertical velocity results dataset from NEMO.
-    :type grid_W_h: :class:`netCDF4.Dataset`
+    :arg grid: Quarter-hourly velocity and tracer results dataset from NEMO.
+    :type grid: :class:`netCDF4.Dataset`
 
     :arg figsize: Figure size (width, height) in inches or 'default'.
     :type figsize: 2-tuple
