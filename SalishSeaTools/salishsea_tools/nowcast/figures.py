@@ -2225,7 +2225,10 @@ def thalweg_salinity(
     return fig
 
 
-def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
+def plot_surface(
+    grid_T_d, grid_U_d, grid_V_d, grid_B,
+    limits=[0, 398, 0, 898], figsize=(20, 12),
+):
     """Plots the daily average surface salinity, temperature, and currents.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
@@ -2250,18 +2253,10 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
     :returns: matplotlib figure object instance (fig).
     """
 
-    # Limits
-    if limits == 'default':
-        limits = [0, 398, 0, 898]
-
     xmin = limits[0]
     xmax = limits[1]
     ymin = limits[2]
     ymax = limits[3]
-
-    # Figure size
-    if figsize == 'default':
-        figsize = (20, 12)
 
     # Tracer data
     sal_d = grid_T_d.variables['vosaline']
@@ -2277,8 +2272,8 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 
     tracers = [sal_d, tem_d]
     titles = ['Average Salinity: ', 'Average Temperature: ']
-    cmaps = ['gist_ncar_r', 'jet']
-    units = ['[]', '[degC]']
+    cmaps = ['spectral', 'jet']
+    units = ['[PSU]', '[degC]']
 
     # Figure
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=figsize)
@@ -2295,12 +2290,14 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
 
         # Colormaps
         if plot == 1:   # salinity
-            cs = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+            cs = np.arange(0, 35, 1)
+            step = 4
         if plot == 2:   # temperature
-            cs = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+            cs = np.arange(0, 21, 1)
+            step = 2
 
         # Plot salinity and temperature
-        mesh = ax.contourf(tracer, cmap=cmap, vmin=0, vmax=cs[-1])
+        mesh = ax.contourf(tracer, cs, cmap=cmap, vmin=0, vmax=cs[-1])
 
         # Axis
         ax.set_xlim(xmin, xmax)
@@ -2311,7 +2308,7 @@ def plot_surface(grid_T_d, grid_U_d, grid_V_d, grid_B, limits, figsize):
         ax.set_xlabel('X Index', **axis_font)
         ax.set_ylabel('Y Index', **axis_font)
         ax.grid()
-        cbar.set_ticks(cs)
+        cbar.set_ticks(cs[::step])
         plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
         cbar.set_label(unit, color='white', **axis_font)
         viz_tools.plot_coastline(ax, grid_B)
