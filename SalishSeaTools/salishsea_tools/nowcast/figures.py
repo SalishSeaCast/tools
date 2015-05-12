@@ -2290,14 +2290,14 @@ def plot_surface(
 
         # Colormaps
         if plot == 1:   # salinity
-            cs = np.arange(0, 35, 1)
+            cs = np.arange(0, 33, 1)
             step = 4
         if plot == 2:   # temperature
-            cs = np.arange(0, 21, 1)
+            cs = np.arange(4, 21, 1)
             step = 2
 
         # Plot salinity and temperature
-        mesh = ax.contourf(tracer, cs, cmap=cmap, vmin=0, vmax=cs[-1])
+        mesh = ax.contourf(tracer, cs, cmap=cmap, vmin=cs[0], vmax=cs[-1])
 
         # Axis
         ax.set_xlim(xmin, xmax)
