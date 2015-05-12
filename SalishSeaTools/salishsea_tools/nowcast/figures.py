@@ -1557,7 +1557,7 @@ def compare_tidalpredictions_maxSSH(
         0.05, 0.6,
         'Time of max: {time} {timezone}'
         .format(
-            time=tmax + PST * time_shift,
+            time=(tmax + PST * time_shift).strftime('%Y-%m-%d %H:%M'),
             timezone=PST * '[PST]' + abs((PST - 1)) * '[UTC]'),
         fontsize=15, horizontalalignment='left',
         verticalalignment='top', color='white')
@@ -2665,7 +2665,8 @@ def plot_threshold_website(
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         axis_colors(ax, 'blue')
-        display_time = (max_times[name] + PST * time_shift).strftime('%H:%M')
+        display_time = (max_times[name] +
+                        PST * time_shift).strftime('%b %d, %Y %H:%M')
 
         ax.text(
             0.05, 0.9, name, fontsize=20,
