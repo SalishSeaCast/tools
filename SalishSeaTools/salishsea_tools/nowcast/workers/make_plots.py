@@ -245,13 +245,16 @@ def make_publish_plots(
         plots_dir, 'SH_wind_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = figures.average_winds_at_station(
-        grid_T_hr, bathy, model_path, coastline, station='all')
+    fig = figures.winds_average_max(
+        grid_T_hr, bathy, model_path, coastline,
+        station='all', wind_type='average')
     filename = os.path.join(
         plots_dir, 'Avg_wind_vectors_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = figures.winds_at_max_ssh(grid_T_hr, bathy, model_path, coastline, station='all')
+    fig = figures.winds_average_max(
+        grid_T_hr, bathy, model_path, coastline,
+        station='all', wind_type='max')
     filename = os.path.join(
         plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
