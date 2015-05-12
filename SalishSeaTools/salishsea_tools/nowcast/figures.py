@@ -2243,11 +2243,10 @@ def plot_surface(
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
 
-    :arg limits: Figure limits [xmin,xmax,ymin,ymax]
-                 or 'default' for entire region.
+    :arg limits: Figure limits [xmin,xmax,ymin,ymax].
     :type limits: 2-tuple
 
-    :arg figsize: Figure size (width, height) in inches or 'default'.
+    :arg figsize: Figure size (width, height) in inches.
     :type figsize: 2-tuple
 
     :returns: matplotlib figure object instance (fig).
