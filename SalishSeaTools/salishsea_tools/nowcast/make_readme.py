@@ -76,7 +76,7 @@ def notebook_description(fn):
         first_cell = contents['cells'][0]
     first_cell_type = first_cell['cell_type']
     if first_cell_type not in 'markdown raw'.split():
-        return
+        return description
     desc_lines = first_cell['source']
     for line in desc_lines:
         suffix = ''
