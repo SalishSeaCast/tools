@@ -27,11 +27,8 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import os
-from glob import glob
 import requests
 
-import netCDF4 as nc
 from salishsea_tools import (
     nc_tools,
     tidetools,
@@ -130,21 +127,6 @@ def load_VENUS(station):
         parse_dates=['date'], date_parser=dateparse, engine='python')
 
     return data, lon, lat, depth
-
-
-def results_dataset_gridded(dmy, station, results_dir):
-    """Return the results dataset for station (e.g. central or east)
-     for the quarter hourly data from results_dir.
-    """
-    if station == 'Central':
-        sta = 'central'
-    else:
-        sta = 'east'
-    filename_pattern = '{dmy}/VENUS_{station}_gridded.nc'
-    filepaths = glob(os.path.join(
-        results_dir, filename_pattern.format(dmy=dmy, station=sta)))
-
-    return nc.Dataset(filepaths[0])
 
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
