@@ -34,6 +34,7 @@ matplotlib.use('Agg')
 from salishsea_tools.nowcast import (
     figures,
     lib,
+    research_VENUS
 )
 
 
@@ -202,7 +203,8 @@ def make_publish_plots(
         plots_dir, 'Website_thumbnail_{date}.png'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    fig = figures.plot_threshold_website(bathy, grid_T_hr, model_path, coastline)
+    fig = figures.plot_threshold_website(
+        bathy, grid_T_hr, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
@@ -261,7 +263,7 @@ def make_publish_plots(
 
 
 def make_research_plots(
-    dmy, model_path, bathy, results_dir, plots_dir, coastline,
+    dmy, model_path, bathy, results_dir, plots_dir, coastline
 ):
     """Make the plots we wish to look at for research purposes.
     """
@@ -271,6 +273,9 @@ def make_research_plots(
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
     grid_U_dy = results_dataset('1d', 'grid_U', results_dir)
     grid_V_dy = results_dataset('1d', 'grid_V', results_dir)
+    grid_c = results_dataset_gridded(
+        dmy, 'central', results_dir)
+    grid_e = results_dataset_gridded(dmy, 'east', results_dir)
 
     # do the plots
     fig = figures.thalweg_salinity(grid_T_dy)
@@ -293,6 +298,16 @@ def make_research_plots(
         plots_dir, 'Compare_VENUS_Central_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
+    fig = research_VENUS.plot_vel_NE_gridded('Central', grid_c)
+    filename = os.path.join(
+        plots_dir, 'Currents_at_VENUS_Central_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = research_VENUS.plot_vel_NE_gridded('East', grid_e)
+    filename = os.path.join(
+        plots_dir, 'Currents_at_VENUS_East_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
 
 def results_dataset(period, grid, results_dir):
     """Return the results dataset for period (e.g. 1h or 1d)
@@ -301,6 +316,16 @@ def results_dataset(period, grid, results_dir):
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
     filepaths = glob(os.path.join(
         results_dir, filename_pattern.format(period=period, grid=grid)))
+    return nc.Dataset(filepaths[0])
+
+
+def results_dataset_gridded(station, results_dir):
+    """Return the results dataset for station (e.g. central or east)
+     for the quarter hourly data from results_dir.
+    """
+    filename_pattern = 'VENUS_{station}_gridded.nc'
+    filepaths = glob(os.path.join(
+        results_dir, filename_pattern.format(station=station)))
     return nc.Dataset(filepaths[0])
 
 if __name__ == '__main__':
