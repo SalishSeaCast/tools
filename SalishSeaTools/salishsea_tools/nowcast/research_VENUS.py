@@ -362,7 +362,7 @@ def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
     mesh = axw.contourf(
         np.arange(0, 24, 0.25), dep_w[:],
         w_w[:, :, 1, 1].transpose(),
-        np.arange(vmin/100, vmax/100, step/100),
+        np.arange(vmin/80, vmax/80, step/80),
         cmap=cmap)
     cbar = fig.colorbar(mesh, ax=axw)
     axw.set_ylim([dep_s, 0])
