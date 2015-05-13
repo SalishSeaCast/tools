@@ -50,6 +50,10 @@ Descriptions under the links below are from the first cell of the notebooks
     
     Noteboook to test analyze.py functions  
 
+* ##[Testing research_VENUS.py module.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Testing research_VENUS.py module.ipynb)  
+    
+    This notebook is used to test the research_VENUS.py module.  
+
 * ##[Original_DailyNowcastFigures.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Original_DailyNowcastFigures.ipynb)  
     
     Template notebook for creation of notebooks that show daily figures  
@@ -58,6 +62,8 @@ Descriptions under the links below are from the first cell of the notebooks
     This is an interim step toward fully automated web publication of  
     analysis and monitoring figures from nowcast runs.  
 
+* ##[DevelopingSalinityTemplate.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingSalinityTemplate.ipynb)  
+    
 * ##[DevelopingAnalyzeModule.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingAnalyzeModule.ipynb)  
     
     Notebook for developing functions in analyze.py  
@@ -68,9 +74,7 @@ Descriptions under the links below are from the first cell of the notebooks
 
 * ##[Out_Template.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/Out_Template.ipynb)  
     
-    Production template
-
-* ##[DevelopingSalinityTemplate.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingSalinityTemplate.ipynb)   
+    Production template  
 
 
 ##License
