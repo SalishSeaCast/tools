@@ -274,8 +274,8 @@ def make_research_plots(
     grid_U_dy = results_dataset('1d', 'grid_U', results_dir)
     grid_V_dy = results_dataset('1d', 'grid_V', results_dir)
     grid_c = results_dataset_gridded(
-        dmy, 'central', results_dir)
-    grid_e = results_dataset_gridded(dmy, 'east', results_dir)
+        'central', results_dir)
+    grid_e = results_dataset_gridded('east', results_dir)
 
     # do the plots
     fig = figures.thalweg_salinity(grid_T_dy)
