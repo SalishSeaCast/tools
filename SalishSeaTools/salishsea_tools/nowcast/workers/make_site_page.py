@@ -146,6 +146,8 @@ def make_site_page(run_type, page_type, run_date, config):
             'T_S_Currents_on_surface',
             'Compare_VENUS_East',
             'Compare_VENUS_Central',
+            'Currents_at_VENUS_East',
+            'Currents_at_VENUS_Central',
         ],
     }
     # Functions to render rst files for various run types
