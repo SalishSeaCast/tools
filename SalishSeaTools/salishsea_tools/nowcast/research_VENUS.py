@@ -374,3 +374,5 @@ def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
         node=station, date=timestamp.format('DD-MMM-YYYY')), **title_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('[m/s]', **axis_font)
+
+    return fig
