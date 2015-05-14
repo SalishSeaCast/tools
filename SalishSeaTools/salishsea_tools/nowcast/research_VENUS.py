@@ -53,7 +53,10 @@ title_font = {
 }
 axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13', 'color': 'white'}
 
-# VENUS coordinates from the VENUS website. Depth is in meters.
+# Constants defined for the VENUS nodes
+# Lat/lon/depth from the VENUS website. Depth is in meters.
+# i,j are python grid coordinates as returned from
+# tidetools.find_closest_model_point()
 SITES = {
     'VENUS': {
         'East': {
@@ -92,21 +95,11 @@ def load_VENUS(station):
     :arg station: The name of the station, either "East" or "Central".
     :type station: string
 
-    :returns: DataFrame (data) with the VENUS data,
-              longitude (lon), latitude (lat),
-              and depth (depth) of the node in metres.
+    :returns: DataFrame (data) with the VENUS data
     """
 
     # Define location
     filename = 'SG-{0}-VIP/VSG-{0}-VIP-State_of_Ocean.txt'.format(station)
-    if station == 'East':
-        lat = 49.0419
-        lon = -123.3176
-        depth = 170
-    elif station == 'Central':
-        lat = 49.0401
-        lon = -123.4261
-        depth = 300
 
     # Access website
     url = 'http://venus.uvic.ca/scripts/log_download.php'
@@ -126,7 +119,7 @@ def load_VENUS(station):
         ],
         parse_dates=['date'], date_parser=dateparse, engine='python')
 
-    return data, lon, lat, depth
+    return data
 
 
 def plot_VENUS(ax_sal, ax_temp, station, start, end):
@@ -147,17 +140,13 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     :arg end: The end date of the plot.
     :type end: datetime object
 
-    :returns: longitude (lon), latitude (lat), and depth (depth)
-              of the VENUS station.
     """
 
-    [data, lon, lat, depth] = load_VENUS(station)
+    data = load_VENUS(station)
     ax_sal.plot(data.date[:], data.sal, 'r-', label='VENUS')
     ax_sal.set_xlim([start, end])
     ax_temp.plot(data.date[:], data.temp, 'r-', label='VENUS')
     ax_temp.set_xlim([start, end])
-
-    return lon, lat, depth
 
 
 def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
@@ -189,7 +178,12 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     fig, (ax_sal, ax_temp) = plt.subplots(2, 1, figsize=figsize, sharex=True)
     fig.patch.set_facecolor('#2B3E50')
     fig.autofmt_xdate()
-    lon, lat, depth = plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
+    lon = SITES['VENUS'][station]['lon']
+    lat = SITES['VENUS'][station]['lat']
+    depth = SITES['VENUS'][station]['depth']
+
+    # Plotting observations
+    plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
 
     # Grid point of VENUS station
     [j, i] = tidetools.find_closest_model_point(
