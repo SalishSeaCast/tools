@@ -263,15 +263,6 @@ def get_model_time_variables(grid_T):
     return t_orig, t_final, t
 
 
-def dateparse(s):
-    """Parse the dates from the VENUS files."""
-
-    unaware = datetime.datetime.strptime(s, '%Y-%m-%dT%H:%M:%S.%f')
-    aware = unaware.replace(tzinfo=tz.tzutc())
-
-    return aware
-
-
 def dateparse_NOAA(s):
     """Parse the dates from the NOAA files."""
 
@@ -589,54 +580,6 @@ def get_tides(name):
     return ttide
 
 
-def load_VENUS(station):
-    """Loads the most recent State of the Ocean data from the VENUS node
-    indicated by station.
-
-    This data set includes pressure, temperature, and salinity among
-    other things.
-    See: http://venus.uvic.ca/research/state-of-the-ocean/
-
-    :arg station: The name of the station, either "East" or "Central".
-    :type station: string
-
-    :returns: DataFrame (data) with the VENUS data,
-              longitude (lon), latitude (lat),
-              and depth (depth) of the node in metres.
-    """
-
-    # Define location
-    filename = 'SG-{0}-VIP/VSG-{0}-VIP-State_of_Ocean.txt'.format(station)
-    if station == 'East':
-        lat = 49.0419
-        lon = -123.3176
-        depth = 170
-    elif station == 'Central':
-        lat = 49.0401
-        lon = -123.4261
-        depth = 300
-
-    # Access website
-    url = 'http://venus.uvic.ca/scripts/log_download.php'
-    params = {
-        'userid': 'nsoontie@eos.ubc.ca',
-        'filename': filename,
-    }
-    response = requests.get(url, params=params)
-
-    # Parse data
-    fakefile = StringIO(response.content)
-    data = pd.read_csv(
-        fakefile, delimiter=' ,', skiprows=17,
-        names=[
-            'date', 'pressure', 'pflag', 'temp', 'tflag', 'sal', 'sflag',
-            'sigmaT', 'stflag', 'oxygen', 'oflag',
-        ],
-        parse_dates=['date'], date_parser=dateparse, engine='python')
-
-    return data, lon, lat, depth
-
-
 def get_weather_filenames(t_orig, t_final, model_path):
     """Gathers a list of "Operational" atmospheric model filenames in a
     specifed date range.
@@ -887,37 +830,6 @@ def plot_threshold_map(ax, ttide, ssh_corr, marker, msize, alpha, name):
         color=threshold_c, alpha=alpha)
 
     return max_tides, mid_tides, extreme_ssh
-
-
-def plot_VENUS(ax_sal, ax_temp, station, start, end):
-    """Plots a time series of the VENUS data over a date range.
-
-    :arg ax_sal: The axis in which the salinity is displayed.
-    :type ax_sal: axis object
-
-    :arg ax_temp: The axis in which the temperature is displayed.
-    :type ax_temp: axis object
-
-    :arg station: The name of the station, either "East" or "Central".
-    :type station: string
-
-    :arg start: The start date of the plot.
-    :type start: datetime object
-
-    :arg end: The end date of the plot.
-    :type end: datetime object
-
-    :returns: longitude (lon), latitude (lat), and depth (depth)
-              of the VENUS station.
-    """
-
-    [data, lon, lat, depth] = load_VENUS(station)
-    ax_sal.plot(data.date[:], data.sal, 'r-', label='VENUS')
-    ax_sal.set_xlim([start, end])
-    ax_temp.plot(data.date[:], data.temp, 'r-', label='VENUS')
-    ax_temp.set_xlim([start, end])
-
-    return lon, lat, depth
 
 
 def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
@@ -2162,71 +2074,6 @@ def plot_surface(
     ax3.quiverkey(quiver, 355, 850, 1, '1 m/s', coordinates='data',
                   color='Indigo', labelcolor='black')
     axis_colors(ax3, 'white')
-
-    return fig
-
-
-def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
-    """Compares the model's temperature and salinity with observations from
-    VENUS station.
-
-    :arg station: Name of the station ('East' or 'Central')
-    :type station: string
-
-    :arg grid_T: Hourly tracer results dataset from NEMO.
-    :type grid_T: :class:`netCDF4.Dataset`
-
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-
-    :arg figsize: Figure size (width, height) in inches.
-    :type figsize: 2-tuple
-
-    :returns: matplotlib figure object instance (fig).
-    """
-
-    # Time range
-    t_orig, t_end, t = get_model_time_variables(grid_T)
-
-    # Bathymetry
-    bathy, X, Y = tidetools.get_bathy_data(grid_B)
-
-    # VENUS data
-    fig, (ax_sal, ax_temp) = plt.subplots(2, 1, figsize=figsize, sharex=True)
-    fig.patch.set_facecolor('#2B3E50')
-    fig.autofmt_xdate()
-    lon, lat, depth = plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
-
-    # Grid point of VENUS station
-    [j, i] = tidetools.find_closest_model_point(
-        lon, lat, X, Y, bathy, allow_land=True)
-
-    # Model data
-    sal = grid_T.variables['vosaline'][:, :, j, i]
-    temp = grid_T.variables['votemper'][:, :, j, i]
-    ds = grid_T.variables['deptht']
-
-    # Interpolating data
-    salc = []
-    tempc = []
-    for ind in np.arange(0, sal.shape[0]):
-        salc.append(interpolate_depth(sal[ind, :], ds, depth))
-        tempc.append(interpolate_depth(temp[ind, :], ds, depth))
-
-    # Plot model data
-    ax_sal.plot(t, salc, '-b', label='Model')
-    ax_temp.plot(t, tempc, '-b', label='Model')
-
-    # Axis
-    ax_sal.set_title('VENUS - {}'.format(station), **title_font)
-    ax_sal.set_ylim([29, 32])
-    ax_sal.set_ylabel('Practical Salinity [psu]', **axis_font)
-    ax_sal.legend(loc=0)
-    ax_temp.set_ylim([7, 11])
-    ax_temp.set_xlabel('Time [UTC]', **axis_font)
-    ax_temp.set_ylabel('Temperature [deg C]', **axis_font)
-    axis_colors(ax_sal, 'gray')
-    axis_colors(ax_temp, 'gray')
 
     return fig
 
