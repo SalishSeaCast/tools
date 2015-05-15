@@ -288,7 +288,7 @@ def make_research_plots(
         plots_dir, 'T_S_Currents_on_surface_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    fig = figures.VENUS_location(bathy)
+    fig = research_VENUS.VENUS_location(bathy)
     filename = os.path.join(
         plots_dir, 'VENUS_location_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
