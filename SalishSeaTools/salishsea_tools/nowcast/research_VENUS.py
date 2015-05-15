@@ -267,11 +267,6 @@ def unstag_rot_gridded(ugrid, vgrid, station):
     and the depth of the station
     """
 
-    if station == 'Central':
-        depths = 330
-    else:
-        depths = 170
-
     # We need to access the u velocity that is between i and i-1
     u_t = (ugrid[:, :, 1, 0] + ugrid[:, :, 1, 1]) / 2
     v_t = (vgrid[:, :, 1, 1] + vgrid[:, :, 0, 1]) / 2
@@ -281,10 +276,10 @@ def unstag_rot_gridded(ugrid, vgrid, station):
     u_E = u_t * np.cos(theta_rad) - v_t * np.sin(theta_rad)
     v_N = u_t * np.sin(theta_rad) + v_t * np.cos(theta_rad)
 
-    return u_E, v_N, depths
+    return u_E, v_N
 
 
-def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
+def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
     """Plots the hourly averaged North/South and East/West velocities at a chosen
     VENUS node station using data that is calculated every 15 minutes.
 
@@ -305,17 +300,18 @@ def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
     dep_t = grid.variables['depthv']
     dep_w = grid.variables['depthw']
 
-    u_E, v_N, dep_s = unstag_rot_gridded(u_u, v_v, station)
+    u_E, v_N = unstag_rot_gridded(u_u, v_v, station)
 
-    fig, (axu, axv, axw) = plt.subplots(3, 1, figsize=figsize)
+    fig, (axu, axv, axw) = plt.subplots(3, 1, figsize=figsize, sharex=True)
     fig.patch.set_facecolor('#2B3E50')
     vmax = 0.65
     vmin = -vmax
-    step = 0.005
+    step = 0.01
 
     # viz_tools.set_aspect(axu)
     timestamp = nc_tools.timestamp(grid, 0)
     cmap = plt.get_cmap('jet')
+    dep_s = SITES['VENUS'][station]['depth']
 
     axu.invert_yaxis()
     mesh = axu.contourf(
@@ -326,7 +322,6 @@ def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
     cbar = fig.colorbar(mesh, ax=axu)
     axu.set_ylim([dep_s, 0])
     axu.set_xlim([0, 23])
-    axu.set_xlabel('Time [h]', **axis_font)
     axu.set_ylabel('Depth [m]', **axis_font)
     figures.axis_colors(axu, 'white')
     axu.set_title('East/West Velocities at VENUS {node} on {date}'.format(
@@ -344,7 +339,6 @@ def plot_vel_NE_gridded(station, grid, figsize=(16, 16)):
     cbar = fig.colorbar(mesh, ax=axv)
     axv.set_ylim([dep_s, 0])
     axv.set_xlim([0, 23])
-    axv.set_xlabel('Time [h]', **axis_font)
     axv.set_ylabel('Depth [m]', **axis_font)
     figures.axis_colors(axv, 'white')
     axv.set_title('North/South Velocities at VENUS {node} on {date}'.format(
