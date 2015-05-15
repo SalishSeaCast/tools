@@ -30,7 +30,7 @@ Usage
 
 From the :file:`README.nocscombine` file:
 
-.. include:: ../../nocscombine/README.nocscombine
+.. include:: ../../../nocscombine/README.nocscombine
     :literal:
 
 

@@ -14,6 +14,8 @@
 .. limitations under the License.
 
 
+.. _BathymetryNotebooksAndTools:
+
 ******************************
 Bathymetry Notebooks and Tools
 ******************************

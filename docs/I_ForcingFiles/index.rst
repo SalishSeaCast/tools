@@ -1,3 +1,5 @@
+.. _InitialConditionsAndForcingNotebooksAndTools:
+
 **************************************************
 Initial Conditions and Forcing Notebooks and Tools
 **************************************************
@@ -33,6 +35,6 @@ Many of these notebooks use modules from the :ref:`SalishSeaTools` package so pl
 
 * :file:`webtide_forcing.ipynb`: an IPython Notebook to prepare tidal forcing files for the large Salish Sea NEMO 3.4 domain, western boundary.
 
-* :file:`correct_pressure.py`: A Python script to correct CGRF pressure files to sea level. 
+* :file:`correct_pressure.py`: A Python script to correct CGRF pressure files to sea level.
 
 When you add a new notebook to this collection please use :command:`python make_readme.py` in the :file:`tools/I_ForcingFiles/` directory to update the :file:`README.md` and commit and push it too.
