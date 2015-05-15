@@ -32,6 +32,7 @@ import requests
 from salishsea_tools import (
     nc_tools,
     tidetools,
+    viz_tools
 )
 
 from salishsea_tools.nowcast import figures
@@ -58,6 +59,9 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13', 'color': 'white'}
 # i,j are python grid coordinates as returned from
 # tidetools.find_closest_model_point()
 SITES = {
+    'Vancouver': {
+        'lat': 49.2827,
+        'lon': -123.1207},
     'VENUS': {
         'East': {
             'lat': 49.0419,
@@ -362,5 +366,95 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
         node=station, date=timestamp.format('DD-MMM-YYYY')), **title_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('[m/s]', **axis_font)
+
+    return fig
+
+
+def VENUS_location(grid_B, figsize=(10, 10)):
+    """Plots the location of the VENUS Central and East nodes as well as
+    Vancouver as a reference on a bathymetry map.
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg figsize: Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :returns: matplotlib figure object instance (fig).
+    """
+
+    lats = grid_B.variables['nav_lat'][:]
+    lons = grid_B.variables['nav_lon'][:]
+    bathy = grid_B.variables['Bathymetry'][:]
+
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    fig.patch.set_facecolor('#2B3E50')
+    viz_tools.plot_coastline(ax, grid_B, coords='map')
+    viz_tools.set_aspect(ax)
+    cmap = plt.get_cmap('winter')
+    cmap.set_bad('burlywood')
+    mesh = ax.pcolormesh(lons, lats, bathy, cmap=cmap)
+    cbar = fig.colorbar(mesh)
+
+    lon_c = SITES['VENUS']['Central']['lon']
+    lat_c = SITES['VENUS']['Central']['lat']
+    lon_e = SITES['VENUS']['East']['lon']
+    lat_e = SITES['VENUS']['East']['lat']
+    lon_v = SITES['Vancouver']['lon']
+    lat_v = SITES['Vancouver']['lat']
+
+    ax.plot(
+        lon_c,
+        lat_c,
+        marker='D',
+        color='Black',
+        markersize=10,
+        markeredgewidth=2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    ax.annotate(
+        'Central',
+        (lon_c - 0.15, lat_c + 0.08),
+        fontsize=15,
+        color='black',
+        bbox=bbox_args)
+
+    ax.plot(
+        lon_e,
+        lat_e,
+        marker='D',
+        color='Black',
+        markersize=10,
+        markeredgewidth=2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    ax.annotate(
+        'East',
+        (lon_e + 0.05, lat_e + 0.08),
+        fontsize=15,
+        color='black',
+        bbox=bbox_args)
+
+    ax.plot(
+        lon_v,
+        lat_v,
+        marker='D',
+        color='DarkMagenta',
+        markersize=10,
+        markeredgewidth=2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    ax.annotate(
+        'Vancouver',
+        (lon_v - 0.15, lat_v + 0.08),
+        fontsize=15,
+        color='black',
+        bbox=bbox_args)
+
+    ax.set_xlim([-124.02, -123.02])
+    ax.set_ylim([48.5, 49.6])
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
+    figures.axis_colors(ax, 'white')
+    ax.set_xlabel('Longitude', **axis_font)
+    ax.set_ylabel('Latitude', **axis_font)
+    ax.set_title('VENUS Node Locations', **title_font)
+    cbar.set_label('Depth [m]', **axis_font)
 
     return fig
