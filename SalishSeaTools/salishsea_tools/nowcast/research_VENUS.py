@@ -391,7 +391,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     fig.patch.set_facecolor('#2B3E50')
     viz_tools.plot_coastline(ax, grid_B, coords='map')
     viz_tools.set_aspect(ax)
-    cmap = plt.get_cmap('winter')
+    cmap = plt.get_cmap('winter_r')
     cmap.set_bad('burlywood')
     mesh = ax.pcolormesh(lons, lats, bathy, cmap=cmap)
     cbar = fig.colorbar(mesh)
