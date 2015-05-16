@@ -22,6 +22,8 @@ The :file:`tools` repo contains several Python packages:
 
 Also documented here are:
 
+* Notes are how the Python packages in the repo are :ref:`structured and maintained <PythonPackagesStructureAndMaintenance>`
+
 * How we :ref:`create netCDF4 files and the metadata conventions <netCDF4FilesCreationAndConventions>` that we use in them
 
 * How to build and use the :ref:`rebuild-nemo-tool` that we use to combine per-processor results files from NEMO-3.4 runs
@@ -44,6 +46,7 @@ Contents:
    I_ForcingFiles/index
    Marlin/index
    nemo-tools/index
+   python_packaging
    legacy_docs/index
 
 
