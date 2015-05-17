@@ -74,7 +74,8 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     try:
-        checklist = get_grib(parsed_args.forecast, config)
+        checklist = get_grib(
+            parsed_args.forecast, parsed_args.yesterday, config)
         logger.info(
             'weather forecast {.forecast} downloads complete'
             .format(parsed_args))
@@ -110,12 +111,18 @@ def configure_argparser(prog, description, parents):
         'forecast', choices=set(('00', '06', '12', '18')),
         help='Name of forecast to download files from.',
     )
+    parser.add_argument(
+        '--yesterday', action='store_true',
+        help="Download forecast files for previous day's date."
+    )
     return parser
 
 
-def get_grib(forecast, config):
+def get_grib(forecast, yesterday, config):
     utc = arrow.utcnow()
     utc = utc.replace(hours=-int(forecast))
+    if yesterday:
+        utc = utc.replace(days=-1)
     date = utc.format('YYYYMMDD')
     logger.info(
         'downloading {forecast} forecast GRIB2 files for {date}'
