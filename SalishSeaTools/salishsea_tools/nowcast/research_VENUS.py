@@ -313,9 +313,9 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
 
     fig, (axu, axv, axw) = plt.subplots(3, 1, figsize=figsize, sharex=True)
     fig.patch.set_facecolor('#2B3E50')
-    vmax = 0.65
+    vmax = 0.7
     vmin = -vmax
-    step = 0.01
+    step = 0.08
 
     # viz_tools.set_aspect(axu)
     timestamp = nc_tools.timestamp(grid, 0)
