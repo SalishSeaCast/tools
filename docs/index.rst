@@ -14,11 +14,13 @@ There is a companion collection of :ref:`project documentation <SalishSeaDocs>`.
 
 The :file:`tools` repo contains several Python packages:
 
-* :kbd:`SalishSeaCmd` - the :ref:`SalishSeaCmdProcessor`
+* :py:obj:`SalishSeaCmd` - the :ref:`SalishSeaCmdProcessor`
 
-* :kbd:`SalishSeaTools` - a :ref:`collection of Python modules <SalishSeaTools>` that facilitate code reuse across the Salish Sea MEOPAR project
+* :py:obj:`SalishSeaTools` - a :ref:`collection of Python modules <SalishSeaTools>` that facilitate code reuse across the Salish Sea MEOPAR project
 
-* :kbd:`Marlin` - the :ref:`Salish Sea NEMO svn-hg Maintenance Tool <Marlin>`
+* :py:obj:`SOGTools` - :ref:`Python functions <SOGTools>` for working with the output of the SOG 1-D model
+
+* :py:obj:`Marlin` - the :ref:`Salish Sea NEMO svn-hg Maintenance Tool <Marlin>`
 
 Also documented here are:
 
@@ -41,6 +43,7 @@ Contents:
    SalishSeaCmd/salishsea-cmd
    SalishSeaTools/salishsea-tools
    SalishSeaTools/nowcast
+   SOGTools/index
    netcdf4/index
    bathymetry/index
    I_ForcingFiles/index
