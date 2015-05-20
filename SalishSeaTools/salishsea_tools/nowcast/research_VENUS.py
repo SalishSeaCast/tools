@@ -147,9 +147,9 @@ def plot_VENUS(ax_sal, ax_temp, station, start, end):
     """
 
     data = load_VENUS(station)
-    ax_sal.plot(data.date[:], data.sal, 'r-', label='VENUS')
+    ax_sal.plot(data.date[:], data.sal, 'r-', label='Observations')
     ax_sal.set_xlim([start, end])
-    ax_temp.plot(data.date[:], data.temp, 'r-', label='VENUS')
+    ax_temp.plot(data.date[:], data.temp, 'r-', label='Observations')
     ax_temp.set_xlim([start, end])
 
 
@@ -210,7 +210,8 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     ax_temp.plot(t, tempc, '-b', label='Model')
 
     # Axis
-    ax_sal.set_title('VENUS - {}'.format(station), **title_font)
+    ax_sal.set_title('VENUS {} - {}'.format(station, t[0].strftime('%d-%b-%Y'),
+                                            **title_font))
     ax_sal.set_ylim([29, 32])
     ax_sal.set_ylabel('Practical Salinity [psu]', **axis_font)
     ax_sal.legend(loc=0)
@@ -219,6 +220,10 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     ax_temp.set_ylabel('Temperature [deg C]', **axis_font)
     figures.axis_colors(ax_sal, 'gray')
     figures.axis_colors(ax_temp, 'gray')
+
+    # Text box
+    ax_temp.text(0.25, -0.3, 'Observations from Ocean Networks Canada',
+                 transform=ax_temp.transAxes, color='white')
 
     return fig
 
@@ -386,15 +391,17 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     lats = grid_B.variables['nav_lat'][:]
     lons = grid_B.variables['nav_lon'][:]
     bathy = grid_B.variables['Bathymetry'][:]
+    levels = np.arange(0, 470, 50)
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    viz_tools.plot_coastline(ax, grid_B, coords='map')
-    viz_tools.set_aspect(ax)
     cmap = plt.get_cmap('winter_r')
     cmap.set_bad('burlywood')
-    mesh = ax.pcolormesh(lons, lats, bathy, cmap=cmap)
+    mesh = ax.contourf(lons, lats, bathy, levels, cmap=cmap, extend='both')
     cbar = fig.colorbar(mesh)
+    viz_tools.plot_land_mask(ax, grid_B, coords='map', color='burlywood')
+    viz_tools.plot_coastline(ax, grid_B, coords='map')
+    viz_tools.set_aspect(ax)
 
     lon_c = SITES['VENUS']['Central']['lon']
     lat_c = SITES['VENUS']['Central']['lat']

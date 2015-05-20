@@ -144,7 +144,6 @@ def make_site_page(run_type, page_type, run_date, config):
         'research': [
             'Salinity_on_thalweg',
             'T_S_Currents_on_surface',
-            'VENUS_location',
             'Compare_VENUS_East',
             'Compare_VENUS_Central',
             'Currents_at_VENUS_East',
