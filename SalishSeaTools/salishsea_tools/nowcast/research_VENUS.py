@@ -288,7 +288,7 @@ def unstag_rot_gridded(ugrid, vgrid, station):
     return u_E, v_N
 
 
-def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
+def plot_vel_NE_gridded(station, grid, vmax=1.0, figsize=(14, 10)):
     """Plots the hourly averaged North/South and East/West velocities at a chosen
     VENUS node station using data that is calculated every 15 minutes.
 
@@ -297,6 +297,10 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
 
     :arg grid: Quarter-hourly velocity and tracer results dataset from NEMO.
     :type grid: :class:`netCDF4.Dataset`
+
+    :arg vmax: Maximum value for the color bar in m/s or 'default'.
+        vmin is set as -vmax.
+    :type vmax: float
 
     :arg figsize: Figure size (width, height) in inches or 'default'.
     :type figsize: 2-tuple
@@ -313,7 +317,7 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
 
     fig, (axu, axv, axw) = plt.subplots(3, 1, figsize=figsize, sharex=True)
     fig.patch.set_facecolor('#2B3E50')
-    vmax = 0.7
+
     vmin = -vmax
     step = 0.08
 
@@ -359,7 +363,7 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
     mesh = axw.contourf(
         np.arange(0, 24, 0.25), dep_w[:],
         w_w[:, :, 1, 1].transpose(),
-        np.arange(vmin/80, vmax/80, step/80),
+        np.arange(vmin/70, vmax/70, step/80),
         cmap=cmap)
     cbar = fig.colorbar(mesh, ax=axw)
     axw.set_ylim([dep_s, 0])
