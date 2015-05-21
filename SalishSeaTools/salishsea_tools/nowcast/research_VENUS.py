@@ -319,7 +319,7 @@ def plot_vel_NE_gridded(station, grid, vmax=1.0, figsize=(14, 10)):
     fig.patch.set_facecolor('#2B3E50')
 
     vmin = -vmax
-    step = 0.08
+    step = 0.01
 
     # viz_tools.set_aspect(axu)
     timestamp = nc_tools.timestamp(grid, 0)
