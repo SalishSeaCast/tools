@@ -298,7 +298,7 @@ def make_research_plots(
         plots_dir, 'Compare_VENUS_Central_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    fig = research_VENUS.plot_vel_NE_gridded('Central', grid_c)
+    fig = research_VENUS.plot_vel_NE_gridded('Central', grid_c, vmax=0.5)
     filename = os.path.join(
         plots_dir, 'Currents_at_VENUS_Central_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
