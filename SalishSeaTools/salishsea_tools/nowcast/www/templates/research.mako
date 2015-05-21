@@ -37,6 +37,7 @@ Plots
     %endfor
     <object class="img-responsive" type="image/svg+xml"
       data="../../../../_static/nemo/VENUS_locations.svg">
+    </object>  
     <hr>
 
 Data Sources
