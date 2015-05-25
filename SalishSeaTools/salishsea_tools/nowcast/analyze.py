@@ -54,6 +54,7 @@ colours = {'nowcast': 'DodgerBlue',
            'model': 'blue',
            'residual': 'DimGray'}
 
+
 def get_filenames(t_orig, t_final, period, grid, model_path):
     """Returns a list with the filenames for all files over the
     defined period of time and sorted in chronological order.
@@ -98,9 +99,10 @@ def get_filenames(t_orig, t_final, period, grid, model_path):
     return files
 
 
-def combine_files(files, var, depth, j, i):
+def combine_files(files, var, depth, jss, iss):
     """Returns the value of the variable entered over
-    multiple files covering a certain period of time.
+    multiple files covering a certain period of time at
+    a set of grid coordinates.
 
     :arg files: Multiple result files in chronological order.
     :type files: list
@@ -111,34 +113,36 @@ def combine_files(files, var, depth, j, i):
                       vomecrty = Velocity V-component).
     :type var: string
 
-    :arg depth: Depth of model results ('None' if var=sossheig).
+    :arg depth: Depth of model results
+    'None' if depth is not applicable or all depths required.
     :type depth: integer or string
 
-    :arg j: Latitude (y) index of location (<=897).
-    :type j: integer
+    :arg jss: list of (y) indices of location (<=897).
+    :type jss:  list of integers
 
-    :arg i: Longitude (x) index of location (<=397).
-    :type i: integer
+    :arg iss: list of (x) indices of location (<=397).
+    :type iss: list of integers
 
     :returns: var_ary, time - array of model results and time.
     """
 
     time = np.array([])
-    var_ary = np.array([])
+    var_list = []
 
     for f in files:
         G = nc.Dataset(f)
         if depth == 'None':
-            var_tmp = G.variables[var][:, j, i]
+            var_tmp = G.variables[var][..., jss, iss]
         else:
-            var_tmp = G.variables[var][:, depth, j, i]
+            var_tmp = G.variables[var][..., depth, jss, iss]
 
-        var_ary = np.append(var_ary, var_tmp, axis=0)
+        var_list.append(var_tmp)
         t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
         for ind in range(len(t)):
             t[ind] = t[ind].datetime
         time = np.append(time, t)
 
+    var_ary = np.concatenate(var_list, axis=0)
     return var_ary, time
 
 
@@ -184,13 +188,14 @@ def plot_files(ax, grid_B, files, var, depth, t_orig, t_final,
     """
 
     # Stations information
-    [lats, lons] = figures.station_coords()
+    lat = figures.SITES[name]['lat']
+    lon = figures.SITES[name]['lon']
 
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
     # Get index
-    [j, i] = tidetools.find_closest_model_point(lons[name], lats[name], X, Y,
+    [j, i] = tidetools.find_closest_model_point(lon, lat, X, Y,
                                                 bathy, allow_land=False)
 
     # Call function
