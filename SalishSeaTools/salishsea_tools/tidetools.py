@@ -43,6 +43,7 @@ from salishsea_tools import (
 M2FREQ = 28.984106*np.pi/180
 K1FREQ = 15.041069*np.pi/180
 
+
 def get_all_perm_dfo_wlev(start_date, end_date):
     """Get water level data for all permanent DFO water level sites
     for specified period.
