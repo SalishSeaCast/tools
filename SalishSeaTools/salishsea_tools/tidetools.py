@@ -1486,6 +1486,17 @@ def fittit(uaus, vaus, time):
         of both u and v tidal current components.
 
     """
+    thesize = 40
+
+    vM2amp = np.zeros(thesize)
+    vM2pha = np.zeros(thesize)
+    vK1amp = np.zeros(thesize)
+    vK1pha = np.zeros(thesize)
+    uM2amp = np.zeros(thesize)
+    uM2pha = np.zeros(thesize)
+    uK1amp = np.zeros(thesize)
+    uK1pha = np.zeros(thesize)
+
     for dep in np.arange(0, len(vaus[1])-1):
         if vaus[:, dep].any() != 0.:
             fitted, cov = curve_fit(double, time[:], vaus[:, dep])
