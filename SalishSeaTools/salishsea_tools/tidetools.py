@@ -1,3 +1,4 @@
+
 # Copyright 2013-2015 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
@@ -27,6 +28,7 @@ import os
 
 import angles
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 import netCDF4 as NC
 import numpy as np
 import pandas as pd
@@ -38,6 +40,8 @@ from salishsea_tools import (
     viz_tools,
 )
 
+M2FREQ = 28.984106*np.pi/180
+K1FREQ = 15.041069*np.pi/180
 
 def get_all_perm_dfo_wlev(start_date, end_date):
     """Get water level data for all permanent DFO water level sites
@@ -1437,6 +1441,129 @@ def ap2ep(Au, PHIu, Av, PHIv):
     PHA = PHA+k*180
     PHA = PHA % 360
     return SEMA,  ECC, INC, PHA
+
+
+def double(x, M2amp, M2pha, K1amp, K1pha, mean):
+    """Function for the fit, assuming only M2 and K2 tidal constituents.
+
+    :arg x:
+    :type x:
+
+    :arg M2amp: Tidal amplitude of the M2 constituent
+    :type M2amp:
+
+    :arg M2pha: Phase lag of M2 constituent
+    :type M2pha:
+
+    :arg K1amp: Tidal amplitude of the K1 constituent
+    :type K1amp:
+
+    :arg K1pha: Phase lag of K1 constituent
+    :type K1pha:
+
+    :returns:(mean + M2amp*np.cos(M2FREQ*x-M2pha*np.pi/180.)
+        +K1amp*np.cos(K1FREQ*x-K1pha*np.pi/180.))
+    """
+    return(
+        mean + M2amp * np.cos(M2FREQ * x - M2pha * np.pi / 180.) +
+        K1amp * np.cos(K1FREQ * x - K1pha * np.pi / 180))
+
+
+def fittit(uaus, vaus, time):
+    """Function to find tidal components from the tidal currents.
+
+    :arg uaus: East/West tidal current velocities.
+    :type uaus:  :py:class:'np.ndarray'
+
+    :arg vaus: North/South tidal current velocities.
+    :type vaus: :py:class:'np.ndarray'
+
+    :arg time: Time over which the velocitie were being taken in seconds.
+    :type time: :py:class:'np.ndarray'
+
+    :returns vM2amp, vM2pha, vK1amp, vK1pha, uM2amp, uM2pha, uK1amp, uK1pha:
+        The amplitude and phase lag of each tidal component (M2 and K1)
+        of both u and v tidal current components.
+
+    """
+    for dep in np.arange(0, len(vaus[1])-1):
+        if vaus[:, dep].any() != 0.:
+            fitted, cov = curve_fit(double, time[:], vaus[:, dep])
+            if fitted[0] < 0:
+                fitted[0] = -fitted[0]
+                fitted[1] = fitted[1]+180.
+            if fitted[1] > 180:
+                fitted[1] = fitted[1] - 360.
+            elif fitted[1] < -180-360:
+                fitted[1] = fitted[1] + 720.
+            elif fitted[1] < -180:
+                fitted[1] = fitted[1] + 360.
+            if fitted[2] < 0:
+                fitted[2] = -fitted[2]
+                fitted[3] = fitted[3]+180.
+            vM2amp[dep] = fitted[0]
+            vM2pha[dep] = fitted[1]
+            vK1amp[dep] = fitted[2]
+            vK1pha[dep] = fitted[3]
+
+    for dep in np.arange(0, len(uaus[1])-1):
+        if uaus[:, dep].any() != 0.:
+            fitted, cov = curve_fit(double, time[:], uaus[:, dep])
+            if fitted[0] < 0:
+                fitted[0] = -fitted[0]
+                fitted[1] = fitted[1]+180.
+            if fitted[1] > 180+360:
+                fitted[1] = fitted[1] - 720
+            elif fitted[1] > 180:
+                fitted[1] = fitted[1] - 360.
+            elif fitted[1] < -180-360:
+                fitted[1] = fitted[1] + 720.
+            elif fitted[1] < - 180:
+                fitted[1] = fitted[1] + 360.
+            if fitted[2] < 0:
+                fitted[2] = -fitted[2]
+                fitted[3] = fitted[3]+180.
+            uM2amp[dep] = fitted[0]
+            uM2pha[dep] = fitted[1]
+            uK1amp[dep] = fitted[2]
+            uK1pha[dep] = fitted[3]
+    return vM2amp, vM2pha, vK1amp, vK1pha, uM2amp, uM2pha, uK1amp, uK1pha
+
+
+def ellipse_params(uamp, upha, vamp, vpha):
+    """Calculates ellipse parameters based on the amplitude
+        and phase for a tidal constituent.
+
+    :arg uamp: u fitted amplitude of the chosen constituent
+    :type uamp: :py:class:`numpy.ndarray`
+
+    :arg upha: u fitted phase of the chosen constituent
+    :type upha: :py:class:`numpy.ndarray`
+
+    :arg vamp: v fitted amplitude of the chosen constituent
+    :type vamp: :py:class:`numpy.ndarray`
+
+    :arg vpha: v fitted phase of the chosen constituent
+    :type vpha: :py:class:`numpy.ndarray`
+
+    :returns CX, SX, CY, SY, ap, am, ep, em, major, minor, theta:
+        The positively and negatively rotating amplitude and phase.
+        As well as the major and minor axis and the axis tilt.
+   """
+
+    CX = uamp*np.cos(np.pi*upha/180.)
+    SX = uamp*np.sin(np.pi*upha/180.)
+    CY = vamp*np.cos(np.pi*vpha/180.)
+    SY = vamp*np.sin(np.pi*vpha/180.)
+    ap = np.sqrt((CX+SY)**2+(CY-SX)**2)/2.
+    am = np.sqrt((CX-SY)**2+(CY+SX)**2)/2.
+    ep = np.arctan2(CY-SX, CX+SY)+np.pi
+    em = np.arctan2(CY+SX, CX-SY)+np.pi
+    major = ap+am
+    minor = ap-am
+    theta = (ep+em)/2.*180./np.pi
+    theta %= 180
+    return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta
 
     # Authorship Copyright:
     #
