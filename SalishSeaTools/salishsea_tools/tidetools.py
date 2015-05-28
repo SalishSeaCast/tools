@@ -24,7 +24,7 @@ import csv
 import datetime
 from math import radians, sin, cos, asin, sqrt, pi
 import os
-
+import angles
 
 import angles
 import matplotlib.pyplot as plt
@@ -1444,6 +1444,23 @@ def ap2ep(Au, PHIu, Av, PHIv):
     return SEMA,  ECC, INC, PHA
 
 
+def convert_to_seconds(time_model):
+    """ Interpolates the datetime values into an array of seconds from a
+        determined starting point
+
+    :arg time_model: array of model output time as datetime objects
+    :type time_model: array with datetimes
+
+    :returns tp_wrt_epoch, times with respect to the
+        begining of the input in seconds
+    """
+    epoc = time_model[0]
+    tp_wrt_epoc = []
+    for t in time_model:
+        tp_wrt_epoc.append((t-epoc).total_seconds()/3600)
+    return tp_wrt_epoc
+
+
 def double(x, M2amp, M2pha, K1amp, K1pha, mean):
     """Function for the fit, assuming only M2 and K2 tidal constituents.
 
@@ -1470,14 +1487,11 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
         K1amp * np.cos(K1FREQ * x - K1pha * np.pi / 180))
 
 
-def fittit(uaus, vaus, time):
+def fittit(uaus, time):
     """Function to find tidal components from the tidal currents.
 
-    :arg uaus: East/West tidal current velocities.
+    :arg uaus: One of the orthogonal tidal current velocities.
     :type uaus:  :py:class:'np.ndarray'
-
-    :arg vaus: North/South tidal current velocities.
-    :type vaus: :py:class:'np.ndarray'
 
     :arg time: Time over which the velocitie were being taken in seconds.
     :type time: :py:class:'np.ndarray'
@@ -1487,59 +1501,29 @@ def fittit(uaus, vaus, time):
         of both u and v tidal current components.
 
     """
-    thesize = 40
+    thesize = uaus.shape[1]
+    M2amp = np.zeros(thesize)
+    M2pha = np.zeros(thesize)
+    K1amp = np.zeros(thesize)
+    K1pha = np.zeros(thesize)
 
-    vM2amp = np.zeros(thesize)
-    vM2pha = np.zeros(thesize)
-    vK1amp = np.zeros(thesize)
-    vK1pha = np.zeros(thesize)
-    uM2amp = np.zeros(thesize)
-    uM2pha = np.zeros(thesize)
-    uK1amp = np.zeros(thesize)
-    uK1pha = np.zeros(thesize)
-
-    for dep in np.arange(0, len(vaus[1])-1):
-        if vaus[:, dep].any() != 0.:
-            fitted, cov = curve_fit(double, time[:], vaus[:, dep])
-            if fitted[0] < 0:
-                fitted[0] = -fitted[0]
-                fitted[1] = fitted[1]+180.
-            if fitted[1] > 180:
-                fitted[1] = fitted[1] - 360.
-            elif fitted[1] < -180-360:
-                fitted[1] = fitted[1] + 720.
-            elif fitted[1] < -180:
-                fitted[1] = fitted[1] + 360.
-            if fitted[2] < 0:
-                fitted[2] = -fitted[2]
-                fitted[3] = fitted[3]+180.
-            vM2amp[dep] = fitted[0]
-            vM2pha[dep] = fitted[1]
-            vK1amp[dep] = fitted[2]
-            vK1pha[dep] = fitted[3]
-
-    for dep in np.arange(0, len(uaus[1])-1):
+    for dep in np.arange(0, len(uaus[1]) - 1):
         if uaus[:, dep].any() != 0.:
             fitted, cov = curve_fit(double, time[:], uaus[:, dep])
             if fitted[0] < 0:
                 fitted[0] = -fitted[0]
                 fitted[1] = fitted[1]+180.
-            if fitted[1] > 180+360:
-                fitted[1] = fitted[1] - 720
-            elif fitted[1] > 180:
-                fitted[1] = fitted[1] - 360.
-            elif fitted[1] < -180-360:
-                fitted[1] = fitted[1] + 720.
-            elif fitted[1] < - 180:
-                fitted[1] = fitted[1] + 360.
+            angles.normalize(fitted[1], -180, 180)
             if fitted[2] < 0:
                 fitted[2] = -fitted[2]
                 fitted[3] = fitted[3]+180.
-            uM2amp[dep] = fitted[0]
-            uM2pha[dep] = fitted[1]
-            uK1amp[dep] = fitted[2]
-            uK1pha[dep] = fitted[3]
-    return vM2amp, vM2pha, vK1amp, vK1pha, uM2amp, uM2pha, uK1amp, uK1pha
+            angles.normalize(fitted[3], -180, 180)
+            M2amp[dep] = fitted[0]
+            M2pha[dep] = fitted[1]
+            K1amp[dep] = fitted[2]
+            K1pha[dep] = fitted[3]
+
+    return M2amp, M2pha, K1amp, K1pha
 
 
 def ellipse_params(uamp, upha, vamp, vpha):
