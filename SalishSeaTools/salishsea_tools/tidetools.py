@@ -26,7 +26,6 @@ from math import radians, sin, cos, asin, sqrt, pi
 import os
 import angles
 
-import angles
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import netCDF4 as NC
@@ -575,7 +574,7 @@ def plot_pha_map(X, Y, grid, pha, constituent_name, figsize=(9, 9)):
 
 
 def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6),
-                         split1=0, split2=0, labels=['','','']):
+                         split1=0, split2=0, labels=['', '', '']):
     """Plot scatter plot of observed vs. modelled phase and amplitude
 
     :arg Am: Modelled amplitude.
@@ -615,11 +614,11 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6),
         ax_amp.scatter(Ao, Am, color='blue', edgecolors='blue')
     else:
         ax_amp.scatter(Ao[:split1], Am[:split1], color='green',
-                       edgecolors='green', label = labels[0])
+                       edgecolors = 'green', label=labels[0])
         ax_amp.scatter(Ao[split1:split2], Am[split1:split2], color='blue',
-                       edgecolors='blue', label = labels[1])
+                       edgecolors = 'blue', label=labels[1])
         ax_amp.scatter(Ao[split2:], Am[split2:], color='black',
-                       edgecolors='black', label = labels[2])
+                       edgecolors = 'black', label=labels[2])
     min_value, max_value = ax_amp.set_xlim(0, 1.2)
     ax_amp.set_ylim(min_value, max_value)
     ax_amp.legend(loc='upper left')
@@ -635,11 +634,11 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6),
         ax_pha.scatter(go, gm, color='blue', edgecolors='blue')
     else:
         ax_pha.scatter(go[:split1], gm[:split1], color='green',
-                       edgecolors='green', label = labels[0])
+                       edgecolors='green', label=labels[0])
         ax_pha.scatter(go[split1:split2], gm[split1:split2], color='blue',
-                       edgecolors='blue', label = labels[1])
+                       edgecolors='blue', label=labels[1])
         ax_pha.scatter(go[split2:], gm[split2:], color='black',
-                       edgecolors='black', label = labels[2])
+                       edgecolors='black', label=labels[2])
     min_value, max_value = ax_pha.set_xlim(0, 360)
     ax_pha.set_ylim(min_value, max_value)
     ax_pha.legend(loc='upper left')
@@ -784,9 +783,11 @@ def calc_diffs_meas_mod(runname, loc, grid):
                 go_K1 = meas_wl_harm.K1_pha[t]   # [degrees UTC]
                 # Modelled constituents
                 Am_M2 = mod_M2_amp[x1, y1]  # [m]
-                gm_M2 = angles.normalize(mod_M2_pha[x1, y1], 0, 360)  # [degrees ????]
+                gm_M2 = angles.normalize(
+                    mod_M2_pha[x1, y1], 0, 360)  # [degrees ????]
                 Am_K1 = mod_K1_amp[x1, y1]  # [m]
-                gm_K1 = angles.normalize(mod_K1_pha[x1, y1], 0, 360)  # [degrees ????]
+                gm_K1 = angles.normalize(
+                    mod_K1_pha[x1, y1], 0, 360)  # [degrees ????]
                 # Calculate differences two ways
                 D_F95_M2 = sqrt(
                     (Ao_M2*np.cos(radians(go_M2))
@@ -865,9 +866,9 @@ def haversine(lon1, lat1, lon2, lat2):
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
     c = 2 * asin(sqrt(a))
     km = 6367 * c
-   # print(
-       # 'Observation site and model grid point are '
-       # + str(round(km, 3))+'km apart')
+    # print(
+        # 'Observation site and model grid point are '
+        # + str(round(km, 3))+'km apart')
     return km
 
 
@@ -1487,6 +1488,29 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
         K1amp * np.cos(K1FREQ * x - K1pha * np.pi / 180))
 
 
+def convention_pha_amp(fitted_amp, fitted_pha):
+    """ This function takes the fitted parameters given for phase and
+         amplitude of the tidal ellipse and returns them following the
+         tidal parameter convention; amplitude is positive and phase
+         is between -180 and +180 degrees.
+    :arg fitted_amp: The amplitude given by the fitting function.
+    :type fitted_amp: float
+
+    :arg fitted_pha: The phase given by the fitting function.
+    :type fitted_pha: float
+
+    :return fitted_amp, fitted_pha: The fitted parameters following the
+        conventions.
+    """
+
+    if fitted_amp < 0:
+        fitted_amp = -fitted_amp
+        fitted_pha = fitted_pha + 180.
+    angles.normalize(fitted_pha, -180, 180)
+
+    return fitted_amp, fitted_pha
+
+
 def fittit(uaus, time, imin=0, imax=0, jmin=0, jmax=0, dj=1):
     """Function to find tidal components from a tidal current component
         across a specified area of the grid at a single depth, at a
@@ -1538,14 +1562,8 @@ def fittit(uaus, time, imin=0, imax=0, jmin=0, jmax=0, dj=1):
         for dep in np.arange(0, len(uaus[1])-1):
             if uaus[:, dep].any() != 0:
                 fitted, cov = curve_fit(double, time[:], uaus[:, dep])
-                if fitted[0] < 0:
-                    fitted[0] = -fitted[0]
-                    fitted[1] = fitted[1]+180.
-                angles.normalize(fitted[1], -180, 180)
-                if fitted[2] < 0:
-                    fitted[2] = -fitted[2]
-                    fitted[3] = fitted[3]+180.
-                angles.normalize(fitted[3], -180, 180)
+                fitted[0], fitted[1] = convention_pha_amp(fitted[0], fitted[1])
+                fitted[2], fitted[3] = convention_pha_amp(fitted[2], fitted[3])
                 M2amp[dep] = fitted[0]
                 M2pha[dep] = fitted[1]
                 K1amp[dep] = fitted[2]
@@ -1562,14 +1580,10 @@ def fittit(uaus, time, imin=0, imax=0, jmin=0, jmax=0, dj=1):
             for j in np.arange(jmin, jmax, dj):
                 if uaus[:, i, j].any() != 0.:
                     fitted, cov = curve_fit(double, time[:], uaus[:, j, i])
-                    if fitted[0] < 0:
-                        fitted[0] = -fitted[0]
-                        fitted[1] = fitted[1]+180.
-                    angles.normalize(fitted[1], -180, 180)
-                    if fitted[2] < 0:
-                        fitted[2] = -fitted[2]
-                        fitted[3] = fitted[3]+180.
-                    angles.normalize(fitted[3], -180, 180)
+                    fitted[0], fitted[1] = convention_pha_amp(
+                        fitted[0], fitted[1])
+                    fitted[2], fitted[3] = convention_pha_amp(
+                        fitted[2], fitted[3])
                     M2amp[j, i] = fitted[0]
                     M2pha[j, i] = fitted[1]
                     K1amp[j, i] = fitted[2]
@@ -1583,14 +1597,8 @@ def fittit(uaus, time, imin=0, imax=0, jmin=0, jmax=0, dj=1):
 
         if uaus[:].any() != 0.:
             fitted, cov = curve_fit(double, time[:], uaus[:])
-            if fitted[0] < 0:
-                fitted[0] = -fitted[0]
-                fitted[1] = fitted[1]+180.
-            angles.normalize(fitted[1], -180, 180)
-            if fitted[2] < 0:
-                fitted[2] = -fitted[2]
-                fitted[3] = fitted[3]+180.
-            angles.normalize(fitted[3], -180, 180)
+            fitted[0], fitted[1] = convention_pha_amp(fitted[0], fitted[1])
+            fitted[2], fitted[3] = convention_pha_amp(fitted[2], fitted[3])
             M2amp = fitted[0]
             M2pha = fitted[1]
             K1amp = fitted[2]
