@@ -1487,29 +1487,102 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
         K1amp * np.cos(K1FREQ * x - K1pha * np.pi / 180))
 
 
-def fittit(uaus, time):
-    """Function to find tidal components from the tidal currents.
+def fittit(uaus, time, imin=0, imax=0, jmin=0, jmax=0, dj=1):
+    """Function to find tidal components from a tidal current component
+        across a specified area of the grid at a single depth, at a
+        single point through the water column or a sigle depth averaged
+        grid point. Must perform twice, once for each tidal current vector
+        in order to complete the analysis.
+        In order to calculate the tidal components of an area at a single
+        depth the velocity vector must only have 3 dimensions. For a depth
+        profile it must onyl have 2 dimensions and for a single point and depth
+        it must be a float.
 
     :arg uaus: One of the orthogonal tidal current velocities.
-    :type uaus:  :py:class:'np.ndarray'
+    :type uaus:  :py:class:'np.ndarray' or float
 
     :arg time: Time over which the velocitie were being taken in seconds.
     :type time: :py:class:'np.ndarray'
 
-    :returns vM2amp, vM2pha, vK1amp, vK1pha, uM2amp, uM2pha, uK1amp, uK1pha:
+    :arg imin: Minimum i value in the grid that will be evaluated for tidal
+        ellipses. (Must be between 1 and 308, default 0)
+    :type imin: float
+
+    :arg imax: Maximum i value in the grid that will be evaluated for tidal
+         ellipses. (Must be between 1 and 398, default 0)
+    :type imax: float
+
+    :arg jmin: Minimum j value in the grid that will be evaluated for tidal
+        ellipses. (Must be between 1 and 498, default 0)
+    :type jmin: float
+
+    :arg jmax: Maximum j value in the grid that will be evaluated for tidal
+         ellipse. (Must be between 1 and 498, default 0)
+
+    :arg dj: Interval along the j direction
+
+    :returns M2amp, M2pha, K1amp, K1pha:
         The amplitude and phase lag of each tidal component (M2 and K1)
-        of both u and v tidal current components.
+        of a single tidal velocity vector.
 
     """
-    thesize = uaus.shape[1]
-    M2amp = np.zeros(thesize)
-    M2pha = np.zeros(thesize)
-    K1amp = np.zeros(thesize)
-    K1pha = np.zeros(thesize)
 
-    for dep in np.arange(0, len(uaus[1]) - 1):
-        if uaus[:, dep].any() != 0.:
-            fitted, cov = curve_fit(double, time[:], uaus[:, dep])
+    if uaus.ndim == 2:
+
+        thesize = uaus.shape[1]
+        M2amp = np.zeros(thesize)
+        M2pha = np.zeros(thesize)
+        K1amp = np.zeros(thesize)
+        K1pha = np.zeros(thesize)
+
+        for dep in np.arange(0, len(uaus[1])-1):
+            if uaus[:, dep].any() != 0:
+                fitted, cov = curve_fit(double, time[:], uaus[:, dep])
+                if fitted[0] < 0:
+                    fitted[0] = -fitted[0]
+                    fitted[1] = fitted[1]+180.
+                angles.normalize(fitted[1], -180, 180)
+                if fitted[2] < 0:
+                    fitted[2] = -fitted[2]
+                    fitted[3] = fitted[3]+180.
+                angles.normalize(fitted[3], -180, 180)
+                M2amp[dep] = fitted[0]
+                M2pha[dep] = fitted[1]
+                K1amp[dep] = fitted[2]
+                K1pha[dep] = fitted[3]
+
+    elif uaus.ndim == 3:
+        thesize = (898, 398)
+        M2amp = np.zeros(thesize)
+        M2pha = np.zeros(thesize)
+        K1amp = np.zeros(thesize)
+        K1pha = np.zeros(thesize)
+
+        for i in np.arange(imin, imax):
+            for j in np.arange(jmin, jmax, dj):
+                if uaus[:, i, j].any() != 0.:
+                    fitted, cov = curve_fit(double, time[:], uaus[:, j, i])
+                    if fitted[0] < 0:
+                        fitted[0] = -fitted[0]
+                        fitted[1] = fitted[1]+180.
+                    angles.normalize(fitted[1], -180, 180)
+                    if fitted[2] < 0:
+                        fitted[2] = -fitted[2]
+                        fitted[3] = fitted[3]+180.
+                    angles.normalize(fitted[3], -180, 180)
+                    M2amp[j, i] = fitted[0]
+                    M2pha[j, i] = fitted[1]
+                    K1amp[j, i] = fitted[2]
+                    K1pha[j, i] = fitted[3]
+
+    else:
+        M2amp = 0
+        M2pha = 0
+        K1amp = 0
+        K1pha = 0
+
+        if uaus[:].any() != 0.:
+            fitted, cov = curve_fit(double, time[:], uaus[:])
             if fitted[0] < 0:
                 fitted[0] = -fitted[0]
                 fitted[1] = fitted[1]+180.
@@ -1518,10 +1591,10 @@ def fittit(uaus, time):
                 fitted[2] = -fitted[2]
                 fitted[3] = fitted[3]+180.
             angles.normalize(fitted[3], -180, 180)
-            M2amp[dep] = fitted[0]
-            M2pha[dep] = fitted[1]
-            K1amp[dep] = fitted[2]
-            K1pha[dep] = fitted[3]
+            M2amp = fitted[0]
+            M2pha = fitted[1]
+            K1amp = fitted[2]
+            K1pha = fitted[3]
 
     return M2amp, M2pha, K1amp, K1pha
 
