@@ -334,8 +334,7 @@ def get_SS2_bathy_data():
     :returns: bathy, X, Y
     """
     grid = NC.Dataset(
-        '/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc',
-        'r')
+        '/ocean/jieliu/research/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc', 'r')
     bathy = grid.variables['Bathymetry'][:, :]
     X = grid.variables['nav_lon'][:, :]
     Y = grid.variables['nav_lat'][:, :]
