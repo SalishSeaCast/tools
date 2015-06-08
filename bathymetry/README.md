@@ -32,10 +32,16 @@ Descriptions below the links are from the first cell of the notebooks
       
     Other important points?  
 
+* ##[bathy_for_jie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathy_for_jie.ipynb)  
+    
 * ##[More Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
     Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
     We show below that this makes the Thalweg more rugged as it pulls shallow areas from the sides across the channel.  
+
+* ##[Bathymetry in Boundary Pass.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry in Boundary Pass.ipynb)  
+    
+    Comparison between original bathy and smoothed bathy  
 
 * ##[SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
     
