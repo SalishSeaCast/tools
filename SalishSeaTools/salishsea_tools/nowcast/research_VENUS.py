@@ -28,14 +28,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+import netCDF4 as nc
 
 from salishsea_tools import (
     nc_tools,
-    tidetools,
+    tidetools as tt,
     viz_tools
 )
-
-from salishsea_tools.nowcast import figures
+from salishsea_tools.nowcast import (figures, analyze)
 
 # Plotting colors
 model_c = 'MediumBlue'
@@ -176,7 +176,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     t_orig, t_end, t = figures.get_model_time_variables(grid_T)
 
     # Bathymetry
-    bathy, X, Y = tidetools.get_bathy_data(grid_B)
+    bathy, X, Y = tt.get_bathy_data(grid_B)
 
     # VENUS data
     fig, (ax_sal, ax_temp) = plt.subplots(2, 1, figsize=figsize, sharex=True)
@@ -190,7 +190,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     plot_VENUS(ax_sal, ax_temp, station, t_orig, t_end)
 
     # Grid point of VENUS station
-    [j, i] = tidetools.find_closest_model_point(
+    [j, i] = tt.find_closest_model_point(
         lon, lat, X, Y, bathy, allow_land=True)
 
     # Model data
@@ -468,3 +468,110 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     cbar.set_label('Depth [m]', **axis_font)
 
     return fig
+
+
+def loadparam(to, tf, path, freq='h'):
+    """ This function loads all the data between the start and the end date
+    that contains gridded quarter-hourly velocity netCDF4 files. Then it mask,
+    unstaggers and rotates the velocities by component about the VENUS nodes.
+    Lastly it fits the velcities and caculates the tidal ellipse parameters for
+    that date range.**(Important not to have a to < 2015-05-09 because the
+    files do not exist before this date).**
+
+    :arg to: The beginning of the date range of interest
+    :type to: datetime object
+
+    :arg tf: The end of the date range of interest
+    :type tf: datetime object
+
+    :arg path: Defines the path used(eg. nowcast)
+    :type path: string
+
+    :arg freq: determines the type of data used (quarter-hourly or hourly).
+        Default set to hourly.
+    :arg freq: string
+
+    :returns: depth, maj, mino, thet, mjk, mnk, thk - the M2 and K1 ellipse
+        parameters at various depths.
+    """
+    if freq == 'h':
+        filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
+        filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
+
+        sites = research_VENUS.SITES
+        i_c = sites['VENUS']['Central']['i']
+        i_e = sites['VENUS']['East']['i']
+        j_c = sites['VENUS']['Central']['j']
+        j_e = sites['VENUS']['East']['j']
+
+        a = filesu
+        b = filesv
+        c = filesu
+        d = filesv
+
+    else:
+        files_Central = analyze.get_filenames_15(to, tf, 'central', path)
+        files_East = analyze.get_filenames_15(to, tf, 'east', path)
+
+        i_c = 1
+        i_e = 1
+        j_c = 1
+        j_e = 1
+
+        a = files_Central
+        b = files_Central
+        c = files_East
+        d = files_East
+
+    u_u_c, time = analyze.combine_files(
+        a, 'vozocrtx', 'None', [j_c-1, j_c], [i_c-1, i_c])
+    v_v_c, timec = analyze.combine_files(
+        b, 'vomecrty', 'None', [j_c-1, j_c], [i_c-1, i_c])
+    time_c = tt.convert_to_seconds(timec)
+    dep_t_c = nc.Dataset(b[-1]).variables['depthv']
+
+    u_u_e, time = analyze.combine_files(
+        c, 'vozocrtx', 'None', [j_e-1, j_e], [i_e-1, i_e])
+    v_v_e, timee = analyze.combine_files(
+        d, 'vomecrty', 'None', [j_e-1, j_e], [i_e-1, i_e])
+    time_e = tt.convert_to_seconds(timee)
+    dep_t_e = nc.Dataset(d[-1]).variables['depthv']
+
+    depth = [dep_t_c[:], dep_t_e[:]]
+
+    u_u_0 = np.ma.masked_values(u_u_e, 0)
+    v_v_0 = np.ma.masked_values(v_v_e, 0)
+    u_u_0c = np.ma.masked_values(u_u_c, 0)
+    v_v_0c = np.ma.masked_values(v_v_c, 0)
+
+    u_c, v_c = research_VENUS.unstag_rot_gridded(u_u_0c, v_v_0c, 'Central')
+    u_e, v_e = research_VENUS.unstag_rot_gridded(u_u_0, v_v_0, 'East')
+
+    times = [time_c, time_e]
+    us = [u_c, u_e]
+    vs = [v_c, v_e]
+    i = np.arange(0, 2)
+
+    thesize = (40, 2)
+    vM2amp = np.zeros(thesize)
+    vM2pha = np.zeros(thesize)
+    vK1amp = np.zeros(thesize)
+    vK1pha = np.zeros(thesize)
+    uM2amp = np.zeros(thesize)
+    uM2pha = np.zeros(thesize)
+    uK1amp = np.zeros(thesize)
+    uK1pha = np.zeros(thesize)
+
+    for i, u, time, v in zip(i, us, times, vs):
+        uM2amp[:, i], uM2pha[:, i], uK1amp[:, i], uK1pha[
+            :, i] = tt.fittit(u, time)
+        vM2amp[:, i], vM2pha[:, i], vK1amp[:, i], vK1pha[
+            :, i] = tt.fittit(v, time)
+
+    CX, SX, CY, SY, ap, am, ep, em, maj, mino, thet = tt.ellipse_params(
+        uM2amp, uM2pha, vM2amp, vM2pha)
+
+    CXk, SXk, CYk, SYk, apk, amk, epk, emk, mjk, mnk, thk = tt.ellipse_params(
+        uK1amp, uK1pha, vK1amp, vK1pha)
+
+    return depth, maj, mino, thet, mjk, mnk, thk
