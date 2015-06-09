@@ -99,6 +99,41 @@ def get_filenames(t_orig, t_final, period, grid, model_path):
     return files
 
 
+def get_filenames_15(t_orig, t_final, station, model_path):
+    """Returns a list with the filenames for all files over the
+    defined period of time and sorted in chronological order for
+    the gridded quarter-hourly data.
+
+    :arg t_orig: The beginning of the date range of interest.
+    :type t_orig: datetime object
+
+    :arg t_final: The end of the date range of interest.
+    :type t_final: datetime object
+
+    :arg station: The VENUS station for which data files are required.
+        (east or central)
+    :type station: string
+
+    :arg model_path: Defines the path used (eg. nowcast)
+    :type model_path: string
+
+    :returns: files, a list of filenames
+    """
+
+    numdays = (t_final-t_orig).days
+    dates = [t_orig + datetime.timedelta(days=num)
+             for num in range(0, numdays+1)]
+    dates.sort()
+
+    files = []
+    for i in dates:
+        sdt = i.strftime('%d%b%y').lower()
+        filename = (model_path+'{}/VENUS_{}_gridded.nc'.format(sdt, station))
+        files.append(filename)
+
+    return files
+
+
 def combine_files(files, var, depth, jss, iss):
     """Returns the value of the variable entered over
     multiple files covering a certain period of time at
