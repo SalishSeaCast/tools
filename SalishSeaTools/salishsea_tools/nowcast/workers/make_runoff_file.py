@@ -18,6 +18,7 @@ Hope with Climatology for all other rivers and generates runoff file.
 """
 from __future__ import division
 
+import argparse
 import logging
 import os
 import traceback
@@ -45,7 +46,13 @@ FILENAME_TMPL = 'RFraserCElse_{:y%Ym%md%d}.nc'
 
 def main():
     # Prepare the worker
-    parser = lib.basic_arg_parser(worker_name, description=__doc__)
+    base_parser = lib.basic_arg_parser(
+        worker_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
+        parents=[base_parser],
+    )
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
     lib.configure_logging(config, logger, parsed_args.debug)
@@ -55,7 +62,7 @@ def main():
     socket = lib.init_zmq_req_rep_worker(context, config, logger)
     # Do the work
     try:
-        checklist = make_runoff_file(config)
+        checklist = make_runoff_file(parsed_args.run_date, config)
         logger.info(
             'Creation of runoff file from Fraser at Hope '
             'and climatology elsewhere completed')
@@ -80,14 +87,26 @@ def main():
     logger.debug('task completed; shutting down')
 
 
-def make_runoff_file(config):
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        '--run-date', type=lib.arrow_date, default=arrow.now(),
+        help='''
+        Date of the run to upload files from;
+        use YYYY-MM-DD format.
+        Defaults to %(default)s.
+        ''',
+    )
+    return parser
+
+
+def make_runoff_file(run_date, config):
     """Create a rivers runoff file from real-time Fraser River at Hope
     average flow yesterday and climatology for all of the other rivers.
     """
     # Find yesterday
-    utc = arrow.utcnow()
-    utc = utc.replace(hours=-8)
-    now = utc.floor('day')
+    now = run_date.floor('day')
     yesterday = now.replace(days=-1)
     # Find history of fraser flow
     fraserflow = get_fraser_at_hope(config)
