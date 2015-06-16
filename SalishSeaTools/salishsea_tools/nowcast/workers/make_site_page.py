@@ -357,7 +357,7 @@ def exclude_missing_dates(grid_dates, file_pattern):
 def tmpl_to_rst(tmpl, rst_file, vars, config):
     with open(rst_file, 'wt') as f:
         f.write(tmpl.render(**vars))
-#    lib.fix_perms(rst_file, grp_name=config['file group'])
+    lib.fix_perms(rst_file, grp_name=config['file group'])
 
 
 if __name__ == '__main__':
