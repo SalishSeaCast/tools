@@ -315,7 +315,7 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         sal_comp_dates,
         os.path.join(
             config['web']['salinity_comparison']['filesystem_path'],
-            '{}_*.ipynb'.format(sal_comp_fileroot)))
+            '{}_*.ipynb#Plot'.format(sal_comp_fileroot)))
     # Render the template using the calculated varible values to produce
     # the index rst file
     rst_file = os.path.join(rst_path, 'index.rst')
