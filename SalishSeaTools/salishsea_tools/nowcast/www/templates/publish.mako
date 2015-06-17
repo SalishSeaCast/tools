@@ -54,7 +54,7 @@ The forcing data used to drive the Salish Sea model is obtained from several sou
 
 4. Tidal constituents
 
-    * Tidal predictions were generated using constituents from the Canadian Hydrographic Service.
+   * Tidal predictions were generated using constituents from the Canadian Hydrographic Service.
 
 
 .. _High Resolution Deterministic Prediction System: https://weather.gc.ca/grib/grib2_HRDPS_HR_e.html
