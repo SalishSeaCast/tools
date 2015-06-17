@@ -17,7 +17,6 @@
 plot files from run results.
 """
 import argparse
-import datetime
 from glob import glob
 import logging
 import os
