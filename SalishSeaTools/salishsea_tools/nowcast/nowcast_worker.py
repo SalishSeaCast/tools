@@ -85,7 +85,7 @@ class NowcastWorker(object):
         self.arg_parser.add_argument(*args, **kwargs)
 
     def run(self, worker_func, success, failure):
-        """Prepare the worker and do its work, then do it.
+        """Prepare the worker to do its work, then do it.
 
         Preparations include:
 
