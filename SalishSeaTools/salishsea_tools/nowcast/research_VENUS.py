@@ -470,7 +470,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     return fig
 
 
-def loadparam(to, tf, path, freq='h'):
+def loadparam(to, tf, path, freq='h', depav='None'):
     """ This function loads all the data between the start and the end date
     that contains gridded quarter-hourly velocity netCDF4 files. Then it mask,
     unstaggers and rotates the velocities by component about the VENUS nodes.
@@ -489,20 +489,24 @@ def loadparam(to, tf, path, freq='h'):
 
     :arg freq: determines the type of data used (quarter-hourly or hourly).
         Default set to hourly.
-    :arg freq: string
+    :type freq: string
 
-    :returns: depth, maj, mino, thet, mjk, mnk, thk - the M2 and K1 ellipse
-        parameters at various depths.
+    :arg depav: Values overwhich the velocities will be depth averaged to
+        output depth averaged ellipse parameters.
+        [min Central, max Central, min East, max, East]. (default is 'None').
+    :type depav: array
+
+    :returns: depth, maj, mino, thet, pha,mjk, mnk, thk, phak- the M2 and K1
+        ellipse parameters at various depths.
     """
     if freq == 'h':
         filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
         filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
 
-        sites = research_VENUS.SITES
-        i_c = sites['VENUS']['Central']['i']
-        i_e = sites['VENUS']['East']['i']
-        j_c = sites['VENUS']['Central']['j']
-        j_e = sites['VENUS']['East']['j']
+        i_c = SITES['VENUS']['Central']['i']
+        i_e = SITES['VENUS']['East']['i']
+        j_c = SITES['VENUS']['Central']['j']
+        j_e = SITES['VENUS']['East']['j']
 
         a = filesu
         b = filesv
@@ -544,15 +548,35 @@ def loadparam(to, tf, path, freq='h'):
     u_u_0c = np.ma.masked_values(u_u_c, 0)
     v_v_0c = np.ma.masked_values(v_v_c, 0)
 
-    u_c, v_c = research_VENUS.unstag_rot_gridded(u_u_0c, v_v_0c, 'Central')
-    u_e, v_e = research_VENUS.unstag_rot_gridded(u_u_0, v_v_0, 'East')
+    u_c, v_c = unstag_rot_gridded(u_u_0c, v_v_0c, 'Central')
+    u_e, v_e = unstag_rot_gridded(u_u_0, v_v_0, 'East')
+
+    if depav == 'None':
+        us = [u_c, u_e]
+        vs = [v_c, v_e]
+        thesize = (40, 2)
+
+    else:
+        jc = np.where(np.logical_and(depth[0] > depav[0], depth[0] < depav[1]))
+        je = np.where(np.logical_and(depth[1] > depav[2], depth[1] < depav[3]))
+
+        u_c_slice = u_c[:, jc[0]]
+        v_c_slice = v_c[:, jc[0]]
+        u_e_slice = u_e[:, je[0]]
+        v_e_slice = v_e[:, je[0]]
+
+        uc_av = analyze.depth_average(u_c_slice, depth[0][jc], 1)
+        vc_av = analyze.depth_average(v_c_slice, depth[0][jc], 1)
+        ue_av = analyze.depth_average(u_e_slice, depth[1][je], 1)
+        ve_av = analyze.depth_average(v_e_slice, depth[1][je], 1)
+
+        thesize = (1, 2)
+        us = [uc_av, ue_av]
+        vs = [vc_av, ve_av]
 
     times = [time_c, time_e]
-    us = [u_c, u_e]
-    vs = [v_c, v_e]
     i = np.arange(0, 2)
 
-    thesize = (40, 2)
     vM2amp = np.zeros(thesize)
     vM2pha = np.zeros(thesize)
     vK1amp = np.zeros(thesize)
@@ -568,10 +592,10 @@ def loadparam(to, tf, path, freq='h'):
         vM2amp[:, i], vM2pha[:, i], vK1amp[:, i], vK1pha[
             :, i] = tt.fittit(v, time)
 
-    CX, SX, CY, SY, ap, am, ep, em, maj, mino, thet = tt.ellipse_params(
+    CX, SX, CY, SY, ap, am, ep, em, maj, mino, thet, pha = tt.ellipse_params(
         uM2amp, uM2pha, vM2amp, vM2pha)
 
-    CXk, SXk, CYk, SYk, apk, amk, epk, emk, mjk, mnk, thk = tt.ellipse_params(
+    CXk, SXk, CYk, SYk, apk, amk, epk, emk, mjk, mnk, thk, phak = tt.ellipse_params(
         uK1amp, uK1pha, vK1amp, vK1pha)
 
-    return depth, maj, mino, thet, mjk, mnk, thk
+    return depth, maj, mino, pha, thet, mjk, mnk, thk, phak
