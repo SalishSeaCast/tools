@@ -1622,7 +1622,7 @@ def ellipse_params(uamp, upha, vamp, vpha):
     :arg vpha: v fitted phase of the chosen constituent
     :type vpha: :py:class:`numpy.ndarray`
 
-    :returns CX, SX, CY, SY, ap, am, ep, em, major, minor, theta:
+    :returns CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
         The positively and negatively rotating amplitude and phase.
         As well as the major and minor axis and the axis tilt.
    """
@@ -1639,7 +1639,10 @@ def ellipse_params(uamp, upha, vamp, vpha):
     minor = ap-am
     theta = (ep+em)/2.*180./np.pi
     theta %= 180
-    return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta
+    phase = (em-ep)/2.*180./np.pi
+    phase %= 360
+
+    return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
 
     # Authorship Copyright:
     #
