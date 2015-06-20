@@ -14,25 +14,20 @@
 # limitations under the License.
 
 """Salish Sea NEMO nowcast weather model dataset download worker.
-Download the GRIB2 files from today's 06 or 18 EC GEM 2.5km operational
-model forecast.
+Download the GRIB2 files from today's 00, 06, 12, or 18 EC GEM 2.5km
+HDRPS operational model forecast.
 """
-import argparse
-import logging
 import os
-import traceback
+import logging
 
 import arrow
-import zmq
 
-from salishsea_tools.nowcast import lib
+from .. import lib
+from ..nowcast_worker import NowcastWorker
 
 
 worker_name = lib.get_module_name()
-
 logger = logging.getLogger(worker_name)
-
-context = zmq.Context()
 
 
 GRIB_VARIABLES = (
@@ -48,7 +43,8 @@ GRIB_VARIABLES = (
     'PRMSL_MSL_0_',  # atmospheric pressure at mean sea level
 )
 URL_TEMPLATE = (
-    'http://dd.weather.gc.ca/model_hrdps/west/grib2/{forecast}/{hour}/{filename}'
+    'http://dd.weather.gc.ca/model_hrdps/west/grib2/'
+    '{forecast}/{hour}/{filename}'
 )
 FILENAME_TEMPLATE = (
     'CMC_hrdps_west_{variable}ps2.5km_{date}{forecast}_P{hour}-00.grib2'
@@ -57,108 +53,92 @@ FORECAST_DURATION = 48  # hours
 
 
 def main():
-    # Prepare the worker
-    base_parser = lib.basic_arg_parser(
-        worker_name, description=__doc__, add_help=False)
-    parser = configure_argparser(
-        prog=base_parser.prog,
-        description=base_parser.description,
-        parents=[base_parser],
-    )
-    parsed_args = parser.parse_args()
-    config = lib.load_config(parsed_args.config_file)
-    lib.configure_logging(config, logger, parsed_args.debug)
-    logger.debug('running in process {}'.format(os.getpid()))
-    logger.debug('read config from {.config_file}'.format(parsed_args))
-    lib.install_signal_handlers(logger, context)
-    socket = lib.init_zmq_req_rep_worker(context, config, logger)
-    # Do the work
-    try:
-        checklist = get_grib(
-            parsed_args.forecast, parsed_args.yesterday, config)
-        logger.info(
-            'weather forecast {.forecast} downloads complete'
-            .format(parsed_args))
-        # Exchange success messages with the nowcast manager process
-        msg_type = '{} {}'.format('success', parsed_args.forecast)
-        lib.tell_manager(
-            worker_name, msg_type, config, logger, socket, checklist)
-    except lib.WorkerError:
-        logger.error(
-            'weather forecast {.forecast} downloads failed'
-            .format(parsed_args))
-        msg_type = '{} {}'.format('failure', parsed_args.forecast)
-        # Exchange failure messages with nowcast manager process
-        lib.tell_manager(worker_name, msg_type, config, logger, socket)
-    except SystemExit:
-        # Normal termination
-        pass
-    except:
-        logger.critical('unhandled exception:')
-        for line in traceback.format_exc().splitlines():
-            logger.error(line)
-        # Exchange crash messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'crash', config, logger, socket)
-    # Finish up
-    context.destroy()
-    logger.debug('task completed; shutting down')
-
-
-def configure_argparser(prog, description, parents):
-    parser = argparse.ArgumentParser(
-        prog=prog, description=description, parents=parents)
-    parser.add_argument(
+    worker = NowcastWorker(worker_name, description=__doc__)
+    worker.arg_parser.add_argument(
         'forecast', choices=set(('00', '06', '12', '18')),
         help='Name of forecast to download files from.',
     )
-    parser.add_argument(
+    worker.arg_parser.add_argument(
         '--yesterday', action='store_true',
         help="Download forecast files for previous day's date."
     )
-    return parser
+    worker.run(get_grib, success, failure)
 
 
-def get_grib(forecast, yesterday, config):
+def success(parsed_args):
+    logger.info(
+        'weather forecast {.forecast} downloads complete'
+        .format(parsed_args))
+    msg_type = '{} {}'.format('success', parsed_args.forecast)
+    return msg_type
+
+
+def failure(parsed_args):
+    logger.error(
+        'weather forecast {.forecast} downloads failed'
+        .format(parsed_args))
+    msg_type = '{} {}'.format('failure', parsed_args.forecast)
+    return msg_type
+
+
+def get_grib(parsed_args, config):
+    forecast = parsed_args.forecast
+    date = _calc_date(parsed_args, forecast)
+    logger.info(
+        'downloading {forecast} forecast GRIB2 files for {date}'
+        .format(forecast=forecast, date=date))
+    dest_dir_root = config['weather']['GRIB_dir']
+    grp_name = config['file group']
+    _mkdirs(dest_dir_root, date, forecast, grp_name)
+    for forecast_hour in range(1, FORECAST_DURATION+1):
+        hr_str = '{:0=3}'.format(forecast_hour)
+        lib.mkdir(
+            os.path.join(dest_dir_root, date, forecast, hr_str),
+            logger, grp_name=grp_name, exist_ok=False)
+        for var in GRIB_VARIABLES:
+            filepath = _get_file(var, dest_dir_root, date, forecast, hr_str)
+            lib.fix_perms(filepath)
+    checklist = {'{} forecast'.format(forecast): True}
+    return checklist
+
+
+def _calc_date(parsed_args, forecast):
+    yesterday = parsed_args.yesterday
     utc = arrow.utcnow()
     utc = utc.replace(hours=-int(forecast))
     if yesterday:
         utc = utc.replace(days=-1)
     date = utc.format('YYYYMMDD')
-    logger.info(
-        'downloading {forecast} forecast GRIB2 files for {date}'
-        .format(forecast=forecast, date=date))
-    dest_dir_root = config['weather']['GRIB_dir']
-    os.chdir(dest_dir_root)
-    lib.mkdir(date, logger, grp_name=config['file group'])
-    os.chdir(date)
-    lib.mkdir(forecast, logger, grp_name=config['file group'], exist_ok=False)
-    os.chdir(forecast)
-    for fhour in range(1, FORECAST_DURATION+1):
-        sfhour = '{:0=3}'.format(fhour)
-        lib.mkdir(
-            sfhour, logger, grp_name=config['file group'], exist_ok=False)
-        os.chdir(sfhour)
-        for v in GRIB_VARIABLES:
-            filename = FILENAME_TEMPLATE.format(
-                variable=v, date=date, forecast=forecast, hour=sfhour)
-            fileURL = URL_TEMPLATE.format(
-                forecast=forecast, hour=sfhour, filename=filename)
-            headers = lib.get_web_data(
-                fileURL, logger, filename, retry_time_limit=9000)
-            size = headers['Content-Length']
-            logger.debug(
-                'downloaded {bytes} bytes from {fileURL}'.format(
-                    bytes=size,
-                    fileURL=fileURL))
-            if size == 0:
-                logger.critical('Problen, 0 size file {}'.format(fileURL))
-                raise lib.WorkerError
-            lib.fix_perms(filename)
-        os.chdir('..')
-    os.chdir('..')
-    checklist = {'{} forecast'.format(forecast): True}
-    return checklist
+    return date
+
+
+def _mkdirs(dest_dir_root, date, forecast, grp_name):
+    lib.mkdir(
+        os.path.join(dest_dir_root, date),
+        logger, grp_name=grp_name)
+    lib.mkdir(
+        os.path.join(dest_dir_root, date, forecast),
+        logger, grp_name=grp_name, exist_ok=False)
+
+
+def _get_file(var, dest_dir_root, date, forecast, hr_str):
+    filename = FILENAME_TEMPLATE.format(
+        variable=var, date=date, forecast=forecast, hour=hr_str)
+    filepath = os.path.join(
+        dest_dir_root, date, forecast, hr_str, filename)
+    fileURL = URL_TEMPLATE.format(
+        forecast=forecast, hour=hr_str, filename=filename)
+    headers = lib.get_web_data(
+        fileURL, logger, filepath, retry_time_limit=9000)
+    size = headers['Content-Length']
+    logger.debug(
+        'downloaded {bytes} bytes from {fileURL}'
+        .format(bytes=size, fileURL=fileURL))
+    if size == 0:
+        logger.critical('Problem, 0 size file {}'.format(fileURL))
+        raise lib.WorkerError
+    return filepath
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma: no cover
