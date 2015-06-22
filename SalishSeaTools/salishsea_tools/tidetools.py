@@ -36,7 +36,7 @@ import requests
 
 from salishsea_tools import (
     namelist,
-    viz_tools,
+    viz_tools
     )
 
 from salishsea_tools.nowcast import (
