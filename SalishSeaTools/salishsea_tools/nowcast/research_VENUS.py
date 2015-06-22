@@ -635,13 +635,13 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     v_v, time = analyze.combine_files(
         filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
 
-    time = convert_to_seconds(timer)
-    dep_t = NC.Dataset(filesu[-1]).variables['depthu']
+    time = tt.convert_to_seconds(timer)
+    dep_t = nc.Dataset(filesu[-1]).variables['depthu']
 
     u_u_0 = np.ma.masked_values(u_u, 0)
     v_v_0 = np.ma.masked_values(v_v, 0)
 
-    u, v = research_VENUS.unstag_rot(u_u_0, v_v_0, 1, 1)
+    u, v = unstag_rot(u_u_0, v_v_0, 1, 1)
 
     if depav == 'None':
         thesize = (40)
