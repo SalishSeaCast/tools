@@ -632,7 +632,7 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
 
     u_u, timer = analyze.combine_files(
         filesu, 'vozocrtx', 'None', [j-1, j], [i-1, i])
-    v_v, time = analyze.combine_files(
+    v_v, timee = analyze.combine_files(
         filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
 
     time = tt.convert_to_seconds(timer)
