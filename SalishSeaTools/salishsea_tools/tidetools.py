@@ -34,15 +34,9 @@ import pandas as pd
 import pytz
 import requests
 
-from salishsea_tools import (
-    namelist,
-    viz_tools
-    )
+from salishsea_tools import (namelist, viz_tools)
 
-from salishsea_tools.nowcast import (
-    analyze,
-    research_VENUS
-    )
+from salishsea_tools.nowcast import (analyze, research_VENUS)
 
 
 M2FREQ = 28.984106*np.pi/180
@@ -1721,8 +1715,6 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     CXk, SXk, CYk, SYk, apk, amk, epk, emk, majk, mik, thek, phak = ellipse_params(uK1amp, uK1pha, vK1amp, vK1pha)
 
     return dep_t, maj, mi, the, pha, majk, mik, thek, phak
-
-
 
     # Authorship Copyright:
     #
