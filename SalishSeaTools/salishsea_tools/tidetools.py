@@ -37,7 +37,13 @@ import requests
 from salishsea_tools import (
     namelist,
     viz_tools,
-)
+    )
+
+from salishsea_tools.nowcast import (
+    analyze,
+    research_VENUS
+    )
+
 
 M2FREQ = 28.984106*np.pi/180
 K1FREQ = 15.041069*np.pi/180
@@ -1643,6 +1649,80 @@ def ellipse_params(uamp, upha, vamp, vpha):
     phase %= 360
 
     return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
+
+
+def loadparam_all(to, tf, path, i, j, depav='None'):
+    """ This function loads all the data between the start and the end date
+    that contains hourly velocity netCDF4 files. Then it mask, unstaggers and
+    rotates the velocities by component about the grid point described by the i
+    and j. Lastly it fits the velcities and caculates the tidal ellipse
+    parameters for that date range.
+
+    :arg to: The beginning of the date range of interest
+    :type to: datetime object
+
+    :arg tf: The end of the date range of interest
+    :type tf: datetime object
+
+    :arg path: Defines the path used(eg. nowcast)
+    :type path: string
+
+    :arg depav: Values overwhich the velocities will be depth averaged to
+        output depth averaged ellipse parameters.
+        [min, max]. (default is 'None').
+    :type depav: array
+
+    :returns: depth, maj, mino, thet, pha,mjk, mnk, thk, phak- the M2 and K1
+        ellipse parameters at various depths.
+    depth : vector [dmin, dmax]
+    """
+
+    filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
+    filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
+
+    u_u, timer = analyze.combine_files(
+        filesu, 'vozocrtx', 'None', [j-1, j], [i-1, i])
+    v_v, time = analyze.combine_files(
+        filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
+    time = convert_to_seconds(timer)
+    dep_t = NC.Dataset(filesu[-1]).variables['depthu']
+
+    u_u_0 = np.ma.masked_values(u_u, 0)
+    v_v_0 = np.ma.masked_values(v_v, 0)
+
+    u, v = research_VENUS.unstag_rot(u_u_0, v_v_0, 1, 1)
+
+    if depav == 'None':
+        thesize = (40)
+
+    else:
+        j = np.where(np.logical_and(dep_t[0] > depav[0], dep_t[0] < depav[1]))
+
+        u_slice = u[:, j[0]]
+        v_slice = v[:, j[0]]
+
+        u = analyze.depth_average(u_slice, dep_t[0][j], 1)
+        v = analyze.depth_average(v_slice, dep_t[0][j], 1)
+
+        thesize = (1)
+
+    vM2amp = np.zeros(thesize)
+    vM2pha = np.zeros(thesize)
+    vK1amp = np.zeros(thesize)
+    vK1pha = np.zeros(thesize)
+    uM2amp = np.zeros(thesize)
+    uM2pha = np.zeros(thesize)
+    uK1amp = np.zeros(thesize)
+    uK1pha = np.zeros(thesize)
+    uM2amp[:], uM2pha[:], uK1amp[:], uK1pha[:] = fittit(u, time)
+    vM2amp[:], vM2pha[:], vK1amp[:], vK1pha[:] = fittit(v, time)
+
+    CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = ellipse_params(uM2amp, uM2pha, vM2amp, vM2pha)
+    CXk, SXk, CYk, SYk, apk, amk, epk, emk, majk, mik, thek, phak = ellipse_params(uK1amp, uK1pha, vK1amp, vK1pha)
+
+    return dep_t, maj, mi, the, pha, majk, mik, thek, phak
+
+
 
     # Authorship Copyright:
     #
