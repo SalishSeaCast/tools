@@ -297,7 +297,6 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         else copy(dates[:-2]))
     nowcast_pub_dates = exclude_missing_dates(
         nowcast_pub_dates, os.path.join(rst_path, 'nowcast', 'publish_*.rst'))
-#        nowcast_pub_dates, 'nowcast', 'publish', rst_path)
     nowcast_res_dates = (
         copy(dates[:-1]) if run_type in 'nowcast forecast'.split()
         else copy(dates[:-2]))
@@ -315,7 +314,7 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
         sal_comp_dates,
         os.path.join(
             config['web']['salinity_comparison']['filesystem_path'],
-            '{}_*.ipynb#Plot'.format(sal_comp_fileroot)))
+            '{}_*.ipynb'.format(sal_comp_fileroot)))
     # Render the template using the calculated varible values to produce
     # the index rst file
     rst_file = os.path.join(rst_path, 'index.rst')
