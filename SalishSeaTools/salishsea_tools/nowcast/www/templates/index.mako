@@ -79,7 +79,7 @@ Log files from the model run automation system and forcing data monitoring plots
         %if d is None:
           &nbsp;
         %else:
-          <a href="http://nbviewer.ipython.org/url/${path}/${fileroot}_${d.format("DDMMMYY").lower()}.ipynb">
+          <a href="http://nbviewer.ipython.org/url/${path}/${fileroot}_${d.format("DDMMMYY").lower()}.ipynb#Plot">
             ${d.format("D")}
           </a>
         %endif
