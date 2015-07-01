@@ -163,7 +163,7 @@ def load_config(config_file):
     return config
 
 
-def configure_logging(config, logger, debug):
+def configure_logging(config, logger, debug, email=True):
     """Set up logging configuration.
 
     This function assumes that the logger object has been created
@@ -182,8 +182,15 @@ def configure_logging(config, logger, debug):
 
     :arg debug: Debug mode; log to console instead of to file.
     :type debug: boolean
+
+    :arg email: Configure SMTP logging handler;
+                only effective when debug == False.
+    type email: boolean
     """
     logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        config['logging']['message_format'],
+        datefmt=config['logging']['datetime_format'])
     for level, filename in config['logging']['log_files'].items():
         log_file = os.path.join(
             os.path.dirname(config['config_file']), filename)
@@ -192,11 +199,20 @@ def configure_logging(config, logger, debug):
             else logging.handlers.RotatingFileHandler(
                 log_file, backupCount=config['logging']['backup_count']))
         handler.setLevel(getattr(logging, level.upper()))
-        formatter = logging.Formatter(
-            config['logging']['message_format'],
-            datefmt=config['logging']['datetime_format'])
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+    if not debug and email:
+        level = config['logging']['email']['level']
+        subject = config['logging']['email']['subject'].format(level=level)
+        email = logging.handlers.SMTPHandler(
+            mailhost=config['logging']['email']['mailhost'],
+            fromaddr=config['logging']['email']['fromaddr'],
+            toaddrs=config['logging']['email']['toaddrs'],
+            subject=subject,
+        )
+        email.setLevel(getattr(logging, level.upper()))
+        email.setFormatter(formatter)
+        logger.addHandler(email)
 
 
 def install_signal_handlers(logger, context):

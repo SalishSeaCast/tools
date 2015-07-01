@@ -63,13 +63,14 @@ def main():
     parsed_args = parser.parse_args()
     config = lib.load_config(parsed_args.config_file)
 
-    lib.configure_logging(config, logger, parsed_args.debug)
+    lib.configure_logging(config, logger, parsed_args.debug, email=False)
     logger.debug('running in process {}'.format(os.getpid()))
     logger.debug('read config from {.config_file}'.format(parsed_args))
     # Add nowcast-style handlers to salishsea_cmd api and prepare loggers
     for module in 'api prepare'.split():
         cmd_logger = logging.getLogger('salishsea_cmd.{}'.format(module))
-        lib.configure_logging(config, cmd_logger, parsed_args.debug)
+        lib.configure_logging(
+            config, cmd_logger, parsed_args.debug, email=False)
 
     lib.install_signal_handlers(logger, context)
     socket = lib.init_zmq_req_rep_worker(
