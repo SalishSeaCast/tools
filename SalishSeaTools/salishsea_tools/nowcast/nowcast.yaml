@@ -146,7 +146,8 @@ logging:
   datetime_format: '%Y-%m-%d %H:%M:%S'
   email:
     level: critical
-    subject: {level} Message from Salish Sea Nowcast System
+    # Subject string must be quoted to protect {} characters
+    subject: '{level} Message from Salish Sea Nowcast System'
     mailhost: smtpd.eos.ubc.ca
     fromaddr: salishsea_nowcast@eos.ubc.ca
     toaddrs:
