@@ -1637,7 +1637,7 @@ def ellipse_params(uamp, upha, vamp, vpha):
     theta = (ep+em)/2.*180./np.pi
     theta %= 180
     phase = (em-ep)/2.*180./np.pi
-    phase %= 360
+    phase = (phase+360) % 360
 
     return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
 
