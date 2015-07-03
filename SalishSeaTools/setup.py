@@ -1,6 +1,5 @@
 """Salish Sea Tools Package
 
-
 Copyright 2013-2015 The Salish Sea MEOPAR Contributors
 and The University of British Columbia
 
@@ -22,7 +21,8 @@ import __version__
 
 python_classifiers = [
     'Programming Language :: Python :: {0}'.format(py_version)
-    for py_version in ['2', '2.7', '3', '3.2', '3.3', '3.4']]
+    for py_version in ['2', '2.7']
+]
 other_classifiers = [
     'Development Status :: ' + __version__.dev_status,
     'License :: OSI Approved :: Apache Software License',
