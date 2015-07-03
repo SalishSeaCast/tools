@@ -48,6 +48,9 @@ install_requires = [
     'netCDF4',
     'numpy',
     'pandas',
+    'pytz',
+    'requests',
+    'scipy',
 ]
 
 setup(
