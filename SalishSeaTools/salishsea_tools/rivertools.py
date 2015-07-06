@@ -355,7 +355,7 @@ def get_watershed_prop_dict(watershedname):
                 'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser1': {
-                'prop': Fraser * 0.75, 'i': 515, 'j': 395, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Fraser * 0.75, 'i': 414, 'j': 334, 'di': 3, 'dj': 1, 'depth': 3,
             },
             'Fraser2': {
                 'prop': Fraser * 0.05, 'i': 411, 'j': 324, 'di': 2, 'dj': 1, 'depth': 3,
