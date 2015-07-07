@@ -489,22 +489,25 @@ To deactivate the :kbd:`nowcast` environment and return to your root Anaconda Py
     (nowcast)$ source deactivate
 
 
-Directory Structure for Testing
--------------------------------
+Directory Structure for Development and Testing
+-----------------------------------------------
 
 .. warning::
 
-    Testing of nowcast workers, etc. should only be done on machines *other than* :kbd:`salish`.
+    Development and testing of nowcast workers, etc. should only be done on machines *other than* :kbd:`salish`.
     If you test on :kbd:`salish` your test runs will interact with the production nowcast manager process and,
     in all likelihood,
     cause other workers to run at in appropriate times,
     potentially disrupting the production real-time runs.
 
-To test nowcast workers,
-rendering of page templates for the :kbd:`salishsea.eos.ubc.ca` site,
-etc. you need to set up a directory structure that mirrors the one used for the production deployment of the nowcast system.
-At minimum,
-that directory structure looks like::
+The directory structure described in this section mirrors the one used for the production deployment of the nowcast system.
+It can be used to:
+
+* test nowcast workers during development
+* test rendering of page templates for the :kbd:`salishsea.eos.ubc.ca` site
+* download EC weather model products in the event of an automation failure
+
+The directory structure looks like::
 
   MEOPAR/
   `-- nowcast/
@@ -522,7 +525,7 @@ This clone is for automation testing only - you should not make commits in it.
 where the templates for the pages that nowcast creates on the :kbd:`salishsea.eos.ubc.ca` site are stored.
 
 So,
-the commands to create a directory structure for testing of nowcast components are:
+the commands to create the directory structure are:
 
 .. code-block:: bash
 
