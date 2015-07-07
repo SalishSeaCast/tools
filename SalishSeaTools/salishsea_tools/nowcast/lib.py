@@ -185,7 +185,7 @@ def configure_logging(config, logger, debug, email=True):
 
     :arg email: Configure SMTP logging handler;
                 only effective when debug == False.
-    type email: boolean
+    :type email: boolean
     """
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
