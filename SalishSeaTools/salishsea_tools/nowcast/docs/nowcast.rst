@@ -399,18 +399,16 @@ Development and Deployment
 Python Package Environment
 --------------------------
 
-The nowcast workers that do pre- and post-processing for the runs can be run in a default :ref:`AnacondaPythonDistro` environment with the :ref:`SalishSeaTools` installed.
-However,
-the workers that interact with the `Ocean Networks Canada`_ private cloud `west.cloud`_ computing facility
-(see :ref:`WorkingOnWestCloud`)
-require additional Python packages to use the `OpenStack`_ APIs.
+The nowcast manager and workers require several Python packages that are not part of the default :ref:`AnacondaPythonDistro` environment.
 To avoid adding complexity and potential undesirable interactions and/or side-effects to the default Anaconda Python environment we create an isolated environment for nowcast.
 
-.. _Ocean Networks Canada: http://www.oceannetworks.ca/
-.. _west.cloud: https://www.westgrid.ca/support/systems/Nefos
-.. _OpenStack: http://www.openstack.org/
+Ensure that your :program:`conda` package manager is up to date:
 
-Create a new :program:`conda` environment with Python 2.7 and pip installed in it,
+.. code-block:: bash
+
+    $ conda update conda
+
+Create a new :program:`conda` environment with Python 2.7 and program:`pip` installed in it,
 and activate the environment:
 
 .. code-block:: bash
@@ -433,51 +431,62 @@ and its companion package :ref:`SalishSeaCmdProcessor`:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml mock
-    (nowcast)$ pip install arrow angles BeautifulSoup4
+    (nowcast)$ conda install matplotlib netCDF4 numpy pandas pyyaml requests scipy
+    (nowcast)$ pip install arrow angles
     (nowcast)$ cd MEOPAR/tools
     (nowcast)$ pip install --editable SalishSeaTools
     (nowcast)$ pip install --editable SalishSeaCmd
 
-Install the Python bindings to the `ZeroMQ`_ messaging library:
+Install the additional packages that the nowcast manager and workers depend on:
+
+* thee paramiko package that provides a Python implementation of the SSH2 protocol
+* the Python bindings to the `ZeroMQ`_ messaging library
+* the BeautifulSoup HTML parsing package
 
 .. code-block:: bash
 
-    (nowcast)$ conda install pyzmq
-
-Install the packages available from the :program:`conda` repositories that are used by the `OpenStack` APIs,
-and the Python bindings for the `OpenStack compute API`_
-(which is called :program:`nova`):
-
-.. code-block:: bash
-
-    (nowcast)$ conda install requests pyopenssl cryptography cffi pycparser
-    (nowcast)$ pip install python-novaclient
-
-.. _OpenStack compute API: http://docs.openstack.org/user-guide/content/sdk_compute_apis.html
-
-Install the paramiko package that provides a Python implementation of the SSH2 protocol:
-
-.. code-block:: bash
-
-    (nowcast)$ conda install paramiko
+    (nowcast)$ conda install paramiko pyzmq
+    (nowcast)$ pip install BeautifulSoup4
 
 Finally,
-install Sphinx and the sphinx-rtd-theme ReadTheDocs theme,
-the sphinx-bootstrap-theme and mako template library used for the salishsea.eos.ubc.ca site,
-IPython and IPython Notebook,
+install Sphinx,
+the sphinx-bootstrap-theme,
+and the mako template library used for the salishsea.eos.ubc.ca site:
+
+.. code-block:: bash
+
+    (nowcast)$ conda install sphinx
+    (nowcast)$ pip install mako sphinx-bootstrap-theme
+
+The above packages are sufficient to run the nowcast system.
+For development and debugging of Python code,
+:ref:`salishsea_tools.nowcast.figures` functions,
+etc.,
+you may also want to install IPython and IPython Notebook,
 the pytest and coverage unit testing tools,
 and the ipdb debugger:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install sphinx ipython-notebook pytest coverage
-    (nowcast)$ pip install sphinx-rtd-theme sphinx-bootstrap-theme mako ipdb
+    (nowcast)$ conda install ipython-notebook pytest coverage
+    (nowcast)$ pip install ipdb
 
-to support writing and building docs,
-and developing and debugging Python code and :ref:`salishsea_tools.nowcast.figures` functions.
+The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`conda env export` command is available in :file:`salishsea_tools/nowcast/environment.yaml`.
+You can also use that file to do almost all of the above more succinctly with:
 
-The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`pip freeze` command is available in :file:`salishsea_tools/nowcast/requirements.txt`.
+.. code-block:: bash
+
+    $ cd MEOPAR/tools
+    $ conda env create -f SalishSeaTools/salishsea_tools/nowcast/environment.yaml
+    $ source activate nowcast
+    (nowcast)$ pip install --editable SalishSeaTools
+    (nowcast)$ pip install --editable SalishSeaCmd
+
+To deactivate the :kbd:`nowcast` environment and return to your root Anaconda Python environment use:
+
+.. code-block:: bash
+
+    (nowcast)$ source deactivate
 
 
 Directory Structure for Testing
