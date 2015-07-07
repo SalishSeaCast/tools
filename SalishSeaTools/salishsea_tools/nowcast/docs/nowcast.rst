@@ -396,8 +396,10 @@ Nowcast Configuration File
 Development and Deployment
 ==========================
 
-Python Package Environment
---------------------------
+.. _SalishSeaNowcastPythnonPackageEnvironmwnt:
+
+Salish Sea Nowcast Python Package Environment
+---------------------------------------------
 
 The nowcast manager and workers require several Python packages that are not part of the default :ref:`AnacondaPythonDistro` environment.
 To avoid adding complexity and potential undesirable interactions and/or side-effects to the default Anaconda Python environment we create an isolated environment for nowcast.
@@ -489,6 +491,8 @@ To deactivate the :kbd:`nowcast` environment and return to your root Anaconda Py
     (nowcast)$ source deactivate
 
 
+.. _SalishSeaNowcastDirectoryStructure:
+
 Directory Structure for Development and Testing
 -----------------------------------------------
 
@@ -536,6 +540,56 @@ the commands to create the directory structure are:
     (nowcast)$ cd www/
     (nowcast)$ hg clone ssh://hg@bitbucket.org/salishsea/salishsea-site
     (nowcast)$ ln -s ../../tools/SalishSeaTools/salishsea_tools/nowcast/www/templates
+
+
+Mitigating a :mod:`download_weather` Worker Failure
+---------------------------------------------------
+
+The Environment Canada (EC) 2.5 km resolution GEM forecast model products from the High Resolution Deterministic Prediction System (HDRPS) are critical inputs for the nowcast system.
+They are also the only input source that is transient -
+each of the 4 daily forecast data sets are replaced by the following day's forecasts,
+and EC does not maintain an archive of the HDRPS products.
+So,
+in rare the event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
+it is critical that someone re-run that worker.
+Even if the worker cannot be re-run in the nowcast system deployment environment on :kbd:`salish` due to permission issues the forecast products can be downloaded using a development and testing environment and directory structure as described above
+(see :ref:`SalishSeaNowcastPythnonPackageEnvironmwnt` and :ref:`SalishSeaNowcastDirectoryStructure`).
+That can be accomplished as follows:
+
+#. Activate your nowcast :program:`conda` environment,
+   and navigate to your nowcast development and testing environment:
+
+   .. code-block:: bash
+
+       $ source activate nowcast
+       (nowcast)$ cd MEOPAR/nowcast/
+
+#. Edit the :file:`MEOPAR/nowcast/nowcast.yaml` file to set a destination in your filespace for the GRIB2 files that the worker downloads:
+
+   .. code-block:: yaml
+
+       weather:
+         # Destination directory for downloaded GEM 2.5km operational model GRIB2 files
+         # GRIB_dir: /ocean/sallen/allen/research/MEOPAR/GRIB/
+         GRIB_dir: /ocean/<your_userid>/MEOPAR/GRIB/
+
+   .. note::
+
+        The directory :file:`/ocean/<your_userid>/MEOPAR/GRIB/` must exist.
+        Create it if necessary with:
+
+        .. code-block:: bash
+
+            $ mkdir -p /ocean/<your_userid>/MEOPAR/GRIB/
+
+#. Run the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker for the appropriate forecast with debug logging,
+   for example:
+
+   .. code-block:: bash
+
+       (nowcast)$ python -m salishsea_tools.nowcast.workers.download_weather nowcast.yaml 12 --debug
+
+
 
 
 Testing :kbd:`salishsea.eos.ubc.ca` Site Page Templates
