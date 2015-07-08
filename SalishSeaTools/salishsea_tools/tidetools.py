@@ -1441,17 +1441,24 @@ def ap2ep(Au, PHIu, Av, PHIv):
     return SEMA,  ECC, INC, PHA
 
 
-def convert_to_seconds(time_model):
+def convert_to_seconds(time_model, reftime='None'):
     """ Interpolates the datetime values into an array of seconds from a
         determined starting point
 
     :arg time_model: array of model output time as datetime objects
     :type time_model: array with datetimes
 
+    :arg reftime: Epoc value. Default 'None', uses time_model[0] as the epoc.
+            **Note: must add tzinfo = tzutc() in datetime.datetime object.
+    :type reftime: date time object
+
     :returns tp_wrt_epoch, times with respect to the
         begining of the input in seconds
     """
-    epoc = time_model[0]
+    if reftime == 'None':
+        epoc = time_model[0]
+    else:
+        epoc = reftime
     tp_wrt_epoc = []
     for t in time_model:
         tp_wrt_epoc.append((t-epoc).total_seconds()/3600)
