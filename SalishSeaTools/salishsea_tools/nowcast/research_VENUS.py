@@ -78,6 +78,20 @@ SITES = {
         }
     }
 
+# Tide correction for amplitude and phase set to September 10th 2014 by nowcast.
+# Values for there and other constituents can be found in:
+# /data/dlatorne/MEOPAR/SalishSea/nowcast/08jul15/ocean.output/
+CorrTides = {
+    'K1': {
+        'freq': 15.041069000,
+        'ft': 0.891751,
+        'uvt': 262.636797},
+    'M2': {
+        'freq': 28.984106,
+        'ft': 1.035390,
+        'uvt': 346.114490}
+    }
+
 
 def dateparse(s):
     """Parse the dates from the VENUS files."""
@@ -527,18 +541,19 @@ def loadparam(to, tf, path, freq='h', depav='None'):
         c = files_East
         d = files_East
 
+    reftime = dateparse(datetime.datetime(2014, 9, 10))
     u_u_c, time = analyze.combine_files(
         a, 'vozocrtx', 'None', [j_c-1, j_c], [i_c-1, i_c])
     v_v_c, timec = analyze.combine_files(
         b, 'vomecrty', 'None', [j_c-1, j_c], [i_c-1, i_c])
-    time_c = tt.convert_to_seconds(timec)
+    time_c = tt.convert_to_seconds(timec, reftime=reftime)
     dep_t_c = nc.Dataset(b[-1]).variables['depthv']
 
     u_u_e, time = analyze.combine_files(
         c, 'vozocrtx', 'None', [j_e-1, j_e], [i_e-1, i_e])
     v_v_e, timee = analyze.combine_files(
         d, 'vomecrty', 'None', [j_e-1, j_e], [i_e-1, i_e])
-    time_e = tt.convert_to_seconds(timee)
+    time_e = tt.convert_to_seconds(timee, reftime=reftime)
     dep_t_e = nc.Dataset(d[-1]).variables['depthv']
 
     depth = [dep_t_c[:], dep_t_e[:]]
@@ -635,7 +650,8 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     v_v, timee = analyze.combine_files(
         filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
 
-    time = tt.convert_to_seconds(timer)
+    reftime = dateparse(datetime.datetime(2014, 9, 10))
+    time = tt.convert_to_seconds(timer, reftime=reftime)
     dep_t = nc.Dataset(filesu[-1]).variables['depthu']
 
     u_u_0 = np.ma.masked_values(u_u, 0)
@@ -664,6 +680,11 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     uK1pha = np.zeros(thesize)
     uM2amp[:], uM2pha[:], uK1amp[:], uK1pha[:] = tt.fittit(u, time)
     vM2amp[:], vM2pha[:], vK1amp[:], vK1pha[:] = tt.fittit(v, time)
+
+    uM2pha = uM2pha + CorrTides['M2']['uvt']
+    uK1pha = uK1pha + CorrTides['K1']['uvt']
+    vM2pha = vM2pha + CorrTides['K1']['uvt']
+    vK1pha = vK1pha + CorrTides['M2']['uvt']
 
     CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = tt.ellipse_params(uM2amp, uM2pha, vM2amp, vM2pha)
 
