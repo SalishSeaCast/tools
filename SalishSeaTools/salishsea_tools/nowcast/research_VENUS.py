@@ -683,8 +683,8 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
 
     uM2pha = uM2pha + CorrTides['M2']['uvt']
     uK1pha = uK1pha + CorrTides['K1']['uvt']
-    vM2pha = vM2pha + CorrTides['K1']['uvt']
-    vK1pha = vK1pha + CorrTides['M2']['uvt']
+    vM2pha = vM2pha + CorrTides['M2']['uvt']
+    vK1pha = vK1pha + CorrTides['K1']['uvt']
 
     CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = tt.ellipse_params(uM2amp, uM2pha, vM2amp, vM2pha)
 
