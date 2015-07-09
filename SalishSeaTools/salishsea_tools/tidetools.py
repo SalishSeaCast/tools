@@ -1449,7 +1449,8 @@ def convert_to_seconds(time_model, reftime='None'):
     :type time_model: array with datetimes
 
     :arg reftime: Epoc value. Default 'None', uses time_model[0] as the epoc.
-            **Note: must add tzinfo = tzutc() in datetime.datetime object.
+                  **Note:** must add tzinfo = tzutc() in datetime.datetime
+                  object.
     :type reftime: date time object
 
     :returns tp_wrt_epoch, times with respect to the
