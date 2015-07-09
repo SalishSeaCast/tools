@@ -619,6 +619,40 @@ That can be accomplished as follows:
      2015-07-08 18:22:57 INFO [download_weather] interrupt signal (SIGINT or Ctrl-C) received; shutting down
      2015-07-08 18:22:57 DEBUG [download_weather] task completed; shutting down
 
+You can use the :kbd:`-h` or :kbd:`--help` flags to get a usage message that explains the worker's required arguments,
+and it's option flags:
+
+.. code-block:: bash
+
+    (nowcast)$ python -m salishsea_tools.nowcast.workers.download_weather --help
+
+.. code-block:: none
+
+    usage: python -m salishsea_tools.nowcast.workers.download_weather
+           [-h] [--debug] [--yesterday] config_file {18,00,12,06}
+
+    Salish Sea NEMO nowcast weather model dataset download worker. Download the
+    GRIB2 files from today's 00, 06, 12, or 18 EC GEM 2.5km HDRPS operational
+    model forecast.
+
+    positional arguments:
+      config_file    Path/name of YAML configuration file for Salish Sea NEMO
+                     nowcast.
+      {18,00,12,06}  Name of forecast to download files from.
+
+    optional arguments:
+      -h, --help     show this help message and exit
+      --debug        Send logging output to the console instead of the log file;
+                     intended only for use when the worker is run in foreground
+                     from the command-line.
+      --yesterday    Download forecast files for previous day's date.
+
+The :kbd:`--yesterday` flag allows you to download the previous day's forecast files.
+Use that flag only during the ~12 hour period for which two day's forecast files exist in the http://dd.weather.gc.ca/model_hrdps/west/grib2/ file space.
+To determine if the :kbd:`--yesterday` flag can be used check the contents of a forecast's hourly directories;
+e.g. http://dd.weather.gc.ca/model_hrdps/west/grib2/06/001/,
+to see if files for 2 days exist.
+
 
 Testing :kbd:`salishsea.eos.ubc.ca` Site Page Templates
 -------------------------------------------------------
