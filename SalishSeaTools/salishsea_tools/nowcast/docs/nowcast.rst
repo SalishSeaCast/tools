@@ -550,7 +550,7 @@ They are also the only input source that is transient -
 each of the 4 daily forecast data sets are replaced by the following day's forecasts,
 and EC does not maintain an archive of the HDRPS products.
 So,
-in rare the event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
+in the rare event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
 it is critical that someone re-run that worker.
 Even if the worker cannot be re-run in the nowcast system deployment environment on :kbd:`salish` due to permission issues the forecast products can be downloaded using a development and testing environment and directory structure as described above
 (see :ref:`SalishSeaNowcastPythnonPackageEnvironmwnt` and :ref:`SalishSeaNowcastDirectoryStructure`).
@@ -589,7 +589,35 @@ That can be accomplished as follows:
 
        (nowcast)$ python -m salishsea_tools.nowcast.workers.download_weather nowcast.yaml 12 --debug
 
+   You will need to hit :kbd:`Ctrl-C` at least once (maybe twice) to terminate the worker because it ends by waiting indefinitely for confirmation of its success or failure from the nowcast manager.
 
+   The command above downloads the 12 forecast.
+   The :kbd:`--debug` flag causes the logging output of the worker to be displayed on the screen (so that you can see what is going on) instead of being written to a file.
+   The (abridged) output should look like::
+
+     2015-07-08 17:59:34 DEBUG [download_weather] running in process 5506
+     2015-07-08 17:59:34 DEBUG [download_weather] read config from nowcast.yaml
+     2015-07-08 17:59:34 DEBUG [download_weather] connected to localhost port 5555
+     2015-07-08 17:59:34 INFO [download_weather] downloading 12 forecast GRIB2 files for 20150708
+     2015-07-08 17:59:34 INFO [download_weather] downloading 12 forecast GRIB2 files for 20150708
+     2015-07-08 17:59:37 DEBUG [download_weather] downloaded 248557 bytes from http://dd.weather.gc.ca/model_hrdps/west/grib2/12/001/CMC_hrdps_west_UGRD_TGL_10_ps2.5km_2015070812_P001-00.grib2
+     2015-07-08 17:59:40 DEBUG [download_weather] downloaded 253914 bytes from http://dd.weather.gc.ca/model_hrdps/west/grib2/12/001/CMC_hrdps_west_VGRD_TGL_10_ps2.5km_2015070812_P001-00.grib2
+     2015-07-08 17:59:42 DEBUG [download_weather] downloaded 47222 bytes from http://dd.weather.gc.ca/model_hrdps/west/grib2/12/001/CMC_hrdps_west_DSWRF_SFC_0_ps2.5km_2015070812_P001-00.grib2
+
+     ...
+
+     2015-07-08 18:16:49 DEBUG [download_weather] downloaded 71893 bytes from http://dd.weather.gc.ca/model_hrdps/west/grib2/12/048/CMC_hrdps_west_APCP_SFC_0_ps2.5km_2015070812_P048-00.grib2
+     2015-07-08 18:16:52 DEBUG [download_weather] downloaded 135163 bytes from http://dd.weather.gc.ca/model_hrdps/west/grib2/12/048/CMC_hrdps_west_PRMSL_MSL_0_ps2.5km_2015070812_P048-00.grib2
+     2015-07-08 18:16:52 INFO [download_weather] weather forecast 12 downloads complete
+     2015-07-08 18:16:52 INFO [download_weather] weather forecast 12 downloads complete
+     2015-07-08 18:16:52 DEBUG [download_weather] sent message: (success 12) 12 weather forecast ready
+     ^C
+     2015-07-08 18:22:52 INFO [download_weather] interrupt signal (SIGINT or Ctrl-C) received; shutting down
+     2015-07-08 18:22:52 INFO [download_weather] interrupt signal (SIGINT or Ctrl-C) received; shutting down
+     ^C
+     2015-07-08 18:22:57 INFO [download_weather] interrupt signal (SIGINT or Ctrl-C) received; shutting down
+     2015-07-08 18:22:57 INFO [download_weather] interrupt signal (SIGINT or Ctrl-C) received; shutting down
+     2015-07-08 18:22:57 DEBUG [download_weather] task completed; shutting down
 
 
 Testing :kbd:`salishsea.eos.ubc.ca` Site Page Templates
