@@ -547,10 +547,33 @@ Mitigating a :mod:`download_weather` Worker Failure
 
 The Environment Canada (EC) 2.5 km resolution GEM forecast model products from the High Resolution Deterministic Prediction System (HDRPS) are critical inputs for the nowcast system.
 They are also the only input source that is transient -
-each of the 4 daily forecast data sets are replaced by the following day's forecasts,
+each of the 4 daily forecast data sets are only available for slightly over a day,
 and EC does not maintain an archive of the HDRPS products.
-So,
-in the rare event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
+
+The HDRPS products files that we use are downloaded every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker.
+The downloads are controlled by 4 :program:`cron` jobs that run on :kbd:`salish`:
+
+  * The :kbd:`06` forecast download starts at 04:00
+  * The :kbd:`12` forecast download starts at 10:00
+  * The :kbd:`18` forecast download starts at 16:00
+  * The :kbd:`00` forecast download starts at 22:00
+
+The :py:mod:`download_weather` worker uses an exponential back-off and retry strategy to try very hard to get the required files in the face of network congestion and errors.
+If things are going really badly it can take nearly 5 hours to complete or fail to complete a forecast download.
+If a failure does occur the `info log file`_ will contain a :kbd:`CRITICAL` message like::
+
+  2015-07-08 10:00:03 INFO [download_weather] downloading 12 forecast GRIB2 files for 20150708
+  2015-07-08 14:57:29 CRITICAL [download_weather] unhandled exception:
+  2015-07-08 14:57:29 ERROR [download_weather] Traceback (most recent call last):
+  ...
+
+followed by the traceback from the error that caused the failure.
+The `debug log file`_ will show more details about the specific file downloads and will also include the :kbd:`CRITICAL` log message.
+
+.. _info log file: eoas.ubc.ca/~dlatorne/MEOPAR/nowcast/nowcast.log
+.. _debug log file: eoas.ubc.ca/~dlatorne/MEOPAR/nowcast/nowcast.debug.log
+
+In the rare event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
 it is critical that someone re-run that worker.
 Even if the worker cannot be re-run in the nowcast system deployment environment on :kbd:`salish` due to permission issues the forecast products can be downloaded using a development and testing environment and directory structure as described above
 (see :ref:`SalishSeaNowcastPythnonPackageEnvironmwnt` and :ref:`SalishSeaNowcastDirectoryStructure`).
@@ -620,7 +643,7 @@ That can be accomplished as follows:
      2015-07-08 18:22:57 DEBUG [download_weather] task completed; shutting down
 
 You can use the :kbd:`-h` or :kbd:`--help` flags to get a usage message that explains the worker's required arguments,
-and it's option flags:
+and its option flags:
 
 .. code-block:: bash
 
@@ -648,7 +671,7 @@ and it's option flags:
       --yesterday    Download forecast files for previous day's date.
 
 The :kbd:`--yesterday` flag allows you to download the previous day's forecast files.
-Use that flag only during the ~12 hour period for which two day's forecast files exist in the http://dd.weather.gc.ca/model_hrdps/west/grib2/ file space.
+Use that flag only during the several hour period for which two day's forecast files exist in the http://dd.weather.gc.ca/model_hrdps/west/grib2/ file space.
 To determine if the :kbd:`--yesterday` flag can be used check the contents of a forecast's hourly directories;
 e.g. http://dd.weather.gc.ca/model_hrdps/west/grib2/06/001/,
 to see if files for 2 days exist.
