@@ -541,7 +541,7 @@ def loadparam(to, tf, path, freq='h', depav='None'):
         c = files_East
         d = files_East
 
-    reftime = dateparse(datetime.datetime(2014, 9, 10))
+    reftime = datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc())
     u_u_c, time = analyze.combine_files(
         a, 'vozocrtx', 'None', [j_c-1, j_c], [i_c-1, i_c])
     v_v_c, timec = analyze.combine_files(
@@ -650,7 +650,7 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     v_v, timee = analyze.combine_files(
         filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
 
-    reftime = dateparse(datetime.datetime(2014, 9, 10))
+    reftime = datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc())
     time = tt.convert_to_seconds(timer, reftime=reftime)
     dep_t = nc.Dataset(filesu[-1]).variables['depthu']
 
