@@ -1496,6 +1496,7 @@ def convention_pha_amp(fitted_amp, fitted_pha):
          amplitude of the tidal ellipse and returns them following the
          tidal parameter convention; amplitude is positive and phase
          is between -180 and +180 degrees.
+
     :arg fitted_amp: The amplitude given by the fitting function.
     :type fitted_amp: float
 
