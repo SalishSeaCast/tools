@@ -1510,8 +1510,8 @@ def convention_pha_amp(fitted_amp, fitted_pha):
 
     if fitted_amp < 0:
         fitted_amp = -fitted_amp
-        fitted_pha = fitted_pha + 180.
-    angles.normalize(fitted_pha, -180, 180)
+        fitted_pha = fitted_pha + 180
+    fitted_pha = angles.normalize(fitted_pha, -180, 180)
 
     return fitted_amp, fitted_pha
 
