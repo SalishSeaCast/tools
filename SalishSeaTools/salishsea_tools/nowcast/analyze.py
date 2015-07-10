@@ -173,8 +173,11 @@ def combine_files(files, var, depth, jss, iss):
 
         var_list.append(var_tmp)
         t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
-        for ind in range(len(t)):
-            t[ind] = t[ind].datetime
+        try:
+            for ind in range(len(t)):
+                t[ind] = t[ind].datetime
+        except TypeError:
+            t = t.datetime
         time = np.append(time, t)
 
     var_ary = np.concatenate(var_list, axis=0)
