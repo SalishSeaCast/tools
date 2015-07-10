@@ -1116,3 +1116,17 @@ def get_watershed_prop_dict_long_fraser(watershedname):
             }}
     print(watershedname + ' has ' + str(len(prop_dict.keys())) + ' rivers')
     return prop_dict
+
+def init_runoff3_array(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea3.nc'
+):
+    """Initialise the runoff array.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((ymax, xmax))
+    run_depth = -np.ones((ymax, xmax))
+    run_temp = -99 * np.ones((ymax, xmax))
+    return runoff, run_depth, run_temp
