@@ -954,7 +954,7 @@ def get_watershed_prop_dict_long_fraser(watershedname):
                 'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser1': {
-                'prop': Fraser * 0.75, 'i': 418, 'j': 396, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Fraser * 0.75, 'i': 500, 'j': 395, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser2': {
                 'prop': Fraser * 0.05, 'i': 411, 'j': 324, 'di': 2, 'dj': 1, 'depth': 3,
@@ -1165,4 +1165,32 @@ def init_runoff3_array_monthly(
     runoff = np.zeros((12, ymax, xmax))
     run_depth = -np.ones((12, ymax, xmax))
     run_temp = -99 * np.ones((12, ymax, xmax))
+    return runoff, run_depth, run_temp
+
+def init_runoff5_array_monthly(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea5.nc'
+):
+    """Initialise the runoff array for each month.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((12, ymax, xmax))
+    run_depth = -np.ones((12, ymax, xmax))
+    run_temp = -99 * np.ones((12, ymax, xmax))
+    return runoff, run_depth, run_temp
+
+def init_runoff5_array(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea5.nc'
+):
+    """Initialise the runoff array.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((ymax, xmax))
+    run_depth = -np.ones((ymax, xmax))
+    run_temp = -99 * np.ones((ymax, xmax))
     return runoff, run_depth, run_temp
