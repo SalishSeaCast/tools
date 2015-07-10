@@ -1152,3 +1152,17 @@ def put_watershed_into_runoff3(
                 river['depth'], runoff, run_depth,
                 run_temp)
     return runoff, run_depth, run_temp
+
+def init_runoff3_array_monthly(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea3.nc'
+):
+    """Initialise the runoff array for each month.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((12, ymax, xmax))
+    run_depth = -np.ones((12, ymax, xmax))
+    run_temp = -99 * np.ones((12, ymax, xmax))
+    return runoff, run_depth, run_temp
