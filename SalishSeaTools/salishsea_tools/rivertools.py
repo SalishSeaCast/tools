@@ -954,7 +954,7 @@ def get_watershed_prop_dict_long_fraser(watershedname):
                 'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser1': {
-                'prop': Fraser * 0.75, 'i': 515, 'j': 395, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Fraser * 0.75, 'i': 418, 'j': 396, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser2': {
                 'prop': Fraser * 0.05, 'i': 411, 'j': 324, 'di': 2, 'dj': 1, 'depth': 3,
@@ -1129,4 +1129,26 @@ def init_runoff3_array(
     runoff = np.zeros((ymax, xmax))
     run_depth = -np.ones((ymax, xmax))
     run_temp = -99 * np.ones((ymax, xmax))
+    return runoff, run_depth, run_temp
+
+def put_watershed_into_runoff3(
+    rivertype, watershedname, flux, runoff, run_depth, run_temp,
+):
+    """Fill the river file with the rivers of one watershed.
+    """
+    # Get the proportion that each river occupies in the watershed
+    pd = get_watershed_prop_dict_long_fraser(watershedname)
+    for key in pd:
+        river = pd[key]
+        if rivertype == 'constant':
+            fill_runoff_array(
+                flux * river['prop'], river['i'],
+                river['di'], river['j'], river['dj'],
+                river['depth'], runoff, run_depth)
+        if rivertype == 'monthly':
+            fill_runoff_array_monthly(
+                flux * river['prop'], river['i'],
+                river['di'], river['j'], river['dj'],
+                river['depth'], runoff, run_depth,
+                run_temp)
     return runoff, run_depth, run_temp
