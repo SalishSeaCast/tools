@@ -380,7 +380,7 @@ def load_PA_observations():
     return obs
 
 
-def get_NOAA_wlevels(station_no, start_date, end_date):
+def get_NOAA_wlevels(station_no, start_date, end_date, product='water_level'):
     """Retrieves recent NOAA water levels from a station in a given date range.
 
     NOAA water levels are at 6 minute intervals and are relative to
@@ -396,6 +396,10 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     :arg end_date: The end of the date range; e.g. 02-Jan-2014.
     :type end_date: str
 
+    :arg product: Defines which NOAA product to use. Options are 'water_level'
+    for recent data, 'hourly_height' for archived
+    :type product: str
+
     :returns: DataFrame object (obs) with time and wlev columns,
               among others that are irrelevant.
     """
@@ -406,7 +410,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
 
     base_url = (
         'http://tidesandcurrents.noaa.gov/api/datagetter'
-        '?product=water_level&application=NOS.COOPS.TAC.WL')
+        '?product={}&application=NOS.COOPS.TAC.WL'.format(product))
     params = {
         'begin_date': st_ar.format('YYYYMMDD'),
         'end_date': end_ar.format('YYYYMMDD'),
@@ -429,7 +433,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date):
     return obs
 
 
-def get_NOAA_tides(station_no, start_date, end_date):
+def get_NOAA_tides(station_no, start_date, end_date, interval=''):
     """Retrieves NOAA predicted tides from a station in a given date range.
 
     NOAA predicted tides are at 6-minute intervals and are relative to
@@ -444,6 +448,10 @@ def get_NOAA_tides(station_no, start_date, end_date):
 
     :arg end_date: The end of the date range eg. 02-Jan-2014.
     :type end_date: string
+
+    :arg interval: Interval for tide record. Default is '', meaning highest
+    frequency available. 'h' corresponds to hourly.
+    :type interval: string
 
     :returns: DataFrame object (tides) with time and pred columns.
     """
@@ -462,7 +470,7 @@ def get_NOAA_tides(station_no, start_date, end_date):
         'station': str(station_no),
         'time_zone': 'GMT',
         'units': 'metric',
-        'interval': '',
+        'interval': interval,
         'format': 'csv',
     }
 
