@@ -1644,8 +1644,11 @@ def ellipse_params(uamp, upha, vamp, vpha):
     major = ap+am
     minor = ap-am
     theta = (ep+em)/2.*180./np.pi
-    theta %= 180
+    convention = np.divide(theta, 180)
+    k = np.floor(convention)
+    theta = theta - k*180
     phase = (em-ep)/2.*180./np.pi
+    phase = phase + k*180
     phase = (phase+360) % 360
 
     return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
