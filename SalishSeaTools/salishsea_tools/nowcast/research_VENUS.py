@@ -662,13 +662,13 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     if depav == 'None':
         thesize = (40)
     else:
+        thesize = (1)
         j = np.where(np.logical_and(dep_t[:] > depav[0], dep_t[:] < depav[1]))
         u_slice = u[:, j[0]]
         v_slice = v[:, j[0]]
 
         u = analyze.depth_average(u_slice, dep_t[j], 1)
         v = analyze.depth_average(v_slice, dep_t[j], 1)
-        thesize = (1)
 
     vM2amp = np.zeros(thesize)
     vM2pha = np.zeros(thesize)
