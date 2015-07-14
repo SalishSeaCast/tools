@@ -1639,8 +1639,8 @@ def ellipse_params(uamp, upha, vamp, vpha):
     SY = vamp*np.sin(np.pi*vpha/180.)
     ap = np.sqrt((CX+SY)**2+(CY-SX)**2)/2.
     am = np.sqrt((CX-SY)**2+(CY+SX)**2)/2.
-    ep = np.arctan2(CY-SX, CX+SY)+np.pi
-    em = np.arctan2(CY+SX, CX-SY)+np.pi
+    ep = np.arctan2(CY-SX, CX+SY)
+    em = np.arctan2(CY+SX, CX-SY)
     major = ap+am
     minor = ap-am
     theta = (ep+em)/2.*180./np.pi
