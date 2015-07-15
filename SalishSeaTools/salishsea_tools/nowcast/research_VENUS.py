@@ -747,7 +747,7 @@ def plot_ellipses(
     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     k = np.zeros((898, 398))
     m = np.zeros((898, 398))
-    scale = 25
+    scale = 10
 
     for q in np.arange(jmin, jmax):
         for l in np.arange(imin, imax):
@@ -784,15 +784,15 @@ def plot_ellipses(
             ellsc1.set_facecolor(thec)
 
     elif np.logical_and(numellips == 1, depth != 'None'):
-            if params[depth, 1] > 0:
+            if params[depth, 2] > 0:
                 thec = 'b'
             else:
                 thec = 'r'
             ellsc1 = Ellipse(
                 xy=(m[y, x], k[y, x]),
-                width=scale*params[depth, 0],
-                height=scale*params[depth, 1],
-                angle=params[depth, 2]-29,
+                width=scale*params[depth, 1],
+                height=scale*params[depth, 2],
+                angle=params[depth, 3]-29,
                 color=thec)
             ax.add_artist(ellsc1)
             ellsc1.set_facecolor(thec)
@@ -831,3 +831,93 @@ def plot_ellipses(
     ax.set_xlabel('x index')
     ax.set_ylabel('y index')
     print 'red is clockwise'
+    return
+
+def plot_ellipses_area(
+        params,
+        depth='None',
+        imin=0, imax=398,
+        jmin=0, jmax=898):
+
+    """ Plot ellipses on a map in the Salish Sea.
+    :arg params: a array containing the parameters (possibly at different
+        depths and or locations).
+    :type param: np.array
+
+    :arg depth: The depth at which you want to see the ellipse. If the param
+         array has no depth dimensions put 'None'. Default 'None'.
+    :arg depth: int
+
+    :arg imin: Minimum horizontal index that will be plotted.
+    :type imin: int
+
+    :arg imax: Maximum horizontal index that will be plotted.
+    :type imax: int
+
+    :arg jmin: Minimum vertical index that will be plotted.
+    :type jmin: int
+
+    :arg jmax: Maximum vertical index that will be plotted.
+    :type jmax: int
+    """
+    phi = 0
+    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+    k = np.zeros((898, 398))
+    m = np.zeros((898, 398))
+    scale = 10
+
+    for q in np.arange(jmin, jmax):
+        for l in np.arange(imin, imax):
+            k[q, l] = q * np.cos(phi*np.pi/180.)+l*np.sin(phi*np.pi/180.)
+            m[q, l] = -q * np.sin(phi*np.pi/180.)+l*np.cos(phi*np.pi/180.)
+
+    if depth == 'None':
+        for x in np.arange(imin, imax):
+            for y in np.arange(jmin, jmax):
+                if params[y, x, 1] > 0:
+                    thec = 'b'
+                else:
+                    thec = 'r'
+                ellsc = Ellipse(
+                    xy=(m[y, x], k[y, x]),
+                    width=scale * params[y, x, 0],
+                    height=scale * params[y, x, 1],
+                    angle=params[y, x, 2]-29,
+                    color=thec)
+                ax.add_artist(ellsc)
+
+    else:
+        for x in np.arange(imin, imax):
+            for y in np.arange(jmin, jmax):
+                if params[y, x, depth, 2] > 0:
+                    thec = 'b'
+                else:
+                    thec = 'r'
+                ellsc = Ellipse(
+                    xy=(m[y, x], k[y, x]),
+                    width=scale * params[y, x, depth, 1],
+                    height=scale * params[y, x, depth, 2],
+                    angle=params[y, x, depth, 3]-29,
+                    color=thec)
+                ax.add_artist(ellsc)
+
+    grid_B = nc.Dataset(
+        '/data/dlatorne/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc')
+    bathy = grid_B.variables['Bathymetry'][:, :]
+
+    contour_interval = [-0.01, 0.01]
+    ax.contourf(m[jmin:jmax, imin:imax],
+                k[jmin:jmax, imin:imax],
+                bathy.data[jmin:jmax, imin:imax],
+                contour_interval,
+                colors='black')
+    ax.contour(m[jmin:jmax, imin:imax],
+               k[jmin:jmax, imin:imax],
+               bathy.data[jmin:jmax, imin:imax],
+               [5],
+               colors='black')
+    ax.set_title('Tidal ellipse')
+    ax.set_xlabel('x index')
+    ax.set_ylabel('y index')
+    print 'red is clockwise'
+    return
