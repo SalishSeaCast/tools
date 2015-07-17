@@ -1938,6 +1938,64 @@ def thalweg_salinity(
     return fig
 
 
+def thalweg_temperature(
+    grid_T_d, figsize=(20, 8),
+    cs = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+):
+    """Plots the daily average temperature field along the thalweg.
+
+    :arg grid_T_d: Daily tracer results dataset from NEMO.
+    :type grid_T_d: :class:`netCDF4.Dataset`
+
+    :arg figsize:  Figure size (width, height) in inches.
+    :type figsize: 2-tuple
+
+    :arg cs: List of salinity contour levels for shading.
+    :type cs: list
+
+    :returns: matplotlib figure object instance (fig).
+    """
+
+    # Tracer data
+    dep_d = grid_T_d.variables['deptht']
+    temp_d = grid_T_d.variables['votemper']
+
+    # Call thalweg
+    lines = np.loadtxt(
+        '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
+        delimiter=" ", unpack=False)
+    lines = lines.astype(int)
+
+    ds = np.arange(0, lines.shape[0], 1)
+    XX, ZZ = np.meshgrid(ds, -dep_d[:])
+
+    # Temp along thalweg
+    tempP = temp_d[0, :, lines[:, 0], lines[:, 1]]
+    tempP = np.ma.masked_values(tempP, 0)
+
+    # Figure
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    fig.patch.set_facecolor('#2B3E50')
+    mesh = ax.contourf(XX, ZZ, tempP, cs, cmap='jet', extend='both')
+
+    cbar = fig.colorbar(mesh, ax=ax)
+    cbar.set_ticks(cs)
+    cbar.set_label('Temperature [deg C]', color='white', **axis_font)
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
+
+    timestamp = nc_tools.timestamp(grid_T_d, 0)
+    ax.set_title(
+        'Temperature field along thalweg: ' +
+        timestamp.format('DD-MMM-YYYY'),
+        **title_font)
+    ax.set_ylabel('Depth [m]', **axis_font)
+    ax.set_xlabel('Position along Thalweg', **axis_font)
+    axis_colors(ax, 'white')
+    ax.set_axis_bgcolor('burlywood')
+
+    return fig
+
+
 def plot_surface(
     grid_T_d, grid_U_d, grid_V_d, grid_B,
     limits=[0, 398, 0, 898], figsize=(20, 12),
