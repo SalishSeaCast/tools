@@ -143,6 +143,7 @@ def make_site_page(run_type, page_type, run_date, config):
         ],
         'research': [
             'Salinity_on_thalweg',
+            'Temperature_on_thalweg',
             'T_S_Currents_on_surface',
             'Compare_VENUS_East',
             'Compare_VENUS_Central',
