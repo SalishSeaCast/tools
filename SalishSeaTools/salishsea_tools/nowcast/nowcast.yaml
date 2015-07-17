@@ -148,7 +148,7 @@ logging:
     level: critical
     # Subject string must be quoted to protect {} characters
     subject: '{level} Message from Salish Sea Nowcast System'
-    mailhost: smtp.eos.ubc.ca
+    mailhost: localhost
     fromaddr: salishsea_nowcast@eos.ubc.ca
     toaddrs:
       - dlatornell@eos.ubc.ca
