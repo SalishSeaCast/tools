@@ -2067,7 +2067,8 @@ def plot_surface(
             step = 2
 
         # Plot salinity and temperature
-        mesh = ax.contourf(tracer, cs, cmap=cmap, vmin=cs[0], vmax=cs[-1])
+        mesh = ax.contourf(tracer, cs, cmap=cmap, vmin=cs[0], vmax=cs[-1],
+                           extend='both')
 
         # Axis
         ax.set_xlim(xmin, xmax)
