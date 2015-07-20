@@ -118,7 +118,8 @@ def load_VENUS(station):
     """
 
     # Define location
-    filename = 'SG-{0}-VIP/VSG-{0}-VIP-State_of_Ocean.txt'.format(station)
+    filename = ('SG-{0}/VSG-Strait_of_Georgia_{0}'
+                '-VIP-State_of_Ocean.txt'.format(station))
 
     # Access website
     url = 'http://venus.uvic.ca/scripts/log_download.php'
