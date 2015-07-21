@@ -918,8 +918,8 @@ def plot_ellipses_area(
                bathy.data[jmin:jmax, imin:imax],
                [5],
                colors='black')
-    ax.set_title('Tidal ellipse')
-    ax.set_xlabel('x index')
-    ax.set_ylabel('y index')
+    ax.set_title('Tidal ellipse', fontsize=20)
+    ax.set_xlabel('x index', fontsize=16)
+    ax.set_ylabel('y index', fontsize=16)
     print 'red is clockwise'
-    return
+    return fig
