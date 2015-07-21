@@ -838,7 +838,8 @@ def plot_ellipses_area(
         params,
         depth='None',
         imin=0, imax=398,
-        jmin=0, jmax=898):
+        jmin=0, jmax=898,
+        figsize=(10, 10)):
 
     """ Plot ellipses on a map in the Salish Sea.
     :arg params: a array containing the parameters (possibly at different
@@ -862,7 +863,7 @@ def plot_ellipses_area(
     :type jmax: int
     """
     phi = 0
-    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     k = np.zeros((898, 398))
     m = np.zeros((898, 398))
     scale = 10
