@@ -1900,7 +1900,7 @@ def thalweg_salinity(
 
     # Tracer data
     dep_d = grid_T_d.variables['deptht']
-    sal_d = grid_T_d.variables['vosaline']
+    sal_d = grid_T_d.variables['vosaline'][:]
 
     # Call thalweg
     lines = np.loadtxt(
@@ -1918,7 +1918,7 @@ def thalweg_salinity(
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    mesh = ax.contourf(XX, ZZ, salP, cs, cmap='hsv', extend='both')
+    mesh = ax.contourf(XX, ZZ, salP.T, cs, cmap='hsv', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
@@ -1958,7 +1958,7 @@ def thalweg_temperature(
 
     # Tracer data
     dep_d = grid_T_d.variables['deptht']
-    temp_d = grid_T_d.variables['votemper']
+    temp_d = grid_T_d.variables['votemper'][:]
 
     # Call thalweg
     lines = np.loadtxt(
@@ -1976,7 +1976,7 @@ def thalweg_temperature(
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    mesh = ax.contourf(XX, ZZ, tempP, cs, cmap='jet', extend='both')
+    mesh = ax.contourf(XX, ZZ, tempP.T, cs, cmap='jet', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
