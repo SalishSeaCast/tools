@@ -244,7 +244,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     return fig
 
 
-def unstag_rot(ugrid, vgrid, i, j):
+def unstag_rot(ugrid, vgrid):
     """Interpolate u and v component values to values at grid cell centre.
     Then rotates the grid cells to align with N/E orientation.
 
@@ -263,38 +263,9 @@ def unstag_rot(ugrid, vgrid, i, j):
     """
 
     # We need to access the u velocity that is between i and i-1
-    u_t = (ugrid[:, :, j, i-1] + ugrid[:, :, j, i]) / 2
-    v_t = (vgrid[:, :, j, i] + vgrid[:, :, j-1, i]) / 2
-    theta = 29
-    theta_rad = theta * np.pi / 180
+    u_t = (ugrid[..., 1:, :-1] + ugrid[..., 1:, 1:]) / 2
+    v_t = (vgrid[..., 1:, 1:] + vgrid[..., :-1, 1:]) / 2
 
-    u_E = u_t * np.cos(theta_rad) - v_t * np.sin(theta_rad)
-    v_N = u_t * np.sin(theta_rad) + v_t * np.cos(theta_rad)
-
-    return u_E, v_N
-
-
-def unstag_rot_gridded(ugrid, vgrid, station):
-    """Interpolate u and v component values to values at grid cell centre.
-    Then rotates the grid cells to align with N/E orientation.
-
-    :arg ugrid: u velocity component values with axes (..., y, x)
-    :type ugrid: :py:class:`numpy.ndarray`
-
-    :arg vgrid: v velocity component values with axes (..., y, x)
-    :type vgrid: :py:class:`numpy.ndarray`
-
-    :arg station: Name of the station ('East' or 'Central')
-    :type station: string
-
-    :returns u_E, v_N, depths: u_E and v_N velocties is the North and East
-     directions at the cell center,
-    and the depth of the station
-    """
-
-    # We need to access the u velocity that is between i and i-1
-    u_t = (ugrid[:, :, 1, 0] + ugrid[:, :, 1, 1]) / 2
-    v_t = (vgrid[:, :, 1, 1] + vgrid[:, :, 0, 1]) / 2
     theta = 29
     theta_rad = theta * np.pi / 180
 
@@ -325,7 +296,9 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
     dep_t = grid.variables['depthv']
     dep_w = grid.variables['depthw']
 
-    u_E, v_N = unstag_rot_gridded(u_u, v_v, station)
+    u_E, v_N = unstag_rot(u_u, v_v)
+    u_E = u_E[..., 0, 0]
+    v_N = v_N[..., 0, 0]
 
     fig, (axu, axv, axw) = plt.subplots(3, 1, figsize=figsize, sharex=True)
     fig.patch.set_facecolor('#2B3E50')
@@ -565,8 +538,8 @@ def loadparam(to, tf, path, freq='h', depav='None'):
     u_u_0c = np.ma.masked_values(u_u_c, 0)
     v_v_0c = np.ma.masked_values(v_v_c, 0)
 
-    u_c, v_c = unstag_rot_gridded(u_u_0c, v_v_0c, 'Central')
-    u_e, v_e = unstag_rot_gridded(u_u_0, v_v_0, 'East')
+    u_c, v_c = unstag_rot(u_u_0c, v_v_0c)
+    u_e, v_e = unstag_rot(u_u_0, v_v_0)
 
     if depav == 'None':
         us = [u_c, u_e]
@@ -659,7 +632,7 @@ def loadparam_all(to, tf, path, i, j, depav='None'):
     u_u_0 = np.ma.masked_values(u_u, 0)
     v_v_0 = np.ma.masked_values(v_v, 0)
 
-    u, v = unstag_rot(u_u_0, v_v_0, 1, 1)
+    u, v = unstag_rot(u_u_0, v_v_0)
 
     if depav == 'None':
         thesize = (40)
@@ -833,6 +806,7 @@ def plot_ellipses(
     ax.set_ylabel('y index')
     print 'red is clockwise'
     return
+
 
 def plot_ellipses_area(
         params,
