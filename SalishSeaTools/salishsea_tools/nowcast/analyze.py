@@ -134,7 +134,7 @@ def get_filenames_15(t_orig, t_final, station, model_path):
     return files
 
 
-def combine_files(files, var, depth, jss, iss):
+def combine_files(files, var, kss, jss, iss):
     """Returns the value of the variable entered over
     multiple files covering a certain period of time at
     a set of grid coordinates.
@@ -148,9 +148,9 @@ def combine_files(files, var, depth, jss, iss):
                       vomecrty = Velocity V-component).
     :type var: string
 
-    :arg depth: Depth of model results
-    'None' if depth is not applicable or all depths required.
-    :type depth: integer or string
+    :arg kss: list of model depth levels (<=39)
+    'None' if depth is not applicable (example sea surface height).
+    :type kss: integer or string
 
     :arg jss: list of (y) indices of location (<=897).
     :type jss:  list of integers
@@ -166,10 +166,10 @@ def combine_files(files, var, depth, jss, iss):
 
     for f in files:
         G = nc.Dataset(f)
-        if depth == 'None':
+        if kss == 'None':
             var_tmp = G.variables[var][..., jss, iss]
         else:
-            var_tmp = G.variables[var][..., depth, jss, iss]
+            var_tmp = G.variables[var][..., kss, jss, iss]
 
         var_list.append(var_tmp)
         t = nc_tools.timestamp(G, np.arange(var_tmp.shape[0]))
