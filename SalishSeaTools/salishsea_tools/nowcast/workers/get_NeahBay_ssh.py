@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast worker that scrapes NOAA Neah Bay storm surge
-forecast site and generates western open boundary conditions ssh files.
+"""Salish Sea NEMO nowcast Neah Bay sea surface height download worker.
+Scrape the NOAA Neah Bay storm surge site for sea surface height
+observations and forecast values and generate the western open boundary
+ssh files.
 """
-import argparse
 import datetime
 import logging
 import os
 import shutil
-import traceback
 
 from bs4 import BeautifulSoup
 import pytz
@@ -29,88 +29,56 @@ import matplotlib
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
-import zmq
 
 from salishsea_tools import nc_tools
 from salishsea_tools.nowcast import (
     figures,
     lib,
 )
+from salishsea_tools.nowcast.nowcast_worker import NowcastWorker
 
 
 worker_name = lib.get_module_name()
-
 logger = logging.getLogger(worker_name)
 
-context = zmq.Context()
 
 #: Neah Bay sea surface height forcing file name template
 FILENAME_TMPL = 'ssh_{:y%Ym%md%d}.nc'
 
-
+#: NOAA Neah Bay sea surface height observations & forecast site URL
 URL = (
     'http://www.nws.noaa.gov/mdl/etsurge/index.php'
     '?page=stn&region=wc&datum=msl&list=&map=0-48&type=both&stn=waneah')
 
 
 def main():
-    # Prepare the worker
-    base_parser = lib.basic_arg_parser(
-        worker_name, description=__doc__, add_help=False)
-    parser = configure_argparser(
-        prog=base_parser.prog,
-        description=base_parser.description,
-        parents=[base_parser],
-    )
-    parsed_args = parser.parse_args()
-    config = lib.load_config(parsed_args.config_file)
-    lib.configure_logging(config, logger, parsed_args.debug)
-    logger.debug('running in process {}'.format(os.getpid()))
-    logger.debug('read config from {.config_file}'.format(parsed_args))
-    lib.install_signal_handlers(logger, context)
-    socket = lib.init_zmq_req_rep_worker(context, config, logger)
-    # Do the work
-    try:
-        checklist = getNBssh(parsed_args.run_type, config)
-        logger.info(
-            'Neah Bay sea surface height web scraping '
-            'and file creation completed')
-        # Exchange success messages with the nowcast manager process
-        msg_type = 'success {.run_type}'.format(parsed_args)
-        lib.tell_manager(
-            worker_name, msg_type, config, logger, socket, checklist)
-    except lib.WorkerError:
-        logger.error(
-            'Neah Bay sea surface height web scraping '
-            'and file creation failed')
-        # Exchange failure messages with the nowcast manager process
-        msg_type = 'failure {.run_type}'.format(parsed_args)
-        lib.tell_manager(worker_name, msg_type, config, logger, socket)
-    except SystemExit:
-        # Normal termination
-        pass
-    except:
-        logger.critical('unhandled exception:')
-        for line in traceback.format_exc().splitlines():
-            logger.error(line)
-        # Exchange crash messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'crash', config, logger, socket)
-    # Finish up
-    context.destroy()
-    logger.debug('task completed; shutting down')
-
-
-def configure_argparser(prog, description, parents):
-    parser = argparse.ArgumentParser(
-        prog=prog, description=description, parents=parents)
-    parser.add_argument(
+    worker = NowcastWorker(worker_name, description=__doc__)
+    worker.arg_parser.add_argument(
         'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
         help='Type of run to execute.'
     )
-    return parser
+    worker.run(get_NeahBay_ssh, success, failure)
 
 
-def getNBssh(run_type, config):
+def success(parsed_args):
+    logger.info(
+        'Neah Bay  sea surface height web scraping and open boundary file '
+        'creation for {.run_type} complete'
+        .format(parsed_args))
+    msg_type = '{} {}'.format('success', parsed_args.run_type)
+    return msg_type
+
+
+def failure(parsed_args):
+    logger.error(
+        'Neah Bay  sea surface height web scraping and open boundary file '
+        'creation for {.run_type} failed'
+        .format(parsed_args))
+    msg_type = '{} {}'.format('failure', parsed_args.run_type)
+    return msg_type
+
+
+def get_NeahBay_ssh(run_type, config):
     """Generate sea surface height forcing files from the Neah Bay
     storm surge website.
     """
@@ -448,4 +416,4 @@ def setup_plotting():
 
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma: no cover
