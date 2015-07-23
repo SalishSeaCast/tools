@@ -22,7 +22,7 @@ import traceback
 
 import zmq
 
-from salishsea_tools.nowcast import lib
+from . import lib
 
 
 class NowcastWorker(object):
