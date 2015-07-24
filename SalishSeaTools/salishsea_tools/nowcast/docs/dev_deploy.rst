@@ -168,12 +168,12 @@ the commands to create the directory structure are:
 Mitigating a :mod:`download_weather` Worker Failure
 ---------------------------------------------------
 
-The Environment Canada (EC) 2.5 km resolution GEM forecast model products from the High Resolution Deterministic Prediction System (HDRPS) are critical inputs for the nowcast system.
+The Environment Canada (EC) 2.5 km resolution GEM forecast model products from the High Resolution Deterministic Prediction System (HRDPS) are critical inputs for the nowcast system.
 They are also the only input source that is transient -
 each of the 4 daily forecast data sets are only available for slightly over a day,
-and EC does not maintain an archive of the HDRPS products.
+and EC does not maintain an archive of the HRDPS products.
 
-The HDRPS products files that we use are downloaded every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker.
+The HRDPS products files that we use are downloaded every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker.
 The downloads are controlled by 4 :program:`cron` jobs that run on :kbd:`salish`:
 
   * The :kbd:`06` forecast download starts at 04:00
@@ -196,7 +196,7 @@ The `debug log file`_ will show more details about the specific file downloads a
 .. _info log file: eoas.ubc.ca/~dlatorne/MEOPAR/nowcast/nowcast.log
 .. _debug log file: eoas.ubc.ca/~dlatorne/MEOPAR/nowcast/nowcast.debug.log
 
-In the rare event that the nowcast automation system fails to download the HDRPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
+In the rare event that the nowcast automation system fails to download the HRDPS products every 6 hours via the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.download_weather` worker,
 it is critical that someone re-run that worker.
 Even if the worker cannot be re-run in the nowcast system deployment environment on :kbd:`salish` due to permission issues the forecast products can be downloaded using a development and testing environment and directory structure as described above
 (see :ref:`SalishSeaNowcastPythnonPackageEnvironmwnt` and :ref:`SalishSeaNowcastDirectoryStructure`).
@@ -278,7 +278,7 @@ and its option flags:
            [-h] [--debug] [--yesterday] config_file {18,00,12,06}
 
     Salish Sea NEMO nowcast weather model dataset download worker. Download the
-    GRIB2 files from today's 00, 06, 12, or 18 EC GEM 2.5km HDRPS operational
+    GRIB2 files from today's 00, 06, 12, or 18 EC GEM 2.5km HRDPS operational
     model forecast.
 
     positional arguments:
