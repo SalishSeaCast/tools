@@ -423,7 +423,7 @@ def depth_average(var, depths, depth_axis):
     """Average var over depth using the trapezoid rule.
     The var should be masked in order to apply this function.
     The depth is calcluated based on masking.
-    If var is not masked then the maximum depth of the entire domain is used.
+    If var is not masked then the maximum depth of the depths array is used.
 
     :arg var: variable to average
     :type var: masked numpy array
@@ -449,12 +449,17 @@ def depth_average(var, depths, depth_axis):
     roll = np.rollaxis(var, depth_axis)
     expanded_depths = de + np.zeros(roll.shape)
     expanded_depths = np.rollaxis(expanded_depths, 0, depth_axis+1)
-    # Look up indices where masking starts and stops.
-    # Use this to determine depth of water column
-    ind_surface, ind_depth = np.ma.notmasked_edges(var, axis=depth_axis)
-    total_depths = expanded_depths[ind_depth] - expanded_depths[ind_surface]
-    total_depths = total_depths.reshape(integral.shape)
-    # Average by dividing integral by total depth
-    average = integral/total_depths
+
+    # Apply variable mask to depth masks
+    mask = np.ma.getmask(var)
+    depth_masked = np.ma.array(expanded_depths, mask=mask)
+
+    # Calculate depth of water column
+    max_depths = np.ma.max(depth_masked, axis=depth_axis)
+    surface_depths = depth_masked.take(0, axis=depth_axis)
+    total_depth = max_depths-surface_depths
+
+    # Divide integral by total depth
+    average = integral/total_depth
 
     return average
