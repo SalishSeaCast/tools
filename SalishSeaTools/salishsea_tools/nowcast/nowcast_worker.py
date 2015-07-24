@@ -47,7 +47,7 @@ class NowcastWorker(object):
 
     :arg name: The name of the worker.
                This should be the worker's module name without the
-               :kdb:`.py` extension.
+               :kbd:`.py` extension.
                That is easily obtained by calling the
                :py:func:`nowcast.lib.get_module_name` function in the
                worker module.
@@ -57,7 +57,7 @@ class NowcastWorker(object):
                       used in the worker's command-line interface.
                       The worker's module docstring,
                       :py:attr:`__doc__` is often used as its description.
-    :type name: str
+    :type description: str
 
     :returns: :py:class:`nowcast_worker.NowcastWorker` instance
     """
