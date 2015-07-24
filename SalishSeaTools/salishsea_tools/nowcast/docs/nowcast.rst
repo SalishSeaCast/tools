@@ -41,24 +41,6 @@ The automation architecture is presently under development.
 It consists of a long-running manager process and a collection of worker processes which are launched by the manager or cron to perform specific tasks.
 
 
-.. _salishsea_tools.nowcast.figures:
-
-:py:mod:`nowcast.figures` Module
-================================
-
-.. automodule:: nowcast.figures
-    :members:
-
-
-.. _salishsea_tools.nowcast.lib:
-
-:py:mod:`nowcast.lib` Module
-============================
-
-.. automodule:: nowcast.lib
-    :members:
-
-
 .. _CreatingNowcastWorkers:
 
 Creating Nowcast Workers
@@ -67,12 +49,20 @@ Creating Nowcast Workers
 Nowcast workers are Python modules that can be imported from :py:mod:`salishsea_tools.nowcast.workers`.
 They are composed of some standard code to allow them to interface with the messaging and logging frameworks,
 and one or more functions to execute their task in the nowcast system.
-Most of the standard code is calls to functions in the :ref:`salishsea_tools.nowcast.lib`.
+Most of the standard code is centred around instantiation of a :py:class:`SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker` object and executing method calls on it.
 
-Here is a skeleton example of a worker showing the standard code.
+Here is a skeleton example of a worker module showing the standard code.
 It is explained,
 line by line,
 below.
+Actual
+(and obviously, more complicated)
+worker modules can be found in :file:`tools/SalishSeaTools/salishsea_tools/nowcast/workers/`.
+
+.. note::
+    The skeleton code below describes :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker`-based workers.
+    Not all workers have been re-implemented to use :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker`.
+
 
 .. code-block:: python
     :linenos:
@@ -92,63 +82,35 @@ below.
     # See the License for the specific language governing permissions and
     # limitations under the License.
 
-    """Salish Sea NEMO nowcast weather model dataset download worker.
+    """Salish Sea NEMO nowcast ... worker.
+    ...
     """
     import logging
-    import os
-    import traceback
 
-    import zmq
-
-    from salishsea_tools.nowcast import lib
+    from .. import lib
+    from ..nowcast_worker import NowcastWorker
 
 
     worker_name = lib.get_module_name()
-
     logger = logging.getLogger(worker_name)
-
-    context = zmq.Context()
 
 
     def main():
-        # Prepare the worker
-        parser = lib.basic_arg_parser(worker_name, description=__doc__)
-        parsed_args = parser.parse_args()
-        config = lib.load_config(parsed_args.config_file)
-        lib.configure_logging(config, logger, parsed_args.debug)
-        logger.debug('running in process {}'.format(os.getpid()))
-        logger.debug('read config from {.config_file}'.format(parsed_args))
-        lib.install_signal_handlers(logger, context)
-        socket = lib.init_zmq_req_rep_worker(context, config, logger)
-
-        # Do the work
-        try:
-            checklist = worker_function(config, ...)
-            logger.info('success message')
-            # Exchange success messages with the nowcast manager process
-            lib.tell_manager(
-                worker_name, 'success', config, logger, socket, checklist)
-        except lib.WorkerError:
-            # Exchange failure messages with nowcast manager process
-            logger.critical('failure message')
-            lib.tell_manager(worker_name, 'failure', config, logger, socket)
-        except SystemExit:
-            # Normal termination
-            pass
-        except:
-            logger.critical('unhandled exception:')
-            # Log the traceback from any unhandled exception
-            for line in traceback.format_exc().splitlines():
-                logger.error(line)
-            # Exchange crash messages with the nowcast manager process
-            lib.tell_manager(worker_name, 'crash', config, logger, socket)
-
-        # Finish up
-        context.destroy()
-        logger.debug('task completed; shutting down')
+        worker = NowcastWorker(worker_name, description=__doc__)
+        worker.run(worker_func, success, failure)
 
 
-    def worker_function(config, ...):
+    def success(parsed_args):
+        logger.info('success message')
+        return 'success'
+
+
+    def failure(parsed_args):
+        logger.error('failure message')
+        return 'failure'
+
+
+    def worker_func(parsed_args, config):
         ...
         return checklist
 
@@ -159,9 +121,9 @@ below.
 Lines 1 through 14 are our standard project copyright and license statement.
 It uses :kbd:`#` comments rather than being enclosed in triple quotes to segregate it from the docstring which is used in automatic documentation generation and help text.
 
-Lines 16 an 17 are the module's triple-quoted docstring.
+Lines 16 to 18 are the module's triple-quoted docstring.
 As noted above,
-it wall appear in auto-generated documentation of the module.
+it will appear in auto-generated documentation of the module.
 For convenience we will also use the docstring as the description element of the worker's command-line help message,
 although that can easily be changed if you prefer to put more details in the docstring than you want to appear in the help text.
 
@@ -170,43 +132,35 @@ The minimum set of imports that a worker needs are:
 .. code-block:: python
 
     import logging
-    import os
-    import traceback
 
-    import zmq
-
-    from salishsea_tools.nowcast import lib
+    from .. import lib
+    from ..nowcast_worker import NowcastWorker
 
 The :py:mod:`logging` module provides the mechanism that we use to print output about the worker's progress and status to the log file or the screen,
 effectively developer-approved print statements on steroids :-)
-The :py:mod:`os` module provides the interface to the operating system,
-and :py:mod:`traceback` is used to report tracebacks if the worker raises an unanticipated eception.
-:py:mod:`zmq` is the Python bindings to the `ZeroMQ`_ messaging library that we use to communicate between the workers and the nowcast manager process.
 The :ref:`salishsea_tools.nowcast.lib` is our collection of functions that are used across workers.
 If you find yourself writing the same function in more than one worker it should probably be generalized and included in :py:mod:`lib`.
-
-.. _ZeroMQ: http://zeromq.org/
+The :py:class:`NowcastWorker` class provides the interface to the nowcast framework.
+We use relative imports for :py:mod:`lib` and :py:class:`NowcastWorker` because they are defined within the :py:mod:`SalishSeaNowcast` package.
 
 Obviously you will need to import whatever other modules your worker needs for its task.
 
-Next up are 3 module level variables:
+Next up are 2 module level variables:
 
 .. code-block:: python
 
     worker_name = lib.get_module_name()
-
     logger = logging.getLogger(worker_name)
 
-    context = zmq.Context()
-
-:py:data:`worker_name` is used to identify the source of logging message and message exchanged between the worker and the nowcast manager process. :py:func:`lib.get_module_name` provides the worker's module name stripped of its path and :kbd:`.py` suffix.
+:py:data:`worker_name` is used to identify the source of logging message and message exchanged between the worker and the nowcast manager process. :py:func:`~SalishSeaTools.salishsea_tools.nowcast.lib.get_module_name` provides the worker's module name stripped of its path and :kbd:`.py` suffix.
 
 :py:data:`logger` is our interface to the logging framework and we give this module's instance the worker's name.
 
-:py:data:`context` is the interface to the ZeroMQ messaging framework.
-There must only ever be one ZeroMQ context per module.
-
 Python scoping rules make module level variables available for use in any functions in the module without passing them as arguments but assigning new values to them elsewhere in the module will surely mess things up.
+
+
+The :py:func:`main` Function
+----------------------------
 
 The :py:func:`main` function is where our worker gets down to work.
 It is called when the worker is run from the command line by virtue of the
@@ -218,161 +172,174 @@ It is called when the worker is run from the command line by virtue of the
 
 stanza at the end of the module.
 
-
-Prepare The Worker
-------------------
-
-Lines 36 and 37 set up the worker's command-line interface and parse the command-line arguments:
+The minimum possible :py:func:`main` functions is shown in lines 32 to 34:
 
 .. code-block:: python
 
-    parser = lib.basic_arg_parser(worker_name, description=__doc__)
-    parsed_args = parser.parse_args()
+    def main():
+        worker = NowcastWorker(worker_name, description=__doc__)
+        worker.run(worker_func, success, failure)
 
-The :py:func:`lib.basic_arg_parser` returns a command-line parser object with the file path/name of the :ref:`NowcastConfigFile` as a required argument,
-and :option:`--debug` and :option:`--help` option flags.
-The value of :py:data:`worker_name` is used to construct the parser's usage message.
-Passing :py:data:`__doc__` as the value of :kbd:`description` causes the worker's module docstring to be used as the parser's descriptive text;
-pass your own string instead to override that.
-Try:
+First,
+we create an instance of the :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker` class that we call,
+by convention,
+:py:data:`worker`.
+The :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker` constructor takes 2 arguments:
 
-.. code-block:: bash
+* the :py:data:`worker_name` that we defined as a module-level variable above
+* a :py:data:`description` string that is used as the description element of the worker's command-line help message;
+  here we use the worker's module docstring
+  (that is automatically stored in the :py:data:`__doc__` module-level variable)
 
-    $ python -m salishsea_tools.nowcast.workers.get_NeahBay_ssh --help
+See the :py:class:`nowcast.nowcast_worker.NowcastWorker` documentation for details of the :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker` object's contructor arguments,
+other attributes,
+and methods.
 
-to see an example of the basic parser.
+Second,
+we call the :py:meth:`run` method on the :py:data:`worker` to do the actual work.
+The :py:meth:`run` method takes 3 function names as arguments:
 
-The :option:`--debug` flag is provided for development and debugging purposes.
-It causes the logging message to be written to the screen instead of the the log file.
+* :py:data:`worker_func` is the name of the function that does the worker's job
+* :py:data:`success` is the name of the function to be called when the worker finishes successfully
+* :py:data:`failure` is the name of the function to be caled when the worker fails
 
-See :ref:`ExtendingTheCommandLineParser` for details of how to add required arguments and options flags to the basic parser.
+All 3 functions must be defined in the worker module.
+Their required call signatures and return values are described below.
 
-Next,
-on line 38,
-we load the :ref:`NowcastConfigFile` given on the command-line into a Python dict data structure:
+It is also possible to add command-line arguments to the :py:data:`worker`.
+See :ref:`ExtendingTheCommandLineParser`.
 
-.. code-block:: python
 
-    config = lib.load_config(parsed_args.config_file)
+:py:func:`success` and :py:func:`failure` Functions
+---------------------------------------------------
 
-Lines 39 to 41 configure the logging system and start logging messages about what we've accomplished so far:
-
-.. code-block:: python
-
-    lib.configure_logging(config, logger, parsed_args.debug)
-    logger.debug('running in process {}'.format(os.getpid()))
-    logger.debug('read config from {.config_file}'.format(parsed_args))
-
-The settings that define where the log files are stored,
-how their contents are formatted,
-and how many days
-(nowcast runs)
-log files are preserved at included in the :ref:`NowcastConfigFile`.
-
-The :option:`--debug` on the command-line sets the value of :kbd:`parsed_arg.debug` to :py:obj:`True`
-(it defaults to :py:obj:`False`).
-
-The :py:data:`logger` instance has a variety of method for sending messages to the logging system at different levels of importance.
-We mostly use :py:meth:`logging.info` for generally informative messages,
-:py:meth:`logging.debug` for message about deeper levels of execution,
-and :py:meth:`logging.error` for error message.
-
-Here,
-we log the id number of the operating system process that the worker is running in,
-and the file path/name of the configuration file that it is using.
-
-Line 42:
+The :py:func:`success` function is called when the worker successfully completes its task.
+It is used to generate the message that is sent to the nowcast manager process to indicate the worker's success so that the nowcast automation can proceed to the next appropriate worker(s).
+A minimal :py:func:`success` function is shown in lines 34 through 36:
 
 .. code-block:: python
 
-    lib.install_signal_handlers(logger, context)
+    def success(parsed_args):
+        logger.info('success message')
+        return 'success'
 
-installs signal handlers to cleanly deal with interrupt and termination signals from the operating system.
-This means that if a worker running in :option:`--debug` mode is interrupted with a :kbd:`Ctrl-C` it will end cleanly,
-logging the fact that it has been interrupted,
-and shutting down the ZeroMQ messaging system.
-Likewise,
-if a worker running in the background is sent an interrupt or termination signal with
+The name of the function is :py:func:`success` by convention,
+but it could be anything provided that it is the 2nd argument passed to the :py:meth:`worker.run` method.
 
-.. code-block:: bash
+The :py:func:`success` function must accept exactly 1 argument,
+named :py:data:`parsed_args` by convention.
+It is an :py:obj:`argparse.Namespace` object that has the worker's command-line argument names and values as attributes.
+The :py:data:`parsed_args` argument must be accepted even by :py:func:`success` functions that don't use it.
 
-    kill <pid>
+The :py:func:`success` function should emit a message to the logging system at the :py:data:`logging.INFO` level that describes the worker's success.
 
-or
+The :py:func:`success` function must return a string that is the key of a message type that is registered for the worker in the :ref:`NowcastConfigFile`.
+The returned message type is used to send a message indicating the worker's success to the nowcast manager process.
 
-.. code-block:: bash
-
-    kill -9 <pid>
-
-it will shutdown cleanly.
-
-The worker's ZeroMQ connection with the nowcast manager process is initialized in line 43 with:
+Here is a more sophisticated example of a :py:func:`success` function from the :py:mod:`download_weather` worker:
 
 .. code-block:: python
 
-    socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    def success(parsed_args):
+        logger.info(
+            'weather forecast {.forecast} downloads complete'
+            .format(parsed_args))
+        msg_type = 'success {.forecast}'.format(parsed_args)
+        return msg_type
 
-The ZeroMQ socket object returned by :py:func:`~salishsea_tools.nowcast.lib.init_zmq_req_rep_worker` provides the communication channel for messages to be exchanged between the worker and the manager.
-We are using a request/reply messaging pattern,
-meaning that the manager is always listening for messages and the workers initiate exchanges by sending a message to the manager,
-then waiting for an acknowledgement from the manager.
+The :py:func:`failure` function is very similar to the :py:func:`success` function except that it is called if the worker fails to complete its task.
+It is used to generate the message that is sent to the nowcast manager process to indicate the worker's failure so that appropriate notifications can be produces and/or remedial action(s) taken.
+A minimal :py:func:`failure` function is shown on lines 39 through 41:
 
-As we'll see below,
-the :py:func:`salishsea_tools.nowcast.lib.tell_manager` function handles the details of the message exchanges with the manager;
-all we have to do it pass the socket object into it.
+.. code-block:: python
+
+    def failure(parsed_args):
+        logger.error('failure message')
+        return 'failure'
+
+The name of the function is :py:func:`failure` by convention,
+but it could be anything provided that it is the 3rd argument passed to the :py:meth:`worker.run` method.
+
+Like the :py:func:`success` function,
+the :py:func:`failure` function must accept exactly 1 argument,
+named :py:data:`parsed_args` by convention.
+It is an :py:obj:`argparse.Namespace` object that has the worker's command-line argument names and values as attributes.
+The :py:data:`parsed_args` argument must be accepted even by :py:func:`failure` functions that don't use it.
+
+The :py:func:`failure` function should emit a message to the logging system at the :py:data:`logging.ERROR` level that describes the worker's failure.
+
+The :py:func:`failure` function must return a string that is the key of a message type that is registered for the worker in the :ref:`NowcastConfigFile`.
+The returned message type is used to send a message indicating the worker's failure to the nowcast manager process.
 
 
 Doing the Work
 --------------
 
-The block of code from line 46 through line 65 calls the function that does the actual work,
-communicates with the nowcast manager,
-and handles the exceptions that are raised when things go wrong.
-
-First,
-lets look at the exception handling:
+Lines 44 through 46 show the required call signature and return value for the function that is called to do the worker's task:
 
 .. code-block:: python
 
-    try:
-        checklist = worker_function(config, ...)
-        logger.info('success message')
-        # Exchange success messages with the nowcast manager process
-        lib.tell_manager(
-            worker_name, 'success', config, logger, socket, checklist)
-    except lib.WorkerError:
-        # Exchange failure messages with nowcast manager process
-        logger.critical('failure message')
-        lib.tell_manager(worker_name, 'failure', config, logger, socket)
-    except SystemExit:
-        # Normal termination
-        pass
-    except:
-        logger.critical('unhandled exception:')
-        # Log the traceback from any unhandled exception
-        for line in traceback.format_exc().splitlines():
-            logger.error(line)
-        # Exchange crash messages with the nowcast manager process
-        lib.tell_manager(worker_name, 'crash', config, logger, socket)
+    def worker_func(parsed_args, config):
+        ...
+        return checklist
 
-If everything goes according to plan,
-only the code in the :kbd:`try:` stanza will be executed.
+The name of the function can be anything provided that it is the 1st argument passed to the :py:meth:`worker.run` method.
+Ideally,
+the function name should be descriptive of the worker's task.
+If you can't think of anything else,
+you can use the name of the worker module.
 
-If the worker function encounters an expected error condition
+The function must accept exactly 2 arguments:
+
+* The 1st argument is named :py:data:`parsed_args` by convention.
+  It is an :py:obj:`argparse.Namespace` object that has the worker's command-line argument names and values as attributes.
+  The :py:data:`parsed_args` argument must be accepted even by worker functions that don't use it.
+
+* The 2nd argument is named :py:data:`config` by convention.
+  It is a Python :py:obj:`dict` containing the keys and values read from the :ref:`NowcastConfigFile`.
+  The :py:data:`config` argument must be accepted even by worker functions that don't use it.
+
+The function must return a Python :py:obj:`dict`,
+known as :py:data:`checklist` by convention.
+:py:data:`checklist` must contain at least 1 key/value pair that provides information about the worker's successful completion.
+:py:data:`checklist` is sent to the nowcast manager process as the payload of the worker's success message.
+A simple example of a :py:data:`checklist` from the :py:mod:`download_weather` worker is:
+
+.. code-block:: python
+
+    checklist = {'{} forecast'.format(forecast): True}
+
+which just indicates that the particular forecast download was successful.
+A more sophisticated :py:data:`checklist` such as the one produced by the :py:mod:`SalishSeaTools.salishsea_tools.nowcast.workers.get_NeahBay_ssh` worker contains multiple keys and lists of filenames.
+
+The function whose name is passed as the 1st argument passed to the :py:meth:`worker.run` method can be a driver function that calls other functions in the worker module to subdivide the worker task into smaller,
+more readable,
+and more testable sections.
+By convention,
+such "2nd level" functions are marked as private by prefixing their names with the :kbd:`_` (underscore) character;
+e.g. :py:func:`_calc_date`.
+This in line with the Python language convention that functions and methods that start with an underscore should not be called outside the module in which they are defined.
+
+The worker should emit messages to the logging system that indicate its progress.
+Messages logged at the :py:data:`logging.INFO` level via :py:func:`logger.info` appear in the :file:`nowcast.log` file.
+That logging level should be used for "high level" progress messages,
+and preferrably not used inside loops.
+:py:data:`logging.DEBUG` level messages logged via :py:func:`logger.debug` can be used for more detailed logging.
+Those messages appear in the :file:`nowcast.debug.log` file.
+
+If a worker function encounters an expected error condition
 (a file download failure or timeout, for example)
-it should raise a :py:exc:`salishsea_tools.nowcast.lib.WorkerError` exception.
-The :kbd:`except lib.WorkerError:` stanza catches that exception,
-logs it at the critical level,
-and tells the manager that the worker has failed.
+it should emit a message to the logging system at the :py:data:`logging.CRITICAL` level via :py:func:`logger.critical` and raise a :py:exc:`salishsea_tools.nowcast.lib.WorkerError` exception.
+Here is an example that handles an empty downloaded file in the :py:mod:`download_weather` worker:
 
-The :py:exc:`SystemExit` exception is raised by the signal handler that we installed at line 42 when the worker is terminated by an interrupt or kill signal.
-This is the normal termination path,
-so we let that exception pass.
+.. code-block:: python
 
-Finally,
-the bare :kbd:`except:` stanza catches any unhandled exceptions,
-logs their traceback at the error level so that we can diagnose the error,
-and tells the manager that the worker crashed.
+    if size == 0:
+        logger.critical('Problem, 0 size file {}'.format(fileURL))
+        raise lib.WorkerError
+
+This sections has only outlined the basic code structure and conventions for writing nowcast workers.
+The best way to learn now to write a new worker is by studying the code in the existing worker modules in :file:`SalishSeaTools/salishsea_tools/nowcast/workers/`.
 
 
 .. _ExtendingTheCommandLineParser:
@@ -442,6 +409,8 @@ Install the additional packages that the nowcast manager and workers depend on:
 * thee paramiko package that provides a Python implementation of the SSH2 protocol
 * the Python bindings to the `ZeroMQ`_ messaging library
 * the BeautifulSoup HTML parsing package
+
+.. _ZeroMQ: http://zeromq.org/
 
 .. code-block:: bash
 
@@ -864,3 +833,30 @@ and preview the finished :file:`.html` page:
     (nowcast)$ make html
     ...
     (nowcast)$ firefox _build/html/storm-surge/forecast.html
+
+
+.. _salishsea_tools.nowcast.figures:
+
+:py:mod:`nowcast.figures` Module
+================================
+
+.. automodule:: nowcast.figures
+    :members:
+
+
+.. _salishsea_tools.nowcast.lib:
+
+:py:mod:`nowcast.lib` Module
+============================
+
+.. automodule:: nowcast.lib
+    :members:
+
+
+.. _salishsea_tools.nowcast.nowcast_worker:
+
+:py:mod:`nowcast.nowcast_worker` Module
+=======================================
+
+.. automodule:: nowcast.nowcast_worker
+    :members:
