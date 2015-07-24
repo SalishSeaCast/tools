@@ -24,7 +24,7 @@ The :py:mod:`salishsea_tools.nowcast` package is a collection of Python modules 
 The runs use as-recent-as-available
 (typically previous day)
 forcing data for the western boundary sea surface height and the Fraser River flow,
-and atmospheric forcing from the four-times daily produced forecast results from the Environment Canada GEM 2.5km resolution model.
+and atmospheric forcing from the four-times-daily produced forecast results from the Environment Canada High Resolution Deterministic Prediction System (HRDPS) operational GEM 2.5km resolution model.
 
 The runs are automated using an asynchronous,
 message-based architecture that:
@@ -38,7 +38,7 @@ message-based architecture that:
 * publishes the plots and the processing log to the web
 
 The automation architecture is presently under development.
-It consists of a long-running manager process and a collection of worker processes which are launched by the manager or cron to perform specific tasks.
+It consists of a long-running manager process and a collection of worker processes which are launched by the manager or by cron to perform specific tasks.
 
 
 Contents:
@@ -46,6 +46,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   framework
    workers
    config
    dev_deploy
