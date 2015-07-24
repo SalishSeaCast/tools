@@ -17,8 +17,8 @@
 Download the GRIB2 files from today's 00, 06, 12, or 18 EC GEM 2.5km
 HDRPS operational model forecast.
 """
-import os
 import logging
+import os
 
 import arrow
 
