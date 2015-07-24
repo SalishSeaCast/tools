@@ -225,6 +225,9 @@ named :py:data:`parsed_args` by convention.
 It is an :py:obj:`argparse.Namespace` object that has the worker's command-line argument names and values as attributes.
 Even if your :py:func:`success` function does not use :py:data:`parsed_args` it must still be included in the function definition.
 
+.. TODO::
+    Add a link to the Python docs for argparse.Namespace
+
 The :py:func:`success` function should send a message via :py:meth:`logger.info` to the logging system that describes the worker's success.
 
 The :py:func:`success` function must return a string that is a key registered for the worker in the :kbd:`msg_types` section of the :ref:`NowcastConfigFile`.
@@ -341,4 +344,26 @@ The best way to learn now to write a new worker is by studying the code in the e
 Extending the Command-line Parser
 ---------------------------------
 
-**TODO**
+If you need to add a command-line argument to a worker you can do so by calling the :py:meth:`worker.arg_parser.add_argument` method.
+Here is an example from the :py:mod:`get_NeahBay_ssh` worker:
+
+.. code-block:: python
+
+    def main():
+        worker = NowcastWorker(worker_name, description=__doc__)
+        worker.arg_parser.add_argument(
+            'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
+            help='Type of run to execute.'
+        )
+        worker.run(get_NeahBay_ssh, success, failure)
+
+The :py:meth:`worker.arg_parser.add_argument` method takes the same arguments as the Python standard library :py:meth:`argparse.ArgumentParser.add_argument` method.
+
+.. TODO::
+    Add a link to the Python docs for argparse.ArgumentParser.add_argument
+
+.. note::
+    When the :py:class:`~SalishSeaTools.salishsea_tools.nowcast.nowcast_worker.NowcastWorker` object is set up its base command-line parser is created as :py:attr:`worker.arg_parser`.
+    That parser provides help messages,
+    and handles the :py:option:`config_file` argument,
+    and the :py:option:`--debug` option.
