@@ -42,7 +42,7 @@ Contents:
 
    SalishSeaCmd/salishsea-cmd
    SalishSeaTools/salishsea-tools
-   SalishSeaNowcast/nowcast
+   SalishSeaNowcast/index
    SOGTools/index
    netcdf4/index
    bathymetry/index
