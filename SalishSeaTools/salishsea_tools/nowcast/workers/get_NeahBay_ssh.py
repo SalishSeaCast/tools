@@ -62,7 +62,7 @@ def main():
 
 def success(parsed_args):
     logger.info(
-        'Neah Bay  sea surface height web scraping and open boundary file '
+        'Neah Bay sea surface height web scraping and open boundary file '
         'creation for {.run_type} complete'
         .format(parsed_args))
     msg_type = '{} {}'.format('success', parsed_args.run_type)
@@ -71,7 +71,7 @@ def success(parsed_args):
 
 def failure(parsed_args):
     logger.error(
-        'Neah Bay  sea surface height web scraping and open boundary file '
+        'Neah Bay sea surface height web scraping and open boundary file '
         'creation for {.run_type} failed'
         .format(parsed_args))
     msg_type = '{} {}'.format('failure', parsed_args.run_type)
