@@ -31,11 +31,12 @@ import numpy as np
 import pandas as pd
 
 from salishsea_tools import nc_tools
-from salishsea_tools.nowcast import (
+
+from .. import (
     figures,
     lib,
 )
-from salishsea_tools.nowcast.nowcast_worker import NowcastWorker
+from ..nowcast_worker import NowcastWorker
 
 
 worker_name = lib.get_module_name()
@@ -78,7 +79,7 @@ def failure(parsed_args):
     return msg_type
 
 
-def get_NeahBay_ssh(run_type, config):
+def get_NeahBay_ssh(parsed_args, config):
     """Generate sea surface height forcing files from the Neah Bay
     storm surge website.
     """
@@ -91,14 +92,15 @@ def get_NeahBay_ssh(run_type, config):
     # store the file in the run results directory,
     # and load the data for processing into netCDF4 files
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
-    textfile = read_website(config['ssh']['ssh_dir'])
+    textfile = _read_website(config['ssh']['ssh_dir'])
     lib.fix_perms(textfile, grp_name=config['file group'])
-    data = load_surge_data(textfile)
+    data = _load_surge_data(textfile)
     checklist = {'txt': os.path.basename(textfile)}
     # Store a copy of the text file in the run results directory so that
     # there is definitive record of the sea surface height data that was
     # used for the run
-    run_date = utc_now_to_run_date(utc_now, run_type)
+    run_type = parsed_args.run_type
+    run_date = _utc_now_to_run_date(utc_now, run_type)
     results_dir = os.path.join(
         config['run']['results archive'][run_type],
         run_date.strftime('%d%b%y').lower())
@@ -114,19 +116,19 @@ def get_NeahBay_ssh(run_type, config):
     if utc_now.month == 12:
         isDec = True
     for i in range(dates.shape[0]):
-        dates[i] = to_datetime(dates[i], utc_now.year, isDec, isJan)
-    dates_list = list_full_days(dates)
+        dates[i] = _to_datetime(dates[i], utc_now.year, isDec, isJan)
+    dates_list = _list_full_days(dates)
     # Set up plotting
-    fig, ax = setup_plotting()
+    fig, ax = _setup_plotting()
     # Loop through full days and save netcdf
     ip = 0
     for d in dates_list:
-        surges, tc, forecast_flag = retrieve_surge(d, dates, data)
+        surges, tc, forecast_flag = _retrieve_surge(d, dates, data)
         # Plotting
         if ip < 3:
             ax.plot(surges, '-o', lw=2, label=d.strftime('%d-%b-%Y'))
         ip = ip + 1
-        filepath = save_netcdf(
+        filepath = _save_netcdf(
             d, tc, surges, forecast_flag, textfile,
             config['ssh']['ssh_dir'], lats, lons)
         filename = os.path.basename(filepath)
@@ -146,7 +148,7 @@ def get_NeahBay_ssh(run_type, config):
     return checklist
 
 
-def read_website(save_path):
+def _read_website(save_path):
     """Read a website with Neah Bay storm surge predictions/observations.
 
     The data is stored in a file in save_path.
@@ -177,7 +179,7 @@ def read_website(save_path):
     return filepath
 
 
-def load_surge_data(filename):
+def _load_surge_data(filename):
     """Load the storm surge observations & predictions table from filename
     and return is as a Pandas DataFrame.
     """
@@ -189,7 +191,7 @@ def load_surge_data(filename):
     return data
 
 
-def utc_now_to_run_date(utc_now, run_type):
+def _utc_now_to_run_date(utc_now, run_type):
     """Calculate the run_date used for results directory naming from the
     present UTC time and run_type.
 
@@ -204,7 +206,7 @@ def utc_now_to_run_date(utc_now, run_type):
     return (utc_now - datetime.timedelta(hours=offsets[run_type])).date()
 
 
-def save_netcdf(
+def _save_netcdf(
     day, tc, surges, forecast_flag, textfile, save_path, lats, lons,
 ):
     """Save the surge for a given day in a netCDF4 file.
@@ -307,7 +309,7 @@ def save_netcdf(
     return filepath
 
 
-def retrieve_surge(day, dates, data):
+def _retrieve_surge(day, dates, data):
     """Gather the surge information for a single day.
 
     Return the surges in metres, an array with time_counter,
@@ -317,7 +319,7 @@ def retrieve_surge(day, dates, data):
     forecast_flag = False
     surge = []
     # Grab list of times on this day
-    tc, ds = isolate_day(day, dates)
+    tc, ds = _isolate_day(day, dates)
     for d in ds:
         # Convert datetime to string for comparing with times in data
         daystr = d.strftime('%m/%d %HZ')
@@ -334,14 +336,14 @@ def retrieve_surge(day, dates, data):
                     # No values yet, so initialize with zero
                     surge = [0]
             else:
-                surge.append(feet_to_metres(fcst - tide))
+                surge.append(_feet_to_metres(fcst - tide))
                 forecast_flag = True
         else:
-            surge.append(feet_to_metres(obs - tide))
+            surge.append(_feet_to_metres(obs - tide))
     return surge, tc, forecast_flag
 
 
-def isolate_day(day, dates):
+def _isolate_day(day, dates):
     """Return array of time_counter and datetime objects over a 24 hour
     period covering one full day.
     """
@@ -354,11 +356,11 @@ def isolate_day(day, dates):
     return tc, np.array(dates_return)
 
 
-def list_full_days(dates):
+def _list_full_days(dates):
     """Return a list of days that have a full 24 hour data set.
     """
     # Check if first day is a full day
-    tc, ds = isolate_day(dates[0], dates)
+    tc, ds = _isolate_day(dates[0], dates)
     if ds.shape[0] == tc.shape[0]:
         start = dates[0]
     else:
@@ -366,7 +368,7 @@ def list_full_days(dates):
     start = datetime.datetime(
         start.year, start.month, start.day, tzinfo=pytz.timezone('UTC'))
     # Check if last day is a full day
-    tc, ds = isolate_day(dates[-1], dates)
+    tc, ds = _isolate_day(dates[-1], dates)
     if ds.shape[0] == tc.shape[0]:
         end = dates[-1]
     else:
@@ -379,7 +381,7 @@ def list_full_days(dates):
     return dates_list
 
 
-def to_datetime(datestr, year, isDec, isJan):
+def _to_datetime(datestr, year, isDec, isJan):
     """Convert the string given by datestr to a datetime object.
 
     The year is an argument because the datestr in the NOAA data doesn't
@@ -400,12 +402,12 @@ def to_datetime(datestr, year, isDec, isJan):
     return dt
 
 
-def feet_to_metres(feet):
+def _feet_to_metres(feet):
     metres = feet*0.3048
     return metres
 
 
-def setup_plotting():
+def _setup_plotting():
     fig = matplotlib.figure.Figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_title('Neah Bay SSH')
