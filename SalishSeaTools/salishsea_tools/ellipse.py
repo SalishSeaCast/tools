@@ -22,6 +22,7 @@ import numpy as np
 import csv
 from dateutil import tz
 import angles
+from scipy.optimize import curve_fit
 
 import netCDF4 as nc
 from salishsea_tools import (viz_tools, tidetools)
@@ -154,7 +155,7 @@ def fittit(uaus, time):
         # from its time series
         for dep in np.arange(0, len(uaus[1])):
             if uaus[:, dep].any() != 0:
-                fitted, cov = tidetools.curve_fit(
+                fitted, cov = curve_fit(
                     tidetools.double,
                     time[:],
                     uaus[:, dep])
@@ -182,7 +183,7 @@ def fittit(uaus, time):
         for i in np.arange(0, uaus.shape[1]):
             for j in np.arange(0, uaus.shape[2]):
                 if uaus[:, i, j].any() != 0.:
-                    fitted, cov = tidetools.curve_fit(
+                    fitted, cov = curve_fit(
                         tidetools.double,
                         time[:],
                         uaus[:, i, j])
@@ -209,7 +210,7 @@ def fittit(uaus, time):
             for i in np.arange(0, uaus.shape[2]):
                 for j in np.arange(0, uaus.shape[3]):
                     if uaus[:, dep, i, j].any() != 0.:
-                        fitted, cov = tidetools.curve_fit(
+                        fitted, cov = curve_fit(
                             tidetools.double,
                             time[:],
                             uaus[:, dep, i, j])
@@ -232,7 +233,7 @@ def fittit(uaus, time):
         K1pha = 0
 
         if uaus[:].any() != 0.:
-            fitted, cov = tidetools.curve_fit(
+            fitted, cov = curve_fit(
                 tidetools.double,
                 time[:],
                 uaus[:])
