@@ -15,8 +15,9 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_site_page worker.
 """
-import arrow
 from mock import patch
+
+import arrow
 import pytest
 
 
@@ -77,7 +78,7 @@ class TestMakeSitePage(object):
             'forecast2 publish': 'publish_08feb15.rst'}
         make_site_page_module.make_site_page(
             'forecast2', 'publish', arrow.get(2015, 2, 8), config)
-        assert m_render_rst.call_args[0][2] == arrow.get(2015, 2, 7)
+        assert m_render_rst.call_args[0][2] == arrow.get(2015, 2, 8)
 
     @patch.object(make_site_page_module().mako.template, 'Template')
     @patch.object(make_site_page_module(), 'render_index_rst')
@@ -138,7 +139,14 @@ class TestRenderIndexRst(object):
         self, m_exclude_missing_dates, m_tmpl_to_rst, m_tmpl,
         make_site_page_module,
     ):
-        config = {'web': {'templates_path': 'bar'}}
+        config = {
+            'web': {
+                'templates_path': 'bar',
+                'salinity_comparison': {
+                    'web_path': 'eoas.ubc.ca/~jieliu/MEOPAR/nowcast',
+                    'filesystem_path': '/home/jie/public_html/MEOPAR/nowcast',
+                    'fileroot': 'SaliCom',
+                }}}
         make_site_page_module.render_index_rst(
             'publish', 'nowcast', arrow.get(2015, 2, 8), 'rst_path', config)
         expected = arrow.get(2015, 2, 9)
@@ -151,7 +159,14 @@ class TestRenderIndexRst(object):
         self, m_exclude_missing_dates, m_tmpl_to_rst, m_tmpl,
         make_site_page_module,
     ):
-        config = {'web': {'templates_path': 'bar'}}
+        config = {
+            'web': {
+                'templates_path': 'bar',
+                'salinity_comparison': {
+                    'web_path': 'eoas.ubc.ca/~jieliu/MEOPAR/nowcast',
+                    'filesystem_path': '/home/jie/public_html/MEOPAR/nowcast',
+                    'fileroot': 'SaliCom',
+                }}}
         make_site_page_module.render_index_rst(
             'publish', 'forecast2', arrow.get(2015, 2, 8), 'rst_path', config)
         expected = arrow.get(2015, 2, 10)
