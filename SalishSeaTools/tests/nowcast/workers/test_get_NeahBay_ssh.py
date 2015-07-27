@@ -72,25 +72,25 @@ def test_failure(worker_module):
 
 
 class TestUTCNowToRunDate(object):
-    """Unit tests for utc_now_to_run_date() function.
+    """Unit tests for _utc_now_to_run_date() function.
     """
     def test_nowcast(self, worker_module):
         utc_now = datetime.datetime(
             2014, 12, 25, 17, 52, 42, tzinfo=pytz.timezone('UTC'))
-        run_day = worker_module.utc_now_to_run_date(
+        run_day = worker_module._utc_now_to_run_date(
             utc_now, 'nowcast')
         assert run_day == datetime.date(2014, 12, 25)
 
     def test_forecast(self, worker_module):
         utc_now = datetime.datetime(
             2014, 12, 25, 19, 54, 42, tzinfo=pytz.timezone('UTC'))
-        run_day = worker_module.utc_now_to_run_date(
+        run_day = worker_module._utc_now_to_run_date(
             utc_now, 'forecast')
         assert run_day == datetime.date(2014, 12, 25)
 
     def test_forecast2(self, worker_module):
         utc_now = datetime.datetime(
             2014, 12, 26, 12, 53, 42, tzinfo=pytz.timezone('UTC'))
-        run_day = worker_module.utc_now_to_run_date(
+        run_day = worker_module._utc_now_to_run_date(
             utc_now, 'forecast2')
         assert run_day == datetime.date(2014, 12, 25)
