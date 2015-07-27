@@ -26,6 +26,12 @@ import zmq
 
 
 @pytest.fixture
+def worker_module():
+    from salishsea_tools.nowcast import nowcast_worker
+    return nowcast_worker
+
+
+@pytest.fixture
 def worker_class():
     from salishsea_tools.nowcast.nowcast_worker import NowcastWorker
     return NowcastWorker
@@ -55,7 +61,7 @@ class TestNowcastWorkerConstructor(object):
         assert isinstance(worker.arg_parser, argparse.ArgumentParser)
 
 
-@patch('salishsea_tools.nowcast.nowcast_worker.argparse.ArgumentParser')
+@patch.object(worker_module().argparse, 'ArgumentParser')
 def test_add_argument(m_arg_parser, worker):
     """add_argument() wraps argparse.ArgumentParser.add_argument()
     """
@@ -76,12 +82,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker.worker_func == m_worker_func
 
@@ -89,12 +96,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker.success == m_success
 
@@ -102,12 +110,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker.failure == m_failure
 
@@ -115,12 +124,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert isinstance(worker.parsed_args, argparse.Namespace)
 
@@ -128,12 +138,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config as m_load_config, p_init_zmq:
+        with p_load_config as m_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker.config == m_load_config()
 
@@ -141,12 +152,11 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_config_logging = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.configure_logging')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
         worker._do_work = Mock(name='_do_work')
         with p_load_config, p_config_logging as m_config_logging, p_init_zmq:
             worker.run(m_worker_func, m_success, m_failure)
@@ -157,14 +167,15 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         m_logger_debug = Mock(name='logger.debug')
         worker.logger.debug = m_logger_debug
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert m_logger_debug.call_count == 2
 
@@ -172,15 +183,17 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_inst_sig_handlers = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.install_signal_handlers')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_inst_sig_handlers = patch.object(
+            worker_module().lib, 'install_signal_handlers')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_inst_sig_handlers as m_inst_sig_handlers, p_init_zmq:
-            worker.run(m_worker_func, m_success, m_failure)
+        with p_load_config, p_inst_sig_handlers as m_inst_sig_handlers:
+            with p_init_zmq, p_config_logging:
+                worker.run(m_worker_func, m_success, m_failure)
         m_inst_sig_handlers.assert_called_once_with(
             worker.logger, worker.context)
 
@@ -188,12 +201,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq as m_init_zmq:
+        with p_load_config, p_init_zmq as m_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker.socket == m_init_zmq()
 
@@ -201,12 +215,13 @@ class TestNowcastWorkerRun(object):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
-        p_load_config = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.load_config')
-        p_init_zmq = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.init_zmq_req_rep_worker')
+        p_load_config = patch.object(worker_module().lib, 'load_config')
+        p_init_zmq = patch.object(
+            worker_module().lib, 'init_zmq_req_rep_worker')
+        p_config_logging = patch.object(
+            worker_module().lib, 'configure_logging')
         worker._do_work = Mock(name='_do_work')
-        with p_load_config, p_init_zmq:
+        with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
         assert worker._do_work.call_count == 1
 
@@ -219,7 +234,7 @@ class TestNowcastWorkerDoWork(object):
         worker.config = m_config = Mock(name='config')
         worker.socket = Mock(name='socket')
         worker.worker_func = Mock(name='worker_func')
-        with patch('salishsea_tools.nowcast.nowcast_worker.lib.tell_manager'):
+        with patch.object(worker_module().lib, 'tell_manager'):
             worker._do_work()
         worker.worker_func.assert_called_once_with(m_parsed_args, m_config)
 
@@ -230,7 +245,7 @@ class TestNowcastWorkerDoWork(object):
         worker.socket = Mock(name='socket')
         worker.worker_func = Mock(name='worker_func')
         worker.success = Mock(name='success')
-        with patch('salishsea_tools.nowcast.nowcast_worker.lib.tell_manager'):
+        with patch.object(worker_module().lib, 'tell_manager'):
             worker._do_work()
         worker.success.assert_called_once_with(m_parsed_args)
 
@@ -241,8 +256,7 @@ class TestNowcastWorkerDoWork(object):
         worker.socket = m_socket = Mock(name='socket')
         worker.worker_func = Mock(name='worker_func', return_value='checklist')
         worker.success = Mock(name='success', return_value='success')
-        p_tell_mgr = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.tell_manager')
+        p_tell_mgr = patch.object(worker_module().lib, 'tell_manager')
         with p_tell_mgr as m_tell_mgr:
             worker._do_work()
         m_tell_mgr.assert_called_once_with(
@@ -257,7 +271,7 @@ class TestNowcastWorkerDoWork(object):
         worker.worker_func = Mock(
             name='worker_func', side_effect=lib.WorkerError)
         worker.failure = Mock(name='failure')
-        with patch('salishsea_tools.nowcast.nowcast_worker.lib.tell_manager'):
+        with patch.object(worker_module().lib, 'tell_manager'):
             worker._do_work()
         worker.failure.assert_called_once_with(m_parsed_args)
 
@@ -270,8 +284,7 @@ class TestNowcastWorkerDoWork(object):
         worker.worker_func = Mock(
             name='worker_func', side_effect=lib.WorkerError)
         worker.failure = Mock(name='failure', return_value='failure')
-        p_tell_mgr = patch(
-            'salishsea_tools.nowcast.nowcast_worker.lib.tell_manager')
+        p_tell_mgr = patch.object(worker_module().lib, 'tell_manager')
         with p_tell_mgr as m_tell_mgr:
             worker._do_work()
         m_tell_mgr.assert_called_once_with(
