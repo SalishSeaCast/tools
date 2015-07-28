@@ -59,7 +59,6 @@ FILENAME_TMPL = 'ops_{:y%Ym%md%d}.nc'
 
 def main():
     worker = NowcastWorker(worker_name, description=__doc__)
-    salishsea_today = arrow.now('Canada/Pacific').floor('day')
     worker.arg_parser.add_argument(
         'run_type', choices=set(('nowcast+', 'forecast2')),
         help='''
@@ -68,6 +67,7 @@ def main():
         'forecast2' means 2nd forecast run.
         ''',
     )
+    salishsea_today = arrow.now('Canada/Pacific').floor('day')
     worker.arg_parser.add_argument(
         '--run-date', type=lib.arrow_date,
         default=salishsea_today,
