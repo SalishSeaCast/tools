@@ -17,10 +17,8 @@
 Upload the forcing files for a nowcast or forecast run to the HPC/cloud
 facility where the run will be executed.
 """
-import argparse
 import logging
 import os
-import traceback
 
 import arrow
 
