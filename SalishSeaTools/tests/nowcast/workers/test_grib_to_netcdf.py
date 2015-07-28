@@ -73,13 +73,31 @@ class TestMain:
         )
 
 
-def test_success(worker_module):
-    parsed_args = Mock(run_type='nowcast+')
-    msg_typ = worker_module.success(parsed_args)
-    assert msg_typ == 'success nowcast+'
+class TestSuccess:
+    """Unit tests for success() function.
+    """
+    def test_success_log_info(self, worker_module):
+        parsed_args = Mock(run_type='nowcast+')
+        with patch.object(worker_module.logger, 'info') as m_logger:
+            worker_module.success(parsed_args)
+        assert m_logger.called
+
+    def test_success_msg_type(self, worker_module):
+        parsed_args = Mock(run_type='forecast2')
+        msg_type = worker_module.success(parsed_args)
+        assert msg_type == 'success forecast2'
 
 
-def test_failure(worker_module):
-    parsed_args = Mock(run_type='forecast2')
-    msg_typ = worker_module.failure(parsed_args)
-    assert msg_typ == 'failure forecast2'
+class TestFailure:
+    """Unit tests for failure() function.
+    """
+    def test_failure_log_error(self, worker_module):
+        parsed_args = Mock(run_type='nowcast+')
+        with patch.object(worker_module.logger, 'error') as m_logger:
+            worker_module.failure(parsed_args)
+        assert m_logger.called
+
+    def test_failure_msg_type(self, worker_module):
+        parsed_args = Mock(run_type='forecast2')
+        msg_type = worker_module.failure(parsed_args)
+        assert msg_type == 'failure forecast2'
