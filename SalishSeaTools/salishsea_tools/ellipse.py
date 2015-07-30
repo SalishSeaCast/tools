@@ -112,10 +112,10 @@ def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
     """
     return(
         mean +
-        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
-        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
-        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
-        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180))
+        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
+        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
+        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
+        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180))
 
 
 def sextuple(
@@ -138,12 +138,12 @@ def sextuple(
     """
     return(
         mean +
-        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
-        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
-        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
-        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180) +
-        N2amp * np.cos(CorrTides['N2']['freq'] * x - N2pha * np.pi / 180) +
-        P1amp * np.cos(CorrTides['P1']['freq'] * x - P1pha * np.pi / 180))
+        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
+        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
+        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
+        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180) +
+        N2amp * np.cos((CorrTides['N2']['freq'] * x - N2pha) * np.pi / 180) +
+        P1amp * np.cos((CorrTides['P1']['freq'] * x - P1pha) * np.pi / 180))
 
 
 def octuple(
@@ -167,14 +167,14 @@ def octuple(
     """
     return(
         mean +
-        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
-        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
-        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
-        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180) +
-        N2amp * np.cos(CorrTides['N2']['freq'] * x - N2pha * np.pi / 180) +
-        P1amp * np.cos(CorrTides['P1']['freq'] * x - P1pha * np.pi / 180) +
-        K2amp * np.cos(CorrTides['K2']['freq'] * x - K2pha * np.pi / 180) +
-        Q1amp * np.cos(CorrTides['Q1']['freq'] * x - Q1pha * np.pi / 180))
+        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
+        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
+        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
+        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180) +
+        N2amp * np.cos((CorrTides['N2']['freq'] * x - N2pha) * np.pi / 180) +
+        P1amp * np.cos((CorrTides['P1']['freq'] * x - P1pha) * np.pi / 180) +
+        K2amp * np.cos((CorrTides['K2']['freq'] * x - K2pha) * np.pi / 180) +
+        Q1amp * np.cos((CorrTides['Q1']['freq'] * x - Q1pha) * np.pi / 180))
 
 
 def convention_pha_amp(fitted_amp, fitted_pha):
