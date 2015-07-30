@@ -23,6 +23,7 @@ import csv
 from dateutil import tz
 import angles
 from scipy.optimize import curve_fit
+import collections
 
 import netCDF4 as nc
 from salishsea_tools import (viz_tools, tidetools)
@@ -94,6 +95,88 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
         K1amp * np.cos(tidetools.K1FREQ * x - K1pha * np.pi / 180))
 
 
+def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
+    """Function for the fit, assuming only 4 constituents of importance are:
+        M2, K2, S1 and O1.
+
+    :arg x: Independant variable, time.
+    :type x:
+
+    :arg *amp: Tidal amplitude of the a constituent
+    :type *amp: float
+
+    :arg *pha: Phase lag of a constituent
+    :type *pha: float
+
+    :returns: function for fitting 4 frequencies
+    """
+    return(
+        mean +
+        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
+        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
+        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
+        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180))
+
+
+def sextuple(
+        x, M2amp, M2pha, K1amp, K1pha,
+        S2amp, S2pha, O1amp, O1pha,
+        N2amp, N2pha, P1amp, P1pha, mean):
+    """Function for the fit, assuming 6 constituents of importance are:
+        M2, K2, S1, O1, N2 and P1.
+
+    :arg x: Independant variable, time.
+    :type x:
+
+    :arg *amp: Tidal amplitude of the a constituent
+    :type *amp: float
+
+    :arg *pha: Phase lag of a constituent
+    :type *pha: float
+
+    :returns: function for fitting 6 frequencies
+    """
+    return(
+        mean +
+        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
+        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
+        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
+        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180) +
+        N2amp * np.cos(CorrTides['N2']['freq'] * x - N2pha * np.pi / 180) +
+        P1amp * np.cos(CorrTides['P1']['freq'] * x - P1pha * np.pi / 180))
+
+
+def octuple(
+        x, M2amp, M2pha, K1amp, K1pha,
+        S2amp, S2pha, O1amp, O1pha,
+        N2amp, N2pha, P1amp, P1pha,
+        K2amp, K2pha, Q1amp, Q1pha, mean):
+    """Function for the fit, for all the constituents: M2, K2, S1, O1, N2, P1,
+        K2 and Q1.
+
+    :arg x: Independant variable, time.
+    :type x:
+
+    :arg *amp: Tidal amplitude of the a constituent
+    :type *amp: float
+
+    :arg *pha: Phase lag of a constituent
+    :type *pha: float
+
+    :returns: function for fitting 8 frequencies
+    """
+    return(
+        mean +
+        M2amp * np.cos(CorrTides['M2']['freq'] * x - M2pha * np.pi / 180) +
+        K1amp * np.cos(CorrTides['K1']['freq'] * x - K1pha * np.pi / 180) +
+        S2amp * np.cos(CorrTides['S2']['freq'] * x - S2pha * np.pi / 180) +
+        O1amp * np.cos(CorrTides['O1']['freq'] * x - O1pha * np.pi / 180) +
+        N2amp * np.cos(CorrTides['N2']['freq'] * x - N2pha * np.pi / 180) +
+        P1amp * np.cos(CorrTides['P1']['freq'] * x - P1pha * np.pi / 180) +
+        K2amp * np.cos(CorrTides['K2']['freq'] * x - K2pha * np.pi / 180) +
+        Q1amp * np.cos(CorrTides['Q1']['freq'] * x - Q1pha * np.pi / 180))
+
+
 def convention_pha_amp(fitted_amp, fitted_pha):
     """ This function takes the fitted parameters given for phase and
          amplitude of the tidal ellipse and returns them following the
@@ -118,7 +201,7 @@ def convention_pha_amp(fitted_amp, fitted_pha):
     return fitted_amp, fitted_pha
 
 
-def fittit(uaus, time):
+def fittit(uaus, time, nconst):
     """Function to find tidal components from a tidal current component
         over the whole area given. Can be done over depth, or an area.
         Time must be in axis one, depth in axis two if applicable then the
@@ -136,118 +219,129 @@ def fittit(uaus, time):
     :arg time: Time over which the velocitie were being taken in seconds.
     :type time: :py:class:'np.ndarray'
 
-    :returns M2amp, M2pha, K1amp, K1pha:
-        The amplitude and phase lag of each tidal component (M2 and K1)
-        of a single tidal velocity vector.
+    :arg nconst: The amount of tidal constituents used for the analysis. They
+        added in pairs and by order of importantce, M2, K1, S2, O1, N2, P1, K2,
+        Q1.
+    :type nconst: int
 
+    :returns: a dictionary object containing a phase an amplitude for each
+        harmonic constituent, for each orthogonal velocity
     """
-    # Case 1: a time series of velocities with depth at a single location.
+    # Setting up the dictionary space for the ap-parameters to be stored
+    apparam = collections.OrderedDict()
+
+    # The function with which we do the fit is based on the amount of
+    # constituents
+    fitfunction = double
+
+    # The first two harmonic parameters are always M2 and K1
+    apparam['M2'] = {'amp': [], 'phase': []}
+    apparam['K1'] = {'amp': [], 'phase': []}
+
+    if nconst > 2:
+        fitfunction = quadruple
+        apparam['S2'] = {'amp': [], 'phase': []}
+        apparam['O1'] = {'amp': [], 'phase': []}
+
+    if nconst > 4:
+        fitfunction = sextuple
+        apparam['N2'] = {'amp': [], 'phase': []}
+        apparam['P1'] = {'amp': [], 'phase': []}
+
+    if nconst > 6:
+        fitfunction = octuple
+        apparam['K2'] = {'amp': [], 'phase': []}
+        apparam['Q1'] = {'amp': [], 'phase': []}
+
+    # CASE 1: a time series of velocities with depth at a single location.
     if uaus.ndim == 2:
         # The parameters are the same shape as the velocities without the time
         # dimension.
         thesize = uaus.shape[1]
-        M2amp = np.zeros(thesize)
-        M2pha = np.zeros(thesize)
-        K1amp = np.zeros(thesize)
-        K1pha = np.zeros(thesize)
+        # creating the right shape of space for each amplitude and phase for
+        # every constituent.
+        for const, ap in apparam.iteritems():
+            for key2 in ap:
+                ap[key2] = np.zeros(thesize)
 
         # Calculates the parameters for one depth and one location at a time
         # from its time series
         for dep in np.arange(0, len(uaus[1])):
             if uaus[:, dep].any() != 0:
-                fitted, cov = curve_fit(
-                    tidetools.double,
-                    time[:],
-                    uaus[:, dep])
+
+                # performs fit of velocity over time using function that is
+                # chosen by the amount of constituents
+                fitted, cov = curve_fit(fitfunction, time[:], uaus[:, dep])
+
                 # Rotating to have a positive amplitude and a phase between
                 # [-180, 180]
-                fitted[0], fitted[1] = tidetools.convention_pha_amp(
-                    fitted[0],
-                    fitted[1])
-                fitted[2], fitted[3] = tidetools.convention_pha_amp(
-                    fitted[2],
-                    fitted[3])
-                M2amp[dep] = fitted[0]
-                M2pha[dep] = fitted[1]
-                K1amp[dep] = fitted[2]
-                K1pha[dep] = fitted[3]
+                for k in np.arange(nconst):
+                    fitted[2*k], fitted[2*k+1] = convention_pha_amp(
+                        fitted[2*k], fitted[2*k+1])
+                # Putting the amplitude and phase of each constituent of this
+                # particlar depth in the right location within the dictionary.
+                for const, k in zip(apparam, np.arange(0, nconst)):
+                    apparam[const]['amp'][dep] = fitted[2*k]
+                    apparam[const]['phase'][dep] = fitted[2*k+1]
 
-    # Case 2 : a time series of an area of velocities at a single depth
+    # CASE 2 : a time series of an area of velocities at a single depth
     elif uaus.ndim == 3:
         thesize = (uaus.shape[1], uaus.shape[2])
-        M2amp = np.zeros(thesize)
-        M2pha = np.zeros(thesize)
-        K1amp = np.zeros(thesize)
-        K1pha = np.zeros(thesize)
+        for const, ap in apparam.iteritems():
+            for key2 in ap:
+                ap[key2] = np.zeros(thesize)
 
         for i in np.arange(0, uaus.shape[1]):
             for j in np.arange(0, uaus.shape[2]):
                 if uaus[:, i, j].any() != 0.:
                     fitted, cov = curve_fit(
-                        tidetools.double,
-                        time[:],
-                        uaus[:, i, j])
-                    fitted[0], fitted[1] = tidetools.convention_pha_amp(
-                        fitted[0],
-                        fitted[1])
-                    fitted[2], fitted[3] = tidetools.convention_pha_amp(
-                        fitted[2],
-                        fitted[3])
-                    M2amp[i, j] = fitted[0]
-                    M2pha[i, j] = fitted[1]
-                    K1amp[i, j] = fitted[2]
-                    K1pha[i, j] = fitted[3]
+                        fitfunction, time[:], uaus[:, i, j])
+                    for k in np.arange(nconst):
+                        fitted[2*k], fitted[2*k+1] = convention_pha_amp(
+                            fitted[2*k], fitted[2*k+1])
 
-    # Case 3: a time series of an area of velocities with depth
+                for const, k in zip(apparam, np.arange(0, nconst)):
+                    apparam[const]['amp'][i, j] = fitted[2*k]
+                    apparam[const]['phase'][i, j] = fitted[2*k+1]
+
+    # CASE 3: a time series of an area of velocities with depth
     elif uaus.ndim == 4:
         thesize = (uaus.shape[1], uaus.shape[2], uaus.shape[3])
-        M2amp = np.zeros(thesize)
-        M2pha = np.zeros(thesize)
-        K1amp = np.zeros(thesize)
-        K1pha = np.zeros(thesize)
+        for const, ap in apparam.iteritems():
+            for key2 in ap:
+                ap[key2] = np.zeros(thesize)
 
         for dep in np.arange(0, uaus.shape[1]):
             for i in np.arange(0, uaus.shape[2]):
                 for j in np.arange(0, uaus.shape[3]):
                     if uaus[:, dep, i, j].any() != 0.:
                         fitted, cov = curve_fit(
-                            tidetools.double,
-                            time[:],
-                            uaus[:, dep, i, j])
-                        fitted[0], fitted[1] = tidetools.convention_pha_amp(
-                            fitted[0],
-                            fitted[1])
-                        fitted[2], fitted[3] = tidetools.convention_pha_amp(
-                            fitted[2],
-                            fitted[3])
-                        M2amp[dep, i, j] = fitted[0]
-                        M2pha[dep, i, j] = fitted[1]
-                        K1amp[dep, i, j] = fitted[2]
-                        K1pha[dep, i, j] = fitted[3]
+                            fitfunction, time[:], uaus[:, dep, i, j])
+
+                        for k in np.arange(nconst):
+                            fitted[2*k], fitted[2*k+1] = convention_pha_amp(
+                                fitted[2*k], fitted[2*k+1])
+
+                        for const, k in zip(apparam, np.arange(0, nconst)):
+                            apparam[const]['amp'][dep, i, j] = fitted[2*k]
+                            apparam[const]['phase'][dep, i, j] = fitted[2*k+1]
 
     # Case 4: a time series of a single location with a single depth.
     else:
-        M2amp = 0
-        M2pha = 0
-        K1amp = 0
-        K1pha = 0
+        thesize = (0)
+        for const, ap in apparam.iteritems():
+            for key2 in ap:
+                ap[key2] = np.zeros(thesize)
 
         if uaus[:].any() != 0.:
-            fitted, cov = curve_fit(
-                tidetools.double,
-                time[:],
-                uaus[:])
-            fitted[0], fitted[1] = tidetools.convention_pha_amp(
-                fitted[0],
-                fitted[1])
-            fitted[2], fitted[3] = tidetools.convention_pha_amp(
-                fitted[2],
-                fitted[3])
-            M2amp = fitted[0]
-            M2pha = fitted[1]
-            K1amp = fitted[2]
-            K1pha = fitted[3]
-    return M2amp, M2pha, K1amp, K1pha
+            fitted, cov = curve_fit(fitfunction, time[:], uaus[:])
+            for k in np.arange(nconst):
+                fitted[2*k], fitted[2*k+1] = convention_pha_amp(
+                    fitted[2*k], fitted[2*k+1])
+            for const, k in zip(apparam, np.arange(0, nconst)):
+                apparam[const]['amp'] = fitted[2*k]
+                apparam[const]['phase'] = fitted[2*k+1]
+    return apparam
 
 
 def ellipse_params(uamp, upha, vamp, vpha):
@@ -408,7 +502,7 @@ def prepare_vel(u, v, depav=False, depth='None'):
     return u_u, v_v
 
 
-def get_params(u, v, time, tidecorr=CorrTides):
+def get_params(u, v, time, nconst, tidecorr=CorrTides):
     """Calculates tidal ellipse parameters from the u and v time series.
     Maintains the shape of the velocities enters only loosing the time
     dimensions.
@@ -424,6 +518,11 @@ def get_params(u, v, time, tidecorr=CorrTides):
     :arg time: Time over which the velocities were taken; in seconds.
     :type time: :py:class:'np.ndarray'
 
+    :arg nconst: The amount of tidal constituents used for the analysis. They
+        added in pairs and by order of importantce, M2, K1, S2, O1, N2, P1, K2,
+        Q1.
+    :type nconst: int
+
     :arg tidecorr: Tidal corrections in aplitude and phase. Default is the
         nowcast values.
     :type tidecorr: dictionary
@@ -431,50 +530,48 @@ def get_params(u, v, time, tidecorr=CorrTides):
     :returns: params a dictionary containing the tidal ellipse parameter of the
         chosen constituents
     """
-
+    params = {}
     # Running fittit to get the amplitude and phase of the velcity time series.
-    uM2amp, uM2pha, uK1amp, uK1pha = fittit(u, time)
-    vM2amp, vM2pha, vK1amp, vK1pha = fittit(v, time)
+    uapparam = fittit(u, time, nconst)
+    vapparam = fittit(v, time, nconst)
 
-    # Tide corrections from a dictionary
-    uM2pha = uM2pha + tidecorr['M2']['uvt']
-    uK1pha = uK1pha + tidecorr['K1']['uvt']
-    vM2pha = vM2pha + tidecorr['M2']['uvt']
-    vK1pha = vK1pha + tidecorr['K1']['uvt']
+    # Cycling through the constituents in the ap-parameter dict given by fittit
+    for const in uapparam:
+        # Applying tidal corrections to u and v phase parameter
+        uapparam[const]['phase'] = (
+            uapparam[const]['phase'] + tidecorr[const]['uvt'])
+        vapparam[const]['phase'] = (
+            vapparam[const]['phase'] + tidecorr[const]['uvt'])
 
-    uM2amp = uM2amp * tidecorr['M2']['ft']
-    uK1amp = uK1amp * tidecorr['K1']['ft']
-    vM2amp = vM2amp * tidecorr['M2']['ft']
-    vK1amp = vK1amp * tidecorr['K1']['ft']
+        # Applying tidal corrections to u and v aplitude parameter
+        uapparam[const]['amp'] = uapparam[const]['amp'] * tidecorr[const]['ft']
+        vapparam[const]['amp'] = vapparam[const]['amp'] * tidecorr[const]['ft']
 
-    # Converting from u/v amplitude and phase to ellipe parameters.
-    CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = tidetools.ellipse_params(
-        uM2amp, uM2pha, vM2amp, vM2pha)
+        # Converting from u/v amplitude and phase to ellipe parameters. Inputs
+        # are the amplitude and phase of both velocities, runs once for each
+        # contituent
+        CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = ellipse_params(
+            uapparam[const]['amp'],
+            uapparam[const]['phase'],
+            vapparam[const]['amp'],
+            vapparam[const]['phase'])
+        # Filling the dictionary with ep-parameters given by ellipse_param.
+        # Each constituent will be a different key.
 
-    CXk, SXk, CYk, SYk, apk, amk, epk, emk, majk, mik, thek, phak = tidetools.ellipse_params(
-        uK1amp, uK1pha, vK1amp, vK1pha)
-
-    # Saving all the useful parameters in a matrix. The shape of the parameters
-    # is based on the u and v variables but averaged over time.
-
-    params = {
-        'M2': {
+        params[const] = {
             'Semi-Major Axis': maj,
             'Semi-Minor Axis': mi,
             'Inclination': the,
-            'Phase': pha},
-        'K1': {
-            'Semi-Major Axis': majk,
-            'Semi-Minor Axis': mik,
-            'Inclination': thek,
-            'Phase': phak}}
+            'Phase': pha
+            }
 
     return params
 
 
 def get_params_nowcast(
         to, tf,
-        i, j, path,
+        i, j,
+        path, nconst,
         depthrange='None',
         depav=False, tidecorr=CorrTides):
     """ This function loads all the data between the start and the end date that
@@ -516,9 +613,7 @@ def get_params_nowcast(
          requiered if depav=True.
     :type depth: :py:class:'np.ndarray' or string
 
-    :returns: params, a numpy array containting [M2 semi-major, M2 semi-minor,
-         M2 inclication, M2 phase, K1 semi-major, K1 semi-minor, K1
-         inclication,K1 phase]
+    :returns: params, dictionary
     """
 
     u, v, time, dep = ellipse_files_nowcast(
@@ -527,6 +622,6 @@ def get_params_nowcast(
         path,
         depthrange=depthrange)
     u_u, v_v = prepare_vel(u, v, depav=depav, depth=dep)
-    params = get_params(u_u, v_v, time, tidecorr=tidecorr)
+    params = get_params(u_u, v_v, time, nconst, tidecorr=tidecorr)
 
     return params, dep
