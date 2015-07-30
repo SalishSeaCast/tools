@@ -91,8 +91,9 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
         +K1amp*np.cos(K1FREQ*x-K1pha*np.pi/180.))
     """
     return(
-        mean + M2amp * np.cos(tidetools.M2FREQ * x - M2pha * np.pi / 180.) +
-        K1amp * np.cos(tidetools.K1FREQ * x - K1pha * np.pi / 180))
+        mean +
+        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180.) +
+        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180))
 
 
 def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
