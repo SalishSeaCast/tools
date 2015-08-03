@@ -53,7 +53,7 @@ def main():
         '--run-date', type=lib.arrow_date,
         default=salishsea_today,
         help='''
-        Date of the run to make runoff file for; use YYYY-MM-DD format.
+        Date of the run to upload files for; use YYYY-MM-DD format.
         Defaults to {}.
         '''.format(salishsea_today.format('YYYY-MM-DD')),
     )

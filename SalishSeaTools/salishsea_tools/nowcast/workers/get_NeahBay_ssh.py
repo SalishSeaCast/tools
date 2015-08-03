@@ -56,7 +56,9 @@ def main():
     worker = NowcastWorker(worker_name, description=__doc__)
     worker.arg_parser.add_argument(
         'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
-        help='Type of run to execute.'
+        help="""
+        Type of run to prepare open boundary sea surface height file for.
+        """,
     )
     worker.run(get_NeahBay_ssh, success, failure)
 
