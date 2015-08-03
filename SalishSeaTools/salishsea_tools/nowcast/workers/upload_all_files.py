@@ -43,13 +43,13 @@ logger = logging.getLogger(worker_name)
 def main():
     worker = NowcastWorker(worker_name, description=__doc__)
     worker.arg_parser.add_argument(
-        'host_name', help='Name of the host to upload forcing files to')
+        'host_name', help='Name of the host to upload files to')
     salishsea_today = arrow.now('Canada/Pacific').floor('day')
     worker.arg_parser.add_argument(
         '--run-date', type=lib.arrow_date,
         default=salishsea_today,
         help='''
-        Date of the run to make runoff file for; use YYYY-MM-DD format.
+        Date of the run to upload files for; use YYYY-MM-DD format.
         Defaults to {}.
         '''.format(salishsea_today.format('YYYY-MM-DD')),
     )
