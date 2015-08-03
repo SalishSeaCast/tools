@@ -42,7 +42,7 @@ def worker(worker_class):
     return worker_class('name', 'description')
 
 
-class TestNowcastWorkerConstructor(object):
+class TestNowcastWorkerConstructor:
     """Unit tests for NowcastWorker.__init__ method.
     """
     def test_name(self, worker):
@@ -75,7 +75,7 @@ def test_add_argument(m_arg_parser, worker):
     )
 
 
-class TestNowcastWorkerRun(object):
+class TestNowcastWorkerRun:
     """Unit tests for NowcastWorker.run method.
     """
     def test_worker_func(self, worker):
@@ -226,7 +226,7 @@ class TestNowcastWorkerRun(object):
         assert worker._do_work.call_count == 1
 
 
-class TestNowcastWorkerDoWork(object):
+class TestNowcastWorkerDoWork:
     """Unit tests for NowcastWorker._do_work method.
     """
     def test_worker_func(self, worker):
