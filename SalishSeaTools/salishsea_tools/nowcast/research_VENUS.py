@@ -231,7 +231,7 @@ def compare_VENUS(station, grid_T, grid_B, figsize=(6, 10)):
     ax_sal.set_ylim([29, 32])
     ax_sal.set_ylabel('Practical Salinity [psu]', **axis_font)
     ax_sal.legend(loc=0)
-    ax_temp.set_ylim([7, 11])
+    ax_temp.set_ylim([7, 13])
     ax_temp.set_xlabel('Time [UTC]', **axis_font)
     ax_temp.set_ylabel('Temperature [deg C]', **axis_font)
     figures.axis_colors(ax_sal, 'gray')
