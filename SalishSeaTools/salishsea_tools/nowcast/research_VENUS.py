@@ -459,6 +459,289 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     return fig
 
 
+def load_vel(day, grid, source, station, deprange):
+    """Prepares the model and observational velocities for plotting by
+    unstaggering, masking and selecting the depths.
+    :arg day: The day
+    :type day: datetime object
+
+    :arg grid: quarter-hourly results of the model at the VENUS nodes or
+        half-hourly results of the VENUS ADCP values
+    :type grid: dictionary or netCDF dataset
+
+    :arg source: sets whether it is model values or observational values.
+        'model' or 'observations'
+    :type source: string
+
+    :arg station: specifies the ONC VENUS nodes locations. 'Central' or 'East'
+    :type station: string
+
+    :arg deprange: the range of depths that will be looked at in meters.
+        (ex. [min, max])
+    :type deprange: list
+    """
+    if source == 'model':
+        # Set up model nowcast variables
+        dep = grid.variables['depthv']
+        jm = np.where(
+            np.logical_and(dep[:] > deprange[0], dep[:] < deprange[1]))
+        dep = dep[jm[0]]
+
+        u_u = grid.variables['vozocrtx'][:, jm[0], :]
+        v_v = grid.variables['vomecrty'][:, jm[0], :]
+        u_E, v_N = unstag_rot(u_u, v_v)
+        u_0 = u_E[..., 0, 0]
+        v_0 = v_N[..., 0, 0]
+        u = np.ma.masked_values(u_0, 0)
+        v = np.ma.masked_values(v_0, 0)
+
+    else:
+        timemat = grid['mtime']
+        # Find index in matlab datenum values that corresponds with the day of
+        # interest.
+        for mattime, count in zip(timemat[0], np.arange(len(timemat[0]))):
+            time = (
+                datetime.datetime.fromordinal(int(mattime)) +
+                datetime.timedelta(days=mattime % 1) -
+                datetime.timedelta(days=366))
+            if time == day:
+                # The -1 is because we access the 00:45:00 index which is the
+                # second value of the day.
+                ind = count-1
+
+        # The obs values are every half hour. 48 values spans the whole day.
+        oneday = 48
+        dep = grid['chartdepth'][:][0]
+        if np.logical_and(deprange[0] < 30, station == 'Central'):
+            deprangeo = 30
+        elif np.logical_and(deprange[0] < 20, station == 'East'):
+            deprangeo = 20
+        else:
+            deprangeo = deprange[0]
+        j = np.where(np.logical_and(dep[:] > deprangeo, dep[:] < deprange[1]))
+        dep = dep[j[0]]
+        # The velocities are in cm/s we want them in m/s.
+        u0 = grid['utrue'][:][j[0], ind:ind+oneday]/100
+        v0 = grid['vtrue'][:][j[0], ind:ind+oneday]/100
+
+        u = np.ma.masked_invalid(u0)
+        v = np.ma.masked_invalid(v0)
+
+    return u, v, dep
+
+
+def plotADCP(grid_m, grid_o, day, station, profile):
+    """ This function will plots the velocities on a colour map with depth of the
+    model and observational values.
+    data over a whole day at a particular station.
+
+    :arg grid_m: The model grid
+    :type grid_m: neCDF4 dataset.
+
+    :arg grid_o: The observational grid
+    :type grid_o: dictionary
+
+    :arg day: day of interest
+    :type day: datetime object
+
+    :arg station: Station of interest. Either 'Central' or 'East'.
+    :type station: string
+
+    :arg profile: the range of depths that will be looked at in meters.
+        (ex. [min, max])
+    :type profile: list
+
+    :return: fig
+    """
+    # Get grids into unstaggered and masked velocities at the chose depths
+    u_E, v_N, dep_t = load_vel(day, grid_m, 'model', station, profile)
+    u, v, dep = load_vel(day, grid_o, 'observation', station, profile)
+
+    # Begin figure
+    fig, ([axmu, axmv], [axou, axov]) = plt.subplots(
+        2, 2,
+        figsize=(20, 10),
+        sharex=True)
+    fig.patch.set_facecolor('#2B3E50')
+
+    # Find the absolute maximum value between the model and observational
+    # velocities to set the colorbar
+    max_v = np.nanmax(abs(v))
+    max_u = np.nanmax(abs(u))
+    max_vm = np.nanmax(abs(v_N))
+    max_um = np.nanmax(abs(u_E))
+    max_speed = np.amax([max_v, max_u, max_vm, max_um])
+    vmax = max_speed
+    vmin = - max_speed
+    step = 0.05
+
+    cmap = plt.get_cmap('bwr')
+
+    # Setting the date for title
+    date = day.strftime('%d%b%y')
+
+    # Plotting the comparison between the model and the obs velocities
+    increment = [0.25, 0.5, 0.25, 0.5]
+    velocities = [u_E.transpose(), u, v_N.transpose(), v]
+    axes = [axmu, axmv, axou, axov]
+    depths = [dep_t, dep, dep_t, dep]
+    names = ['Model', 'Observations', 'Model', 'Observations']
+    direction = ['East/West', 'East/West', 'North/South', 'North/South']
+
+    for ax, vel, timestep, depth, name, direc in zip(
+            axes,
+            velocities,
+            increment,
+            depths,
+            names,
+            direction):
+        ax.invert_yaxis()
+        mesh = ax.contourf(
+            # The range below adjusts for the observations starting at 00:15
+            # and being in 30 minutes increments.
+            np.arange(timestep-0.25, 24+timestep-0.25, timestep),
+            depth[:],
+            vel,
+            np.arange(vmin, vmax, step), cmap=cmap)
+        ax.set_ylim([profile[1], profile[0]])
+        ax.set_xlim([0.25, 23])
+        ax.set_ylabel('Depth [m]', **axis_font)
+        figures.axis_colors(ax, 'white')
+        ax.set_title(
+            '{dire} {name} Velocities at VENUS {node} - {date}'.format(
+                dire=direc, name=name, node=station, date=date), **title_font)
+
+    cbar_ax = fig.add_axes([0.95, 0.2, 0.03, 0.6])
+    cbar = fig.colorbar(mesh, cax=cbar_ax)
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
+    cbar.set_label('[m/s]', **axis_font)
+
+    return fig
+
+
+def plottimeavADCP(grid_m, grid_o, day, station):
+    """ This function plots a comparison of the time averaged velocities of the
+    model and the observations.
+
+    :arg grid_m: The model grid
+    :type grid_m: neCDF4 dataset.
+
+    :arg grid_o: The observational grid
+    :type grid_o: dictionary
+
+    :arg day: day of interest
+    :type day: datetime object
+
+    :arg station: Station of interest. Either 'Central' or 'East'.
+    :type station: string
+
+    :return: fig
+    """
+    if station == 'Central':
+        profile = [0, 300]
+    else:
+        profile = [0, 170]
+
+    # Get grids into unstaggered and masked velocities at the chose depths
+    u_E, v_N, dep_t = load_vel(day, grid_m, 'model', station, profile)
+    u, v, dep = load_vel(day, grid_o, 'observation', station, profile)
+
+    # Begin figure
+    fig, ([ax1, ax2]) = plt.subplots(1, 2, figsize=(8, 10), sharex=True)
+    fig.patch.set_facecolor('#2B3E50')
+
+    # Setting the date for title
+    date = day.strftime('%d%b%y')
+
+    velocities = [u_E, v_N]
+    veloobs = [u, v]
+    axes = [ax1, ax2]
+    direction = ['E/W', 'N/S']
+
+    for ax, vel, velo, direc in zip(axes, velocities, veloobs, direction):
+        ax.plot(np.nanmean(vel, axis=0), dep_t[:],  label='Model')
+        ax.plot(np.nanmean(velo, axis=1), dep, label='Observations')
+        ax.set_ylabel('Velocity [m/s]', **axis_font)
+        figures.axis_colors(ax, 'white')
+        ax.set_title('{dire} velocities at VENUS {node}'.format(
+            dire=direc, node=station, date=date), **title_font)
+        ax.grid()
+        ax.set_ylim(profile)
+        ax.set_xlim([-0.5, 0.5])
+        ax.invert_yaxis()
+    ax1.legend(loc=0)
+
+    return fig
+
+
+def plotdepavADCP(grid_m, grid_o, day, station):
+    """ This function plots a comparison of the depth averaged velocities of
+    the model and the observations.
+
+    :arg grid_m: The model grid
+    :type grid_m: netCDF4 dataset.
+
+    :arg grid_o: The observational grid
+    :type grid_o: dictionary
+
+    :arg day: day of interest
+    :type day: datetime object
+
+    :arg station: Station of interest. Either 'Central' or 'East'.
+    :type station: string
+
+    :return: fig
+    """
+    if station == 'Central':
+        profile = [40, 270]
+    else:
+        profile = [30, 150]
+
+    # Get grids into unstaggered and masked velocities at the chose depths
+    u_E, v_N, dep_t = load_vel(day, grid_m, 'model', station, profile)
+    u, v, dep = load_vel(day, grid_o, 'observation', station, profile)
+
+    # Depth averaging center of water column
+    uE_av = analyze.depth_average(u_E, dep_t, 1)
+    vN_av = analyze.depth_average(v_N, dep_t, 1)
+    u_av = analyze.depth_average(u, dep[::-1], 0)
+    v_av = analyze.depth_average(v, dep[::-1], 0)
+
+    # Begin figure
+    fig, ([ax1, ax2]) = plt.subplots(2, 1, figsize=(15, 10), sharex=True)
+    fig.patch.set_facecolor('#2B3E50')
+
+    # Setting the date for title
+    date = day.strftime('%d%b%y')
+
+    timestep = 0.5
+    velocities = [uE_av, vN_av]
+    veloobs = [u_av, v_av]
+    axes = [ax1, ax2]
+    direction = ['East/West', 'North/South']
+
+    for ax, vel, velo, direc in zip(axes, velocities, veloobs, direction):
+        ax.plot(np.arange(0, 24, timestep/2), vel, label='Model')
+        ax.plot(np.arange(0.25, 24, timestep), velo, label='Observations')
+        ax.set_xlim([0, 24])
+        ax.set_ylabel('Velocity [m/s]', **axis_font)
+        figures.axis_colors(ax, 'white')
+        ax.set_title(
+            'Depth Averaged ({}-{}m) {dire} velocities at VENUS {node} -{date}'
+            .format(
+                profile[0],
+                profile[1],
+                dire=direc,
+                node=station,
+                date=date),
+            **title_font)
+        ax.grid()
+        ax.set_ylim([-0.6, 0.6])
+    ax1.legend(loc=0)
+
+    return fig
+
+
 def loadparam(to, tf, path, freq='h', depav='None'):
     """ This function loads all the data between the start and the end date
     that contains gridded quarter-hourly velocity netCDF4 files. Then it mask,
