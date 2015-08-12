@@ -545,8 +545,8 @@ def get_params(u, v, time, nconst, tidecorr=CorrTides):
             vapparam[const]['phase'] + tidecorr[const]['uvt'])
 
         # Applying tidal corrections to u and v aplitude parameter
-        uapparam[const]['amp'] = uapparam[const]['amp'] * tidecorr[const]['ft']
-        vapparam[const]['amp'] = vapparam[const]['amp'] * tidecorr[const]['ft']
+        uapparam[const]['amp'] = uapparam[const]['amp'] / tidecorr[const]['ft']
+        vapparam[const]['amp'] = vapparam[const]['amp'] / tidecorr[const]['ft']
 
         # Converting from u/v amplitude and phase to ellipe parameters. Inputs
         # are the amplitude and phase of both velocities, runs once for each
