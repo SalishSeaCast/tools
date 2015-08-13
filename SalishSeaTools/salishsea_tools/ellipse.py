@@ -301,9 +301,9 @@ def fittit(uaus, time, nconst):
                         fitted[2*k], fitted[2*k+1] = convention_pha_amp(
                             fitted[2*k], fitted[2*k+1])
 
-                for const, k in zip(apparam, np.arange(0, nconst)):
-                    apparam[const]['amp'][i, j] = fitted[2*k]
-                    apparam[const]['phase'][i, j] = fitted[2*k+1]
+                    for const, k in zip(apparam, np.arange(0, nconst)):
+                        apparam[const]['amp'][i, j] = fitted[2*k]
+                        apparam[const]['phase'][i, j] = fitted[2*k+1]
 
     # CASE 3: a time series of an area of velocities with depth
     elif uaus.ndim == 4:
