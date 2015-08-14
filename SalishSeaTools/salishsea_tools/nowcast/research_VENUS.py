@@ -479,7 +479,8 @@ def load_vel(day, grid, source, station, deprange):
         'model' or 'observations'
     :type source: string
 
-    :arg station: specifies the ONC VENUS nodes locations. 'Central' or 'East'
+    :arg station: specifies the ONC VENUS nodes locations.
+        'Central', 'East' or 'ddl'
     :type station: string
 
     :arg deprange: the range of depths that will be looked at in meters.
@@ -522,6 +523,8 @@ def load_vel(day, grid, source, station, deprange):
             deprangeo = 30
         elif np.logical_and(deprange[0] < 20, station == 'East'):
             deprangeo = 20
+        elif np.logical_and(deprange[0] < 15, station == 'ddl'):
+            deprangeo = 15
         else:
             deprangeo = deprange[0]
         j = np.where(np.logical_and(dep[:] > deprangeo, dep[:] < deprange[1]))
@@ -550,7 +553,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     :arg day: day of interest
     :type day: datetime object
 
-    :arg station: Station of interest. Either 'Central' or 'East'.
+    :arg station: Station of interest. Either 'Central' or 'East' or 'ddl'.
     :type station: string
 
     :arg profile: the range of depths that will be looked at in meters.
@@ -638,15 +641,17 @@ def plottimeavADCP(grid_m, grid_o, day, station):
     :arg day: day of interest
     :type day: datetime object
 
-    :arg station: Station of interest. Either 'Central' or 'East'.
+    :arg station: Station of interest. Either 'Central' or 'East' or 'ddl'
     :type station: string
 
     :return: fig
     """
     if station == 'Central':
-        profile = [0, 300]
+        profile = [0, 290]
+    elif station == 'East':
+        profile = [0, 150]
     else:
-        profile = [0, 170]
+        profile = [0, 150]
 
     # Get grids into unstaggered and masked velocities at the chose depths
     u_E, v_N, dep_t = load_vel(day, grid_m, 'model', station, profile)
@@ -659,14 +664,18 @@ def plottimeavADCP(grid_m, grid_o, day, station):
     # Setting the date for title
     date = day.strftime('%d%b%y')
 
-    velocities = [u_E, v_N]
+    velocities = [u_E[:, :-1], v_N[:, :-1]]
+    vellast = [u_E[:, -2:], v_N[:, -2:]]
     veloobs = [u, v]
     axes = [ax1, ax2]
     direction = ['E/W', 'N/S']
 
-    for ax, vel, velo, direc in zip(axes, velocities, veloobs, direction):
-        ax.plot(np.nanmean(vel, axis=0), dep_t[:],  label='Model')
-        ax.plot(np.nanmean(velo, axis=1), dep, label='Observations')
+    for ax, vel, velo, lastvel, direc in zip(
+            axes, velocities, veloobs, vellast, direction):
+        ax.plot(np.nanmean(vel, axis=0), dep_t[:-1],  label='Model')
+        ax.plot(np.nanmean(velo, axis=1), dep[:], label='Observations')
+        ax.plot(np.nanmean(
+            lastvel, axis=0), dep_t[-2:], '--b', label='Bottom grid cell')
         ax.set_ylabel('Velocity [m/s]', **axis_font)
         figures.axis_colors(ax, 'white')
         ax.set_title('{dire} velocities at VENUS {node}'.format(
@@ -693,15 +702,17 @@ def plotdepavADCP(grid_m, grid_o, day, station):
     :arg day: day of interest
     :type day: datetime object
 
-    :arg station: Station of interest. Either 'Central' or 'East'.
+    :arg station: Station of interest. Either 'Central' or 'East' or 'ddl'
     :type station: string
 
     :return: fig
     """
     if station == 'Central':
         profile = [40, 270]
-    else:
+    elif station == 'East':
         profile = [30, 150]
+    else:
+        profile = [25, 130]
 
     # Get grids into unstaggered and masked velocities at the chose depths
     u_E, v_N, dep_t = load_vel(day, grid_m, 'model', station, profile)
