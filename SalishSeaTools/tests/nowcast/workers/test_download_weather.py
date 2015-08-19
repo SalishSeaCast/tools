@@ -43,7 +43,7 @@ def config():
 
 
 @patch.object(worker_module(), 'NowcastWorker')
-class TestMain():
+class TestMain:
     """Unit tests for main() function.
     """
     @patch.object(worker_module(), 'worker_name')
@@ -112,7 +112,7 @@ class TestFailure:
 @patch.object(worker_module().lib, 'mkdir')
 @patch.object(worker_module().lib, 'fix_perms')
 @patch.object(worker_module(), '_get_file')
-class TestGetGrib():
+class TestGetGrib:
     """Unit tests for get_grib() function.
     """
     def test_make_hour_dirs(
@@ -160,7 +160,7 @@ class TestGetGrib():
     worker_module().arrow, 'utcnow',
     return_value=arrow.get(2015, 6, 18, 19, 3, 42),
 )
-class TestCalcDate():
+class TestCalcDate:
     """Unit tests for _calc_date() function.
     """
     def test_calc_date_06_forecast(self, m_utcnow, worker_module, parsed_args):
@@ -175,7 +175,7 @@ class TestCalcDate():
 
 @patch.object(worker_module(), 'logger')
 @patch.object(worker_module().lib, 'mkdir')
-class TestMkdirs():
+class TestMkdirs:
     """Unit tests for _mkdirs() function.
     """
     def test_make_date_dir(self, m_mkdir, m_logger, worker_module):
@@ -193,7 +193,7 @@ class TestMkdirs():
 
 @patch.object(worker_module(), 'logger')
 @patch.object(worker_module().lib, 'get_web_data')
-class TestGetFile():
+class TestGetFile:
     """Unit tests for _get_file() function.
     """
     def test_get_web_data(self, m_get_web_data, m_logger, worker_module):
