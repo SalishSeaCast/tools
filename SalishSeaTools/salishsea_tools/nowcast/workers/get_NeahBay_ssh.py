@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast Neah Bay sea surface height download worker.
-Scrape the NOAA Neah Bay storm surge site for sea surface height
-observations and forecast values and generate the western open boundary
-ssh files.
+"""Salish Sea NEMO nowcast worker that scrapes NOAA Neah Bay storm surge
+forecast site and generates western open boundary conditions ssh files.
 """
+import argparse
 import datetime
 import logging
 import os
 import shutil
+import traceback
 
 from bs4 import BeautifulSoup
 import pytz
@@ -29,59 +29,88 @@ import matplotlib
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
+import zmq
 
 from salishsea_tools import nc_tools
-
-from .. import (
+from salishsea_tools.nowcast import (
     figures,
     lib,
 )
-from ..nowcast_worker import NowcastWorker
 
 
 worker_name = lib.get_module_name()
+
 logger = logging.getLogger(worker_name)
 
+context = zmq.Context()
 
 #: Neah Bay sea surface height forcing file name template
 FILENAME_TMPL = 'ssh_{:y%Ym%md%d}.nc'
 
-#: NOAA Neah Bay sea surface height observations & forecast site URL
+
 URL = (
     'http://www.nws.noaa.gov/mdl/etsurge/index.php'
     '?page=stn&region=wc&datum=msl&list=&map=0-48&type=both&stn=waneah')
 
 
 def main():
-    worker = NowcastWorker(worker_name, description=__doc__)
-    worker.arg_parser.add_argument(
-        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
-        help="""
-        Type of run to prepare open boundary sea surface height file for.
-        """,
+    # Prepare the worker
+    base_parser = lib.basic_arg_parser(
+        worker_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
+        parents=[base_parser],
     )
-    worker.run(get_NeahBay_ssh, success, failure)
+    parsed_args = parser.parse_args()
+    config = lib.load_config(parsed_args.config_file)
+    lib.configure_logging(config, logger, parsed_args.debug)
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
+    lib.install_signal_handlers(logger, context)
+    socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    # Do the work
+    try:
+        checklist = getNBssh(parsed_args.run_type, config)
+        logger.info(
+            'Neah Bay sea surface height web scraping '
+            'and file creation completed')
+        # Exchange success messages with the nowcast manager process
+        msg_type = 'success {.run_type}'.format(parsed_args)
+        lib.tell_manager(
+            worker_name, msg_type, config, logger, socket, checklist)
+    except lib.WorkerError:
+        logger.error(
+            'Neah Bay sea surface height web scraping '
+            'and file creation failed')
+        # Exchange failure messages with the nowcast manager process
+        msg_type = 'failure {.run_type}'.format(parsed_args)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc().splitlines():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
+    # Finish up
+    context.destroy()
+    logger.debug('task completed; shutting down')
 
 
-def success(parsed_args):
-    logger.info(
-        'Neah Bay sea surface height web scraping and open boundary file '
-        'creation for {.run_type} complete'
-        .format(parsed_args))
-    msg_type = '{} {}'.format('success', parsed_args.run_type)
-    return msg_type
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        'run_type', choices=set(('nowcast', 'forecast', 'forecast2')),
+        help='Type of run to execute.'
+    )
+    return parser
 
 
-def failure(parsed_args):
-    logger.error(
-        'Neah Bay sea surface height web scraping and open boundary file '
-        'creation for {.run_type} failed'
-        .format(parsed_args))
-    msg_type = '{} {}'.format('failure', parsed_args.run_type)
-    return msg_type
-
-
-def get_NeahBay_ssh(parsed_args, config):
+def getNBssh(run_type, config):
     """Generate sea surface height forcing files from the Neah Bay
     storm surge website.
     """
@@ -94,15 +123,14 @@ def get_NeahBay_ssh(parsed_args, config):
     # store the file in the run results directory,
     # and load the data for processing into netCDF4 files
     utc_now = datetime.datetime.now(pytz.timezone('UTC'))
-    textfile = _read_website(config['ssh']['ssh_dir'])
+    textfile = read_website(config['ssh']['ssh_dir'])
     lib.fix_perms(textfile, grp_name=config['file group'])
-    data = _load_surge_data(textfile)
+    data = load_surge_data(textfile)
     checklist = {'txt': os.path.basename(textfile)}
     # Store a copy of the text file in the run results directory so that
     # there is definitive record of the sea surface height data that was
     # used for the run
-    run_type = parsed_args.run_type
-    run_date = _utc_now_to_run_date(utc_now, run_type)
+    run_date = utc_now_to_run_date(utc_now, run_type)
     results_dir = os.path.join(
         config['run']['results archive'][run_type],
         run_date.strftime('%d%b%y').lower())
@@ -118,19 +146,19 @@ def get_NeahBay_ssh(parsed_args, config):
     if utc_now.month == 12:
         isDec = True
     for i in range(dates.shape[0]):
-        dates[i] = _to_datetime(dates[i], utc_now.year, isDec, isJan)
-    dates_list = _list_full_days(dates)
+        dates[i] = to_datetime(dates[i], utc_now.year, isDec, isJan)
+    dates_list = list_full_days(dates)
     # Set up plotting
-    fig, ax = _setup_plotting()
+    fig, ax = setup_plotting()
     # Loop through full days and save netcdf
     ip = 0
     for d in dates_list:
-        surges, tc, forecast_flag = _retrieve_surge(d, dates, data)
+        surges, tc, forecast_flag = retrieve_surge(d, dates, data)
         # Plotting
         if ip < 3:
             ax.plot(surges, '-o', lw=2, label=d.strftime('%d-%b-%Y'))
         ip = ip + 1
-        filepath = _save_netcdf(
+        filepath = save_netcdf(
             d, tc, surges, forecast_flag, textfile,
             config['ssh']['ssh_dir'], lats, lons)
         filename = os.path.basename(filepath)
@@ -150,7 +178,7 @@ def get_NeahBay_ssh(parsed_args, config):
     return checklist
 
 
-def _read_website(save_path):
+def read_website(save_path):
     """Read a website with Neah Bay storm surge predictions/observations.
 
     The data is stored in a file in save_path.
@@ -181,7 +209,7 @@ def _read_website(save_path):
     return filepath
 
 
-def _load_surge_data(filename):
+def load_surge_data(filename):
     """Load the storm surge observations & predictions table from filename
     and return is as a Pandas DataFrame.
     """
@@ -193,7 +221,7 @@ def _load_surge_data(filename):
     return data
 
 
-def _utc_now_to_run_date(utc_now, run_type):
+def utc_now_to_run_date(utc_now, run_type):
     """Calculate the run_date used for results directory naming from the
     present UTC time and run_type.
 
@@ -208,7 +236,7 @@ def _utc_now_to_run_date(utc_now, run_type):
     return (utc_now - datetime.timedelta(hours=offsets[run_type])).date()
 
 
-def _save_netcdf(
+def save_netcdf(
     day, tc, surges, forecast_flag, textfile, save_path, lats, lons,
 ):
     """Save the surge for a given day in a netCDF4 file.
@@ -311,7 +339,7 @@ def _save_netcdf(
     return filepath
 
 
-def _retrieve_surge(day, dates, data):
+def retrieve_surge(day, dates, data):
     """Gather the surge information for a single day.
 
     Return the surges in metres, an array with time_counter,
@@ -321,7 +349,7 @@ def _retrieve_surge(day, dates, data):
     forecast_flag = False
     surge = []
     # Grab list of times on this day
-    tc, ds = _isolate_day(day, dates)
+    tc, ds = isolate_day(day, dates)
     for d in ds:
         # Convert datetime to string for comparing with times in data
         daystr = d.strftime('%m/%d %HZ')
@@ -338,14 +366,14 @@ def _retrieve_surge(day, dates, data):
                     # No values yet, so initialize with zero
                     surge = [0]
             else:
-                surge.append(_feet_to_metres(fcst - tide))
+                surge.append(feet_to_metres(fcst - tide))
                 forecast_flag = True
         else:
-            surge.append(_feet_to_metres(obs - tide))
+            surge.append(feet_to_metres(obs - tide))
     return surge, tc, forecast_flag
 
 
-def _isolate_day(day, dates):
+def isolate_day(day, dates):
     """Return array of time_counter and datetime objects over a 24 hour
     period covering one full day.
     """
@@ -358,11 +386,11 @@ def _isolate_day(day, dates):
     return tc, np.array(dates_return)
 
 
-def _list_full_days(dates):
+def list_full_days(dates):
     """Return a list of days that have a full 24 hour data set.
     """
     # Check if first day is a full day
-    tc, ds = _isolate_day(dates[0], dates)
+    tc, ds = isolate_day(dates[0], dates)
     if ds.shape[0] == tc.shape[0]:
         start = dates[0]
     else:
@@ -370,7 +398,7 @@ def _list_full_days(dates):
     start = datetime.datetime(
         start.year, start.month, start.day, tzinfo=pytz.timezone('UTC'))
     # Check if last day is a full day
-    tc, ds = _isolate_day(dates[-1], dates)
+    tc, ds = isolate_day(dates[-1], dates)
     if ds.shape[0] == tc.shape[0]:
         end = dates[-1]
     else:
@@ -383,7 +411,7 @@ def _list_full_days(dates):
     return dates_list
 
 
-def _to_datetime(datestr, year, isDec, isJan):
+def to_datetime(datestr, year, isDec, isJan):
     """Convert the string given by datestr to a datetime object.
 
     The year is an argument because the datestr in the NOAA data doesn't
@@ -404,12 +432,12 @@ def _to_datetime(datestr, year, isDec, isJan):
     return dt
 
 
-def _feet_to_metres(feet):
+def feet_to_metres(feet):
     metres = feet*0.3048
     return metres
 
 
-def _setup_plotting():
+def setup_plotting():
     fig = matplotlib.figure.Figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_title('Neah Bay SSH')
@@ -420,4 +448,4 @@ def _setup_plotting():
 
 
 if __name__ == '__main__':
-    main()  # pragma: no cover
+    main()
