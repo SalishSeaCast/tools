@@ -1469,8 +1469,8 @@ def ap2ep(Au, PHIu, Av, PHIv):
     # convention.
 
 
-def convert_to_seconds(time_model, reftime='None'):
-    """ Interpolates the datetime values into an array of seconds from a
+def convert_to_hours(time_model, reftime='None'):
+    """ Interpolates the datetime values into an array of hours from a
         determined starting point
 
     :arg time_model: array of model output time as datetime objects

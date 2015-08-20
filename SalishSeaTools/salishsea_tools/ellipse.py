@@ -19,7 +19,7 @@ import datetime
 import matplotlib.pylab as plt
 from matplotlib.patches import Ellipse
 import numpy as np
-import csv
+
 from dateutil import tz
 import angles
 from scipy.optimize import curve_fit
@@ -462,7 +462,7 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
     # For the nowcast the reftime is always Sep10th 2014. Set time of area we
     # are looking at relative to this time.
     reftime = datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc())
-    time = tidetools.convert_to_seconds(time, reftime=reftime)
+    time = tidetools.convert_to_hours(time, reftime=reftime)
 
     return u, v, time, dep
 
