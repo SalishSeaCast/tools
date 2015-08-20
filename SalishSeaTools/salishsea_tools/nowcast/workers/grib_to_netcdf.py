@@ -13,33 +13,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO nowcast weather forcing file generation worker.
-Collects weather forecast results from hourly GRIB2 files and produces
-day-long NEMO atmospheric forcing netCDF files.
+"""Salish Sea NEMO nowcast worker that collects weather forecast results
+from hourly GRIB2 files and produces day-long NEMO atmospheric forceing
+netCDF files.
 """
 from __future__ import division
 
 from collections import OrderedDict
+import argparse
 import glob
 import logging
 import os
 import subprocess
+import traceback
 
 import arrow
 import matplotlib
 import netCDF4 as nc
 import numpy as np
+import zmq
 
-from .. import (
+from salishsea_tools.nowcast import (
     figures,
     lib,
 )
-from ..nowcast_worker import NowcastWorker
 
 
 worker_name = lib.get_module_name()
+
 logger = logging.getLogger(worker_name)
 wgrib2_logger = logging.getLogger('wgrib2')
+
+context = zmq.Context()
 
 
 # Corners of sub-region of GEM 2.5km operational forecast grid
@@ -58,78 +63,120 @@ FILENAME_TMPL = 'ops_{:y%Ym%md%d}.nc'
 
 
 def main():
-    worker = NowcastWorker(worker_name, description=__doc__)
-    worker.arg_parser.add_argument(
-        'run_type', choices=set(('nowcast+', 'forecast2')),
-        help='''
-        Type of run to produce netCDF files for:
+    # Prepare the worker
+    base_parser = lib.basic_arg_parser(
+        worker_name, description=__doc__, add_help=False)
+    parser = configure_argparser(
+        prog=base_parser.prog,
+        description=base_parser.description,
+        parents=[base_parser],
+    )
+    parsed_args = parser.parse_args()
+    config = lib.load_config(parsed_args.config_file)
+    lib.configure_logging(config, logger, parsed_args.debug)
+    configure_wgrib2_logging(config)
+    logger.debug('running in process {}'.format(os.getpid()))
+    logger.debug('read config from {.config_file}'.format(parsed_args))
+    lib.install_signal_handlers(logger, context)
+    socket = lib.init_zmq_req_rep_worker(context, config, logger)
+    # Do the work
+    try:
+        checklist = grib_to_netcdf(parsed_args.runtype,
+                                   parsed_args.run_date, config)
+        logger.info('NEMO-atmos forcing file completed for run type {.runtype}'
+                    .format(parsed_args))
+        # Exchange success messages with the nowcast manager process
+        msg_type = '{} {}'.format('success', parsed_args.runtype)
+        lib.tell_manager(
+            worker_name, msg_type, config, logger, socket, checklist)
+    except lib.WorkerError:
+        logger.critical(
+            'NEMO-atmos forcing file failed for run type {.runtype}'
+            .format(parsed_args))
+        # Exchange failure messages with the nowcast manager process
+        msg_type = '{} {}'.format('failure', parsed_args.runtype)
+        lib.tell_manager(worker_name, msg_type, config, logger, socket)
+    except SystemExit:
+        # Normal termination
+        pass
+    except:
+        logger.critical('unhandled exception:')
+        for line in traceback.format_exc().splitlines():
+            logger.error(line)
+        # Exchange crash messages with the nowcast manager process
+        lib.tell_manager(worker_name, 'crash', config, logger, socket)
+    # Finish up
+    context.destroy()
+    logger.debug('task completed; shutting down')
+
+
+def configure_argparser(prog, description, parents):
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, parents=parents)
+    parser.add_argument(
+        'runtype', choices=set(('nowcast+', 'forecast2')),
+        help='''Type of run to produce netCDF files for:
         'nowcast+' means nowcast & 1st forecast runs,
-        'forecast2' means 2nd forecast run.
+        'forecast2' means 2nd forecast run.''',
+    )
+    parser.add_argument(
+        '--run-date', type=lib.arrow_date, default=arrow.now(),
+        help='''
+        Date of the run to make the grib files for;
+        use YYYY-MM-DD format.
+        Note: for forecast2 use the date it would usually run on
+        Defaults to %(default)s.
         ''',
     )
-    salishsea_today = arrow.now('Canada/Pacific').floor('day')
-    worker.arg_parser.add_argument(
-        '--run-date', type=lib.arrow_date,
-        default=salishsea_today,
-        help='''
-        Date of the run to produce netCDF files for; use YYYY-MM-DD format.
-        Defaults to {}.
-        '''.format(salishsea_today.format('YYYY-MM-DD')),
-    )
-    worker.run(grib_to_netcdf, success, failure)
+    return parser
 
 
-def success(parsed_args):
-    logger.info(
-        'NEMO-atmos forcing file for {.run_type} created'
-        .format(parsed_args))
-    msg_type = 'success {.run_type}'.format(parsed_args)
-    return msg_type
+def configure_wgrib2_logging(config):
+    wgrib2_logger.setLevel(logging.DEBUG)
+    log_file = os.path.join(
+        os.path.dirname(config['config_file']),
+        config['logging']['wgrib2_log_file'])
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        config['logging']['message_format'],
+        datefmt=config['logging']['datetime_format'])
+    handler.setFormatter(formatter)
+    wgrib2_logger.addHandler(handler)
 
 
-def failure(parsed_args):
-    logger.error(
-        'NEMO-atmos forcing file creation for {.run_type} failed'
-        .format(parsed_args))
-    msg_type = 'failure {.run_type}'.format(parsed_args)
-    return msg_type
-
-
-def grib_to_netcdf(parsed_args, config):
+def grib_to_netcdf(runtype, rundate, config):
     """Collect weather forecast results from hourly GRIB2 files
     and produces day-long NEMO atmospheric forcing netCDF files.
     """
-    _configure_wgrib2_logging(config)
-    runtype = parsed_args.run_type
-    rundate = parsed_args.run_date
 
     if runtype == 'nowcast+':
         (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday) = _define_forecast_segments_nowcast(rundate)
+         yearmonthday) = define_forecast_segments_nowcast(rundate)
     elif runtype == 'forecast2':
         (fcst_section_hrs_arr, zerostart, length, subdirectory,
-         yearmonthday) = _define_forecast_segments_forecast2(rundate)
+         yearmonthday) = define_forecast_segments_forecast2(rundate)
 
     # set-up plotting
-    fig, axs = _set_up_plotting()
+    fig, axs = set_up_plotting()
     checklist = {}
     ip = 0
     for fcst_section_hrs, zstart, flen, subdir, ymd in zip(
             fcst_section_hrs_arr, zerostart, length, subdirectory,
             yearmonthday):
-        _rotate_grib_wind(config, fcst_section_hrs)
-        _collect_grib_scalars(config, fcst_section_hrs)
-        outgrib, outzeros = _concat_hourly_gribs(config, ymd, fcst_section_hrs)
-        outgrib, outzeros = _crop_to_watersheds(
+        rotate_grib_wind(config, fcst_section_hrs)
+        collect_grib_scalars(config, fcst_section_hrs)
+        outgrib, outzeros = concat_hourly_gribs(config, ymd, fcst_section_hrs)
+        outgrib, outzeros = crop_to_watersheds(
             config, ymd, IST, IEN, JST, JEN, outgrib, outzeros)
-        outnetcdf, out0netcdf = _make_netCDF_files(
+        outnetcdf, out0netcdf = make_netCDF_files(
             config, ymd, subdir, outgrib, outzeros)
-        _calc_instantaneous(
-            outnetcdf, out0netcdf, ymd, flen, zstart, axs)
-        _change_to_NEMO_variable_names(outnetcdf, axs, ip)
+        calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart,
+                           axs)
+        change_to_NEMO_variable_names(outnetcdf, axs, ip)
         ip += 1
 
-        _netCDF4_deflate(outnetcdf)
+        netCDF4_deflate(outnetcdf)
         lib.fix_perms(outnetcdf, grp_name=config['file group'])
         if subdir in checklist:
             checklist[subdir].append(os.path.basename(outnetcdf))
@@ -146,21 +193,7 @@ def grib_to_netcdf(parsed_args, config):
     return checklist
 
 
-def _configure_wgrib2_logging(config):
-    wgrib2_logger.setLevel(logging.DEBUG)
-    log_file = os.path.join(
-        os.path.dirname(config['config_file']),
-        config['logging']['wgrib2_log_file'])
-    handler = logging.FileHandler(log_file, mode='w')
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        config['logging']['message_format'],
-        datefmt=config['logging']['datetime_format'])
-    handler.setFormatter(formatter)
-    wgrib2_logger.addHandler(handler)
-
-
-def _define_forecast_segments_nowcast(rundate):
+def define_forecast_segments_nowcast(rundate):
     """Define segments of forecasts to build into working weather files
     for nowcast and a following forecast
     """
@@ -214,7 +247,7 @@ def _define_forecast_segments_nowcast(rundate):
             yearmonthday)
 
 
-def _define_forecast_segments_forecast2(rundate):
+def define_forecast_segments_forecast2(rundate):
     """Define segments of forecasts to build into working weather files
     for the extend forecast i.e. forecast2
     """
@@ -253,7 +286,7 @@ def _define_forecast_segments_forecast2(rundate):
             yearmonthday)
 
 
-def _rotate_grib_wind(config, fcst_section_hrs):
+def rotate_grib_wind(config, fcst_section_hrs):
     """Use wgrib2 to consolidate each hour's u and v wind components into a
     single file and then rotate the wind direction to geographical
     coordinates.
@@ -305,7 +338,7 @@ def _rotate_grib_wind(config, fcst_section_hrs):
     logger.debug('consolidated and rotated wind components')
 
 
-def _collect_grib_scalars(config, fcst_section_hrs):
+def collect_grib_scalars(config, fcst_section_hrs):
     """Use wgrib2 and grid_defn.pl to consolidate each hour's scalar
     variables into an single file and then re-grid them to match the
     u and v wind components.
@@ -351,7 +384,7 @@ def _collect_grib_scalars(config, fcst_section_hrs):
     logger.debug('consolidated and re-gridded scalar variables')
 
 
-def _concat_hourly_gribs(config, ymd, fcst_section_hrs):
+def concat_hourly_gribs(config, ymd, fcst_section_hrs):
     """Concatenate in hour order the wind velocity components
     and scalar variables from hourly files into a daily file.
 
@@ -403,9 +436,8 @@ def _concat_hourly_gribs(config, ymd, fcst_section_hrs):
     return outgrib, outzeros
 
 
-def _crop_to_watersheds(
-    config, ymd, ist, ien, jst, jen, outgrib, outzeros,
-):
+def crop_to_watersheds(config, ymd, ist, ien, jst, jen, outgrib,
+                       outzeros):
     """Crop the grid to the sub-region of GEM 2.5km operational forecast
     grid that encloses the watersheds that are used to calculate river
     flows for runoff forcing files for the Salish Sea NEMO model.
@@ -433,7 +465,7 @@ def _crop_to_watersheds(
     return newgrib, newzeros
 
 
-def _make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
+def make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     """Convert the GRIB files to netcdf (classic) files.
     """
     OPERdir = config['weather']['ops_dir']
@@ -457,7 +489,7 @@ def _make_netCDF_files(config, ymd, subdir, outgrib, outzeros):
     return outnetcdf, out0netcdf
 
 
-def _calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
+def calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
     """Calculate instantaneous values from the forecast accumulated values
     for the precipitation and radiation variables.
     """
@@ -502,7 +534,7 @@ def _calc_instantaneous(outnetcdf, out0netcdf, ymd, flen, zstart, axs):
         'for precipitation and long- & short-wave radiation')
 
 
-def _change_to_NEMO_variable_names(outnetcdf, axs, ip):
+def change_to_NEMO_variable_names(outnetcdf, axs, ip):
     """Rename variables to match NEMO naming conventions.
     """
     data = nc.Dataset(outnetcdf, 'r+')
@@ -550,7 +582,7 @@ def _change_to_NEMO_variable_names(outnetcdf, axs, ip):
     data.close()
 
 
-def _netCDF4_deflate(outnetcdf):
+def netCDF4_deflate(outnetcdf):
     """Run ncks in a subprocess to convert outnetcdf to netCDF4 format
     with it variables compressed with Lempel-Ziv deflation.
     """
@@ -562,7 +594,7 @@ def _netCDF4_deflate(outnetcdf):
         raise
 
 
-def _set_up_plotting():
+def set_up_plotting():
     fig = matplotlib.figure.Figure(figsize=(10, 15))
     axs = np.empty((4, 3), dtype='object')
     axs[0, 0] = fig.add_subplot(4, 3, 1)
