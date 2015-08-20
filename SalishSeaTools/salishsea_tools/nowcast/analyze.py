@@ -167,7 +167,10 @@ def combine_files(files, var, kss, jss, iss):
     for f in files:
         G = nc.Dataset(f)
         if kss == 'None':
-            var_tmp = G.variables[var][..., jss, iss]
+            try:  # for variavles with no depht like ssh
+                var_tmp = G.variables[var][..., jss, iss]
+            except IndexError:  # for variables with depth
+                var_tmp = G.variables[var][:, :, jss, iss]
         else:
             var_tmp = G.variables[var][..., kss, jss, iss]
 
