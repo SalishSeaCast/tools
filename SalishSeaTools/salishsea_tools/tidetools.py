@@ -1804,4 +1804,10 @@ def fittit(uaus, time, nconst):
             for const, k in zip(apparam, np.arange(0, nconst)):
                 apparam[const]['amp'] = fitted[2*k]
                 apparam[const]['phase'] = fitted[2*k+1]
+
+    # Mask the zero values
+    for const, ap in apparam.iteritems():
+        for key in ap.iterkeys():
+            ap[key] = np.ma.masked_values(ap[key], 0)
+
     return apparam
