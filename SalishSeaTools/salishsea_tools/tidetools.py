@@ -1805,5 +1805,3 @@ def fittit(uaus, time, nconst):
                 apparam[const]['amp'] = fitted[2*k]
                 apparam[const]['phase'] = fitted[2*k+1]
     return apparam
-
-
