@@ -48,6 +48,7 @@ from salishsea_tools import (
 # =============================== #
 # <------- Kyle 2015/08/25
 ms2k = 1/0.514444
+k2ms = 0.514444
 # =============================== #
 
 # Plotting colors
@@ -72,22 +73,22 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
-WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', \
-'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 'Halibut Bank' 'La Perouse Bank'
+WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', 'Halibut Bank', 'La Perouse Bank', \
+'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 
 
 WIND_SITES = {
     'Nanaimo': {
         'lat': 49.16, 
         'lon': -123.93},
-#    'Halibut Bank': {
-#        'lat': 49.34,
-#        'lon': -123.72},
+    'Halibut Bank': {
+        'lat': 49.34,
+        'lon': -123.72},
     'Dungeness': {
         'lat': 48.15,
         'lon': -123.117},
- #   'La Perouse Bank': {
- #       'lat': 48.83,
- #       'lon': -126.0},
+    'La Perouse Bank': {
+        'lat': 48.83,
+        'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25},
@@ -1096,7 +1097,7 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', do
     return ax
 
 
-def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
+def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
                       PST=1, figsize=(18, 20)):
     """Thumbnail for the UBC Storm Surge website includes the thresholds
     indicating the risk of flooding in three stations and the wind speeds and
@@ -1198,10 +1199,16 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
+    # for Knots
     ax.arrow(-122.2, 50.6, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.28, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
+    # for m/s
+    ax.arrow(-122.45, 50.6, 0. * scale * ms2k, -5. * scale * ms2k,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.53, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
 
     # Location labels
     ax.text(-125.7, 47.7, 'Pacific\nOcean',
@@ -1883,11 +1890,18 @@ def winds_average_max(
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline)
-    scale = 0.1
+    scale = 0.05
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
+    # for m/s
+    ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    
+    
 
     # Stations
     if station == 'all':
@@ -2249,7 +2263,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
 
 def plot_threshold_website(
-    grid_B, grid_T, model_path, PNW_coastline, scale=0.1, PST=1,
+    grid_B, grid_T, model_path, PNW_coastline, scale=0.05, PST=1,
     figsize=(18, 20),
 ):
     """Overview image for Salish Sea website.
@@ -2386,6 +2400,12 @@ def plot_threshold_website(
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
+    # for m/s
+    ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
     ax.text(-123.3, 50.3, 'British Columbia', fontsize=13)
