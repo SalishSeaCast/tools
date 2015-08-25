@@ -73,22 +73,22 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
-WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', \
-'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 'Halibut Bank' 'La Perouse Bank'
+WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', 'Halibut Bank', 'La Perouse Bank', \
+'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 
 
 WIND_SITES = {
     'Nanaimo': {
         'lat': 49.16, 
         'lon': -123.93},
-#    'Halibut Bank': {
-#        'lat': 49.34,
-#        'lon': -123.72},
+    'Halibut Bank': {
+        'lat': 49.34,
+        'lon': -123.72},
     'Dungeness': {
         'lat': 48.15,
         'lon': -123.117},
- #   'La Perouse Bank': {
- #       'lat': 48.83,
- #       'lon': -126.0},
+    'La Perouse Bank': {
+        'lat': 48.83,
+        'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25},
@@ -1208,7 +1208,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     ax.arrow(-122.45, 50.6, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.53, 50.65, "Reference: 5 m/s", rotation=90, fontsize=20)
+    ax.text(-122.53, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
 
     # Location labels
     ax.text(-125.7, 47.7, 'Pacific\nOcean',
@@ -1899,7 +1899,7 @@ def winds_average_max(
     ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.83, 50.6, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
     
     
 
@@ -2404,7 +2404,7 @@ def plot_threshold_website(
     ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.83, 50.6, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
     
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
