@@ -74,16 +74,16 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # VENUS coordinates from the VENUS website. Depth is in meters.
 SITES = {
     'Nanaimo': {
-        'lat': 49.16 
+        'lat': 49.16, 
         'lon': -123.93},
     'Halibut Bank': {
-        'lat': 49.34 
+        'lat': 49.34,
         'lon': -123.72},
     'Dungeness': {
-        'lat': 48.15
+        'lat': 48.15,
         'lon': -123.117},
     'La Perouse Bank': {
-        'lat': 48.83
+        'lat': 48.83,
         'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
