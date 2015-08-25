@@ -580,9 +580,10 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     max_vm = np.nanmax(abs(v_N))
     max_um = np.nanmax(abs(u_E))
     max_speed = np.amax([max_v, max_u, max_vm, max_um])
-    vmax = max_speed
-    vmin = - max_speed
+    vmax = round(max_speed, 1)
+    vmin = - vmax
     step = 0.05
+    cs=np.arange(vmin, vmax+step, step)
 
     cmap = plt.get_cmap('bwr')
 
@@ -611,7 +612,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
             np.arange(timestep-0.25, 24+timestep-0.25, timestep),
             depth[:],
             vel,
-            np.arange(vmin, vmax, step), cmap=cmap)
+            cs, cmap=cmap)
         ax.set_ylim([profile[1], profile[0]])
         ax.set_xlim([0.25, 23])
         ax.set_ylabel('Depth [m]', **axis_font)
