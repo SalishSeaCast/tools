@@ -2292,7 +2292,7 @@ def plot_threshold_website(
                                model_path, t, 4, average=True)
 
     # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
+    names = ['Point Atkinson', 'Campbell River', 'Victoria','Nanaimo','Cherry Point']
 
     # Set up Information
     max_sshs = {}
