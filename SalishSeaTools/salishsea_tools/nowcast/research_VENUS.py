@@ -22,8 +22,6 @@ from cStringIO import StringIO
 import datetime
 
 from dateutil import tz
-import matplotlib.cm as cm
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import numpy as np
