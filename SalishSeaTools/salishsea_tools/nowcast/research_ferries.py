@@ -211,8 +211,15 @@ def salinity_fxn(saline, route_name):
     latitude=tracers.variables['nav_lat'][:] 
     longitude=tracers.variables['nav_lon'][:] 
     saline_nemo = tracers.variables['vosaline']
-    saline_nemo_3rd = saline_nemo[3,1, 0:898, 0:398] 
-    saline_nemo_4rd = saline_nemo[4,1, 0:898, 0:398]
+
+    if route_name =='TWSB':
+        saline_nemo_3rd = saline_nemo[2,1, 0:898, 0:398] 
+        saline_nemo_4rd = saline_nemo[3,1, 0:898, 0:398]
+    else:
+        saline_nemo_3rd = saline_nemo[3,1, 0:898, 0:398] 
+        saline_nemo_4rd = saline_nemo[4,1, 0:898, 0:398]
+    #saline_nemo_3rd = saline_nemo[3,1, 0:898, 0:398] 
+    #saline_nemo_4rd = saline_nemo[4,1, 0:898, 0:398]
     
     matrix=np.zeros([len(lon11),9])
     values=np.zeros([len(lon11),1])
@@ -307,8 +314,19 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     
     lon11, lat11, lon1_2_4, lat1_2_4,    value_mean_3rd_hour, value_mean_4rd_hour,    salinity11,salinity1_2_4, date_str_title = salinity_fxn(saline, route_name)
     axs[1].plot(lon11,lat11,'black', linewidth = 4)
-    model_salinity_3rd_hour=axs[0].plot(lon11,value_mean_3rd_hour,'DodgerBlue',                                    linewidth=2, label='3 am [UTC]')
-    model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',                                        linewidth=2, label="4 am [UTC]" )
+    if route_name =='TWSB':
+        model_salinity_3rd_hour=axs[0].plot(lon11,value_mean_3rd_hour,'DodgerBlue',\
+                                    linewidth=2, label='2 am [UTC]')
+        model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',\
+                                        linewidth=2, label="3 am [UTC]" )
+    else:
+        model_salinity_3rd_hour=axs[0].plot(lon11,value_mean_3rd_hour,'DodgerBlue',\
+                                    linewidth=2, label='3 am [UTC]')
+        model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',\
+                                        linewidth=2, label="4 am [UTC]" )
+
+    #model_salinity_3rd_hour=axs[0].plot(lon11,value_mean_3rd_hour,'DodgerBlue',                                    #linewidth=2, label='3 am [UTC]')
+    #model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',                                        #linewidth=2, label="4 am [UTC]" )
     observation_salinity=axs[0].plot(lon1_2_4,salinity1_2_4,'DarkGreen', linewidth=2, label="Observed")
     axs[0].text(0.25, -0.1,'Observations from Ocean Networks Canada',                 transform=axs[0].transAxes, color='white')
 
