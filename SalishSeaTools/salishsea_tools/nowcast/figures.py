@@ -235,7 +235,7 @@ def axis_colors(ax, plot):
     return ax
 
 
-def find_model_point(lon, lat, X, Y, tol1=0.015, tol2=0.015):
+def find_model_point(lon, lat, X, Y, tol_lon=0.016, tol_lat=0.011):
     """Finds a model grid point close to a specified latitude and longitude.
     Should be used for non-NEMO grids like the atmospheric forcing grid.
 
@@ -251,21 +251,31 @@ def find_model_point(lon, lat, X, Y, tol1=0.015, tol2=0.015):
     :arg Y: The model latitude grid.
     :type Y: numpy array
 
+    :arg tol_lon: tolerance on grid spacing for longitude
+    :type tol_lon: float
+
+    :arg tol_lat: tolerance on grid spacing for latitude
+    :type tol_lat: float
+
     :returns: j-index and i-index of the closest model grid point.
     """
-
-    # Tolerance for searching for grid points
-    # (approximate distances between adjacent grid points)
-    #tol1 = 0.015  # lon
-    #tol2 = 0.015  # lat
 
     # Search for a grid point with longitude or latitude within
     # tolerance of measured location
     j, i = np.where(
         np.logical_and(
-            (np.logical_and(X > lon - tol1, X < lon + tol1)),
-            (np.logical_and(Y > lat - tol2, Y < lat + tol2))))
+            (np.logical_and(X > lon - tol_lon, X < lon + tol_lon)),
+            (np.logical_and(Y > lat - tol_lat, Y < lat + tol_lat))))
 
+    if j.size > 1 or i.size > 1:
+        raise ValueError(
+            'Multiple model points found. tol_lon/tol_lat too big.'
+        )
+    elif not j or not i:
+        raise ValueError(
+            'No model point found. tol_lon/tol_lat too small or '
+            'lon/lat outside of domain.'
+        )
     return j, i
 
 
