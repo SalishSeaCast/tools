@@ -1965,7 +1965,7 @@ def winds_average_max(
 
     return fig
 
-def add_bathy(XX, lines, ax)
+def add_bathy(XX, lines, ax):
     # read bathy
     #nc_filepath = '../../NEMO-forcing/grid/grid_bathy.nc'
     nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
