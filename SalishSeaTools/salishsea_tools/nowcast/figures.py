@@ -2041,9 +2041,9 @@ def thalweg_salinity(
     ax.set_ylabel('Depth [m]', **axis_font)
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('w')
+    ax.set_axis_bgcolor('burlywood')
     ########################
-    add_bathy(XX, lines, ax)
+    #add_bathy(XX, lines, ax)
     ########################
     return fig
 
@@ -2101,10 +2101,10 @@ def thalweg_temperature(
     ax.set_ylabel('Depth [m]', **axis_font)
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('w')
+    ax.set_axis_bgcolor('burlywood')
     
     ########################
-    add_bathy(XX, lines, ax)
+    #add_bathy(XX, lines, ax)
     ########################
     
     return fig
