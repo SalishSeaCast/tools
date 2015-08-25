@@ -79,15 +79,15 @@ WIND_SITES = {
     'Nanaimo': {
         'lat': 49.16, 
         'lon': -123.93},
-    'Halibut Bank': {
-        'lat': 49.34,
-        'lon': -123.72},
+#    'Halibut Bank': {
+#        'lat': 49.34,
+#        'lon': -123.72},
     'Dungeness': {
         'lat': 48.15,
         'lon': -123.117},
-    'La Perouse Bank': {
-        'lat': 48.83,
-        'lon': -126.0},
+ #   'La Perouse Bank': {
+ #       'lat': 48.83,
+ #       'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25},
