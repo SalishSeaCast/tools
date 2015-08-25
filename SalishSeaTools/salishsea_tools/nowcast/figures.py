@@ -1610,12 +1610,13 @@ def compare_tidalpredictions_maxSSH(
 
 def plot_thresholds_all(
     grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1,
-    figsize=(20, 15.5),
+    figsize=(20, 25),
 ):
     """Plots sea surface height over one day with respect to warning
     thresholds.
 
     This function applies only to Point Atkinson, Campbell River, and Victoria.
+    8/25/15: added Nanaimo and Cherry Point
     There are three different warning thresholds.
     The locations of stations are colored depending on the threshold in
     which they fall: green, yellow, red.
@@ -1648,7 +1649,7 @@ def plot_thresholds_all(
 
     # Figure set up
     fig = plt.figure(figsize=figsize, facecolor='#2B3E50')
-    gs = gridspec.GridSpec(3, 2, width_ratios=[1.5, 1])
+    gs = gridspec.GridSpec(5, 2, width_ratios=[1.5, 1])
     gs.update(wspace=0.13, hspace=0.2)
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
 
@@ -1664,7 +1665,7 @@ def plot_thresholds_all(
     tzone = '[PST]' if PST else '[UTC]'
     t_shift = time_shift if PST else 0
 
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
+    names = ['Point Atkinson', 'Campbell River', 'Victoria', 'Nanaimo','Cherry Point']
     for M, name in enumerate(names):
         # Get sea surface height
         j, i = tidetools.find_closest_model_point(
