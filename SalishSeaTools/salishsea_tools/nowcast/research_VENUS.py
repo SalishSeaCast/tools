@@ -38,16 +38,6 @@ from salishsea_tools import (
 )
 from salishsea_tools.nowcast import (figures, analyze)
 
-# Plotting colors
-# model_c = 'MediumBlue'
-# observations_c = 'DarkGreen'
-# predictions_c = 'MediumVioletRed'
-# stations_c = cm.rainbow(np.linspace(0, 1, 7))
-
-# Time shift for plotting in PST
-time_shift = datetime.timedelta(hours=-8)
-hfmt = mdates.DateFormatter('%m/%d %H:%M')
-
 # Font format
 title_font = {
     'fontname': 'Bitstream Vera Sans', 'size': '15', 'color': 'white',
