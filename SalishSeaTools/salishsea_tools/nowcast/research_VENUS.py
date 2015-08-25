@@ -39,10 +39,10 @@ from salishsea_tools import (
 from salishsea_tools.nowcast import (figures, analyze)
 
 # Plotting colors
-model_c = 'MediumBlue'
-observations_c = 'DarkGreen'
-predictions_c = 'MediumVioletRed'
-stations_c = cm.rainbow(np.linspace(0, 1, 7))
+# model_c = 'MediumBlue'
+# observations_c = 'DarkGreen'
+# predictions_c = 'MediumVioletRed'
+# stations_c = cm.rainbow(np.linspace(0, 1, 7))
 
 # Time shift for plotting in PST
 time_shift = datetime.timedelta(hours=-8)
@@ -583,7 +583,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     vmax = round(max_speed, 1)
     vmin = - vmax
     step = 0.05
-    cs=np.arange(vmin, vmax+step, step)
+    cs = np.arange(vmin, vmax + step, step)
 
     cmap = plt.get_cmap('bwr')
 
@@ -616,7 +616,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
         ax.set_ylim([profile[1], profile[0]])
         ax.set_xlim([0.25, 23])
         ax.set_ylabel('Depth [m]', **axis_font)
-        figures.axis_colors(ax, 'white')
+        figures.axis_colors(ax, 'gray')
         ax.set_title(
             '{dire} {name} Velocities at VENUS {node} - {date}'.format(
                 dire=direc, name=name, node=station, date=date), **title_font)
@@ -678,7 +678,7 @@ def plottimeavADCP(grid_m, grid_o, day, station):
         ax.plot(np.nanmean(
             lastvel, axis=0), dep_t[-2:], '--b', label='Bottom grid cell')
         ax.set_ylabel('Velocity [m/s]', **axis_font)
-        figures.axis_colors(ax, 'white')
+        figures.axis_colors(ax, 'gray')
         ax.set_title('{dire} velocities at VENUS {node}'.format(
             dire=direc, node=station, date=date), **title_font)
         ax.grid()
@@ -743,7 +743,7 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.plot(np.arange(0.25, 24, timestep), velo, label='Observations')
         ax.set_xlim([0, 24])
         ax.set_ylabel('Velocity [m/s]', **axis_font)
-        figures.axis_colors(ax, 'white')
+        figures.axis_colors(ax, 'gray')
         ax.set_title(
             'Depth Averaged ({}-{}m) {dire} velocities at VENUS {node} -{date}'
             .format(
