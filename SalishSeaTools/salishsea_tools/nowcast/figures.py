@@ -115,7 +115,9 @@ WIND_SITES = {
 SITES = {
     'Nanaimo': {
         'lat': 49.16, 
-        'lon': -123.93},
+        'lon': -123.93,
+        'msl': 3.08,
+        'extreme_ssh': 5.47},
     'Halibut Bank': {
         'lat': 49.34,
         'lon': -123.72},
@@ -154,7 +156,9 @@ SITES = {
     'Cherry Point': {
         'lat': 48.866667,
         'lon': -122.766667,
-        'stn_no': 9449424},
+        'stn_no': 9449424,
+        'msl': 3.543,
+        'extreme_ssh': 5.846},
     'Sandheads': {
         'lat': 49.10,
         'lon': -123.30},
@@ -708,7 +712,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
     Y = weather.variables['nav_lat'][:]
     X = weather.variables['nav_lon'][:] - 360
 
-    [j, i] = find_model_point(lon, lat, X, Y, tol1=0.5, tol2=0.5)
+    [j, i] = find_model_point(lon, lat, X, Y)
 
     wind = np.array([])
     direc = np.array([], 'double')
