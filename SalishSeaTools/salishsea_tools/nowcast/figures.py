@@ -1895,6 +1895,13 @@ def winds_average_max(
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
+    # for m/s
+    ax.arrow(-122.75, 50.65, 0. * scale * k2ms, -5. * scale * k2ms,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.83, 50.5, "5 knots in m/s", rotation=90, fontsize=20)
+    
+    
 
     # Stations
     if station == 'all':
