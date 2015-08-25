@@ -1966,13 +1966,16 @@ def winds_average_max(
     return fig
 
 def add_bathy(XX, lines, ax):
+    baseline = 450.00
     # read bathy
     nc_filepath = '/ocean/sallen/allen/research/MEOPAR/NEMO-forcing/grid/grid_bathy.nc'
     #nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
     bathy = nc.Dataset(nc_filepath, 'r')
     depth = bathy.variables['grid_bathy']
     # Get the depth
-    floor[0] = 2*depth[0]
+    floor = np.empty_like(depth)
+    ceil = np.empty_like(depth)
+    ceil[0] = 0.
     for k in range(1,40):
         ceil[k] = floor[k-1]
         floor[k] = 2*depth[k] -floor[k-1]
@@ -1983,7 +1986,7 @@ def add_bathy(XX, lines, ax):
     # draw
     xs = XX.min()
     xe = XX.max()
-    ax.bar(np.arange(xs, xe), 400-thalweg_bottom[xs:xe], width=1, bottom = -400, color='burlywood');
+    ax.bar(np.arange(xs, xe), baseline-thalweg_bottom[xs:xe], width=1, bottom = -1*baseline, color='burlywood');
     
 def thalweg_salinity(
     grid_T_d, figsize=(20, 8),
@@ -2038,7 +2041,7 @@ def thalweg_salinity(
     ax.set_ylabel('Depth [m]', **axis_font)
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('burlywood')
+    ax.set_axis_bgcolor('w')
     ########################
     add_bathy(XX, lines, ax)
     ########################
@@ -2098,7 +2101,7 @@ def thalweg_temperature(
     ax.set_ylabel('Depth [m]', **axis_font)
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('burlywood')
+    ax.set_axis_bgcolor('w')
     
     ########################
     add_bathy(XX, lines, ax)
