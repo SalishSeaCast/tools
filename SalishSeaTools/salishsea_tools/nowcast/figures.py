@@ -1147,7 +1147,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     ax.arrow(-122.2, 50.6, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.28, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
+    ax.text(-122.28, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
 
     # Location labels
     ax.text(-125.7, 47.7, 'Pacific\nOcean',
@@ -1832,7 +1832,7 @@ def winds_average_max(
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
     # Stations
     if station == 'all':
@@ -2336,7 +2336,7 @@ def plot_threshold_website(
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
