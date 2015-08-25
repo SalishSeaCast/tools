@@ -72,8 +72,8 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
-WIND_SITE_NAME = ['Nanaimo', 'Halibut Bank', 'Dungeness', 'La Perouse Bank', \
-'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads']
+WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', \
+'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 'Halibut Bank' 'La Perouse Bank'
 
 WIND_SITES = {
     'Nanaimo': {
