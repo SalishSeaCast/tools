@@ -1143,7 +1143,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
                                model_path, t, 4, average=True)
 
     # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
+    names = ['Point Atkinson', 'Campbell River', 'Victoria','Nanaimo','Cherry Point']
 
     # Set up Information
     max_sshs = {}
