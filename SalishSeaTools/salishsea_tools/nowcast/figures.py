@@ -45,6 +45,10 @@ from salishsea_tools import (
     tidetools,
 )
 
+# =============================== #
+# <------- Kyle 2015/08/25
+ms2k = 1/0.514444
+# =============================== #
 
 # Plotting colors
 model_c = 'MediumBlue'
@@ -69,6 +73,18 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
 SITES = {
+    'Nanaimo': {
+        'lat': 49.16 
+        'lon': -123.93},
+    'Halibut Bank': {
+        'lat': 49.34 
+        'lon': -123.72},
+    'Dungeness': {
+        'lat': 48.15
+        'lon': -123.117},
+    'La Perouse Bank': {
+        'lat': 48.83
+        'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25,
@@ -893,7 +909,7 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
 
     # Arrows
     ax.arrow(
-        lon, lat, scale * uwind[0], scale * vwind[0],
+        lon, lat, scale * uwind[0] * ms2k, scale * vwind[0] * ms2k,
         head_width=0.05, head_length=0.1, width=0.02,
         color='white', fc='DarkMagenta', ec='black')
     tplot = t[inds[0]:inds[-1] + 1]
@@ -1715,16 +1731,24 @@ def Sandheads_winds(
 
     # Plot wind speed
     ax1.plot(
-        time + PST * time_shift, winds,
+        time + PST * time_shift, winds*ms2k,
         color=observations_c, lw=2, label='Observations')
-    ax1.plot(t + PST * time_shift, wind, lw=2, color=model_c, label='Model')
+    ax1.plot(t + PST * time_shift, wind*ms2k, lw=2, color=model_c, label='Model')
     ax1.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
-    ax1.set_ylim([0, 20])
+    ax1.set_ylim([0, 20*ms2k])
     ax1.set_title('Winds at Sandheads:  ' + start, **title_font)
-    ax1.set_ylabel('Wind Speed (m/s)', **axis_font)
+    ax1.set_ylabel('Wind Speed (knots)', **axis_font)
     ax1.set_xlabel('Time {}'.format(timezone), **axis_font)
     ax1.legend(loc=0)
     ax1.grid()
+    # =================================================== #
+    # <----------------------- Kyle 2015/08/25
+    ax2 = ax1.twinx()
+    ax2.set_ylim([0, 20])
+    ax2.set_ylabel('Wind Speed (m/s)', **axis_font)
+    axis_colors(ax2, 'gray')
+    ax2.xaxis.set_major_formatter(hfmt)
+    # =================================================== #
     axis_colors(ax1, 'gray')
     ax1.xaxis.set_major_formatter(hfmt)
 
