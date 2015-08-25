@@ -135,6 +135,8 @@ def make_site_page(run_type, page_type, run_date, config):
             'Vic_maxSSH',
             'PA_maxSSH',
             'CR_maxSSH',
+            'Nan_maxSSH',
+            'CP_maxSSH',
             'NOAA_ssh',
             'WaterLevel_Thresholds',
             'SH_wind',
