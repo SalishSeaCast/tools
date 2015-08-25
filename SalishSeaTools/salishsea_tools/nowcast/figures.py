@@ -1097,7 +1097,7 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', do
     return ax
 
 
-def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
+def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
                       PST=1, figsize=(18, 20)):
     """Thumbnail for the UBC Storm Surge website includes the thresholds
     indicating the risk of flooding in three stations and the wind speeds and
@@ -1890,7 +1890,7 @@ def winds_average_max(
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline)
-    scale = 0.1
+    scale = 0.05
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
@@ -2263,7 +2263,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
 
 def plot_threshold_website(
-    grid_B, grid_T, model_path, PNW_coastline, scale=0.1, PST=1,
+    grid_B, grid_T, model_path, PNW_coastline, scale=0.05, PST=1,
     figsize=(18, 20),
 ):
     """Overview image for Salish Sea website.
