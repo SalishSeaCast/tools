@@ -72,6 +72,46 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
+WIND_SITE_NAME = ['Nanaimo', 'Halibut Bank', 'Dungeness', 'La Perouse Bank', \
+'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads']
+
+WIND_SITES = {
+    'Nanaimo': {
+        'lat': 49.16, 
+        'lon': -123.93},
+    'Halibut Bank': {
+        'lat': 49.34,
+        'lon': -123.72},
+    'Dungeness': {
+        'lat': 48.15,
+        'lon': -123.117},
+    'La Perouse Bank': {
+        'lat': 48.83,
+        'lon': -126.0},
+    'Point Atkinson': {
+        'lat': 49.33,
+        'lon': -123.25},
+    'Victoria': {
+        'lat': 48.41,
+        'lon': -123.36},
+    'Campbell River': {
+        'lat': 50.04,
+        'lon': -125.24},
+    'Neah Bay': {
+        'lat': 48.4,
+        'lon': -124.6},
+    'Friday Harbor': {
+        'lat': 48.55,
+        'lon': -123.016667},
+    'Cherry Point': {
+        'lat': 48.866667,
+        'lon': -122.766667},
+    'Sandheads': {
+        'lat': 49.10,
+        'lon': -123.30},
+    }
+
+
 SITES = {
     'Nanaimo': {
         'lat': 49.16, 
@@ -1140,7 +1180,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
+    for name in WIND_SITE_NAME:
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
@@ -1836,14 +1876,7 @@ def winds_average_max(
 
     # Stations
     if station == 'all':
-        names = [
-            'Neah Bay',
-            'Victoria',
-            'Friday Harbor',
-            'Cherry Point',
-            'Sandheads',
-            'Point Atkinson',
-            'Campbell River']
+        names = WIND_SITE_NAME
         colors = stations_c
     else:
         names = [station]
@@ -2329,7 +2362,7 @@ def plot_threshold_website(
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
+    for name in WIND_SITE_NAME:
         plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
 
     # Reference arrow
