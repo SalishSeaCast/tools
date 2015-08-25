@@ -231,7 +231,7 @@ def axis_colors(ax, plot):
     return ax
 
 
-def find_model_point(lon, lat, X, Y):
+def find_model_point(lon, lat, X, Y, tol1=0.015, tol2=0.015):
     """Finds a model grid point close to a specified latitude and longitude.
     Should be used for non-NEMO grids like the atmospheric forcing grid.
 
@@ -252,8 +252,8 @@ def find_model_point(lon, lat, X, Y):
 
     # Tolerance for searching for grid points
     # (approximate distances between adjacent grid points)
-    tol1 = 0.015  # lon
-    tol2 = 0.015  # lat
+    #tol1 = 0.015  # lon
+    #tol2 = 0.015  # lat
 
     # Search for a grid point with longitude or latitude within
     # tolerance of measured location
@@ -708,7 +708,7 @@ def get_model_winds(lon, lat, t_orig, t_final, model_path):
     Y = weather.variables['nav_lat'][:]
     X = weather.variables['nav_lon'][:] - 360
 
-    [j, i] = find_model_point(lon, lat, X, Y)
+    [j, i] = find_model_point(lon, lat, X, Y, tol1=0.5, tol2=0.5)
 
     wind = np.array([])
     direc = np.array([], 'double')
