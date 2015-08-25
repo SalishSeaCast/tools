@@ -1967,8 +1967,8 @@ def winds_average_max(
 
 def add_bathy(XX, lines, ax):
     # read bathy
-    #nc_filepath = '../../NEMO-forcing/grid/grid_bathy.nc'
-    nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
+    nc_filepath = '../../NEMO-forcing/grid/grid_bathy.nc'
+    #nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
     bathy = nc.Dataset(nc_filepath, 'r')
     depth = bathy.variables['grid_bathy']
     # Get the depth
