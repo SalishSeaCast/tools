@@ -33,7 +33,8 @@ matplotlib.use('Agg')
 from salishsea_tools.nowcast import (
     figures,
     lib,
-    research_VENUS
+    research_VENUS,
+    research_ferries,
 )
 
 
@@ -270,6 +271,36 @@ def make_publish_plots(
         station='all', wind_type='max')
     filename = os.path.join(
         plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor())
+    
+def make_comparisons_plots(
+    dmy, model_path, bathy, results_dir, plots_dir, coastline
+):
+    """Make the plots we wish to look at for comparisons purposes.
+    """
+    # get the results
+    grid_T_dy = results_dataset('1d', 'grid_T', results_dir)
+    grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
+    grid_U_dy = results_dataset('1d', 'grid_U', results_dir)
+    grid_V_dy = results_dataset('1d', 'grid_V', results_dir)
+    grid_c = results_dataset_gridded(
+        'central', results_dir)
+    grid_e = results_dataset_gridded('east', results_dir)
+    
+    #do the plots
+    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'HBDB')
+    filename = os.path.join(
+        plots_dir, 'HBDB_ferry_salinity_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor())
+
+    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'TWDP')
+    filename = os.path.join(
+        plots_dir, 'TWDP_ferry_salinity_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor())
+
+    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'TWSB')
+    filename = os.path.join(
+        plots_dir, 'TWSB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
 
