@@ -1743,11 +1743,11 @@ def Sandheads_winds(
     ax1.grid()
     # =================================================== #
     # <----------------------- Kyle 2015/08/25
-    ax2 = ax1.twinx()
-    ax2.set_ylim([0, 20])
-    ax2.set_ylabel('Wind Speed (m/s)', **axis_font)
-    axis_colors(ax2, 'gray')
-    ax2.xaxis.set_major_formatter(hfmt)
+    ax12 = ax1.twinx()
+    ax12.set_ylim([0, 20])
+    ax12.set_ylabel('Wind Speed (m/s)', **axis_font)
+    axis_colors(ax12, 'gray')
+    ax12.xaxis.set_major_formatter(hfmt)
     # =================================================== #
     axis_colors(ax1, 'gray')
     ax1.xaxis.set_major_formatter(hfmt)
