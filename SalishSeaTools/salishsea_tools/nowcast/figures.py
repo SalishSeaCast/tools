@@ -1974,8 +1974,8 @@ def add_bathy(XX, lines, ax):
     # Get the depth
     floor[0] = 2*depth[0]
     for k in range(1,40):
-    ceil[k] = floor[k-1]
-    floor[k] = 2*depth[k] -floor[k-1]
+        ceil[k] = floor[k-1]
+        floor[k] = 2*depth[k] -floor[k-1]
     # find the actually bottom depth
     bottom = np.max(floor, axis=0)
     # find the values along the thalweg
