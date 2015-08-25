@@ -641,7 +641,7 @@ def get_tides(name):
     path = (
         '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
         'tidal_predictions/')
-    fname = '{}_tidal_prediction_01-Jan-2015-01-Jan-2020.csv'.format(name)
+    fname = '{}_tidal_prediction_01-Jan-2015_01-Jan-2020.csv'.format(name)
     tfile = os.path.join(path, fname)
     ttide, msl = stormtools.load_tidal_predictions(tfile)
 
