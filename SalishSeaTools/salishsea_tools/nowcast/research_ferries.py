@@ -46,7 +46,6 @@ title_font = {
     'weight': 'medium'
 }
 axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
-get_ipython().magic(u'matplotlib inline')
 
 bathy = nc.Dataset('/data/nsoontie/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc')
 PNW_coastline = sio.loadmat('/ocean/rich/more/mmapbase/bcgeo/PNW.mat')
