@@ -50,7 +50,6 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 bathy = nc.Dataset('/data/nsoontie/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc')
 PNW_coastline = sio.loadmat('/ocean/rich/more/mmapbase/bcgeo/PNW.mat')
 
-# In[2]:
 
 def results_dataset(period, grid):
     """Return the results dataset for period (e.g. 1h or 1d)
@@ -63,18 +62,11 @@ def results_dataset(period, grid):
     filepaths = glob(os.path.join(results_dir, filename_pattern.format(period=period, grid=grid)))
     return nc.Dataset(filepaths[0])
 
-
-# In[3]:
-
-#run_date = datetime.datetime(2015,8,22)
-
 today = datetime.datetime.today()
 oneday = datetime.timedelta(days = 1)
 run_date= today - oneday
 date_str_yesterday = run_date.strftime('%Y%m%d')
 date_str_today = today.strftime('%Y%m%d')
-
-# In[4]:
 
 def date(year, month, day_start, day_end, period, grid):
     
@@ -94,35 +86,20 @@ def date(year, month, day_start, day_end, period, grid):
     return files_all
 
 
-# In[5]:
 
 from glob import glob
 grid_T_hr = results_dataset('1h', 'grid_T')
 filepath_name = date(today.year,today.month,today.day,today.day,'1h','grid_T') 
 
 
-# In[6]:
 
 latitude=grid_T_hr.variables['nav_lat'] 
 longitude=grid_T_hr.variables['nav_lon']
-
-
-# In[7]:
 
 sal_hr = grid_T_hr.variables['vosaline']
 t, z = 3, 1
 sal_hr = np.ma.masked_values(sal_hr[t, z], 0)
 
-
-# ## Prepare salinity data
-
-# In[8]:
-
-#route_name = 'HBDB'
-#saline=sio.loadmat('/data/jieliu/MEOPAR/FerrySalinity/%s/%s_TSG%s.mat' %(route_name, route_name, date_str_yesterday))
-
-
-# In[9]:
 
 def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3rd, saline_nemo_4rd):
     k=0
@@ -149,8 +126,6 @@ def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3r
             
     return values, valuess, weights
 
-
-# In[10]:
 
 def salinity_fxn(saline, route_name):
     #saline=sio.loadmat('/data/jieliu/MEOPAR/FerrySalinity/%s/%s_TSG%s.mat' %(route_name, route_name, date_str_yesterday))
@@ -199,9 +174,6 @@ def salinity_fxn(saline, route_name):
     bathy, X, Y = tidetools.get_SS2_bathy_data()
     
     aa=date(run_date.year,run_date.month,run_date.day,run_date.day,'1h','grid_T') 
-    #sim_date = datetime.datetime(2015,3,19)####need to change for \
-    #different daily model results, construct a datetime object
-    #run_date = datetime.datetime(2015,3,19)
     
     date_str_title = today.strftime('%d-%b-%Y') ##creat a string based on this date
     tracers=nc.Dataset(aa[0])
@@ -232,17 +204,9 @@ def salinity_fxn(saline, route_name):
 
     return lon11, lat11, lon1_2_4, lat1_2_4,    value_mean_3rd_hour, value_mean_4rd_hour,    salinity11, salinity1_2_4,date_str_title
 
-
-# In[11]:
-
-# Hides Deprecation warming - needs fixing
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
-
-# In[12]:
-
-# Dictionary of ferry stations - new
 ferry_stations = {'Tsawwassen': {'lat': 49.0084,'lon': -123.1281},
                   'Duke': {'lat': 49.1632,'lon': -123.8909},
                   'Vancouver': {'lat': 49.2827,'lon': -123.1207},
@@ -251,8 +215,6 @@ ferry_stations = {'Tsawwassen': {'lat': 49.0084,'lon': -123.1281},
                   'Swartz':{'lat':48.6882 , 'lon':-123.4102 }
                  }
 
-
-# In[13]:
 
 def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     """ plot daily salinity comparisons between ferry observations 
@@ -275,7 +237,7 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
 
     figures.plot_map(axs[1], grid_B, PNW_coastline)
     axs[1].set_xlim(-124.5, -122.5)
-    axs[1].set_ylim(48.2, 49.5)
+    axs[1].set_ylim(48.2, 49.6)
     viz_tools.set_aspect(axs[1],coords='map',lats=latitude)
     cmap=plt.get_cmap('spectral')
     cmap.set_bad('burlywood')
@@ -289,12 +251,6 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.7)
     if route_name == 'HBDB':
         stations=['Horseshoe Bay','Nanaimo','Vancouver']
-        # axs[1].annotate (stations[0],(ferry_stations[stations[0]]['lon'] + 0.02,\
-    #ferry_stations[stations[0]]['lat'] + 0.12), fontsize=15, color='black', bbox=bbox_args )
-        #axs[1].annotate (stations[1],(ferry_stations[stations[1]]['lon'] - 0.35,\
-    #ferry_stations[stations[1]]['lat'] ),fontsize=15, color='black', bbox=bbox_args )
-        #axs[1].annotate (stations[2],(ferry_stations[stations[2]]['lon'] - 0.1,\
-    #ferry_stations[stations[2]]['lat']+ 0.09 ),fontsize=15, color='black', bbox=bbox_args )
     elif route_name =='TWDP':
         stations=['Tsawwassen','Duke','Vancouver']
     elif route_name =='TWSB':
@@ -304,8 +260,8 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
         axs[1].plot(ferry_stations[stn]['lon'], ferry_stations[stn]['lat'], marker='D',                     color='white',                 markersize=10, markeredgewidth=2)
         
     axs[1].annotate (stations[0],(ferry_stations[stations[0]]['lon'] + 0.02,    ferry_stations[stations[0]]['lat'] + 0.12), fontsize=15, color='black', bbox=bbox_args )
-    axs[1].annotate (stations[1],(ferry_stations[stations[1]]['lon'] - 0.35,    ferry_stations[stations[1]]['lat'] ),fontsize=15, color='black', bbox=bbox_args )
-    axs[1].annotate (stations[2],(ferry_stations[stations[2]]['lon'] - 0.1,    ferry_stations[stations[2]]['lat']+ 0.09 ),fontsize=15, color='black', bbox=bbox_args )
+    axs[1].annotate (stations[1],(ferry_stations[stations[1]]['lon'] - 0.5,    ferry_stations[stations[1]]['lat'] ),fontsize=15, color='black', bbox=bbox_args )
+    axs[1].annotate (stations[2],(ferry_stations[stations[2]]['lon'] ,    ferry_stations[stations[2]]['lat']+ 0.09 ),fontsize=15, color='black', bbox=bbox_args )
     
     figures.axis_colors(axs[1], 'white')
     
@@ -324,8 +280,6 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
         model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',\
                                         linewidth=2, label="4 am [UTC]" )
 
-    #model_salinity_3rd_hour=axs[0].plot(lon11,value_mean_3rd_hour,'DodgerBlue',                                    #linewidth=2, label='3 am [UTC]')
-    #model_salinity_4rd_hour=axs[0].plot(lon11,value_mean_4rd_hour,'MediumBlue',                                        #linewidth=2, label="4 am [UTC]" )
     observation_salinity=axs[0].plot(lon1_2_4,salinity1_2_4,'DarkGreen', linewidth=2, label="Observed")
     axs[0].text(0.25, -0.1,'Observations from Ocean Networks Canada',                 transform=axs[0].transAxes, color='white')
 
@@ -334,7 +288,7 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     axs[0].set_title('Surface Salinity: ' + date_str_title, **title_font)
     axs[0].set_xlabel('Longitude', **axis_font)
     axs[0].set_ylabel('Practical Salinity', **axis_font)
-    axs[0].legend(loc = 3)
+    axs[0].legend(loc = 4)
     axs[0].grid()
    
 
@@ -343,25 +297,6 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     
     return fig
 
-
-# # Plot
-
-# In[14]:
-
-#fig = salinity_ferry_route(grid_T_hr, bathy, PNW_coastline, 'HBDB')
-
-
-# In[15]:
-
-#fig = salinity_ferry_route(grid_T_hr, bathy, PNW_coastline, 'TWDP')
-
-
-# In[16]:
-
-#fig = salinity_ferry_route(grid_T_hr, bathy, PNW_coastline, 'TWSB')
-
-
-# In[ ]:
 
 
 
