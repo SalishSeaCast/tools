@@ -157,7 +157,6 @@ logging:
       - eolson@eos.ubc.ca
       - bmooremaley@eos.ubc.ca
       - jieliu@eos.ubc.ca
-      - mdunn@eos.ubc.ca
 
 # Message system
 zmq:
