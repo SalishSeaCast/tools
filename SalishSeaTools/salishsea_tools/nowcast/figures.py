@@ -2403,6 +2403,8 @@ def plot_threshold_website(
     ax.text(-123.21, 49.4, ' Point\nAtkinson', fontsize=20)
     ax.text(-125.76, 50.05, 'Campbell\n River', fontsize=20)
     ax.text(-123.8, 48.43, 'Victoria', fontsize=20)
+    ax.text(-122.7, 48.9, 'Cherry\n Point', fontsize=20)
+    ax.text(-124.2, 49, 'Nanaimo', fontsize=20)
 
     # Figure format
     # Don't shift to PST because we want the date to represent the model run.
