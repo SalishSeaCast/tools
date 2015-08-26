@@ -1757,28 +1757,28 @@ def Sandheads_winds(
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[1, 0])
     ax0 = fig.add_subplot(gs[:, 1])
-    ax12 = ax1.twinx()  # axis for m/s wind plotting
+    ax12 = ax1.twinx()  # axis for knots wind plotting
 
     # Plot wind speed
-    ax12.plot(
+    ax1.plot(
         time + PST * time_shift, winds,
         color=observations_c, lw=2, label='Observations')
-    ax12.plot(t + PST * time_shift, wind, lw=2, color=model_c, label='Model')
-    ax12.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
-    ax12.set_ylim(wind_ax)
-    ax12.set_title('Winds at Sandheads:  ' + start, **title_font)
-    ax12.set_ylabel('Wind Speed (m/s)', **axis_font)
-    ax12.set_xlabel('Time {}'.format(timezone), **axis_font)
-    ax12.legend(loc=0)
+    ax1.plot(t + PST * time_shift, wind, lw=2, color=model_c, label='Model')
+    ax1.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
+    ax1.set_ylim(wind_ax)
+    ax1.set_title('Winds at Sandheads:  ' + start, **title_font)
+    ax1.set_ylabel('Wind Speed (m/s)', **axis_font)
+    ax1.set_xlabel('Time {}'.format(timezone), **axis_font)
+    ax1.legend(loc=0)
     # =================================================== #
     # <----------------------- Kyle 2015/08/25
     # axis for knots plotting
-    ax1.set_ylim(wind_ax*ms2k)
-    ax1.set_ylabel('Wind Speed (knots)', **axis_font)
-    axis_colors(ax1, 'gray')
-    # =================================================== #
+    ax12.set_ylim(wind_ax*ms2k)
+    ax12.set_ylabel('Wind Speed (knots)', **axis_font)
     axis_colors(ax12, 'gray')
-    ax12.xaxis.set_major_formatter(hfmt)
+    # =================================================== #
+    axis_colors(ax1, 'gray')
+    ax1.xaxis.set_major_formatter(hfmt)
     ax1.grid()
 
     # Plot wind direction
