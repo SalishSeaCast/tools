@@ -555,7 +555,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     u, v, dep = load_vel(day, grid_o, 'observation', station, profile)
 
     # Begin figure
-    fig, ([axmu, axmv], [axou, axov]) = plt.subplots(
+    fig, ([axmu, axou], [axmv, axov]) = plt.subplots(
         2, 2,
         figsize=(20, 10),
         sharex=True)
@@ -581,7 +581,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     # Plotting the comparison between the model and the obs velocities
     increment = [0.25, 0.5, 0.25, 0.5]
     velocities = [u_E.transpose(), u, v_N.transpose(), v]
-    axes = [axmu, axmv, axou, axov]
+    axes = [axmu, axou, axmv, axov]
     depths = [dep_t, dep, dep_t, dep]
     names = ['Model', 'Observations', 'Model', 'Observations']
     direction = ['East/West', 'East/West', 'North/South', 'North/South']
