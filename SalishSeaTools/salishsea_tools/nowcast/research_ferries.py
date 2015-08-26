@@ -241,7 +241,7 @@ def salinity_ferry_route(grid_T, grid_B, PNW_coastline, route_name):
     viz_tools.set_aspect(axs[1],coords='map',lats=latitude)
     cmap=plt.get_cmap('spectral')
     cmap.set_bad('burlywood')
-    mesh=axs[1].pcolormesh(longitude[:],latitude[:],sal_hr[:],cmap=cmap)
+    mesh=axs[1].contourf(longitude[:],latitude[:],sal_hr[:], 10, cmap=cmap)
     cbar=fig.colorbar(mesh)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('Pratical Salinity', color='white')
