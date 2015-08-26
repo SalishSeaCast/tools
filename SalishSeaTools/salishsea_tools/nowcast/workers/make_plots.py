@@ -116,11 +116,12 @@ def configure_argparser(prog, description, parents):
         "forecast2" means the second forecast, following forecast
         ''')
     parser.add_argument(
-        'plot_type', choices=set(('publish', 'research')),
+        'plot_type', choices=set(('publish', 'research', 'comparison')),
         help='''
         Which type of plots to produce:
         "publish" means ssh, weather and other approved plots for publishing,
         "research" means tracers, currents and other research plots
+        "comparison" means ferry salinity plots
         ''')
     parser.add_argument(
         '--run-date', type=lib.arrow_date,
@@ -152,6 +153,9 @@ def make_plots(run_date, run_type, plot_type, config, socket):
 
     if plot_type == 'publish':
         make_publish_plots(
+            dmy, model_path, bathy, results_dir, plots_dir, coastline)
+    elif plot_type == 'comparison':
+        make_comparisons_plots(
             dmy, model_path, bathy, results_dir, plots_dir, coastline)
     else:
         make_research_plots(
@@ -235,7 +239,7 @@ def make_publish_plots(
     fig = figures.compare_tidalpredictions_maxSSH(
         grid_T_hr, bathy, model_path, name='Nanaimo')
     filename = os.path.join(
-        plots_dir, 'Nan_maxSSH{date}.svg'.format(date=dmy))
+        plots_dir, 'Nan_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
@@ -272,7 +276,8 @@ def make_publish_plots(
     filename = os.path.join(
         plots_dir, 'Wind_vectors_at_max_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
-    
+
+
 def make_comparisons_plots(
     dmy, model_path, bathy, results_dir, plots_dir, coastline
 ):
@@ -286,14 +291,15 @@ def make_comparisons_plots(
     grid_c = results_dataset_gridded(
         'central', results_dir)
     grid_e = results_dataset_gridded('east', results_dir)
-    
+
     #do the plots
     fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'HBDB')
     filename = os.path.join(
         plots_dir, 'HBDB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'TWDP')
+    fig = research_ferries.salinity_ferry_route(
+        grid_T_hr, bathy, coastline, 'TWDP')
     filename = os.path.join(
         plots_dir, 'TWDP_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
