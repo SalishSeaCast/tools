@@ -362,7 +362,7 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
 
 
 def VENUS_location(grid_B, figsize=(10, 10)):
-    """Plots the location of the VENUS Central and East nodes as well as
+    """Plots the location of the VENUS Central, East and DDL nodes as well as
     Vancouver as a reference on a bathymetry map.
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
@@ -393,6 +393,8 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     lat_c = SITES['VENUS']['Central']['lat']
     lon_e = SITES['VENUS']['East']['lon']
     lat_e = SITES['VENUS']['East']['lat']
+    lon_d = SITES['VENUS']['ddl']['lon']
+    lat_d = SITES['VENUS']['ddl']['lat']
     lon_v = SITES['Vancouver']['lon']
     lat_v = SITES['Vancouver']['lat']
 
@@ -406,7 +408,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'Central',
-        (lon_c - 0.15, lat_c + 0.08),
+        (lon_c - 0.11, lat_c + 0.04),
         fontsize=15,
         color='black',
         bbox=bbox_args)
@@ -421,7 +423,22 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'East',
-        (lon_e + 0.05, lat_e + 0.08),
+        (lon_e + 0.04, lat_e + 0.01),
+        fontsize=15,
+        color='black',
+        bbox=bbox_args)
+
+    ax.plot(
+        lon_d,
+        lat_d,
+        marker='D',
+        color='Black',
+        markersize=10,
+        markeredgewidth=2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    ax.annotate(
+        'DDL',
+        (lon_d + 0.01, lat_d + 0.05),
         fontsize=15,
         color='black',
         bbox=bbox_args)
@@ -436,7 +453,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'Vancouver',
-        (lon_v - 0.15, lat_v + 0.08),
+        (lon_v - 0.15, lat_v + 0.04),
         fontsize=15,
         color='black',
         bbox=bbox_args)
