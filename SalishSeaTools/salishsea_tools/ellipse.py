@@ -127,22 +127,14 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
     if type(depthrange) == float or type(depthrange) == int:
         k = np.where(depth <= depthrange)[0][-1]
         dep = depth[k]
-
     # Case two: for a specific range of depths
     elif type(depthrange) == list:
         k = np.where(np.logical_and(
             depth > depthrange[0],
             depth < depthrange[1]))[0]
         dep = depth[k]
-        # u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
-        # v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
-
     # Case three: For the whole depth range 0 to 441m.
     else:
-        # u, time = analyze.combine_files(
-           # filesu, 'vozocrtx', depthrange, jss, iss)
-        # v, time = analyze.combine_files(
-            # filesv, 'vomecrty', depthrange, jss, iss)
         k = depthrange
         dep = depth
 
