@@ -2512,6 +2512,7 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     """
     Adjusts model output by correcting for error in using only 8 constituents.
     Based on stormtools.correct_model()
+    Uses a tidal prediction with no shallow water - a tidal predcition with 8.
 
     :arg ssh_model: an array with model ssh data
     :type ssh_model: array of numbers
@@ -2520,7 +2521,7 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     :type t_model: array of datetime objects
 
     :arg ttide: struc with tidal predictions.
-    :type ttide: struc with dimension time, pred_all, pred_8
+    :type ttide: struc with dimension time, pred_all, pred_8, pred_noshallow
 
     :arg sdt: datetime object representing start date of simulation
     :type sdt: datetime object
@@ -2531,7 +2532,9 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     :returns: corr_model: the corrected model output
     """
     # difference in tidal predictions
-    difference = ttide.pred_all-ttide.pred_8
+    difference = ttide[' pred_noshallow ']-ttide['pred_8']
+    # Note: can use pred_noshallow is a tidal prediction without shallow water.
+    # Another option is pred_all (all significant constituents)
     difference = np.array(difference)
     # interpolate difference onto model times
     corr = interp_to_model_time(t_model, difference, ttide.time)
