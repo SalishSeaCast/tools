@@ -604,6 +604,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
         ax.set_ylim([profile[1], profile[0]])
         ax.set_xlim([0.25, 23])
         ax.set_ylabel('Depth [m]', **axis_font)
+        ax.set_xlabel('Hour [UTC]', **axis_font)
         figures.axis_colors(ax, 'gray')
         ax.set_title(
             '{dire} {name} Velocities at VENUS {node} - {date}'.format(
@@ -732,6 +733,7 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.plot(np.arange(0.25, 24, timestep), velo, label='Observations')
         ax.set_xlim([0, 24])
         ax.set_ylabel('Velocity [m/s]', **axis_font)
+        ax.set_xlabel('Hour [UTC]')
         figures.axis_colors(ax, 'gray')
         ax.set_title(
             'Depth Averaged ({}-{}m) {dire} velocities at VENUS {node} -{date}'
