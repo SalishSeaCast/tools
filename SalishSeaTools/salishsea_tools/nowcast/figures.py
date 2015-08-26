@@ -49,6 +49,7 @@ from salishsea_tools import (
 # <------- Kyle 2015/08/25
 ms2k = 1/0.514444
 k2ms = 0.514444
+# conversion between m/s and knots
 # =============================== #
 
 # Plotting colors
@@ -73,49 +74,10 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
-WIND_SITE_NAME = ['Nanaimo' , 'Dungeness', 'Halibut Bank', 'La Perouse Bank', \
-'Point Atkinson', 'Victoria', 'Campbell River', 'Neah Bay', 'Friday Harbor', 'Cherry Point', 'Sandheads'] # 
-
-WIND_SITES = {
-    'Nanaimo': {
-        'lat': 49.16, 
-        'lon': -123.93},
-    'Halibut Bank': {
-        'lat': 49.34,
-        'lon': -123.72},
-    'Dungeness': {
-        'lat': 48.15,
-        'lon': -123.117},
-    'La Perouse Bank': {
-        'lat': 48.83,
-        'lon': -126.0},
-    'Point Atkinson': {
-        'lat': 49.33,
-        'lon': -123.25},
-    'Victoria': {
-        'lat': 48.41,
-        'lon': -123.36},
-    'Campbell River': {
-        'lat': 50.04,
-        'lon': -125.24},
-    'Neah Bay': {
-        'lat': 48.4,
-        'lon': -124.6},
-    'Friday Harbor': {
-        'lat': 48.55,
-        'lon': -123.016667},
-    'Cherry Point': {
-        'lat': 48.866667,
-        'lon': -122.766667},
-    'Sandheads': {
-        'lat': 49.10,
-        'lon': -123.30},
-    }
-
 
 SITES = {
     'Nanaimo': {
-        'lat': 49.16, 
+        'lat': 49.16,
         'lon': -123.93,
         'msl': 3.08,
         'extreme_ssh': 5.47},
@@ -177,6 +139,16 @@ SITES = {
         }
     }
 
+# Sites for producing water level thresold plots
+TIDAL_SITES = ['Point Atkinson', 'Victoria', 'Campbell River', 'Nanaimo',
+               'Cherry Point']
+# Sites for adding wind vectors to map
+WIND_SITES = ['La Perouse Bank', 'Neah Bay', 'Dungeness', 'Victoria',
+              'Friday Harbor', 'Cherry Point', 'Sandheads',
+              'Point Atkinson', 'Halibut Bank', 'Nanaimo', 'Campbell River']
+# Colors for wind stations
+stations_c = cm.rainbow(np.linspace(0, 1, len(WIND_SITES)))
+
 
 def save_image(fig, filename, **kwargs):
     """Save fig as an image file in filename.
@@ -236,7 +208,7 @@ def axis_colors(ax, plot):
     return ax
 
 
-def find_model_point(lon, lat, X, Y, tol_lon=0.016, tol_lat=0.011):
+def find_model_point(lon, lat, X, Y, tol_lon=0.015, tol_lat=0.015):
     """Finds a model grid point close to a specified latitude and longitude.
     Should be used for non-NEMO grids like the atmospheric forcing grid.
 
@@ -964,7 +936,7 @@ def plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale):
 
     # Arrows
     ax.arrow(
-        lon, lat, scale * uwind[0] * ms2k, scale * vwind[0] * ms2k,
+        lon, lat, scale * uwind[0], scale * vwind[0],
         head_width=0.05, head_length=0.1, width=0.02,
         color='white', fc='DarkMagenta', ec='black')
     tplot = t[inds[0]:inds[-1] + 1]
@@ -1097,7 +1069,7 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', do
     return ax
 
 
-def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
+def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
                       PST=1, figsize=(18, 20)):
     """Thumbnail for the UBC Storm Surge website includes the thresholds
     indicating the risk of flooding in three stations and the wind speeds and
@@ -1143,9 +1115,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
     inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
                                model_path, t, 4, average=True)
 
-    # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria','Nanaimo','Cherry Point']
-
     # Set up Information
     max_sshs = {}
     max_times = {}
@@ -1163,7 +1132,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
     # Map
     plot_map(ax, grid_B, PNW_coastline)
 
-    for name in names:
+    for name in TIDAL_SITES:
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
         # Get sea surface height
@@ -1177,9 +1146,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 70, 0.3, name)
-        # Plot winds
-        twind = plot_wind_vector(
-            ax, name, t_orig, t_final, model_path, inds, scale)
 
         # Information
         res = compute_residual(ssh_loc, t, ttide)
@@ -1195,20 +1161,21 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in WIND_SITE_NAME:
-        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+    for name in WIND_SITES:
+        twind = plot_wind_vector(ax, name, t_orig, t_final,
+                                 model_path, inds, scale)
 
     # Reference arrow
-    # for Knots
+    # for m/s
     ax.arrow(-122.2, 50.6, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.28, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
-    # for m/s
+    ax.text(-122.28, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
+    # for knots
     ax.arrow(-122.45, 50.6, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.53, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
+    ax.text(-122.53, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
 
     # Location labels
     ax.text(-125.7, 47.7, 'Pacific\nOcean',
@@ -1237,7 +1204,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.05,
     # Legend
     axs = [ax1, ax2, ax3]
     cs = ['green', 'Gold', 'red']
-    for ax, name, thresh_c in zip(axs, names, cs):
+    for ax, thresh_c in zip(axs, cs):
         plt.setp(ax.spines.values(), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
@@ -1672,8 +1639,7 @@ def plot_thresholds_all(
     tzone = '[PST]' if PST else '[UTC]'
     t_shift = time_shift if PST else 0
 
-    names = ['Point Atkinson', 'Campbell River', 'Victoria', 'Nanaimo','Cherry Point']
-    for M, name in enumerate(names):
+    for M, name in enumerate(TIDAL_SITES):
         # Get sea surface height
         j, i = tidetools.find_closest_model_point(
             SITES[name]['lon'], SITES[name]['lat'],
@@ -1777,6 +1743,7 @@ def Sandheads_winds(
     winds, dirs, temps, time, lat, lon = stormtools.get_EC_observations(
         'Sandheads', start, end)
     time = np.array(time)
+    wind_ax = np.array([0, 20])  # axis limits in m/s
 
     # Get modelled winds
     wind, direc, t, pr, tem, sol, the, qr, pre = get_model_winds(
@@ -1790,29 +1757,29 @@ def Sandheads_winds(
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[1, 0])
     ax0 = fig.add_subplot(gs[:, 1])
+    ax12 = ax1.twinx()  # axis for m/s wind plotting
 
     # Plot wind speed
-    ax1.plot(
-        time + PST * time_shift, winds*ms2k,
+    ax12.plot(
+        time + PST * time_shift, winds,
         color=observations_c, lw=2, label='Observations')
-    ax1.plot(t + PST * time_shift, wind*ms2k, lw=2, color=model_c, label='Model')
-    ax1.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
-    ax1.set_ylim([0, 20*ms2k])
-    ax1.set_title('Winds at Sandheads:  ' + start, **title_font)
-    ax1.set_ylabel('Wind Speed (knots)', **axis_font)
-    ax1.set_xlabel('Time {}'.format(timezone), **axis_font)
-    ax1.legend(loc=0)
-    ax1.grid()
+    ax12.plot(t + PST * time_shift, wind, lw=2, color=model_c, label='Model')
+    ax12.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
+    ax12.set_ylim(wind_ax)
+    ax12.set_title('Winds at Sandheads:  ' + start, **title_font)
+    ax12.set_ylabel('Wind Speed (m/s)', **axis_font)
+    ax12.set_xlabel('Time {}'.format(timezone), **axis_font)
+    ax12.legend(loc=0)
     # =================================================== #
     # <----------------------- Kyle 2015/08/25
-    ax12 = ax1.twinx()
-    ax12.set_ylim([0, 20])
-    ax12.set_ylabel('Wind Speed (m/s)', **axis_font)
+    # axis for knots plotting
+    ax1.set_ylim(wind_ax*ms2k)
+    ax1.set_ylabel('Wind Speed (knots)', **axis_font)
+    axis_colors(ax1, 'gray')
+    # =================================================== #
     axis_colors(ax12, 'gray')
     ax12.xaxis.set_major_formatter(hfmt)
-    # =================================================== #
-    axis_colors(ax1, 'gray')
-    ax1.xaxis.set_major_formatter(hfmt)
+    ax1.grid()
 
     # Plot wind direction
     ax2.plot(
@@ -1829,6 +1796,8 @@ def Sandheads_winds(
     axis_colors(ax2, 'gray')
     ax2.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
+    # Fix ticks on speed plot
+    ax1.set_xticks(ax2.get_xticks())
 
     # Map
     _plot_stations_map(ax0, grid_B, PNW_coastline, title='Station Locations')
@@ -1890,22 +1859,21 @@ def winds_average_max(
     ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline)
-    scale = 0.05
+    scale = 0.1
+    # Reference for m/s
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
-    # for m/s
+    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    # Reference for knots
     ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-    
-    
+    ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
     # Stations
     if station == 'all':
-        names = WIND_SITE_NAME
+        names = WIND_SITES
         colors = stations_c
     else:
         names = [station]
@@ -2291,7 +2259,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
 
 def plot_threshold_website(
-    grid_B, grid_T, model_path, PNW_coastline, scale=0.05, PST=1,
+    grid_B, grid_T, model_path, PNW_coastline, scale=0.1, PST=1,
     figsize=(18, 20),
 ):
     """Overview image for Salish Sea website.
@@ -2334,9 +2302,6 @@ def plot_threshold_website(
     inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
                                model_path, t, 4, average=True)
 
-    # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria','Nanaimo','Cherry Point']
-
     # Set up Information
     max_sshs = {}
     max_times = {}
@@ -2377,7 +2342,7 @@ def plot_threshold_website(
                        title=' Possible\nWarnings')
     legend.get_title().set_fontsize('20')
 
-    for name in names:
+    for name in TIDAL_SITES:
         # Get sea surface height
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
@@ -2391,15 +2356,6 @@ def plot_threshold_website(
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 55, 0.3, name)
-        # Plot winds
-        twind = plot_wind_vector(
-            ax,
-            name,
-            t_orig,
-            t_final,
-            model_path,
-            inds,
-            scale)
 
         # Information
         res = compute_residual(ssh_loc, t, ttide)
@@ -2419,21 +2375,22 @@ def plot_threshold_website(
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in WIND_SITE_NAME:
-        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+    for name in WIND_SITES:
+        twind = plot_wind_vector(ax, name, t_orig, t_final,
+                                 model_path, inds, scale)
 
     # Reference arrow
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.58, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
+    ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
 
-    # for m/s
+    # for knots
     ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
-    ax.text(-122.83, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
-    
+    ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
+
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
     ax.text(-123.3, 50.3, 'British Columbia', fontsize=13)
@@ -2487,7 +2444,8 @@ def plot_threshold_website(
 
     # Information_box
     axs = [ax1, ax2, ax3]
-    for ax, name in zip(axs, names):
+    info_box = ['Point Atkinson', 'Campbell River', 'Victoria']
+    for ax, name in zip(axs, info_box):
         plt.setp(ax.spines.values(), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
