@@ -68,9 +68,10 @@ def ellipse_params(uamp, upha, vamp, vpha):
     return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
 
 
-def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
+def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
+                          period='1h', station='None'):
     """ This function loads all the data between the start and the end date
-    that contains hourly velocities in the netCDF4 nowcast files in the
+    that contains in the netCDF4 nowcast files in the
     specified depth range. This will make an area with all the indices
     indicated, the area must be continuous for unstaggering.
 
@@ -93,7 +94,13 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
         depth or a list for a range. A float will find the closest depth that
         is <= the value given. Default is 'None' for the whole water column
         (0-441m).
-    :type depav: float, string or list.
+    :type depthrange: float, string or list.
+
+    :arg period: period of the results files
+    :type period: string - '1h' for hourly results or '15m' for 15 minute
+
+    :arg station: station for analysis
+    :type station: string 'None' if not applicable. 'ddl', 'east' or 'central'
 
     :returns: u, v, time, dep.
     """
@@ -105,8 +112,13 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
 
     # Makes a list of the filenames that follow the criteria in the indicated
     # path between the start and end dates.
-    filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
-    filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
+    if period == '15m':
+        files = analyze.get_filenames_15(to, tf, station, path)
+        filesu = files
+        filesv = files
+    else:
+        filesu = analyze.get_filenames(to, tf, period, 'grid_U', path)
+        filesv = analyze.get_filenames(to, tf, period, 'grid_V', path)
 
     # Set up depth array and depth range
     depth = nc.Dataset(filesu[-1]).variables['depthu'][:]
@@ -114,8 +126,6 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
     # Case one: for a single depth.
     if type(depthrange) == float or type(depthrange) == int:
         k = np.where(depth <= depthrange)[0][-1]
-        u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
-        v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
         dep = depth[k]
 
     # Case two: for a specific range of depths
@@ -124,16 +134,21 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None'):
             depth > depthrange[0],
             depth < depthrange[1]))[0]
         dep = depth[k]
-        u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
-        v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
+        # u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
+        # v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
 
     # Case three: For the whole depth range 0 to 441m.
     else:
-        u, time = analyze.combine_files(
-            filesu, 'vozocrtx', depthrange, jss, iss)
-        v, time = analyze.combine_files(
-            filesv, 'vomecrty', depthrange, jss, iss)
+        # u, time = analyze.combine_files(
+           # filesu, 'vozocrtx', depthrange, jss, iss)
+        # v, time = analyze.combine_files(
+            # filesv, 'vomecrty', depthrange, jss, iss)
+        k = depthrange
         dep = depth
+
+    # Load the files
+    u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
+    v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
 
     # For the nowcast the reftime is always Sep10th 2014. Set time of area we
     # are looking at relative to this time.
@@ -243,6 +258,62 @@ def get_params(u, v, time, nconst, tidecorr=tidetools.CorrTides):
             }
 
     return params
+
+
+def get_params_nowcast_15(
+        to, tf,
+        station,
+        path, nconst,
+        depthrange='None',
+        depav=False, tidecorr=tidetools.CorrTides):
+    """ This function loads all the data between the start and the end date that
+    contains quater houlry velocities in the netCDF4 nowcast files in the
+    depth range. Then masks, rotates and unstaggers the time series. The
+    unstaggering causes the shapes of the returned arrays to be 1 less than
+    those of the input arrays in the y and x dimensions. Finally it calculates
+    tidal ellipse parameters from the u and v time series. Maintains the shape
+    of the velocities enters only loosing the time dimensions.
+
+    :arg to: The beginning of the date range of interest
+    :type to: datetime object
+
+    :arg tf: The end of the date range of interest
+    :type tf: datetime object
+
+    :arg station: station name for the quater-hourly data
+    :type station: string (East or Central)
+
+    :arg path: Defines the path used(eg. nowcast)
+    :type path: string
+
+    :arg depthrange: Depth values of interest in meters as a float for a single
+        depth or a list for a range. A float will find the closest depth that
+        is <= the value given. Default is 'None' for the whole water column
+        (0-441m).
+    :type depav: float, string or list.
+
+    :arg depav: True will depth average over the whole depth profile given.
+        Default is False.
+    :type depav: boolean
+
+    :arg depth: depth vector corresponding to the depth of the velocities, only
+         requiered if depav=True.
+    :type depth: :py:class:'np.ndarray' or string
+
+    :returns: params, dep
+    params is dictionary object of the ellipse parameters for each constituent
+    dep is the depths of the ellipse paramters
+    """
+
+    u, v, time, dep = ellipse_files_nowcast(
+        to, tf,
+        [1], [1],
+        path,
+        depthrange=depthrange, period='15m', station=station)
+    u_u, v_v = prepare_vel(u, v, depav=depav, depth=dep)
+    params = get_params(u_u, v_v, time, nconst, tidecorr=tidecorr)
+
+    return params, dep
 
 
 def get_params_nowcast(
