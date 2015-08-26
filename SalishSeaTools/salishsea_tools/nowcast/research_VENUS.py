@@ -665,7 +665,7 @@ def plottimeavADCP(grid_m, grid_o, day, station):
         ax.plot(np.nanmean(velo, axis=1), dep[:], label='Observations')
         ax.plot(np.nanmean(
             lastvel, axis=0), dep_t[-2:], '--b', label='Bottom grid cell')
-        ax.set_ylabel('Velocity [m/s]', **axis_font)
+        ax.set_ylabel('Daily averaged velocity [m/s]', **axis_font)
         figures.axis_colors(ax, 'gray')
         ax.set_title('{dire} velocities at VENUS {node}'.format(
             dire=direc, node=station, date=date), **title_font)
