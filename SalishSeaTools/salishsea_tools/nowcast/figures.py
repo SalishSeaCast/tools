@@ -208,7 +208,7 @@ def axis_colors(ax, plot):
     return ax
 
 
-def find_model_point(lon, lat, X, Y, tol_lon=0.015, tol_lat=0.015):
+def find_model_point(lon, lat, X, Y, tol_lon=0.016, tol_lat=0.011):
     """Finds a model grid point close to a specified latitude and longitude.
     Should be used for non-NEMO grids like the atmospheric forcing grid.
 
