@@ -110,7 +110,7 @@ run:
       forecast2: /home/dlatorne/MEOPAR/SalishSea/forecast2/
 
   results archive:
-    nowcast: /data/eolson/MEOPAR/nowcast/
+    nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
     forecast: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/
     forecast2: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/
 
