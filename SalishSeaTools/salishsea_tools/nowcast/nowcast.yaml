@@ -110,7 +110,7 @@ run:
       forecast2: /home/dlatorne/MEOPAR/SalishSea/forecast2/
 
   results archive:
-    nowcast: /data/dlatorne/MEOPAR/SalishSea/nowcast/
+    nowcast: /data/eolson/MEOPAR/nowcast/
     forecast: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/
     forecast2: /ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/
 
@@ -279,8 +279,10 @@ msg_types:
   make_plots:
     success nowcast publish: nowcast publish plots produced
     success nowcast research: nowcast reseach plots produced
+    success nowcast comparison: nowcast comparison plots produced
     failure nowcast publish: nowcast publish plots failed
     failure nowcast research: nowcast research plots failed
+    failure nowcast comparison: nowcast comparison plots failed
     success forecast publish: forecast publish plots produced
     failure forecast publish: forecast publish plots failed
     success forecast2 publish: forecast2 publish plots produced
