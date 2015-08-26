@@ -17,6 +17,7 @@
 plot files from run results.
 """
 import argparse
+import datetime
 from glob import glob
 import logging
 import os
@@ -288,12 +289,19 @@ def make_comparisons_plots(
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
     grid_U_dy = results_dataset('1d', 'grid_U', results_dir)
     grid_V_dy = results_dataset('1d', 'grid_V', results_dir)
-    grid_c = results_dataset_gridded(
-        'central', results_dir)
+    grid_c = results_dataset_gridded('central', results_dir)
     grid_e = results_dataset_gridded('east', results_dir)
+    grid_d = results_dataset_gridded('ddl', results_dir)
 
-    #do the plots
-    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'HBDB')
+    # ONC ADCP data
+    grid_oc = sio.loadmat('/ocean/dlatorne/MEOPAR/ONC_ADCP/ADCPcentral.mat')
+    grid_oe = sio.loadmat('/ocean/dlatorne/MEOPAR/ONC_ADCP/ADCPeast.mat')
+    grid_od = sio.loadmat('/ocean/dlatorne/MEOPAR/ONC_ADCP/ADCPddl.mat')
+
+    # do the plots
+    # Ferry plots
+    fig = research_ferries.salinity_ferry_route(
+        grid_T_hr, bathy, coastline, 'HBDB')
     filename = os.path.join(
         plots_dir, 'HBDB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
@@ -304,10 +312,58 @@ def make_comparisons_plots(
         plots_dir, 'TWDP_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = research_ferries.salinity_ferry_route(grid_T_hr, bathy, coastline, 'TWSB')
+    fig = research_ferries.salinity_ferry_route(
+        grid_T_hr, bathy, coastline, 'TWSB')
     filename = os.path.join(
         plots_dir, 'TWSB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
+
+    # ADCP plots
+    date = datetime.datetime.strptime(dmy, '%d%b%y')
+    date = date.replace(minute=45)
+    models = [grid_c, grid_e, grid_d]
+    obs = [grid_oc, grid_oe, grid_od]
+    names = ['Central', 'East', 'ddl']
+    dranges = [[0, 285], [0, 150], [0, 148]]
+    for model, obs, name, drange in zip(models, obs, names, dranges):
+        fig = research_VENUS.plotADCP(
+            model, obs, date, name, drange)
+        filename = os.path.join(
+            plots_dir, '{station}_ADCP_{date}.svg'.format(station=name,
+                                                          date=dmy))
+        fig.savefig(filename, facecolor=fig.get_facecolor())
+
+        fig = research_VENUS.plotdepavADCP(
+            model, obs, date, name)
+        filename = os.path.join(
+            plots_dir, '{station}_depavADCP_{date}.svg'.format(station=name,
+                                                               date=dmy))
+        fig.savefig(filename, facecolor=fig.get_facecolor())
+
+        fig = research_VENUS.plottimeavADCP(
+            model, obs, date, name)
+        filename = os.path.join(
+            plots_dir, '{station}_timeavADCP_{date}.svg'.format(station=name,
+                                                                date=dmy))
+        fig.savefig(filename, facecolor=fig.get_facecolor())
+
+    # This will overwrite the images made previously
+    # Sandheads winds
+    fig = figures.Sandheads_winds(grid_T_hr, bathy, model_path, coastline)
+    filename = os.path.join(
+        plots_dir, 'SH_wind_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor())
+
+    # VENUS bottom temperature and salinity
+    fig = research_VENUS.compare_VENUS('East', grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'Compare_VENUS_East_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
+
+    fig = research_VENUS.compare_VENUS('Central', grid_T_hr, bathy)
+    filename = os.path.join(
+        plots_dir, 'Compare_VENUS_Central_{date}.svg'.format(date=dmy))
+    fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
 
 def make_research_plots(
