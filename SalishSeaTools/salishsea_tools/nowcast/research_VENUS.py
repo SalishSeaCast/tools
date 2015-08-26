@@ -604,7 +604,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
         ax.set_ylim([profile[1], profile[0]])
         ax.set_xlim([0.25, 23])
         ax.set_ylabel('Depth [m]', **axis_font)
-        ax.set_xlabel('Hour [UTC]', **axis_font)
+
         figures.axis_colors(ax, 'gray')
         ax.set_title(
             '{dire} {name} Velocities at VENUS {node} - {date}'.format(
@@ -614,6 +614,8 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     cbar = fig.colorbar(mesh, cax=cbar_ax)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('[m/s]', **axis_font)
+    axmv.set_xlabel('Hour [UTC]', **axis_font)
+    axov.set_xlabel('Hour [UTC]', **axis_font)
 
     return fig
 
@@ -733,7 +735,6 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.plot(np.arange(0.25, 24, timestep), velo, label='Observations')
         ax.set_xlim([0, 24])
         ax.set_ylabel('Velocity [m/s]', **axis_font)
-        ax.set_xlabel('Hour [UTC]')
         figures.axis_colors(ax, 'gray')
         ax.set_title(
             'Depth Averaged ({}-{}m) {dire} velocities at VENUS {node} -{date}'
@@ -747,6 +748,7 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.grid()
         ax.set_ylim([-0.6, 0.6])
     ax1.legend(loc=0)
+    ax2.set_xlabel('Hour [UTC]')
 
     return fig
 
