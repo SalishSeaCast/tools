@@ -1172,7 +1172,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.28, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
     # for knots
-    ax.arrow(-122.45, 50.6, 0. * scale * ms2k, -5. * scale * ms2k,
+    ax.arrow(-122.45, 50.6, 0. * scale * k2ms, -5. * scale * k2ms,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.53, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
@@ -1866,7 +1866,7 @@ def winds_average_max(
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
     # Reference for knots
-    ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
+    ax.arrow(-122.75, 50.65, 0. * scale * k2ms, -5. * scale * k2ms,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
@@ -2386,7 +2386,7 @@ def plot_threshold_website(
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
 
     # for knots
-    ax.arrow(-122.75, 50.65, 0. * scale * ms2k, -5. * scale * ms2k,
+    ax.arrow(-122.75, 50.65, 0. * scale * k2ms, -5. * scale * k2ms,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
