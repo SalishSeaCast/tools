@@ -83,7 +83,18 @@ def upload_all_files(host_name, run_date, config):
         dest_dir = 'obs' if day == -1 else 'fcst'
         localpath = os.path.join(config['ssh']['ssh_dir'], dest_dir, filename)
         remotepath = os.path.join(host['ssh_dir'], dest_dir, filename)
-        _upload_file(sftp_client, host_name, localpath, remotepath)
+        try:
+            _upload_file(sftp_client, host_name, localpath, remotepath)
+        except OSError:
+            if dest_dir != 'obs':
+                raise
+            # obs file does not exist, to create symlink to corresponding
+            # forecast file
+            fcst = os.path.join(config['ssh']['ssh_dir'], 'fcst', filename)
+            os.symlink(fcst, localpath)
+            logger.warning(
+                'ssh obs file not found; created symlink to {}'.format(fcst))
+            _upload_file(sftp_client, host_name, localpath, remotepath)
     # Rivers runoff
     for day in range(-1, 0):
         filename = make_runoff_file.FILENAME_TMPL.format(
