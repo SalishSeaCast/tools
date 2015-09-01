@@ -1,9 +1,22 @@
+# Copyright 2013-2015 The Salish Sea MEOPAR contributors
+# and The University of British Columbia
 
-# coding: utf-8
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 
-# # Imports from figures.py
+#    http://www.apache.org/licenses/LICENSE-2.0
 
-# In[1]:
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""A collection of Python functions to produce comparisons between with the
+salinity of British Columbia ferry observations data and the model results with visualization figures for analysis
+of daily nowcast runs.
+"""
 
 from __future__ import division, print_function
 from cStringIO import StringIO
@@ -16,7 +29,6 @@ import os
 import arrow
 from dateutil import tz
 from datetime import datetime, timedelta
-from sklearn import linear_model
 from pylab import *
 from matplotlib.backends import backend_agg as backend
 import matplotlib.cm as cm
@@ -29,7 +41,6 @@ import numpy as np
 import pandas as pd
 import requests
 import math
-from scipy import interpolate as interp
 import scipy.io as sio
 
 from salishsea_tools import (
@@ -109,11 +120,8 @@ def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3r
     weights = np.zeros(9)
     value_3rd=np.zeros(9)
     value_4rd=np.zeros(9)
-    regr =linear_model.LinearRegression()
-    regr.fit(lon11,lat11);
-    regr.coef_
 
-    [x1, j1] = tidetools.find_closest_model_point(lon11[q],regr.predict(lon11[q]),                                        X,Y,bathy,lon_tol=0.0052,lat_tol=0.00210,allow_land=False)
+    [x1, j1] = tidetools.find_closest_model_point(lon11[q],lat11[q]),                                        X,Y,bathy,lon_tol=0.0052,lat_tol=0.00210,allow_land=False)
     for i in np.arange(x1-1,x1+2):
         for j in np.arange(j1-1,j1+2):
             dist[k]=tidetools.haversine(lon11[q],lat11[q],longitude[i,j],latitude[i,j])
@@ -128,14 +136,12 @@ def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3r
 
 
 def salinity_fxn(saline, route_name):
-    #saline=sio.loadmat('/data/jieliu/MEOPAR/FerrySalinity/%s/%s_TSG%s.mat' %(route_name, route_name, date_str_yesterday))
     struct= (((saline['%s_TSG' %route_name])['output'])[0,0])['Practical_Salinity'][0,0]
     salinity = struct['data'][0,0]
     time = struct['matlabTime'][0,0]
     lonn = struct['longitude'][0,0]
     latt = struct['latitude'][0,0]
-    
-    
+       
     a=len(time)
     lon1=np.zeros([a,1])
     lat1=np.zeros([a,1])
@@ -154,10 +160,6 @@ def salinity_fxn(saline, route_name):
     for i in np.arange(0,a):
         matlab_datenum = np.float(time[i])
         python_datetime = datetime.datetime.fromordinal(int(matlab_datenum))        + timedelta(days=matlab_datenum%1) - timedelta(days = 366)
-        
-        #if((python_datetime.year == run_date.year) & (python_datetime.month == run_date.month)\
-          # & (python_datetime.day == run_date.day)
-            #& (python_datetime.hour >= 3))&(python_datetime.hour < 5):
         if (python_datetime >= run_lower) &(python_datetime <= run_upper):
             lon1[i]=lonn[i]
             lat1[i]=latt[i]
@@ -189,8 +191,6 @@ def salinity_fxn(saline, route_name):
     else:
         saline_nemo_3rd = saline_nemo[3,1, 0:898, 0:398] 
         saline_nemo_4rd = saline_nemo[4,1, 0:898, 0:398]
-    #saline_nemo_3rd = saline_nemo[3,1, 0:898, 0:398] 
-    #saline_nemo_4rd = saline_nemo[4,1, 0:898, 0:398]
     
     matrix=np.zeros([len(lon11),9])
     values=np.zeros([len(lon11),1])
