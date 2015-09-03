@@ -338,7 +338,7 @@ def salinity_ferry_route(route_name):
     axs[0].set_title('Surface Salinity: ' + date_str_title, **title_font)
     axs[0].set_xlabel('Longitude', **axis_font)
     axs[0].set_ylabel('Practical Salinity', **axis_font)
-    axs[0].legend(loc = 4)
+    axs[0].legend(loc = 3)
     axs[0].grid()
    
 
