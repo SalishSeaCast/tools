@@ -106,7 +106,7 @@ def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3r
     value_3rd=np.zeros(9)
     value_4rd=np.zeros(9)
 
-    [x1, j1] = tidetools.find_closest_model_point(lon11[q],lat11[q]),                                        X,Y,bathy,lon_tol=0.0052,lat_tol=0.00210,allow_land=False)
+    [x1, j1] = tidetools.find_closest_model_point(lon11[q],lat11[q],                                        X,Y,bathy,lon_tol=0.0052,lat_tol=0.00210,allow_land=False)
     for i in np.arange(x1-1,x1+2):
         for j in np.arange(j1-1,j1+2):
             dist[k]=tidetools.haversine(lon11[q],lat11[q],longitude[i,j],latitude[i,j])
