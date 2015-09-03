@@ -58,11 +58,26 @@ title_font = {
 }
 axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
-
+## Ferry stations
+ferry_stations = {'Tsawwassen': {'lat': 49.0084,'lon': -123.1281},
+                  'Duke': {'lat': 49.1632,'lon': -123.8909},
+                  'Vancouver': {'lat': 49.2827,'lon': -123.1207},
+                  'Horseshoe Bay':{'lat':49.3742 ,'lon':-123.2728 },
+                  'Nanaimo': {'lat':49.1632 , 'lon':-123.8909 },
+                  'Swartz':{'lat':48.6882 , 'lon':-123.4102 }
+                 }
 
 def results_dataset_more(period, grid):
     """Return the results dataset for period (e.g. 1h or 1d)
     and grid (e.g. grid_T, grid_U) from results_dir.
+    :arg period: 1h or 1d 
+    :type period: string
+   
+    :arg grid: grid_T or grid_U or grid_V for Salish Sea NEMO model.
+    :type grid: :class:`netCDF4.Dataset`
+   
+    :returns: grid_T or grid_U or grid_V files 
+
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
     today = datetime.datetime.today()
@@ -95,9 +110,37 @@ def date(year, month, day_start, day_end, period, grid):
 
     return files_all
 
-
-
 def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3rd, saline_nemo_4rd):
+    """This function is used to calculate the integral of model salinity values divided by distance between 
+       this model point and observation point, weights for each observation point that they hold for its surrounding
+       model points.
+    :arg q: total number of observation grid points on the ferry track 
+    :type q: numpy.integer
+
+    :arg lon11: longitude of observation grid points on the ferry track
+    :type lon11: numpy array
+
+    :arg lat11: latitude of observation grid points on the ferry track
+    :type lat11: numpy array
+
+    :arg bathy: model bathymetry
+    :type bathy: numpy array
+
+    :arg longitude: longitude of grid_T in the model
+    :type longitude: numpy array
+
+    :arg latitude: latitude of grid_T in the model
+    :type latitude: numpy array
+
+    :arg saline_nemo_3rd: 1.5 m depth for 2 or 3 am model salinity 
+    :type saline_nemo_3rd: numpy array
+
+    :arg saline_nemo_4rd: 1.5 m depth for 3 or 4 am model salinity 
+    :arg saline_nemo_4rd:numpy array
+
+    :return: integral of model salinity values divided by weights for 
+            time in saline_nemo_3rd and saline_nemo_4rd respectively.
+        """
 
     from glob import glob
     grid_T_hr = results_dataset_more('1h', 'grid_T')
@@ -127,6 +170,17 @@ def find_dist (q, lon11, lat11, X, Y, bathy, longitude, latitude, saline_nemo_3r
 
 
 def salinity_fxn(saline, route_name,today):
+    """This function was made to return several outputs to make the plot finally, for exmaple,
+       longitude, latitude and salinity values of grid points for both observations and model.
+    :arg saline: daily ferry salinity file 
+    :type saline: dictionary of .mat file loaded from matlab
+
+    :arg route_name: name for one of three ferry routes 
+    :type route_name: string
+
+    :arg today: today's datetime
+    :type today: datetime.datetime
+    """
     struct= (((saline['%s_TSG' %route_name])['output'])[0,0])['Practical_Salinity'][0,0]
     salinity = struct['data'][0,0]
     time = struct['matlabTime'][0,0]
@@ -173,7 +227,7 @@ def salinity_fxn(saline, route_name,today):
     
     aa=date(today.year,today.month,today.day,today.day,'1h','grid_T') 
     
-    date_str_title = today.strftime('%d-%b-%Y') ##creat a string based on this date
+    date_str_title = today.strftime('%d-%b-%Y') 
     tracers=nc.Dataset(aa[0])
     j=int(aa[0][65:67])
     jj=int(aa[0][67:69])
@@ -200,29 +254,13 @@ def salinity_fxn(saline, route_name,today):
 
     return lon11, lat11, lon1_2_4, lat1_2_4,    value_mean_3rd_hour, value_mean_4rd_hour,    salinity11, salinity1_2_4,date_str_title
 
-
-ferry_stations = {'Tsawwassen': {'lat': 49.0084,'lon': -123.1281},
-                  'Duke': {'lat': 49.1632,'lon': -123.8909},
-                  'Vancouver': {'lat': 49.2827,'lon': -123.1207},
-                  'Horseshoe Bay':{'lat':49.3742 ,'lon':-123.2728 },
-                  'Nanaimo': {'lat':49.1632 , 'lon':-123.8909 },
-                  'Swartz':{'lat':48.6882 , 'lon':-123.4102 }
-                 }
-
-
 def salinity_ferry_route(route_name):
     """ plot daily salinity comparisons between ferry observations 
     and model results as well as ferry route with model salinity 
     distribution.
     
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-    
-    :arg PNW_coastline: Coastline dataset.
-    :type PNW_coastline: :class:`mat.Dataset`
-    
-    :arg ferry_sal: saline
-    :type ferry_sal: numpy
+    :arg route_name: route name of these three ferry routes respectively
+    :type route_name: string
     
     :returns: fig
     """
