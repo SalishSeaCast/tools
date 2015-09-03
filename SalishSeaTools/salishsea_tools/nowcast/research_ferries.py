@@ -60,14 +60,20 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 
 
 
-def results_dataset(period, grid):
+def results_dataset_more(period, grid):
     """Return the results dataset for period (e.g. 1h or 1d)
     and grid (e.g. grid_T, grid_U) from results_dir.
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
+    today = datetime.datetime.today()
+    oneday = datetime.timedelta(days = 1)
+    run_date= today - oneday
+    date_str_yesterday = run_date.strftime('%Y%m%d')
+    date_str_today = today.strftime('%Y%m%d')
     # Results dataset location
     results_home = '/data/dlatorne/MEOPAR/SalishSea/nowcast/'
     results_dir = os.path.join(results_home, today.strftime('%d%b%y').lower())
+    from glob import glob
     filepaths = glob(os.path.join(results_dir, filename_pattern.format(period=period, grid=grid)))
     return nc.Dataset(filepaths[0])
 
