@@ -300,20 +300,17 @@ def make_comparisons_plots(
 
     # do the plots
     # Ferry plots
-    fig = research_ferries.salinity_ferry_route(
-        grid_T_hr, bathy, coastline, 'HBDB')
+    fig = research_ferries.salinity_ferry_route('HBDB')
     filename = os.path.join(
         plots_dir, 'HBDB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = research_ferries.salinity_ferry_route(
-        grid_T_hr, bathy, coastline, 'TWDP')
+    fig = research_ferries.salinity_ferry_route('TWDP')
     filename = os.path.join(
         plots_dir, 'TWDP_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = research_ferries.salinity_ferry_route(
-        grid_T_hr, bathy, coastline, 'TWSB')
+    fig = research_ferries.salinity_ferry_route('TWSB')
     filename = os.path.join(
         plots_dir, 'TWSB_ferry_salinity_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
