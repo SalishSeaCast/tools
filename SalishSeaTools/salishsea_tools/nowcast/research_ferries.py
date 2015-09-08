@@ -14,9 +14,8 @@
 # limitations under the License.
 
 """A collection of Python functions to produce comparisons between with the
-salinity of British Columbia ferry observations data and the model results with visualization figures for analysis
-of daily nowcast runs.
-"""
+salinity of British Columbia ferry observations data and the model results with
+visualization figures for analysis of daily nowcast runs."""
 
 from __future__ import division, print_function
 from cStringIO import StringIO
@@ -69,8 +68,9 @@ ferry_stations = {'Tsawwassen': {'lat': 49.0084, 'lon': -123.1281},
 
 
 def results_dataset_more(period, grid):
-    """Return the results dataset for period (e.g. 1h or 1d)
-    and grid (e.g. grid_T, grid_U) from results_dir.
+    """Return the results dataset for period (e.g. 1h or 1d) and grid (e.g.
+    grid_T, grid_U) from results_dir.
+
     :arg period: 1h or 1d
     :type period: string
 
@@ -78,7 +78,6 @@ def results_dataset_more(period, grid):
     :type grid: :class:`netCDF4.Dataset`
 
     :returns: grid_T or grid_U or grid_V files
-
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
     today = datetime.datetime.today()
@@ -123,9 +122,10 @@ def date(year, month, day_start, day_end, period, grid):
 
 def find_dist(q, lon11, lat11, X, Y, bathy, longitude,
               latitude, saline_nemo_3rd, saline_nemo_4rd):
-    """This function is used to calculate the integral of model salinity values divided by distance between
-       this model point and observation point, weights for each observation point that they hold for its surrounding
-       model points.
+    """This function is used to calculate the integral of model salinity values
+    divided by distance between this model point and observation point, weights
+    for each observation point that they hold for its surrounding model points.
+
     :arg q: total number of observation grid points on the ferry track
     :type q: numpy.integer
 
@@ -152,7 +152,7 @@ def find_dist(q, lon11, lat11, X, Y, bathy, longitude,
 
     :return: integral of model salinity values divided by weights for
             time in saline_nemo_3rd and saline_nemo_4rd respectively.
-        """
+    """
 
     from glob import glob
     grid_T_hr = results_dataset_more('1h', 'grid_T')
@@ -193,8 +193,10 @@ def find_dist(q, lon11, lat11, X, Y, bathy, longitude,
 
 
 def salinity_fxn(saline, route_name, today):
-    """This function was made to return several outputs to make the plot finally, for exmaple,
-       longitude, latitude and salinity values of grid points for both observations and model.
+    """This function was made to return several outputs to make the plot
+    finally, for exmaple, longitude, latitude and salinity values of grid
+    points for both observations and model.
+
     :arg saline: daily ferry salinity file
     :type saline: dictionary of .mat file loaded from matlab
 
@@ -289,9 +291,8 @@ def salinity_fxn(saline, route_name, today):
 
 
 def salinity_ferry_route(route_name):
-    """ plot daily salinity comparisons between ferry observations
-    and model results as well as ferry route with model salinity
-    distribution.
+    """plot daily salinity comparisons between ferry observations and model
+    results as well as ferry route with model salinity distribution.
 
     :arg route_name: route name of these three ferry routes respectively
     :type route_name: string
