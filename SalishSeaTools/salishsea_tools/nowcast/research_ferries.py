@@ -20,6 +20,7 @@ visualization figures for analysis of daily nowcast runs.
 from __future__ import division, print_function
 from salishsea_tools.nowcast import figures
 import datetime
+from glob import glob
 import os
 from pylab import *
 import matplotlib.pyplot as plt
@@ -71,7 +72,6 @@ def results_dataset_more(period, grid):
     # Results dataset location
     results_home = '/data/dlatorne/MEOPAR/SalishSea/nowcast/'
     results_dir = os.path.join(results_home, today.strftime('%d%b%y').lower())
-    from glob import glob
     filepaths = glob(
         os.path.join(
             results_dir,
@@ -136,7 +136,6 @@ def find_dist(q, lon11, lat11, X, Y, bathy, longitude,
     :return: integral of model salinity values divided by weights for
             time in saline_nemo_3rd and saline_nemo_4rd respectively.
     """
-    from glob import glob
     grid_T_hr = results_dataset_more('1h', 'grid_T')
     latitude = grid_T_hr.variables['nav_lat']
     longitude = grid_T_hr.variables['nav_lon']
