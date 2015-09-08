@@ -18,34 +18,17 @@ salinity of British Columbia ferry observations data and the model results with
 visualization figures for analysis of daily nowcast runs.
 """
 from __future__ import division, print_function
-from cStringIO import StringIO
-from IPython.core.display import HTML
 from salishsea_tools.nowcast import figures
-from glob import glob
 import datetime
-import glob
 import os
-import arrow
-from dateutil import tz
-from datetime import datetime, timedelta
 from pylab import *
-from matplotlib.backends import backend_agg as backend
-import matplotlib.cm as cm
-import matplotlib.dates as mdates
-import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import netCDF4 as nc
 import numpy as np
-import pandas as pd
-import requests
-import math
 import scipy.io as sio
 
 from salishsea_tools import (
-    nc_tools,
     viz_tools,
-    stormtools,
     tidetools,
 )
 
