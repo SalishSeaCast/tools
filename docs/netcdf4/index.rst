@@ -403,3 +403,44 @@ As Applicable
   .. code-block:: python
 
       sal.standard_name = 'practical_salinity'
+
+
+Applying netCDF4 Variable-Level Compression
+===========================================
+
+NEMO-3.4 produces netCDF files that use the :kbd:`64-bit offset` format.
+The size on disk of those files can be reduced by up to 90%
+(depending on the contents of the file)
+by converting them to :kbd:`netCDF-4` format and applying Lempel-Ziv compression to each variable.
+The :command:`ncks` tool from the `NCO package`_ can be used to accomplish that:
+
+.. code-block:: bash
+
+    $ ncks -4 -L4 -O SalishSea_1d_grid_T.nc SalishSea_1d_grid_T.nc
+
+.. note:: The above command replaces the original version of the file with its netCDF4 compressed version.
+
+.. _NCO package: http://nco.sourceforge.net/
+
+The :kbd:`-4` argument tells :command:`ncks` to produce a :kbd:`netCDF-4` format file.
+
+The :kbd:`-L4` argument causes level 4 compression to be used.
+Level 4 is a good compromise between the amount of compression that is achieved and the amount of processing time required to do the compression.
+
+The :kbd:`-O` argument tells :command:`ncks` to over-write existing file without asking for confirmation.
+
+The file names are the input and output files,
+respectively.
+
+NEMO-3.6 produces netCDF files that use the :kbd:`netCDF-4` format with level 1 Lempel-Ziv compression applied to each variable.
+As above,
+the size of those files on disk can be reduced by up to 90%
+(depending on the contents of the file)
+by increasing the compression level to 4.
+The command to do so is the same:
+
+.. code-block:: bash
+
+    $ ncks -4 -L4 -O SalishSea_1d_grid_T.nc SalishSea_1d_grid_T.nc
+
+.. note:: The above command replaces the original version of the file with its netCDF4 compressed version.
