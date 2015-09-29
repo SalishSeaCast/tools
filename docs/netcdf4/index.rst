@@ -15,8 +15,8 @@ Use of the `netCDF4-python`_ library
 is assumed.
 
 .. _netCDF4: http://www.unidata.ucar.edu/software/netcdf/
-.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
-.. _netCDF4-python: http://netcdf4-python.googlecode.com/
+.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
+.. _netCDF4-python: http://unidata.github.io/netcdf4-python/
 
 The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaTools` is a library of Python functions for exploring and managing the attributes of netCDF files.
 The `PrepareTS.ipynb`_ notebook shows examples of the use of those functions.
@@ -125,7 +125,7 @@ As noted above,
 All variables should be created with the :kbd:`zlib=True` argument to enable data compression within the netCDF4 file.
 
 When appropriate,
-the :kbd:`least_significant_digit` argument should be used improve compression and storage efficiency by quantizing the variable data to the specified precision.
+the :kbd:`least_significant_digit` argument should be used to improve compression and storage efficiency by quantizing the variable data to the specified precision.
 In the example above the :kbd:`depths` data will be quantized such that a precision of 0.1 is retained.
 
 :kbd:`fill_value`
@@ -171,8 +171,8 @@ Datasets created by the Salish Sea MEOPAR project shall conform to `CF-1.6`_.
 NEMO results nominally conform to an ealier version,
 `CF-1.1`_.
 
-.. _CF-1.1: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.1
-.. _CF-1.6: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
+.. _CF-1.1: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.1/build/cf-conventions.html
+.. _CF-1.6: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
 
 
 Global Attributes
