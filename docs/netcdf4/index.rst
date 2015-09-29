@@ -128,7 +128,13 @@ When appropriate,
 the :kbd:`least_significant_digit` argument should be used to improve compression and storage efficiency by quantizing the variable data to the specified precision.
 In the example above the :kbd:`depths` data will be quantized such that a precision of 0.1 is retained.
 
-:kbd:`fill_value`
+When appropriate,
+the :kbd:`fill_value` argument can be used to specify the value that the variable gets filled with before any data is written to it.
+Doing so overrides the default netCDF :kbd:`_FillValue`
+(which depends on the type of the variable).
+If :kbd:`fill_value` is set to False, then the variable is not pre-filled.
+In the example above the :kbd:`depths` data will be initialized to zero,
+the appropriate value for grid points that are on land.
 
 
 Writing and Retrieving Data
