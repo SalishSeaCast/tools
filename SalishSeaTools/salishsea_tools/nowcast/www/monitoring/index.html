@@ -34,13 +34,28 @@
   </a>.
 </p>
 <p>
-  On this page are links to the preceding 7 days
-  <a href="#log-files">log files</a>
-  and images produced from the
-  <a href="#grib_to_netcdf-image">weather forcing dataset</a>
-  and the <a href="#get_NeahBay_ssh-image">sea surface height</a>
-  used to force the western boundary of the model at the mouth of the
-  Strait of Juan de Fuca.
+  On this page are:
+  <ul>
+     <li>
+       A link to the
+       <a href="#checklist">nowcast manager process's checklist</a>
+       that shows the present status of the system
+     </li>
+     <li>
+       Links to the preceding 7 days
+       <a href="#log-files">log files</a>
+     </li>
+     <li>
+       Images produced from the
+       <a href="#grib_to_netcdf-image">weather forcing dataset</a>
+     </li>
+     <li>
+       An image produced from the
+      <a href="#get_NeahBay_ssh-image">sea surface height</a>
+      observation and forecast datasets used to force the western boundary
+      of the model at the mouth of the Strait of Juan de Fuca
+     </li>
+   </ul>
 </p>
 <p>
   Also here (for now) are links to
@@ -74,6 +89,23 @@
 </p>
 
 
+<h2 id="checklist">Checklist</h2>
+  <p>
+    The <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a> file
+    is a YAML representation of the checklist dictionary that is maintained
+    by the nowcast manager process.
+    It reflects the present state of the nowcast system,
+    showing the information returned to the manager from each of the workers.
+    It is both (somewhat) human-readable,
+    and machine-readable.
+    The checklist is reset each morning after the forecast2 run results have been
+    pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
+    (see the discussio of log file rollovers below).
+    That means that the <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a>
+    page will be empty for a period of time each morning.
+  </p>
+
+
 <h2 id="log-files">Log Files</h2>
   <p>
     The log files contain messages from the nowcast automation workers and manager processes.
@@ -95,12 +127,12 @@
       </li>
       <li>
         <code>nowcast.debug.log</code> which contains messages logged at the <code>debug</code> level and above;
-i.e. all of the nitty-gritty details.
+        i.e. all of the nitty-gritty details.
       </li>
     </ul>
   </p>
   <p>
-    The log file rollovers happen after the forecast run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
+    The log file rollovers happen each morning after the forecast2 run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
     <a href="http://salishsea.eos.ubc.ca/nemo/results/">results page</a>
     and as the storm surge
     <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">

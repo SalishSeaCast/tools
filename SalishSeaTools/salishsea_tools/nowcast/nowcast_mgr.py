@@ -662,7 +662,6 @@ def update_checklist(worker, key, worker_checklist):
         checklist[key] = worker_checklist
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
-    logger.info('checklist:\n{}'.format(pprint.pformat(checklist)))
     with open('nowcast_checklist.yaml', 'wt') as f:
         yaml.dump(checklist, f)
 
