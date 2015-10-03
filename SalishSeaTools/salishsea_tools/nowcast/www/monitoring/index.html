@@ -37,13 +37,13 @@
   On this page are:
   <ul>
      <li>
-       A link to the
-       <a href="#checklist">nowcast manager process's checklist</a>
-       that shows the present status of the system
+       Links to the present and preceding 7 day's
+       <a href="#log-files">log files</a>
      </li>
      <li>
-       Links to the preceding 7 days
-       <a href="#log-files">log files</a>
+       Links to the present and preceding 7 day's
+       <a href="#checklist">nowcast manager process's checklist</a>
+       that shows the status of the system
      </li>
      <li>
        Images produced from the
@@ -87,23 +87,6 @@
   subdirectory where SVG renderings of the day's results page(s) plots
   can be found.
 </p>
-
-
-<h2 id="checklist">Checklist</h2>
-  <p>
-    The <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a> file
-    is a YAML representation of the checklist dictionary that is maintained
-    by the nowcast manager process.
-    It reflects the present state of the nowcast system,
-    showing the information returned to the manager from each of the workers.
-    It is both (somewhat) human-readable,
-    and machine-readable.
-    The checklist is reset each morning after the forecast2 run results have been
-    pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
-    (see the discussio of log file rollovers below).
-    That means that the <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a>
-    page will be empty for a period of time each morning.
-  </p>
 
 
 <h2 id="log-files">Log Files</h2>
@@ -198,6 +181,40 @@
       <a href="nowcast.debug.log.7"><code>nowcast.debug.log.7</code></a>
     </li>
   </ul>
+
+
+<h2 id="checklist">Checklist</h2>
+  <p>
+    The <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a> file
+    is a YAML representation of the checklist dictionary that is maintained
+    by the nowcast manager process.
+    It reflects the present state of the nowcast system,
+    showing the information returned to the manager from each of the workers.
+    It is both (somewhat) human-readable,
+    and machine-readable.
+    The checklist is reset each morning after the forecast2 run results have been
+    pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
+    (see the discussion of log file rollovers above).
+    That means that the <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a>
+    page will be empty for a period of time each morning.
+  </p>
+  <p>
+    A snapshot of the checklist file is logged each morning before it is reset.
+    The checklist log files roll over in the same way as the other log files.
+  </p>
+    <ul>
+    <li>
+      <a href="nowcast_checklist.log"><code>nowcast_checklist.log</code></a>
+      <a href="nowcast_checklist.log.1"><code>nowcast_checklist.log.1</code></a>
+      <a href="nowcast_checklist.log.2"><code>nowcast_checklist.log.2</code></a>
+      <a href="nowcast_checklist.log.3"><code>nowcast_checklist.log.3</code></a>
+      <a href="nowcast_checklist.log.4"><code>nowcast_checklist.log.4</code></a>
+      <a href="nowcast_checklist.log.5"><code>nowcast_checklist.log.5</code></a>
+      <a href="nowcast_checklist.log.6"><code>nowcast_checklist.log.6</code></a>
+      <a href="nowcast_checklist.log.7"><code>nowcast_checklist.log.7</code></a>
+    </li>
+  </ul>
+
 
 
 <h2 id="grib_to_netcdf-image">grib_to_netcdf Worker Monitoring Plots</h2>
