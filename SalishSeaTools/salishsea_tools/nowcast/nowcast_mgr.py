@@ -55,7 +55,7 @@ def main():
     config = lib.load_config(parsed_args.config_file)
     config['logging']['console'] = parsed_args.debug
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.debug('running in process {}'.format(os.getpid()))
+    logger.info('running in process {}'.format(os.getpid()))
     logger.debug('read config from {.config_file}'.format(parsed_args))
     configure_checklist_logging(config)
 
