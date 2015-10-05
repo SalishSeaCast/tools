@@ -17,7 +17,6 @@
 from a nowcast run on the HPC/cloud facility to archival storage.
 """
 import argparse
-import datetime
 import glob
 import logging
 import os
