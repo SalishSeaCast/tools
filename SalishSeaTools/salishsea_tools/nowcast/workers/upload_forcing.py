@@ -63,7 +63,10 @@ def main():
             config)
         logger.info(
             '{0.run_type} forcing files upload to {0.host_name} completed'
-            .format(parsed_args))
+            .format(parsed_args),
+            run_type=parsed_args.run_type,
+            host_name=parsed_args.host_name,
+            date=parsed_args.run_date)
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
@@ -71,7 +74,10 @@ def main():
     except lib.WorkerError:
         logger.critical(
             '{0.run_type} forcing files upload to {0.host_name} failed'
-            .format(parsed_args))
+            .format(parsed_args),
+            run_type=parsed_args.run_type,
+            host_name=parsed_args.host_name,
+            date=parsed_args.run_date)
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.run_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
@@ -135,7 +141,10 @@ def upload_forcing(host_name, run_type, run_date, config):
             fcst = os.path.join(config['ssh']['ssh_dir'], 'fcst', filename)
             os.symlink(fcst, localpath)
             logger.warning(
-                'ssh obs file not found; created symlink to {}'.format(fcst))
+                'ssh obs file not found; created symlink to {}'.format(fcst),
+                run_type=run_type,
+                host_name=host_name,
+                date=run_date)
             upload_file(sftp_client, host_name, localpath, remotepath)
     if run_type == 'ssh':
         sftp_client.close()

@@ -68,7 +68,10 @@ def main():
             config)
         logger.info(
             '{0.run_type} {0.page_type} pages for salishsea site prepared'
-            .format(parsed_args))
+            .format(parsed_args),
+            run_type=parsed_args.run_type,
+            page_type=parsed_args.page_type,
+            date=parsed_args.run_date)
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.page_type}'.format(parsed_args)
         lib.tell_manager(
@@ -76,7 +79,10 @@ def main():
     except lib.WorkerError:
         logger.critical(
             '{0.run_type} {0.page_type} page preparation failed'
-            .format(parsed_args))
+            .format(parsed_args),
+            run_type=parsed_args.run_type,
+            page_type=parsed_args.page_type,
+            date=parsed_args.run_date)
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.page_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
@@ -166,7 +172,10 @@ def make_site_page(run_type, page_type, run_date, config):
     tmpl = mako.template.Template(filename=mako_file)
     logger.debug(
         '{run_type} {page_type}: read template: {mako_file}'
-        .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
+        .format(run_type=run_type, page_type=page_type, mako_file=mako_file),
+        run_type=run_type,
+        page_type=page_type,
+        date=run_date)
     # Render template to rst
     repo_name = config['web']['site_repo_url'].rsplit('/')[-1]
     repo_path = os.path.join(config['web']['www_path'], repo_name)
@@ -193,7 +202,10 @@ def make_site_page(run_type, page_type, run_date, config):
             .format(
                 run_type=run_type,
                 page_type=page_type,
-                forecast_file=forecast_file))
+                forecast_file=forecast_file),
+            run_type=run_type,
+            page_type=page_type,
+            date=run_date)
         checklist['most recent forecast'] = forecast_file
     return checklist
 
@@ -216,7 +228,10 @@ def render_nowcast_rst(
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
         'nowcast {page_type}: rendered page: {rst_file}'
-        .format(page_type=page_type, rst_file=rst_file))
+        .format(page_type=page_type, rst_file=rst_file),
+        run_type='nowcast',
+        page_type=page_type,
+        date=run_date)
     checklist = {'nowcast {}'.format(page_type): rst_file}
     return checklist
 
@@ -240,7 +255,10 @@ def render_forecast_rst(
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
         'forecast {page_type}: rendered page: {rst_file}'
-        .format(page_type=page_type, rst_file=rst_file))
+        .format(page_type=page_type, rst_file=rst_file),
+        run_type='forecast',
+        page_type=page_type,
+        date=run_date)
     checklist = {
         'forecast {}'.format(page_type): rst_file,
     }
@@ -266,7 +284,10 @@ def render_forecast2_rst(
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
         'forecast2 {page_type}: rendered page: {rst_file}'
-        .format(page_type=page_type, rst_file=rst_file))
+        .format(page_type=page_type, rst_file=rst_file),
+        run_type='forecast2',
+        page_type=page_type,
+        date=run_date)
     checklist = {
         'forecast2 {}'.format(page_type): rst_file,
         'finish the day': True,
@@ -279,7 +300,10 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     tmpl = mako.template.Template(filename=mako_file)
     logger.debug(
         '{run_type} {page_type}: read index page template: {mako_file}'
-        .format(run_type=run_type, page_type=page_type, mako_file=mako_file))
+        .format(run_type=run_type, page_type=page_type, mako_file=mako_file),
+        run_type=run_type,
+        page_type=page_type,
+        date=run_date)
     # Calculate the date range to display in the grid and the number of
     # columns for the month headings of the grid
     fcst_date = (
@@ -337,8 +361,10 @@ def render_index_rst(page_type, run_type, run_date, rst_path, config):
     tmpl_to_rst(tmpl, rst_file, vars, config)
     logger.debug(
         '{run_type} {page_type}: rendered index page: {rst_file}'
-        .format(run_type=run_type, page_type=page_type, rst_file=rst_file))
-
+        .format(run_type=run_type, page_type=page_type, rst_file=rst_file),
+        run_type=run_type,
+        page_type=page_type,
+        date=run_date)
     checklist = {
         '{run_type} {page_type} index page'
         .format(run_type=run_type, page_type=page_type): rst_file}

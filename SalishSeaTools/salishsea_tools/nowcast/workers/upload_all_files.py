@@ -64,14 +64,18 @@ def main():
             config)
         logger.info(
             'Nowcast ALL files upload to {0.host_name} completed'
-            .format(parsed_args))
+            .format(parsed_args),
+            host_name=parsed_args.host_name,
+            date=parsed_args.run_date)
         # Exchange success messages with the nowcast manager process
         lib.tell_manager(
             worker_name, 'success', config, logger, socket, checklist)
     except lib.WorkerError:
         logger.critical(
             'Nowcast ALL files upload to {0.host_name} failed'
-            .format(parsed_args))
+            .format(parsed_args),
+            host_name=parsed_args.host_name,
+            date=parsed_args.run_date)
         # Exchange failure messages with the nowcast manager process
         lib.tell_manager(worker_name, 'failure', config, logger, socket)
     except SystemExit:
@@ -125,7 +129,9 @@ def upload_all_files(host_name, run_date, config):
             fcst = os.path.join(config['ssh']['ssh_dir'], 'fcst', filename)
             os.symlink(fcst, localpath)
             logger.warning(
-                'ssh obs file not found; created symlink to {}'.format(fcst))
+                'ssh obs file not found; created symlink to {}'.format(fcst),
+                host_name=host_name,
+                date=run_date)
             upload_file(sftp_client, host_name, localpath, remotepath)
     # Rivers runoff
     for day in range(-1, 0):
