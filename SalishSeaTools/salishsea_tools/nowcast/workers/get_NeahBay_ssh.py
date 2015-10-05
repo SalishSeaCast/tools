@@ -74,7 +74,7 @@ def main():
         checklist = getNBssh(parsed_args.run_type, config)
         logger.info(
             'Neah Bay sea surface height web scraping '
-            'and file creation completed')
+            'and file creation completed', run_type=parsed_args.run_type)
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
@@ -82,7 +82,7 @@ def main():
     except lib.WorkerError:
         logger.error(
             'Neah Bay sea surface height web scraping '
-            'and file creation failed')
+            'and file creation failed', run_type=parsed_args.run_type)
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.run_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
@@ -118,7 +118,9 @@ def getNBssh(run_type, config):
     lats = fB.variables['nav_lat'][:]
     lons = fB.variables['nav_lon'][:]
     fB.close()
-    logger.debug('loaded lats & lons from {bathymetry}'.format(**config))
+    logger.debug(
+        'loaded lats & lons from {bathymetry}'.format(**config),
+        run_type=run_type)
     # Scrape the surge data from the website into a text file,
     # store the file in the run results directory,
     # and load the data for processing into netCDF4 files
