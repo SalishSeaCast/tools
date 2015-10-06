@@ -68,7 +68,7 @@ def main():
 def success(parsed_args):
     logger.info(
         'weather forecast {.forecast} downloads complete'
-        .format(parsed_args), forecast=parsed_args.forecast)
+        .format(parsed_args), extra={'forecast': parsed_args.forecast})
     msg_type = '{} {}'.format('success', parsed_args.forecast)
     return msg_type
 
@@ -76,7 +76,7 @@ def success(parsed_args):
 def failure(parsed_args):
     logger.error(
         'weather forecast {.forecast} downloads failed'
-        .format(parsed_args), forecast=parsed_args.forecast)
+        .format(parsed_args), extra={'forecast': parsed_args.forecast})
     msg_type = '{} {}'.format('failure', parsed_args.forecast)
     return msg_type
 
@@ -87,7 +87,7 @@ def get_grib(parsed_args, config):
     logger.info(
         'downloading {forecast} forecast GRIB2 files for {date}'
         .format(forecast=forecast, date=date),
-        forecast=parsed_args.forecast)
+        extra={'forecast': parsed_args.forecast})
     dest_dir_root = config['weather']['GRIB_dir']
     grp_name = config['file group']
     _mkdirs(dest_dir_root, date, forecast, grp_name)
@@ -134,10 +134,11 @@ def _get_file(var, dest_dir_root, date, forecast, hr_str):
     size = headers['Content-Length']
     logger.debug(
         'downloaded {bytes} bytes from {fileURL}'
-        .format(bytes=size, fileURL=fileURL), forecast=forecast)
+        .format(bytes=size, fileURL=fileURL), extra={'forecast': forecast})
     if size == 0:
         logger.critical(
-            'Problem, 0 size file {}'.format(fileURL), forecast=forecast)
+            'Problem, 0 size file {}'.format(fileURL),
+            extra={'forecast': forecast})
         raise lib.WorkerError
     return filepath
 
