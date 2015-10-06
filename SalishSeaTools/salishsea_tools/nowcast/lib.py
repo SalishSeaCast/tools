@@ -33,7 +33,7 @@ import requests
 import yaml
 import zmq
 
-from .json_logging import JSONFormatter
+from json_logging import JSONFormatter
 
 
 # File permissions:
