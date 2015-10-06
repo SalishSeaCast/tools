@@ -17,17 +17,19 @@
 """
 from __future__ import division
 
+import cStringIO
+import csv
 import datetime
+from xml.etree import cElementTree as ElementTree
+
+import arrow
+from dateutil import tz
 import netCDF4 as NC
 import numpy as np
-import arrow
-import cStringIO
-import requests
-from dateutil import tz
-from xml.etree import cElementTree as ElementTree
 import pandas as pd
+import requests
+
 from salishsea_tools import tidetools
-import csv
 
 
 def convert_date_seconds(times, start):
