@@ -168,7 +168,7 @@ def results_dataset(period, grid, results_dir):
     and grid (e.g. grid_T, grid_U) from results_dir.
     """
     filename_pattern = 'SalishSea_{period}_*_{grid}.nc'
-    print results_dir
+    print(results_dir)
     filepaths = glob(os.path.join(results_dir, filename_pattern.format(period=period, grid=grid)))
     return nc.Dataset(filepaths[0])
 

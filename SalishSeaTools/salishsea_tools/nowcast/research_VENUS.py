@@ -899,7 +899,7 @@ def plot_ellipses(
     ax.set_title('Tidal ellipse')
     ax.set_xlabel('x index')
     ax.set_ylabel('y index')
-    print 'red is clockwise'
+    print('red is clockwise')
     return
 
 
@@ -990,5 +990,5 @@ def plot_ellipses_area(
     ax.set_title('Tidal ellipse', fontsize=20)
     ax.set_xlabel('x index', fontsize=16)
     ax.set_ylabel('y index', fontsize=16)
-    print 'red is clockwise'
+    print('red is clockwise')
     return fig

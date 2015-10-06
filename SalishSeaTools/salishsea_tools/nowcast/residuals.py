@@ -456,7 +456,7 @@ def combine_errors(name, mode, dates, grid_B):
             daily_time = np.append(daily_time,
                                    t_sim + datetime.timedelta(hours=12))
         else:
-            print '{} simulation for {} did not occur'.format(mode, t_sim)
+            print('{} simulation for {} did not occur'.format(mode, t_sim))
 
     return force, model, time, daily_time
 
