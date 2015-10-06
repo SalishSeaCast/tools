@@ -19,9 +19,9 @@ figures for analysis and model evaluation of daily nowcast/forecast runs.
 """
 from __future__ import division
 
-from cStringIO import StringIO
 import datetime
 import glob
+from io import StringIO
 import os
 
 import arrow
