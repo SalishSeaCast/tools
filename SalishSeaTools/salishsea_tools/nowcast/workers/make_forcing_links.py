@@ -63,7 +63,7 @@ def main():
             config)
         logger.info(
             '{0.run_type} forcing file links on {0.host_name} created'
-            .format(parsed_args)
+            .format(parsed_args),
             run_type=parsed_args.run_type,
             host_name=parsed_args.host_name,
             date=parsed_args.run_date)
@@ -74,7 +74,7 @@ def main():
     except lib.WorkerError:
         logger.critical(
             '{0.run_type} forcing file links creation on {0.host_name} failed'
-            .format(parsed_args)
+            .format(parsed_args),
             run_type=parsed_args.run_type,
             host_name=parsed_args.host_name,
             date=parsed_args.run_date)
