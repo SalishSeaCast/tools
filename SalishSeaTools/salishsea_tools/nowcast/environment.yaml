@@ -23,7 +23,7 @@ dependencies:
 - pyyaml
 - pyzmq
 - pip
-- python
+- python=2
 - requests
 - scipy
 - sphinx
