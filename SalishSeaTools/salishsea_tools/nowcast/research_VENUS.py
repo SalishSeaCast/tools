@@ -18,8 +18,8 @@
 VENUS nodes and the model results with visualization figures for analysis
 of daily nowcast/forecast runs.
 """
-from cStringIO import StringIO
 import datetime
+from io import StringIO
 
 from dateutil import tz
 import matplotlib.pyplot as plt
