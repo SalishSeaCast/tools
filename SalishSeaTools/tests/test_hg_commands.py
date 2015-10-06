@@ -18,7 +18,7 @@ limitations under the License.
 """
 import subprocess
 
-from mock import patch
+from unittest.mock import patch
 import pytest
 
 from salishsea_tools import hg_commands as hg
