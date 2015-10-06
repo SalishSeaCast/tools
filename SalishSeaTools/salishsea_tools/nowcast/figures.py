@@ -1955,7 +1955,7 @@ def add_bathy(XX, lines, ax):
     xs = XX.min()
     xe = XX.max()
     ax.bar(np.arange(xs, xe), baseline-thalweg_bottom[xs:xe], width=1, bottom = -1*baseline, color='burlywood');
-    
+
 def thalweg_salinity(
     grid_T_d, figsize=(20, 8),
     cs = [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
@@ -2070,11 +2070,11 @@ def thalweg_temperature(
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
-    
+
     ########################
     #add_bathy(XX, lines, ax)
     ########################
-    
+
     return fig
 
 
