@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Prepare for and run the Salish Sea NEMO model for tomorrow and 
+"""Prepare for and run the Salish Sea NEMO model for tomorrow and
 1/2 of the next day on Salish
 
 Steps are:
@@ -47,12 +47,12 @@ TIMESTEPS_PER_DAY = 8640
 
 def main():
     today = date.today()
-    print today, 'Today'
+    print(today, 'Today')
     tomorrow = today + timedelta(days=1)
     nowcast_end = update_time_namelist(tomorrow)
     dmy = today.strftime('%d%b%y').lower()
     run_id = '{dmy}forecast'.format(dmy=dmy)
-    print tomorrow, 'Tomorrow'
+    print(tomorrow, 'Tomorrow')
     run_desc = run_description(run_id, tomorrow, nowcast_end)
     results_dir = os.path.join('../SalishSea/forecast', dmy)
     salishsea_cmd.api.run_in_subprocess(
@@ -91,7 +91,7 @@ def get_namelist_value(key, lines):
 def run_description(run_id, runday, nowcast_end, forcing_home=FORCING_HOME):
     # Relative paths from MEOPAR/nowcast/
     prevday = runday - timedelta(days=1)
-    print prevday, runday, 'Previous Day'
+    print(prevday, runday, 'Previous Day')
     init_conditions = os.path.join(
         '/data/dlatorne/MEOPAR/SalishSea/nowcast',
         prevday.strftime('%d%b%y').lower(),
