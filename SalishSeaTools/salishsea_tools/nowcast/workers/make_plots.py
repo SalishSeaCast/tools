@@ -74,10 +74,11 @@ def main():
             socket)
         logger.info(
             '{0.plot_type} plots for {0.run_type} completed'
-            .format(parsed_args),
-            run_type=parsed_args.run_type,
-            plot_type=parsed_args.plot_type,
-            date=parsed_args.run_date)
+            .format(parsed_args), extra={
+                'run_type': parsed_args.run_type,
+                'plot_type': parsed_args.plot_type,
+                'date': parsed_args.run_date,
+            })
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {0.run_type} {0.plot_type}'.format(parsed_args)
         lib.tell_manager(
@@ -85,10 +86,11 @@ def main():
     except lib.WorkerError:
         logger.critical(
             '{0.plot_type} plots failed for {0.run_type} failed'
-            .format(parsed_args),
-            run_type=parsed_args.run_type,
-            plot_type=parsed_args.plot_type,
-            date=parsed_args.run_date)
+            .format(parsed_args), extra={
+                'run_type': parsed_args.run_type,
+                'plot_type': parsed_args.plot_type,
+                'date': parsed_args.run_date,
+            })
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {0.run_type} {0.plot_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)

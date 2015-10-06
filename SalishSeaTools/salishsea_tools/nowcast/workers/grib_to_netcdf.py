@@ -84,7 +84,8 @@ def main():
         checklist = grib_to_netcdf(parsed_args.runtype,
                                    parsed_args.run_date, config)
         logger.info('NEMO-atmos forcing file completed for run type {.runtype}'
-                    .format(parsed_args), run_type=parsed_args.run_type)
+                    .format(parsed_args),
+                    extra={'run_type': parsed_args.run_type})
         # Exchange success messages with the nowcast manager process
         msg_type = '{} {}'.format('success', parsed_args.runtype)
         lib.tell_manager(
@@ -92,7 +93,7 @@ def main():
     except lib.WorkerError:
         logger.critical(
             'NEMO-atmos forcing file failed for run type {.runtype}'
-            .format(parsed_args), run_type=parsed_args.run_type)
+            .format(parsed_args), extra={'run_type': parsed_args.run_type})
         # Exchange failure messages with the nowcast manager process
         msg_type = '{} {}'.format('failure', parsed_args.runtype)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)

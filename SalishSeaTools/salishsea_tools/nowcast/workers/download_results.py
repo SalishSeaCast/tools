@@ -58,10 +58,11 @@ def main():
             config)
         logger.info(
             '{0.run_type} results files from {0.host_name} downloaded'
-            .format(parsed_args),
-            run_type=parsed_args.run_type,
-            host_name=parsed_args.host_name,
-            date=parsed_args.run_date)
+            .format(parsed_args), extra={
+                'run_type': parsed_args.run_type,
+                'host_name': parsed_args.host_name,
+                'date': parsed_args.run_date,
+            })
         # Exchange success messages with the nowcast manager process
         msg_type = 'success {.run_type}'.format(parsed_args)
         lib.tell_manager(
@@ -69,10 +70,11 @@ def main():
     except lib.WorkerError:
         logger.critical(
             '{0.run_type} results files download from {0.host_name} failed'
-            .format(parsed_args),
-            run_type=parsed_args.run_type,
-            host_name=parsed_args.host_name,
-            date=parsed_args.run_date)
+            .format(parsed_args), extra={
+                'run_type': parsed_args.run_type,
+                'host_name': parsed_args.host_name,
+                'date': parsed_args.run_date,
+            })
         # Exchange failure messages with the nowcast manager process
         msg_type = 'failure {.run_type}'.format(parsed_args)
         lib.tell_manager(worker_name, msg_type, config, logger, socket)
