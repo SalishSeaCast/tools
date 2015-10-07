@@ -221,7 +221,7 @@ def configure_logging(config, logger, debug, email=True):
         logger.addHandler(handler)
         if not debug:
             # JSON log files
-            log_file = os.path.join(log_file, '.json')
+            log_file = '{}.json'.format(log_file)
             handler = logging.handlers.TimedRotatingFileHandler(
                 log_file, when='d', interval=30, backupCount=120)
             handler.setLevel(getattr(logging, level.upper()))
