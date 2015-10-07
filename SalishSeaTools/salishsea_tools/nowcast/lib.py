@@ -222,7 +222,7 @@ def configure_logging(config, logger, debug, email=True):
         if not debug:
             # JSON log files
             log_file = os.path.join(log_file, '.json')
-            handler = logging.handles.TimedRotatingFileHandler(
+            handler = logging.handlers.TimedRotatingFileHandler(
                 log_file, when='d', interval=30, backupCount=120)
             handler.setLevel(getattr(logging, level.upper()))
             handler.setFormatter(json_formatter)
