@@ -17,7 +17,7 @@
 """
 from __future__ import division
 
-from mock import (
+from unittest.mock import (
     MagicMock,
     Mock,
     patch,
