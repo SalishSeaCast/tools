@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_site_page worker.
 """
-from mock import patch
+from unittest.mock import patch
 
 import arrow
 import pytest
