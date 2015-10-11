@@ -19,9 +19,9 @@ figures for analysis and model evaluation of daily nowcast/forecast runs.
 """
 from __future__ import division
 
-from cStringIO import StringIO
 import datetime
 import glob
+from io import StringIO
 import os
 
 import arrow
@@ -45,6 +45,12 @@ from salishsea_tools import (
     tidetools,
 )
 
+# =============================== #
+# <------- Kyle 2015/08/25
+ms2k = 1/0.514444
+k2ms = 0.514444
+# conversion between m/s and knots
+# =============================== #
 
 # Plotting colors
 model_c = 'MediumBlue'
@@ -68,7 +74,22 @@ axis_font = {'fontname': 'Bitstream Vera Sans', 'size': '13'}
 # Extreme ssh from DFO website
 # Mean sea level from CHS tidal constiuents.
 # VENUS coordinates from the VENUS website. Depth is in meters.
+
 SITES = {
+    'Nanaimo': {
+        'lat': 49.16,
+        'lon': -123.93,
+        'msl': 3.08,
+        'extreme_ssh': 5.47},
+    'Halibut Bank': {
+        'lat': 49.34,
+        'lon': -123.72},
+    'Dungeness': {
+        'lat': 48.15,
+        'lon': -123.117},
+    'La Perouse Bank': {
+        'lat': 48.83,
+        'lon': -126.0},
     'Point Atkinson': {
         'lat': 49.33,
         'lon': -123.25,
@@ -98,7 +119,9 @@ SITES = {
     'Cherry Point': {
         'lat': 48.866667,
         'lon': -122.766667,
-        'stn_no': 9449424},
+        'stn_no': 9449424,
+        'msl': 3.543,
+        'extreme_ssh': 5.846},
     'Sandheads': {
         'lat': 49.10,
         'lon': -123.30},
@@ -115,6 +138,16 @@ SITES = {
             'depth': 300}
         }
     }
+
+# Sites for producing water level thresold plots
+TIDAL_SITES = ['Point Atkinson', 'Victoria', 'Campbell River', 'Nanaimo',
+               'Cherry Point']
+# Sites for adding wind vectors to map
+WIND_SITES = ['La Perouse Bank', 'Neah Bay', 'Dungeness', 'Victoria',
+              'Friday Harbor', 'Cherry Point', 'Sandheads',
+              'Point Atkinson', 'Halibut Bank', 'Nanaimo', 'Campbell River']
+# Colors for wind stations
+stations_c = cm.rainbow(np.linspace(0, 1, len(WIND_SITES)))
 
 
 def save_image(fig, filename, **kwargs):
@@ -175,7 +208,7 @@ def axis_colors(ax, plot):
     return ax
 
 
-def find_model_point(lon, lat, X, Y):
+def find_model_point(lon, lat, X, Y, tol_lon=0.016, tol_lat=0.011):
     """Finds a model grid point close to a specified latitude and longitude.
     Should be used for non-NEMO grids like the atmospheric forcing grid.
 
@@ -191,21 +224,31 @@ def find_model_point(lon, lat, X, Y):
     :arg Y: The model latitude grid.
     :type Y: numpy array
 
+    :arg tol_lon: tolerance on grid spacing for longitude
+    :type tol_lon: float
+
+    :arg tol_lat: tolerance on grid spacing for latitude
+    :type tol_lat: float
+
     :returns: j-index and i-index of the closest model grid point.
     """
-
-    # Tolerance for searching for grid points
-    # (approximate distances between adjacent grid points)
-    tol1 = 0.015  # lon
-    tol2 = 0.015  # lat
 
     # Search for a grid point with longitude or latitude within
     # tolerance of measured location
     j, i = np.where(
         np.logical_and(
-            (np.logical_and(X > lon - tol1, X < lon + tol1)),
-            (np.logical_and(Y > lat - tol2, Y < lat + tol2))))
+            (np.logical_and(X > lon - tol_lon, X < lon + tol_lon)),
+            (np.logical_and(Y > lat - tol_lat, Y < lat + tol_lat))))
 
+    if j.size > 1 or i.size > 1:
+        raise ValueError(
+            'Multiple model points found. tol_lon/tol_lat too big.'
+        )
+    elif not j or not i:
+        raise ValueError(
+            'No model point found. tol_lon/tol_lat too small or '
+            'lon/lat outside of domain.'
+        )
     return j, i
 
 
@@ -581,7 +624,7 @@ def get_tides(name):
     path = (
         '/data/nsoontie/MEOPAR/tools/SalishSeaTools/salishsea_tools/nowcast/'
         'tidal_predictions/')
-    fname = '{}_atide_compare8_31-Dec-2013_02-Dec-2015.csv'.format(name)
+    fname = '{}_tidal_prediction_01-Jan-2015_01-Jan-2020.csv'.format(name)
     tfile = os.path.join(path, fname)
     ttide, msl = stormtools.load_tidal_predictions(tfile)
 
@@ -1072,9 +1115,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
                                model_path, t, 4, average=True)
 
-    # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
-
     # Set up Information
     max_sshs = {}
     max_times = {}
@@ -1092,7 +1132,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     # Map
     plot_map(ax, grid_B, PNW_coastline)
 
-    for name in names:
+    for name in TIDAL_SITES:
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
         # Get sea surface height
@@ -1106,9 +1146,6 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 70, 0.3, name)
-        # Plot winds
-        twind = plot_wind_vector(
-            ax, name, t_orig, t_final, model_path, inds, scale)
 
         # Information
         res = compute_residual(ssh_loc, t, ttide)
@@ -1124,14 +1161,21 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
-        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+    for name in WIND_SITES:
+        twind = plot_wind_vector(ax, name, t_orig, t_final,
+                                 model_path, inds, scale)
 
     # Reference arrow
+    # for m/s
     ax.arrow(-122.2, 50.6, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.28, 50.55, "Reference: 5 m/s", rotation=90, fontsize=20)
+    # for knots
+    ax.arrow(-122.45, 50.6, 0. * scale * k2ms, -5. * scale * k2ms,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.53, 50.55, "Reference: 5 knots", rotation=90, fontsize=20)
 
     # Location labels
     ax.text(-125.7, 47.7, 'Pacific\nOcean',
@@ -1160,7 +1204,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     # Legend
     axs = [ax1, ax2, ax3]
     cs = ['green', 'Gold', 'red']
-    for ax, name, thresh_c in zip(axs, names, cs):
+    for ax, thresh_c in zip(axs, cs):
         plt.setp(ax.spines.values(), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
@@ -1540,12 +1584,13 @@ def compare_tidalpredictions_maxSSH(
 
 def plot_thresholds_all(
     grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1,
-    figsize=(20, 15.5),
+    figsize=(20, 25),
 ):
     """Plots sea surface height over one day with respect to warning
     thresholds.
 
     This function applies only to Point Atkinson, Campbell River, and Victoria.
+    8/25/15: added Nanaimo and Cherry Point
     There are three different warning thresholds.
     The locations of stations are colored depending on the threshold in
     which they fall: green, yellow, red.
@@ -1578,7 +1623,7 @@ def plot_thresholds_all(
 
     # Figure set up
     fig = plt.figure(figsize=figsize, facecolor='#2B3E50')
-    gs = gridspec.GridSpec(3, 2, width_ratios=[1.5, 1])
+    gs = gridspec.GridSpec(5, 2, width_ratios=[1.5, 1])
     gs.update(wspace=0.13, hspace=0.2)
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
 
@@ -1594,8 +1639,7 @@ def plot_thresholds_all(
     tzone = '[PST]' if PST else '[UTC]'
     t_shift = time_shift if PST else 0
 
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
-    for M, name in enumerate(names):
+    for M, name in enumerate(TIDAL_SITES):
         # Get sea surface height
         j, i = tidetools.find_closest_model_point(
             SITES[name]['lon'], SITES[name]['lat'],
@@ -1699,6 +1743,7 @@ def Sandheads_winds(
     winds, dirs, temps, time, lat, lon = stormtools.get_EC_observations(
         'Sandheads', start, end)
     time = np.array(time)
+    wind_ax = np.array([0, 20])  # axis limits in m/s
 
     # Get modelled winds
     wind, direc, t, pr, tem, sol, the, qr, pre = get_model_winds(
@@ -1712,6 +1757,7 @@ def Sandheads_winds(
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[1, 0])
     ax0 = fig.add_subplot(gs[:, 1])
+    ax12 = ax1.twinx()  # axis for knots wind plotting
 
     # Plot wind speed
     ax1.plot(
@@ -1719,14 +1765,21 @@ def Sandheads_winds(
         color=observations_c, lw=2, label='Observations')
     ax1.plot(t + PST * time_shift, wind, lw=2, color=model_c, label='Model')
     ax1.set_xlim([t_orig + PST * time_shift, t_end + PST * time_shift])
-    ax1.set_ylim([0, 20])
+    ax1.set_ylim(wind_ax)
     ax1.set_title('Winds at Sandheads:  ' + start, **title_font)
     ax1.set_ylabel('Wind Speed (m/s)', **axis_font)
     ax1.set_xlabel('Time {}'.format(timezone), **axis_font)
     ax1.legend(loc=0)
-    ax1.grid()
+    # =================================================== #
+    # <----------------------- Kyle 2015/08/25
+    # axis for knots plotting
+    ax12.set_ylim(wind_ax*ms2k)
+    ax12.set_ylabel('Wind Speed (knots)', **axis_font)
+    axis_colors(ax12, 'gray')
+    # =================================================== #
     axis_colors(ax1, 'gray')
     ax1.xaxis.set_major_formatter(hfmt)
+    ax1.grid()
 
     # Plot wind direction
     ax2.plot(
@@ -1743,6 +1796,8 @@ def Sandheads_winds(
     axis_colors(ax2, 'gray')
     ax2.xaxis.set_major_formatter(hfmt)
     fig.autofmt_xdate()
+    # Fix ticks on speed plot
+    ax1.set_xticks(ax2.get_xticks())
 
     # Map
     _plot_stations_map(ax0, grid_B, PNW_coastline, title='Station Locations')
@@ -1805,21 +1860,20 @@ def winds_average_max(
     fig.patch.set_facecolor('#2B3E50')
     plot_map(ax, grid_B, PNW_coastline)
     scale = 0.1
+    # Reference for m/s
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+    # Reference for knots
+    ax.arrow(-122.75, 50.65, 0. * scale * k2ms, -5. * scale * k2ms,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
     # Stations
     if station == 'all':
-        names = [
-            'Neah Bay',
-            'Victoria',
-            'Friday Harbor',
-            'Cherry Point',
-            'Sandheads',
-            'Point Atkinson',
-            'Campbell River']
+        names = WIND_SITES
         colors = stations_c
     else:
         names = [station]
@@ -1879,6 +1933,28 @@ def winds_average_max(
 
     return fig
 
+def add_bathy(XX, lines, ax):
+    baseline = 450.00
+    # read bathy
+    nc_filepath = '/ocean/sallen/allen/research/MEOPAR/NEMO-forcing/grid/grid_bathy.nc'
+    #nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
+    bathy = nc.Dataset(nc_filepath, 'r')
+    depth = bathy.variables['grid_bathy']
+    # Get the depth
+    floor = np.empty_like(depth)
+    ceil = np.empty_like(depth)
+    ceil[0] = 0.
+    for k in range(1,40):
+        ceil[k] = floor[k-1]
+        floor[k] = 2*depth[k] -floor[k-1]
+    # find the actually bottom depth
+    bottom = np.max(floor, axis=0)
+    # find the values along the thalweg
+    thalweg_bottom = bottom[lines[:,0],lines[:,1]]
+    # draw
+    xs = XX.min()
+    xe = XX.max()
+    ax.bar(np.arange(xs, xe), baseline-thalweg_bottom[xs:xe], width=1, bottom = -1*baseline, color='burlywood');
 
 def thalweg_salinity(
     grid_T_d, figsize=(20, 8),
@@ -1934,13 +2010,15 @@ def thalweg_salinity(
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
-
+    ########################
+    #add_bathy(XX, lines, ax)
+    ########################
     return fig
 
 
 def thalweg_temperature(
     grid_T_d, figsize=(20, 8),
-    cs = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    cs = [6.9, 7,7.5, 8, 8.5, 9, 9.8,9.9,10.3,10.5, 11,11.5, 12, 13, 14, 15, 16, 17, 18, 19],
 ):
     """Plots the daily average temperature field along the thalweg.
 
@@ -1992,6 +2070,10 @@ def thalweg_temperature(
     ax.set_xlabel('Position along Thalweg', **axis_font)
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
+
+    ########################
+    #add_bathy(XX, lines, ax)
+    ########################
 
     return fig
 
@@ -2220,9 +2302,6 @@ def plot_threshold_website(
     inds = isolate_wind_timing('Point Atkinson', grid_T, grid_B,
                                model_path, t, 4, average=True)
 
-    # Set up loop
-    names = ['Point Atkinson', 'Campbell River', 'Victoria']
-
     # Set up Information
     max_sshs = {}
     max_times = {}
@@ -2263,7 +2342,7 @@ def plot_threshold_website(
                        title=' Possible\nWarnings')
     legend.get_title().set_fontsize('20')
 
-    for name in names:
+    for name in TIDAL_SITES:
         # Get sea surface height
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
@@ -2277,15 +2356,6 @@ def plot_threshold_website(
 
         # Plot thresholds
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 55, 0.3, name)
-        # Plot winds
-        twind = plot_wind_vector(
-            ax,
-            name,
-            t_orig,
-            t_final,
-            model_path,
-            inds,
-            scale)
 
         # Information
         res = compute_residual(ssh_loc, t, ttide)
@@ -2305,14 +2375,21 @@ def plot_threshold_website(
         max_winds[name] = max_wind
 
     # Add winds for other stations
-    for name in ['Neah Bay', 'Cherry Point', 'Sandheads', 'Friday Harbor']:
-        plot_wind_vector(ax, name, t_orig, t_final, model_path, inds, scale)
+    for name in WIND_SITES:
+        twind = plot_wind_vector(ax, name, t_orig, t_final,
+                                 model_path, inds, scale)
 
     # Reference arrow
     ax.arrow(-122.5, 50.65, 0. * scale, -5. * scale,
              head_width=0.05, head_length=0.1, width=0.02,
              color='white', fc='DarkMagenta', ec='black')
     ax.text(-122.58, 50.5, "Reference: 5 m/s", rotation=90, fontsize=14)
+
+    # for knots
+    ax.arrow(-122.75, 50.65, 0. * scale * k2ms, -5. * scale * k2ms,
+             head_width=0.05, head_length=0.1, width=0.02,
+             color='white', fc='DarkMagenta', ec='black')
+    ax.text(-122.83, 50.5, "Reference: 5 knots", rotation=90, fontsize=14)
 
     # Location labels
     ax.text(-125.6, 48.1, 'Pacific Ocean', fontsize=13)
@@ -2326,6 +2403,8 @@ def plot_threshold_website(
     ax.text(-123.21, 49.4, ' Point\nAtkinson', fontsize=20)
     ax.text(-125.76, 50.05, 'Campbell\n River', fontsize=20)
     ax.text(-123.8, 48.43, 'Victoria', fontsize=20)
+    ax.text(-122.7, 48.9, 'Cherry\n Point', fontsize=20)
+    ax.text(-124.2, 49, 'Nanaimo', fontsize=20)
 
     # Figure format
     # Don't shift to PST because we want the date to represent the model run.
@@ -2367,7 +2446,8 @@ def plot_threshold_website(
 
     # Information_box
     axs = [ax1, ax2, ax3]
-    for ax, name in zip(axs, names):
+    info_box = ['Point Atkinson', 'Campbell River', 'Victoria']
+    for ax, name in zip(axs, info_box):
         plt.setp(ax.spines.values(), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
@@ -2432,6 +2512,7 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     """
     Adjusts model output by correcting for error in using only 8 constituents.
     Based on stormtools.correct_model()
+    Uses a tidal prediction with no shallow water - a tidal predcition with 8.
 
     :arg ssh_model: an array with model ssh data
     :type ssh_model: array of numbers
@@ -2440,7 +2521,7 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     :type t_model: array of datetime objects
 
     :arg ttide: struc with tidal predictions.
-    :type ttide: struc with dimension time, pred_all, pred_8
+    :type ttide: struc with dimension time, pred_all, pred_8, pred_noshallow
 
     :arg sdt: datetime object representing start date of simulation
     :type sdt: datetime object
@@ -2451,7 +2532,9 @@ def correct_model_ssh(ssh_model, t_model, ttide):
     :returns: corr_model: the corrected model output
     """
     # difference in tidal predictions
-    difference = ttide.pred_all-ttide.pred_8
+    difference = ttide[' pred_noshallow ']-ttide['pred_8']
+    # Note: can use pred_noshallow is a tidal prediction without shallow water.
+    # Another option is pred_all (all significant constituents)
     difference = np.array(difference)
     # interpolate difference onto model times
     corr = interp_to_model_time(t_model, difference, ttide.time)

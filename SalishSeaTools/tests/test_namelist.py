@@ -10,7 +10,7 @@ Based on tests class from https://gist.github.com/krischer/4943658.
     (http://www.gnu.org/copyleft/lesser.html)
 """
 import unittest
-from cStringIO import StringIO
+from io import StringIO
 
 from salishsea_tools.namelist import namelist2dict
 

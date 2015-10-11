@@ -15,8 +15,8 @@ Use of the `netCDF4-python`_ library
 is assumed.
 
 .. _netCDF4: http://www.unidata.ucar.edu/software/netcdf/
-.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
-.. _netCDF4-python: http://netcdf4-python.googlecode.com/
+.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
+.. _netCDF4-python: http://unidata.github.io/netcdf4-python/
 
 The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaTools` is a library of Python functions for exploring and managing the attributes of netCDF files.
 The `PrepareTS.ipynb`_ notebook shows examples of the use of those functions.
@@ -125,10 +125,16 @@ As noted above,
 All variables should be created with the :kbd:`zlib=True` argument to enable data compression within the netCDF4 file.
 
 When appropriate,
-the :kbd:`least_significant_digit` argument should be used improve compression and storage efficiency by quantizing the variable data to the specified precision.
+the :kbd:`least_significant_digit` argument should be used to improve compression and storage efficiency by quantizing the variable data to the specified precision.
 In the example above the :kbd:`depths` data will be quantized such that a precision of 0.1 is retained.
 
-:kbd:`fill_value`
+When appropriate,
+the :kbd:`fill_value` argument can be used to specify the value that the variable gets filled with before any data is written to it.
+Doing so overrides the default netCDF :kbd:`_FillValue`
+(which depends on the type of the variable).
+If :kbd:`fill_value` is set to False, then the variable is not pre-filled.
+In the example above the :kbd:`depths` data will be initialized to zero,
+the appropriate value for grid points that are on land.
 
 
 Writing and Retrieving Data
@@ -171,8 +177,8 @@ Datasets created by the Salish Sea MEOPAR project shall conform to `CF-1.6`_.
 NEMO results nominally conform to an ealier version,
 `CF-1.1`_.
 
-.. _CF-1.1: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.1
-.. _CF-1.6: http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
+.. _CF-1.1: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.1/build/cf-conventions.html
+.. _CF-1.6: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
 
 
 Global Attributes
@@ -397,3 +403,44 @@ As Applicable
   .. code-block:: python
 
       sal.standard_name = 'practical_salinity'
+
+
+Applying netCDF4 Variable-Level Compression
+===========================================
+
+NEMO-3.4 produces netCDF files that use the :kbd:`64-bit offset` format.
+The size on disk of those files can be reduced by up to 90%
+(depending on the contents of the file)
+by converting them to :kbd:`netCDF-4` format and applying Lempel-Ziv compression to each variable.
+The :command:`ncks` tool from the `NCO package`_ can be used to accomplish that:
+
+.. code-block:: bash
+
+    $ ncks -4 -L4 -O SalishSea_1d_grid_T.nc SalishSea_1d_grid_T.nc
+
+.. note:: The above command replaces the original version of the file with its netCDF4 compressed version.
+
+.. _NCO package: http://nco.sourceforge.net/
+
+The :kbd:`-4` argument tells :command:`ncks` to produce a :kbd:`netCDF-4` format file.
+
+The :kbd:`-L4` argument causes level 4 compression to be used.
+Level 4 is a good compromise between the amount of compression that is achieved and the amount of processing time required to do the compression.
+
+The :kbd:`-O` argument tells :command:`ncks` to over-write existing file without asking for confirmation.
+
+The file names are the input and output files,
+respectively.
+
+NEMO-3.6 produces netCDF files that use the :kbd:`netCDF-4` format with level 1 Lempel-Ziv compression applied to each variable.
+As above,
+the size of those files on disk can be reduced by up to 90%
+(depending on the contents of the file)
+by increasing the compression level to 4.
+The command to do so is the same:
+
+.. code-block:: bash
+
+    $ ncks -4 -L4 -O SalishSea_1d_grid_T.nc SalishSea_1d_grid_T.nc
+
+.. note:: The above command replaces the original version of the file with its netCDF4 compressed version.

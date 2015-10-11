@@ -24,6 +24,20 @@ Salish Sea Nowcast Python Package Environment
 
 The nowcast manager and workers require several Python packages that are not part of the default :ref:`AnacondaPythonDistro` environment.
 To avoid adding complexity and potential undesirable interactions and/or side-effects to the default Anaconda Python environment we create an isolated environment for nowcast.
+The fast way to set up an environment for development,
+testing,
+and documentation of the nowcast system is:
+
+.. code-block:: bash
+
+    $ conda update conda
+    $ cd MEOPAR/tools
+    $ conda env create -f SalishSeaTools/salishsea_tools/nowcast/environment.yaml
+    $ source activate nowcast
+    (nowcast)$ pip install --editable SalishSeaTools
+    (nowcast)$ pip install --editable SalishSeaCmd
+
+The explanation of what those commands accomplish follows:
 
 Ensure that your :program:`conda` package manager is up to date:
 
@@ -75,13 +89,14 @@ Install the additional packages that the nowcast manager and workers depend on:
 
 Finally,
 install Sphinx,
-the sphinx-bootstrap-theme,
-and the mako template library used for the salishsea.eos.ubc.ca site:
+the mako template library,
+and the sphinx-bootstrap-theme,
+used for the salishsea.eos.ubc.ca site:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install sphinx
-    (nowcast)$ pip install mako sphinx-bootstrap-theme
+    (nowcast)$ conda install mako sphinx
+    (nowcast)$ pip install sphinx-bootstrap-theme
 
 The above packages are sufficient to run the nowcast system.
 For development and debugging of Python code,
@@ -93,19 +108,10 @@ and the ipdb debugger:
 
 .. code-block:: bash
 
-    (nowcast)$ conda install ipython-notebook pytest coverage
+    (nowcast)$ conda install ipython jupyter pytest coverage
     (nowcast)$ pip install ipdb
 
-The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`conda env export` command is available in :file:`salishsea_tools/nowcast/environment.yaml`.
-You can also use that file to do almost all of the above more succinctly with:
-
-.. code-block:: bash
-
-    $ cd MEOPAR/tools
-    $ conda env create -f SalishSeaTools/salishsea_tools/nowcast/environment.yaml
-    $ source activate nowcast
-    (nowcast)$ pip install --editable SalishSeaTools
-    (nowcast)$ pip install --editable SalishSeaCmd
+The complete list of Python packages installed including their version numbers (at time of writing) created by the :command:`pip freeze` command is available in :file:`salishsea_tools/nowcast/requirements.pip`.
 
 To deactivate the :kbd:`nowcast` environment and return to your root Anaconda Python environment use:
 

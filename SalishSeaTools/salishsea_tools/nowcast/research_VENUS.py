@@ -18,12 +18,10 @@
 VENUS nodes and the model results with visualization figures for analysis
 of daily nowcast/forecast runs.
 """
-from cStringIO import StringIO
 import datetime
+from io import StringIO
 
 from dateutil import tz
-import matplotlib.cm as cm
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import numpy as np
@@ -37,16 +35,6 @@ from salishsea_tools import (
     viz_tools
 )
 from salishsea_tools.nowcast import (figures, analyze)
-
-# Plotting colors
-model_c = 'MediumBlue'
-observations_c = 'DarkGreen'
-predictions_c = 'MediumVioletRed'
-stations_c = cm.rainbow(np.linspace(0, 1, 7))
-
-# Time shift for plotting in PST
-time_shift = datetime.timedelta(hours=-8)
-hfmt = mdates.DateFormatter('%m/%d %H:%M')
 
 # Font format
 title_font = {
@@ -374,7 +362,7 @@ def plot_vel_NE_gridded(station, grid, figsize=(14, 10)):
 
 
 def VENUS_location(grid_B, figsize=(10, 10)):
-    """Plots the location of the VENUS Central and East nodes as well as
+    """Plots the location of the VENUS Central, East and DDL nodes as well as
     Vancouver as a reference on a bathymetry map.
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
@@ -405,6 +393,8 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     lat_c = SITES['VENUS']['Central']['lat']
     lon_e = SITES['VENUS']['East']['lon']
     lat_e = SITES['VENUS']['East']['lat']
+    lon_d = SITES['VENUS']['ddl']['lon']
+    lat_d = SITES['VENUS']['ddl']['lat']
     lon_v = SITES['Vancouver']['lon']
     lat_v = SITES['Vancouver']['lat']
 
@@ -418,7 +408,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'Central',
-        (lon_c - 0.15, lat_c + 0.08),
+        (lon_c - 0.11, lat_c + 0.04),
         fontsize=15,
         color='black',
         bbox=bbox_args)
@@ -433,7 +423,22 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'East',
-        (lon_e + 0.05, lat_e + 0.08),
+        (lon_e + 0.04, lat_e + 0.01),
+        fontsize=15,
+        color='black',
+        bbox=bbox_args)
+
+    ax.plot(
+        lon_d,
+        lat_d,
+        marker='D',
+        color='Black',
+        markersize=10,
+        markeredgewidth=2)
+    bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
+    ax.annotate(
+        'DDL',
+        (lon_d + 0.01, lat_d + 0.05),
         fontsize=15,
         color='black',
         bbox=bbox_args)
@@ -448,7 +453,7 @@ def VENUS_location(grid_B, figsize=(10, 10)):
     bbox_args = dict(boxstyle='square', facecolor='white', alpha=0.8)
     ax.annotate(
         'Vancouver',
-        (lon_v - 0.15, lat_v + 0.08),
+        (lon_v - 0.15, lat_v + 0.04),
         fontsize=15,
         color='black',
         bbox=bbox_args)
@@ -567,7 +572,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     u, v, dep = load_vel(day, grid_o, 'observation', station, profile)
 
     # Begin figure
-    fig, ([axmu, axmv], [axou, axov]) = plt.subplots(
+    fig, ([axmu, axou], [axmv, axov]) = plt.subplots(
         2, 2,
         figsize=(20, 10),
         sharex=True)
@@ -580,9 +585,10 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     max_vm = np.nanmax(abs(v_N))
     max_um = np.nanmax(abs(u_E))
     max_speed = np.amax([max_v, max_u, max_vm, max_um])
-    vmax = max_speed
-    vmin = - max_speed
+    vmax = round(max_speed, 1)
+    vmin = - vmax
     step = 0.05
+    cs = np.arange(vmin, vmax + step, step)
 
     cmap = plt.get_cmap('bwr')
 
@@ -592,7 +598,7 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     # Plotting the comparison between the model and the obs velocities
     increment = [0.25, 0.5, 0.25, 0.5]
     velocities = [u_E.transpose(), u, v_N.transpose(), v]
-    axes = [axmu, axmv, axou, axov]
+    axes = [axmu, axou, axmv, axov]
     depths = [dep_t, dep, dep_t, dep]
     names = ['Model', 'Observations', 'Model', 'Observations']
     direction = ['East/West', 'East/West', 'North/South', 'North/South']
@@ -611,11 +617,12 @@ def plotADCP(grid_m, grid_o, day, station, profile):
             np.arange(timestep-0.25, 24+timestep-0.25, timestep),
             depth[:],
             vel,
-            np.arange(vmin, vmax, step), cmap=cmap)
+            cs, cmap=cmap)
         ax.set_ylim([profile[1], profile[0]])
         ax.set_xlim([0.25, 23])
         ax.set_ylabel('Depth [m]', **axis_font)
-        figures.axis_colors(ax, 'white')
+
+        figures.axis_colors(ax, 'gray')
         ax.set_title(
             '{dire} {name} Velocities at VENUS {node} - {date}'.format(
                 dire=direc, name=name, node=station, date=date), **title_font)
@@ -624,6 +631,8 @@ def plotADCP(grid_m, grid_o, day, station, profile):
     cbar = fig.colorbar(mesh, cax=cbar_ax)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('[m/s]', **axis_font)
+    axmv.set_xlabel('Hour [UTC]', **axis_font)
+    axov.set_xlabel('Hour [UTC]', **axis_font)
 
     return fig
 
@@ -676,8 +685,9 @@ def plottimeavADCP(grid_m, grid_o, day, station):
         ax.plot(np.nanmean(velo, axis=1), dep[:], label='Observations')
         ax.plot(np.nanmean(
             lastvel, axis=0), dep_t[-2:], '--b', label='Bottom grid cell')
-        ax.set_ylabel('Velocity [m/s]', **axis_font)
-        figures.axis_colors(ax, 'white')
+        ax.set_xlabel('Daily averaged velocity [m/s]', **axis_font)
+        ax.set_ylabel('Depth [m]', **axis_font)
+        figures.axis_colors(ax, 'gray')
         ax.set_title('{dire} velocities at VENUS {node}'.format(
             dire=direc, node=station, date=date), **title_font)
         ax.grid()
@@ -742,7 +752,7 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.plot(np.arange(0.25, 24, timestep), velo, label='Observations')
         ax.set_xlim([0, 24])
         ax.set_ylabel('Velocity [m/s]', **axis_font)
-        figures.axis_colors(ax, 'white')
+        figures.axis_colors(ax, 'gray')
         ax.set_title(
             'Depth Averaged ({}-{}m) {dire} velocities at VENUS {node} -{date}'
             .format(
@@ -755,224 +765,9 @@ def plotdepavADCP(grid_m, grid_o, day, station):
         ax.grid()
         ax.set_ylim([-0.6, 0.6])
     ax1.legend(loc=0)
+    ax2.set_xlabel('Hour [UTC]')
 
     return fig
-
-
-def loadparam(to, tf, path, freq='h', depav='None'):
-    """ This function loads all the data between the start and the end date
-    that contains gridded quarter-hourly velocity netCDF4 files. Then it mask,
-    unstaggers and rotates the velocities by component about the VENUS nodes.
-    Lastly it fits the velcities and caculates the tidal ellipse parameters for
-    that date range.**(Important not to have a to < 2015-05-09 because the
-    files do not exist before this date).**
-
-    :arg to: The beginning of the date range of interest
-    :type to: datetime object
-
-    :arg tf: The end of the date range of interest
-    :type tf: datetime object
-
-    :arg path: Defines the path used(eg. nowcast)
-    :type path: string
-
-    :arg freq: determines the type of data used (quarter-hourly or hourly).
-        Default set to hourly.
-    :type freq: string
-
-    :arg depav: Values overwhich the velocities will be depth averaged to
-        output depth averaged ellipse parameters.
-        [min Central, max Central, min East, max, East]. (default is 'None').
-    :type depav: array
-
-    :returns: depth, maj, mino, thet, pha,mjk, mnk, thk, phak- the M2 and K1
-        ellipse parameters at various depths.
-    """
-    if freq == 'h':
-        filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
-        filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
-
-        i_c = SITES['VENUS']['Central']['i']
-        i_e = SITES['VENUS']['East']['i']
-        j_c = SITES['VENUS']['Central']['j']
-        j_e = SITES['VENUS']['East']['j']
-
-        a = filesu
-        b = filesv
-        c = filesu
-        d = filesv
-
-    else:
-        files_Central = analyze.get_filenames_15(to, tf, 'central', path)
-        files_East = analyze.get_filenames_15(to, tf, 'east', path)
-
-        i_c = 1
-        i_e = 1
-        j_c = 1
-        j_e = 1
-
-        a = files_Central
-        b = files_Central
-        c = files_East
-        d = files_East
-
-    reftime = datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc())
-    u_u_c, time = analyze.combine_files(
-        a, 'vozocrtx', 'None', [j_c-1, j_c], [i_c-1, i_c])
-    v_v_c, timec = analyze.combine_files(
-        b, 'vomecrty', 'None', [j_c-1, j_c], [i_c-1, i_c])
-    time_c = tt.convert_to_seconds(timec, reftime=reftime)
-    dep_t_c = nc.Dataset(b[-1]).variables['depthv']
-
-    u_u_e, time = analyze.combine_files(
-        c, 'vozocrtx', 'None', [j_e-1, j_e], [i_e-1, i_e])
-    v_v_e, timee = analyze.combine_files(
-        d, 'vomecrty', 'None', [j_e-1, j_e], [i_e-1, i_e])
-    time_e = tt.convert_to_seconds(timee, reftime=reftime)
-    dep_t_e = nc.Dataset(d[-1]).variables['depthv']
-
-    depth = [dep_t_c[:], dep_t_e[:]]
-
-    u_u_0 = np.ma.masked_values(u_u_e, 0)
-    v_v_0 = np.ma.masked_values(v_v_e, 0)
-    u_u_0c = np.ma.masked_values(u_u_c, 0)
-    v_v_0c = np.ma.masked_values(v_v_c, 0)
-
-    u_c, v_c = unstag_rot(u_u_0c, v_v_0c)
-    u_e, v_e = unstag_rot(u_u_0, v_v_0)
-
-    if depav == 'None':
-        us = [u_c, u_e]
-        vs = [v_c, v_e]
-        thesize = (40, 2)
-
-    else:
-        jc = np.where(np.logical_and(depth[0] > depav[0], depth[0] < depav[1]))
-        je = np.where(np.logical_and(depth[1] > depav[2], depth[1] < depav[3]))
-
-        u_c_slice = u_c[:, jc[0]]
-        v_c_slice = v_c[:, jc[0]]
-        u_e_slice = u_e[:, je[0]]
-        v_e_slice = v_e[:, je[0]]
-
-        uc_av = analyze.depth_average(u_c_slice, depth[0][jc], 1)
-        vc_av = analyze.depth_average(v_c_slice, depth[0][jc], 1)
-        ue_av = analyze.depth_average(u_e_slice, depth[1][je], 1)
-        ve_av = analyze.depth_average(v_e_slice, depth[1][je], 1)
-
-        thesize = (1, 2)
-        us = [uc_av, ue_av]
-        vs = [vc_av, ve_av]
-
-    times = [time_c, time_e]
-    i = np.arange(0, 2)
-
-    vM2amp = np.zeros(thesize)
-    vM2pha = np.zeros(thesize)
-    vK1amp = np.zeros(thesize)
-    vK1pha = np.zeros(thesize)
-    uM2amp = np.zeros(thesize)
-    uM2pha = np.zeros(thesize)
-    uK1amp = np.zeros(thesize)
-    uK1pha = np.zeros(thesize)
-
-    for i, u, time, v in zip(i, us, times, vs):
-        uM2amp[:, i], uM2pha[:, i], uK1amp[:, i], uK1pha[
-            :, i] = tt.fittit(u, time)
-        vM2amp[:, i], vM2pha[:, i], vK1amp[:, i], vK1pha[
-            :, i] = tt.fittit(v, time)
-
-    CX, SX, CY, SY, ap, am, ep, em, maj, mino, thet, pha = tt.ellipse_params(
-        uM2amp, uM2pha, vM2amp, vM2pha)
-
-    CXk, SXk, CYk, SYk, apk, amk, epk, emk, mjk, mnk, thk, phak = tt.ellipse_params(
-        uK1amp, uK1pha, vK1amp, vK1pha)
-
-    return depth, maj, mino, pha, thet, mjk, mnk, thk, phak
-
-
-def loadparam_all(to, tf, path, i, j, depav='None'):
-
-    """ This function loads all the data between the start and the end date
-    that contains hourly velocity netCDF4 files. Then it mask, unstaggers and
-    rotates the velocities by component about the grid point described by the i
-    and j. Lastly it fits the velcities and caculates the tidal ellipse
-    parameters for that date range.
-
-    :arg to: The beginning of the date range of interest
-    :type to: datetime object
-
-    :arg tf: The end of the date range of interest
-    :type tf: datetime object
-
-    :arg path: Defines the path used(eg. nowcast)
-    :type path: string
-
-    :arg depav: Values overwhich the velocities will be depth averaged to
-        output depth averaged ellipse parameters.
-        [min, max]. (default is 'None').
-    :type depav: array
-
-    :returns: depth, maj, mino, thet, pha,mjk, mnk, thk, phak- the M2 and K1
-        ellipse parameters at various depths.
-         """
-
-    filesu = analyze.get_filenames(to, tf, '1h', 'grid_U', path)
-    filesv = analyze.get_filenames(to, tf, '1h', 'grid_V', path)
-
-    u_u, timer = analyze.combine_files(
-        filesu, 'vozocrtx', 'None', [j-1, j], [i-1, i])
-    v_v, timee = analyze.combine_files(
-        filesv, 'vomecrty', 'None', [j-1, j], [i-1, i])
-
-    reftime = datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc())
-    time = tt.convert_to_seconds(timer, reftime=reftime)
-    dep_t = nc.Dataset(filesu[-1]).variables['depthu']
-
-    u_u_0 = np.ma.masked_values(u_u, 0)
-    v_v_0 = np.ma.masked_values(v_v, 0)
-
-    u, v = unstag_rot(u_u_0, v_v_0)
-
-    if depav == 'None':
-        thesize = (40)
-    else:
-        thesize = (1)
-        j = np.where(np.logical_and(dep_t[:] > depav[0], dep_t[:] < depav[1]))
-        u_slice = u[:, j[0]]
-        v_slice = v[:, j[0]]
-
-        u = analyze.depth_average(u_slice, dep_t[j], 1)
-        v = analyze.depth_average(v_slice, dep_t[j], 1)
-
-    vM2amp = np.zeros(thesize)
-    vM2pha = np.zeros(thesize)
-    vK1amp = np.zeros(thesize)
-    vK1pha = np.zeros(thesize)
-    uM2amp = np.zeros(thesize)
-    uM2pha = np.zeros(thesize)
-    uK1amp = np.zeros(thesize)
-    uK1pha = np.zeros(thesize)
-    uM2amp[:], uM2pha[:], uK1amp[:], uK1pha[:] = tt.fittit(u, time)
-    vM2amp[:], vM2pha[:], vK1amp[:], vK1pha[:] = tt.fittit(v, time)
-
-    uM2pha = uM2pha + CorrTides['M2']['uvt']
-    uK1pha = uK1pha + CorrTides['K1']['uvt']
-    vM2pha = vM2pha + CorrTides['M2']['uvt']
-    vK1pha = vK1pha + CorrTides['K1']['uvt']
-
-    uM2amp = uM2amp / CorrTides['M2']['ft']
-    uK1amp = uK1amp / CorrTides['K1']['ft']
-    vM2amp = vM2amp / CorrTides['M2']['ft']
-    vK1amp = vK1amp / CorrTides['K1']['ft']
-
-    CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = tt.ellipse_params(
-        uM2amp, uM2pha, vM2amp, vM2pha)
-
-    CXk, SXk, CYk, SYk, apk, amk, epk, emk, majk, mik, thek, phak = tt.ellipse_params(
-        uK1amp, uK1pha, vK1amp, vK1pha)
-
-    return dep_t, maj, mi, the, pha, majk, mik, thek, phak
 
 
 def plot_ellipses(
@@ -1104,7 +899,7 @@ def plot_ellipses(
     ax.set_title('Tidal ellipse')
     ax.set_xlabel('x index')
     ax.set_ylabel('y index')
-    print 'red is clockwise'
+    print('red is clockwise')
     return
 
 
@@ -1195,5 +990,5 @@ def plot_ellipses_area(
     ax.set_title('Tidal ellipse', fontsize=20)
     ax.set_xlabel('x index', fontsize=16)
     ax.set_ylabel('y index', fontsize=16)
-    print 'red is clockwise'
+    print('red is clockwise')
     return fig
