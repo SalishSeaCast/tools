@@ -32,6 +32,7 @@ from salishsea_tools.nowcast import lib
 mgr_name = lib.get_module_name()
 
 logger = logging.getLogger(mgr_name)
+checklist_logger = logging.getLogger('checklist')
 worker_loggers = {}
 
 context = zmq.Context()
@@ -54,8 +55,9 @@ def main():
     config = lib.load_config(parsed_args.config_file)
     config['logging']['console'] = parsed_args.debug
     lib.configure_logging(config, logger, parsed_args.debug)
-    logger.debug('running in process {}'.format(os.getpid()))
+    logger.info('running in process {}'.format(os.getpid()))
     logger.debug('read config from {.config_file}'.format(parsed_args))
+    configure_checklist_logging(config)
 
     # Set up interrupt and kill signal handlers
     lib.install_signal_handlers(logger, context)
@@ -115,6 +117,21 @@ def configure_argparser(prog, description, parents):
         ''',
     )
     return parser
+
+
+def configure_checklist_logging(config):
+    checklist_logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        config['logging']['message_format'],
+        datefmt=config['logging']['datetime_format'])
+    log_file = os.path.join(
+        os.path.dirname(config['config_file']),
+        config['logging']['checklist_log_file'])
+    handler = logging.handlers.RotatingFileHandler(
+        log_file, backupCount=config['logging']['backup_count'])
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    checklist_logger.addHandler(handler)
 
 
 def message_processor(config, message):
@@ -662,7 +679,6 @@ def update_checklist(worker, key, worker_checklist):
         checklist[key] = worker_checklist
     logger.info(
         'checklist updated with {} items from {} worker'.format(key, worker))
-    logger.info('checklist:\n{}'.format(pprint.pformat(checklist)))
     with open('nowcast_checklist.yaml', 'wt') as f:
         yaml.dump(checklist, f)
 
@@ -710,14 +726,15 @@ def finish_the_day(config):
     """
     global checklist
     logger.info('nowcast and forecast processing completed for today')
+    checklist_logger.info('checklist:\n{}'.format(pprint.pformat(checklist)))
     checklist = {}
     logger.info('checklist cleared')
     with open('nowcast_checklist.yaml', 'wt') as f:
         yaml.dump(checklist, f)
-    rotate_log_file(config)
+    rotate_log_files(config)
 
 
-def rotate_log_file(config):
+def rotate_log_files(config):
     try:
         for handler in logger.handlers:
             logger.info('rotating log file')
@@ -726,6 +743,13 @@ def rotate_log_file(config):
             lib.fix_perms(config['logging']['log_files'][level])
             logger.info('log file rotated')
             logger.debug('running in process {}'.format(os.getpid()))
+    except AttributeError:
+        # Logging handler has no rollover; probably a StreamHandler
+        pass
+    try:
+        for handler in checklist_logger.handlers:
+            handler.doRollover()
+            lib.fix_perms(config['logging']['checklist_log_file'])
     except AttributeError:
         # Logging handler has no rollover; probably a StreamHandler
         pass

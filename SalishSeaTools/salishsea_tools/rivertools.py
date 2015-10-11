@@ -546,9 +546,40 @@ def init_runoff_array(
     return runoff, run_depth, run_temp
 
 
+def init_runoff_array_new(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea6.nc'
+):
+    """Initialise the runoff array.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((ymax, xmax))
+    run_depth = -np.ones((ymax, xmax))
+    run_temp = -99 * np.ones((ymax, xmax))
+    return runoff, run_depth, run_temp
+
+
+
 def init_runoff_array_monthly(
     bathy='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
           'bathy_meter_SalishSea.nc'
+):
+    """Initialise the runoff array for each month.
+    """
+    fb = NC.Dataset(bathy)
+    d = fb.variables['Bathymetry'][:]
+    ymax, xmax = d.shape
+    runoff = np.zeros((12, ymax, xmax))
+    run_depth = -np.ones((12, ymax, xmax))
+    run_temp = -99 * np.ones((12, ymax, xmax))
+    return runoff, run_depth, run_temp
+
+
+def init_runoff_array_monthly_new(
+    bathy='/ocean/jieliu/research/meopar/river-treatment/'
+          'bathy_meter_SalishSea6.nc'
 ):
     """Initialise the runoff array for each month.
     """

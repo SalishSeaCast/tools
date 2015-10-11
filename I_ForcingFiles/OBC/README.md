@@ -6,6 +6,10 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[Modifications_JDF_Sal.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Modifications_JDF_Sal.ipynb)  
+    
+    This notebook is designed to increase the salinity of the deep water at the Strait of Juan de Fuca boundary.  
+
 * ##[TS_OBC_Softstart.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/TS_OBC_Softstart.ipynb)  
     
     Notebook to prepare OBC files for TS from Thomson, Mihaly & Kulikov, 2007 (JGR) but starting in Sept with initial conditions.  That is a gentle movement to the proper conditions.  
@@ -33,6 +37,10 @@ Descriptions below the links are from the first cell of the notebooks
     Notebook to prepare climatology of sea surface height (SSH) at Juan de Fuca boundary.  Data is from  
     http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no=8615 and I downloaded 2000 through 2013 complete.  Sets barotropic velocities to zero.  
 
+* ##[SSH_NeahBay.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/SSH_NeahBay.ipynb)  
+    
+    This notebook creates daily forcing files for the sea surface height (hourly frequency) at Neah Bay. This can be used to create "obs" forcing files for nowcasts in the event of a automation system error.  
+
 * ##[MassonClimatology.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/MassonClimatology.ipynb)  
     
 * ##[MassonClimDC.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/MassonClimDC.ipynb)  
@@ -57,7 +65,7 @@ Descriptions below the links are from the first cell of the notebooks
 
 ##License
 
-These notebooks and files are copyright 2013-2014
+These notebooks and files are copyright 2013-2015
 by the [Salish Sea MEOPAR Project Contributors](https://bitbucket.org/salishsea/docs/src/tip/CONTRIBUTORS.rst)
 and The University of British Columbia.
 

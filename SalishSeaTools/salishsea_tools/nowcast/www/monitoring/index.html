@@ -34,13 +34,28 @@
   </a>.
 </p>
 <p>
-  On this page are links to the preceding 7 days
-  <a href="#log-files">log files</a>
-  and images produced from the
-  <a href="#grib_to_netcdf-image">weather forcing dataset</a>
-  and the <a href="#get_NeahBay_ssh-image">sea surface height</a>
-  used to force the western boundary of the model at the mouth of the
-  Strait of Juan de Fuca.
+  On this page are:
+  <ul>
+     <li>
+       Link to the
+       <a href="#checklist">nowcast manager process's checklist</a>
+       that shows the status of the system
+     </li>
+     <li>
+       Links to the present and preceding 7 day's
+       <a href="#log-files">log files</a>
+     </li>
+     <li>
+       Images produced from the
+       <a href="#grib_to_netcdf-image">weather forcing dataset</a>
+     </li>
+     <li>
+       An image produced from the
+      <a href="#get_NeahBay_ssh-image">sea surface height</a>
+      observation and forecast datasets used to force the western boundary
+      of the model at the mouth of the Strait of Juan de Fuca
+     </li>
+   </ul>
 </p>
 <p>
   Also here (for now) are links to
@@ -74,6 +89,23 @@
 </p>
 
 
+<h2 id="checklist">Checklist</h2>
+  <p>
+    The <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a> file
+    is a YAML representation of the checklist dictionary that is maintained
+    by the nowcast manager process.
+    It reflects the present state of the nowcast system,
+    showing the information returned to the manager from each of the workers.
+    It is both (somewhat) human-readable,
+    and machine-readable.
+    The checklist is reset each morning after the forecast2 run results have been
+    pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a>
+    (see the discussion of log file rollovers above).
+    That means that the <a href="nowcast_checklist.yaml">nowcast_checklist.yaml</a>
+    page will be empty for a period of time each morning.
+  </p>
+
+
 <h2 id="log-files">Log Files</h2>
   <p>
     The log files contain messages from the nowcast automation workers and manager processes.
@@ -86,7 +118,7 @@
     A total of 7 day's log files are retained.
   </p>
   <p>
-    There are 2 flavours of log files:
+    There are 3 flavours of log files:
     <ul>
       <li>
         <code>nowcast.log</code> which contains messages logged at the <code>info</code> level and above
@@ -95,12 +127,15 @@
       </li>
       <li>
         <code>nowcast.debug.log</code> which contains messages logged at the <code>debug</code> level and above;
-i.e. all of the nitty-gritty details.
+        i.e. all of the nitty-gritty details.
+      </li>
+      <li>
+        <code>nowcast_checklist.log</code> which contains a snapshot of the checklist file each morning before it is reset.
       </li>
     </ul>
   </p>
   <p>
-    The log file rollovers happen after the forecast run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
+    The log file rollovers happen each morning after the forecast2 run results have been pushed to the <a href="http://salishsea.eos.ubc.ca/">salishsea site</a> as both a
     <a href="http://salishsea.eos.ubc.ca/nemo/results/">results page</a>
     and as the storm surge
     <a href="http://salishsea.eos.ubc.ca/storm-surge/forecast.html">
@@ -124,12 +159,15 @@ i.e. all of the nitty-gritty details.
       <a href="nowcast.log.1"><code>nowcast.log.1</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.1"><code>nowcast.debug.log.1</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.1"><code>nowcast_checklist.log.1</code></a>
     </dt>
     <dd>
       Previous log files.
       Roll over to
-      <a href="nowcast.log.2"><code>nowcast.log.2</code></a>
-      and <a href="nowcast.debug.log.2"><code>nowcast.debug.log.2</code></a>
+      <a href="nowcast.log.2"><code>nowcast.log.2</code></a>,
+      <a href="nowcast.debug.log.2"><code>nowcast.debug.log.2</code></a>,
+      and <a href="nowcast_checklist.log.2"><code>nowcast_checklist.log.2</code></a>
       when <code>nowcast.log</code> rolls over to <code>nowcast.log.1</code>.
     </dd>
   </dl>
@@ -139,31 +177,43 @@ i.e. all of the nitty-gritty details.
       <a href="nowcast.log.2"><code>nowcast.log.2</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.2"><code>nowcast.debug.log.2</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.2"><code>nowcast_checklist.log.2</code></a>
     </li>
     <li>
       <a href="nowcast.log.3"><code>nowcast.log.3</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.3"><code>nowcast.debug.log.3</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.3"><code>nowcast_checklist.log.3</code></a>
     </li>
     <li>
       <a href="nowcast.log.4"><code>nowcast.log.4</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.4"><code>nowcast.debug.log.4</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.4"><code>nowcast_checklist.log.4</code></a>
     </li>
     <li>
       <a href="nowcast.log.5"><code>nowcast.log.5</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.5"><code>nowcast.debug.log.5</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.5"><code>nowcast_checklist.log.5</code></a>
     </li>
     <li>
       <a href="nowcast.log.6"><code>nowcast.log.6</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.6"><code>nowcast.debug.log.6</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.6"><code>nowcast_checklist.log.6</code></a>
     </li>
     <li>
       <a href="nowcast.log.7"><code>nowcast.log.7</code></a>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
       <a href="nowcast.debug.log.7"><code>nowcast.debug.log.7</code></a>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+      <a href="nowcast_checklist.log.7"><code>nowcast_checklist.log.7</code></a>
     </li>
   </ul>
 

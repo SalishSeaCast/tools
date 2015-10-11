@@ -17,17 +17,19 @@
 """
 from __future__ import division
 
+import csv
 import datetime
+from io import StringIO
+from xml.etree import cElementTree as ElementTree
+
+import arrow
+from dateutil import tz
 import netCDF4 as NC
 import numpy as np
-import arrow
-import cStringIO
-import requests
-from dateutil import tz
-from xml.etree import cElementTree as ElementTree
 import pandas as pd
+import requests
+
 from salishsea_tools import tidetools
-import csv
 
 
 def convert_date_seconds(times, start):
@@ -252,9 +254,9 @@ def get_EC_observations(station, start_day, end_day):
 
     """
     station_ids = {
-	'PamRocks': 6817,
-	'SistersIsland': 6813,
-	'EntranceIsland': 29411,
+        'PamRocks': 6817,
+        'SistersIsland': 6813,
+        'EntranceIsland': 29411,
         'Sandheads': 6831,
         'YVR':51442, #note, I think YVR station name changed in 2013. Older data use 889
         'YVR_old': 889,
@@ -262,7 +264,7 @@ def get_EC_observations(station, start_day, end_day):
         'Victoria': 10944,
         'CampbellRiver': 145,
         'PatriciaBay': 11007, # not exactly at Patricia Bay
-	'Esquimalt': 52
+        'Esquimalt': 52
     }
 
     st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
@@ -280,12 +282,12 @@ def get_EC_observations(station, start_day, end_day):
         'Day': 1,
     }
     response = requests.get(url, params=query)
-    tree = ElementTree.parse(cStringIO.StringIO(response.content))
+    tree = ElementTree.parse(StringIO(response.content))
     root = tree.getroot()
     #read lat and lon
     for raw_info in root.findall('stationinformation'):
-	lat =float(raw_info.find('latitude').text)
-	lon =float(raw_info.find('longitude').text)
+        lat =float(raw_info.find('latitude').text)
+        lon =float(raw_info.find('longitude').text)
     #read data
     raw_data = root.findall('stationdata')
     times = []
@@ -311,11 +313,11 @@ def get_EC_observations(station, start_day, end_day):
                 wind_spd.append(float('NaN'))
                 t.to('utc')
                 times.append(t.datetime)
-	    try:
+            try:
                 wind_dir.append(float(record.find('winddir').text) * 10)
             except:
                 wind_dir.append(float('NaN'))
-	    try:
+            try:
                 temp.append(float(record.find('temp').text) +273)
             except:
                 temp.append(float('NaN'))
@@ -324,7 +326,7 @@ def get_EC_observations(station, start_day, end_day):
     wind_dir=wind_dir + 360 * (wind_dir<0)
     temp=np.array(temp)
     for i in np.arange(len(times)):
-    	times[i] = times[i].astimezone(tz.tzutc())
+        times[i] = times[i].astimezone(tz.tzutc())
 
     return wind_spd, wind_dir, temp, times, lat, lon
 
@@ -345,9 +347,9 @@ def get_SSH_forcing(boundary, date):
     year = date_arr.year
     month = date_arr.month;    month= "%02d" % (month,)
     if boundary == 'north':
-	filen='sshNorth'
+        filen='sshNorth'
     else:
-	filen ='ssh'
+        filen ='ssh'
     ssh_path = '/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/' +boundary +'/ssh/' + filen +'_y' + str(year) +'m' +str(month)+ '.nc'
     fS = NC.Dataset(ssh_path);
     ssh_forc=fS.variables['sossheig'];
@@ -445,8 +447,8 @@ def observed_anomaly(ttide,wlev_meas,msl):
     """
     ssanomaly = np.zeros(len(wlev_meas.time))
     for i in np.arange(0,len(wlev_meas.time)):
-    #check that there is a corresponding time
-    #if any(wlev_pred.time == wlev_meas.time[i]):
+        #check that there is a corresponding time
+        #if any(wlev_pred.time == wlev_meas.time[i]):
         ssanomaly[i] =(wlev_meas.slev[i] - (ttide.pred_all[ttide.time==wlev_meas.time[i]]+msl))
         if not(ssanomaly[i]):
             ssanomaly[i]=float('Nan')
