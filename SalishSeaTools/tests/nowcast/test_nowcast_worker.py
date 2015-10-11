@@ -16,11 +16,11 @@
 """Unit tests for Salish Sea NEMO nowcast NowcastWorker class.
 """
 import argparse
-
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )
+
 import pytest
 import zmq
 

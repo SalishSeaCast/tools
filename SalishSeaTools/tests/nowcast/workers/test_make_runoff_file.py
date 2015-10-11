@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_runoff_file worker.
 """
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )

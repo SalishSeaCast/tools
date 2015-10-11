@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast upload_all_files worker.
 """
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )

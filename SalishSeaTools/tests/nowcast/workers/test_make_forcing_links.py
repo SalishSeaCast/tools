@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_forcing_links worker.
 """
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )

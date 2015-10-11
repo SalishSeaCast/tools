@@ -16,7 +16,7 @@
 """Unit tests for Salish Sea NEMO nowcast get_NeahBay_ssh worker.
 """
 import datetime
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )

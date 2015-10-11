@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast grib_to_netcdf worker.
 """
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )

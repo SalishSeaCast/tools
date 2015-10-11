@@ -15,10 +15,11 @@
 
 """Unit tests for Salish Sea NEMO nowcast manager.
 """
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )
+
 import pytest
 import yaml
 

@@ -15,11 +15,12 @@
 
 """Unit tests for Salish Sea NEMO nowcast download_weather worker.
 """
-import arrow
-from mock import (
+from unittest.mock import (
     Mock,
     patch,
 )
+
+import arrow
 import pytest
 
 
