@@ -82,6 +82,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -96,6 +100,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -110,6 +118,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -124,6 +136,7 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(name='parse_args')
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -132,12 +145,16 @@ class TestNowcastWorkerRun:
         worker._do_work = Mock(name='_do_work')
         with p_load_config, p_init_zmq, p_config_logging:
             worker.run(m_worker_func, m_success, m_failure)
-        assert isinstance(worker.parsed_args, argparse.Namespace)
+        worker.arg_parser.parse_args.assert_called_once_with()
 
     def test_config(self, worker):
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -152,6 +169,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_config_logging = patch.object(
             worker_module().lib, 'configure_logging')
@@ -167,6 +188,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -183,6 +208,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_inst_sig_handlers = patch.object(
             worker_module().lib, 'install_signal_handlers')
@@ -201,6 +230,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
@@ -215,6 +248,10 @@ class TestNowcastWorkerRun:
         m_worker_func = Mock(name='worker_func')
         m_success = Mock(name='success')
         m_failure = Mock(name='failure')
+        worker.arg_parser.parse_args = Mock(
+            name='parse_args',
+            config_file='nowcast.yaml',
+            debug=False)
         p_load_config = patch.object(worker_module().lib, 'load_config')
         p_init_zmq = patch.object(
             worker_module().lib, 'init_zmq_req_rep_worker')
