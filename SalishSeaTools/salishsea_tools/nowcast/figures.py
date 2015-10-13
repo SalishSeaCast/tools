@@ -440,7 +440,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date, product='water_level'):
     :type end_date: str
 
     :arg product: Defines which NOAA product to use. Options are 'water_level'
-    for recent data, 'hourly_height' for archived
+                  for recent data, 'hourly_height' for archived
     :type product: str
 
     :returns: DataFrame object (obs) with time and wlev columns,
@@ -493,7 +493,7 @@ def get_NOAA_tides(station_no, start_date, end_date, interval=''):
     :type end_date: string
 
     :arg interval: Interval for tide record. Default is '', meaning highest
-    frequency available. 'h' corresponds to hourly.
+                   frequency available. 'h' corresponds to hourly.
     :type interval: string
 
     :returns: DataFrame object (tides) with time and pred columns.
