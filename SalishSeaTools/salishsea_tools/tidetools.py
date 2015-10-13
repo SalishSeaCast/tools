@@ -1567,11 +1567,11 @@ def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
     :arg x: Independant variable, time.
     :type x:
 
-    :arg *amp: Tidal amplitude of the a constituent
-    :type *amp: float
+    :arg \*amp: Tidal amplitude of the a constituent
+    :type \*amp: float
 
-    :arg *pha: Phase lag of a constituent
-    :type *pha: float
+    :arg \*pha: Phase lag of a constituent
+    :type \*pha: float
 
     :returns: function for fitting 4 frequencies
     """
@@ -1588,16 +1588,16 @@ def sextuple(
         S2amp, S2pha, O1amp, O1pha,
         N2amp, N2pha, P1amp, P1pha, mean):
     """Function for the fit, assuming 6 constituents of importance are:
-        M2, K2, S1, O1, N2 and P1.
+    M2, K2, S1, O1, N2 and P1.
 
     :arg x: Independant variable, time.
     :type x:
 
-    :arg *amp: Tidal amplitude of the a constituent
-    :type *amp: float
+    :arg \*amp: Tidal amplitude of the a constituent
+    :type \*amp: float
 
-    :arg *pha: Phase lag of a constituent
-    :type *pha: float
+    :arg \*pha: Phase lag of a constituent
+    :type \*pha: float
 
     :returns: function for fitting 6 frequencies
     """
@@ -1617,16 +1617,16 @@ def octuple(
         N2amp, N2pha, P1amp, P1pha,
         K2amp, K2pha, Q1amp, Q1pha, mean):
     """Function for the fit, for all the constituents: M2, K2, S1, O1, N2, P1,
-        K2 and Q1.
+    K2 and Q1.
 
     :arg x: Independant variable, time.
     :type x:
 
-    :arg *amp: Tidal amplitude of the a constituent
-    :type *amp: float
+    :arg \*amp: Tidal amplitude of the a constituent
+    :type \*amp: float
 
-    :arg *pha: Phase lag of a constituent
-    :type *pha: float
+    :arg \*pha: Phase lag of a constituent
+    :type \*pha: float
 
     :returns: function for fitting 8 frequencies
     """
@@ -1667,14 +1667,15 @@ def convention_pha_amp(fitted_amp, fitted_pha):
 
 
 def fittit(uaus, time, nconst):
-    """Function to find tidal components of a time series
-        over the whole area given. Can be done over depth, or an area.
-        Time must be in axis one, depth in axis two if applicable then the
-        y, x if an area.
-        In order to calculate the tidal components of an area at a single
-        depth the time series must only have 3 dimensions. For a depth
-        profile it must only have 2 dimensions
-        ***[time, depth, x, y]
+    """Function to find tidal components of a time series over the whole
+    area given.
+
+    Can be done over depth, or an area.
+    Time must be in axis one, depth in axis two if applicable then the
+    y, x if an area.
+    In order to calculate the tidal components of an area at a single
+    depth the time series must only have 3 dimensions. For a depth
+    profile it must only have 2 dimensions
 
     :arg uaus: The time series to be analyzed.
     :type uaus:  :py:class:'np.ndarray' or float
@@ -1682,13 +1683,13 @@ def fittit(uaus, time, nconst):
     :arg time: Time over which the time series is taken in hours.
     :type time: :py:class:'np.ndarray'
 
-    :arg nconst: The amount of tidal constituents used for the analysis. They
-        added in pairs and by order of importantce, M2, K1, S2, O1, N2, P1, K2,
-        Q1.
+    :arg nconst: The amount of tidal constituents used for the analysis.
+                 They added in pairs and by order of importantce,
+                 M2, K1, S2, O1, N2, P1, K2, Q1.
     :type nconst: int
 
     :returns: a dictionary object containing a phase an amplitude for each
-        harmonic constituent, for each orthogonal velocity
+              harmonic constituent, for each orthogonal velocity
     """
     # Setting up the dictionary space for the ap-parameters to be stored
     apparam = collections.OrderedDict()
