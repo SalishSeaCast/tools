@@ -23,7 +23,7 @@
 :py:mod:`nowcast.figures` Module
 ================================
 
-.. automodule:: nowcast.figures
+.. automodule:: salishsea_tools.nowcast.figures
     :members:
 
 
@@ -32,7 +32,7 @@
 :py:mod:`nowcast.lib` Module
 ============================
 
-.. automodule:: nowcast.lib
+.. automodule:: salishsea_tools.nowcast.lib
     :members:
 
 
@@ -41,5 +41,5 @@
 :py:mod:`nowcast.nowcast_worker` Module
 =======================================
 
-.. automodule:: nowcast.nowcast_worker
+.. automodule:: salishsea_tools.nowcast.nowcast_worker
     :members:
