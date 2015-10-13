@@ -70,7 +70,7 @@ or import modules from it:
 :py:mod:`bathy_tools` Module
 ============================
 
-.. automodule:: bathy_tools
+.. automodule:: salishsea_tools.bathy_tools
     :members:
 
 
@@ -79,7 +79,7 @@ or import modules from it:
 :py:mod:`hg_commands` Module
 ============================
 
-.. automodule:: hg_commands
+.. automodule:: salishsea_tools.hg_commands
     :members:
 
 
@@ -88,7 +88,7 @@ or import modules from it:
 :py:mod:`namelist` Module
 =========================
 
-.. automodule:: namelist
+.. automodule:: salishsea_tools.namelist
     :members: namelist2dict
 
 .. _salishsea_tools.nc_tools:
@@ -96,7 +96,7 @@ or import modules from it:
 :py:mod:`nc_tools` Module
 =========================
 
-.. automodule:: nc_tools
+.. automodule:: salishsea_tools.nc_tools
     :members:
 
 .. _salishsea_tools.rivertools:
@@ -104,7 +104,7 @@ or import modules from it:
 :py:mod:`rivertools` Module
 ===========================
 
-.. automodule:: rivertools
+.. automodule:: salishsea_tools.rivertools
     :members:
 
 .. _salishsea_tools.tidetools:
@@ -112,7 +112,7 @@ or import modules from it:
 :py:mod:`tidetools` Module
 ==========================
 
-.. automodule:: tidetools
+.. automodule:: salishsea_tools.tidetools
     :members:
 
 
@@ -121,7 +121,7 @@ or import modules from it:
 :py:mod:`viz_tools` Module
 ==========================
 
-.. automodule:: viz_tools
+.. automodule:: salishsea_tools.viz_tools
     :members:
 
 
@@ -130,5 +130,5 @@ or import modules from it:
 :py:mod:`stormtools` Module
 ===========================
 
-.. automodule:: stormtools
+.. automodule:: salishsea_tools.stormtools
     :members:
