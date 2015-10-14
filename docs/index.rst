@@ -40,7 +40,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   SalishSeaCmd/salishsea-cmd
+   SalishSeaCmd/index
    SalishSeaTools/salishsea-tools
    SalishSeaNowcast/index
    SOGTools/index
