@@ -1056,65 +1056,13 @@ def plot_map(
         Area = PNW_coastline['Area']
         for ks, ke, A in zip(k[0:-1], k[1:], Area[0, :]):
             if A > thres:
-                poly = zip(coast['lon'][ks:ke-2], coast['lat'][ks:ke-2])
+                poly = list(zip(coast['lon'][ks:ke-2], coast['lat'][ks:ke-2]))
                 ax.add_patch(
                     patches.Polygon(
                         poly,
                         closed=True,
                         facecolor=land_c,
                         rasterized=True))
-
-    # domain_c
-    viz_tools.plot_land_mask(ax, grid_B, color=domain_c, coords='map')
-
-    # labels
-    ax.set_xlabel('Longitude', **axis_font)
-    ax.set_ylabel('Latitude', **axis_font)
-    ax.grid()
-    viz_tools.set_aspect(ax)
-
-    return ax
-
-def plot_map_new(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', domain_c='none'):
-    """Plots map of Salish Sea region, including the options to add a
-    coastline, colour of the land, and colour of the domain.
-
-    :arg ax: Axis for map.
-    :type ax: axis object
-
-    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
-    :type grid_B: :class:`netCDF4.Dataset`
-
-    :arg PNW_coastline: Coastline dataset.
-    :type PNW_coastline: :class:`mat.Dataset`
-
-    :arg coastline: Extent of coastline.
-                    'full' for Pacific Northwest coast,
-                    'partial' for model coastline, or 'none'.
-    :type coastline: string
-
-    :arg land_c: 'none' or colour of land if coastline is 'full'.
-    :type land_c: string
-
-    :arg domain_c: 'none' or colour of domain area.
-    :type domain_c: string
-
-    :returns: axis
-    """
-
-    # coastline
-    if coastline == 'partial':
-        viz_tools.plot_coastline(ax, grid_B, coords='map')
-    elif coastline == 'full':
-        [ax, coast] = draw_coast(ax, PNW_coastline)
-    elif coastline == 'none':
-        pass
-
-    # land_c - thresold area for plotting a polygon
-    thres = 1e-4
-    if coastline == 'full':
-        k = PNW_coastline['k']
-        Area = PNW_coastline['Area']
 
     # domain_c
     viz_tools.plot_land_mask(ax, grid_B, color=domain_c, coords='map')
