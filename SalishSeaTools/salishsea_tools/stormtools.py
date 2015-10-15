@@ -237,20 +237,26 @@ def get_variables(fU,fV,fT,timestamp,depth):
 
     return U, V, E, S, T
 
-def get_EC_observations(station, start_day, end_day):
-    """
-    Gather Environment Canada weather observations for the station and dates indicated. The dates should span one month because of how EC data is collected.
 
-    :arg station: string with station name (no spaces). e.g. 'PointAtkinson'
+def get_EC_observations(station, start_day, end_day):
+    """Gather Environment Canada weather observations for the station and
+    dates indicated.
+
+    The dates should span one month because of how EC data is collected.
+
+    :arg station: Station name (no spaces). e.g. 'PointAtkinson'
     :type station: str
 
-    :arg start_day: string contating the start date in the format '01-Dec-2006'.
+    :arg start_day: Start date in the format '01-Dec-2006'.
     :type start_day: str
 
-    :arg end_day: string contating the end date in the format '01-Dec-2006'.
+    :arg end_day: End date in the format '01-Dec-2006'.
     :type end_day: str
 
-    :returns: wind_speed, wind_dir, temperature, times, lat and lon: wind speed and direction, and time (UTC) of data from observations. Also latitude and longitude of the station.
+    :returns: wind_speed, wind_dir, temperature, times, lat and lon:
+              wind speed and direction,
+              and time (UTC) of data from observations.
+              Also latitude and longitude of the station.
 
     """
     station_ids = {
@@ -258,20 +264,21 @@ def get_EC_observations(station, start_day, end_day):
         'SistersIsland': 6813,
         'EntranceIsland': 29411,
         'Sandheads': 6831,
-        'YVR':51442, #note, I think YVR station name changed in 2013. Older data use 889
+        # NOTE: YVR station name changed in 2013. Older data use 889.
+        'YVR': 51442,
         'YVR_old': 889,
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
-        'PatriciaBay': 11007, # not exactly at Patricia Bay
+        'PatriciaBay': 11007,  # not exactly at Patricia Bay
         'Esquimalt': 52
     }
 
-    st_ar=arrow.Arrow.strptime(start_day, '%d-%b-%Y')
-    end_ar=arrow.Arrow.strptime(end_day, '%d-%b-%Y')
-    PST=tz.tzoffset("PST",-28800)
+    st_ar = arrow.Arrow.strptime(start_day, '%d-%b-%Y')
+    end_ar = arrow.Arrow.strptime(end_day, '%d-%b-%Y')
+    PST = tz.tzoffset("PST", -28800)
 
-    wind_spd= []; wind_dir=[]; temp=[];
+    wind_spd, wind_dir, temp = [], [], []
     url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
     query = {
         'timeframe': 1,
@@ -284,11 +291,11 @@ def get_EC_observations(station, start_day, end_day):
     response = requests.get(url, params=query)
     tree = ElementTree.parse(StringIO(response.content))
     root = tree.getroot()
-    #read lat and lon
+    # read lat and lon
     for raw_info in root.findall('stationinformation'):
-        lat =float(raw_info.find('latitude').text)
-        lon =float(raw_info.find('longitude').text)
-    #read data
+        lat = float(raw_info.find('latitude').text)
+        lon = float(raw_info.find('longitude').text)
+    # read data
     raw_data = root.findall('stationdata')
     times = []
     for record in raw_data:
@@ -296,7 +303,7 @@ def get_EC_observations(station, start_day, end_day):
         hour = int(record.get('hour'))
         year = int(record.get('year'))
         month = int(record.get('month'))
-        t = arrow.Arrow(year, month,day,hour,tzinfo=PST)
+        t = arrow.Arrow(year, month, day, hour, tzinfo=PST)
         selectors = (
             (day == st_ar.day - 1 and hour >= 16)
             or
@@ -318,17 +325,18 @@ def get_EC_observations(station, start_day, end_day):
             except:
                 wind_dir.append(float('NaN'))
             try:
-                temp.append(float(record.find('temp').text) +273)
+                temp.append(float(record.find('temp').text)+273)
             except:
                 temp.append(float('NaN'))
-    wind_spd= np.array(wind_spd) * 1000 / 3600
-    wind_dir=-np.array(wind_dir)+270
-    wind_dir=wind_dir + 360 * (wind_dir<0)
-    temp=np.array(temp)
+    wind_spd = np.array(wind_spd) * 1000 / 3600
+    wind_dir = -np.array(wind_dir)+270
+    wind_dir = wind_dir + 360 * (wind_dir < 0)
+    temp = np.array(temp)
     for i in np.arange(len(times)):
         times[i] = times[i].astimezone(tz.tzutc())
 
     return wind_spd, wind_dir, temp, times, lat, lon
+
 
 def get_SSH_forcing(boundary, date):
     """
