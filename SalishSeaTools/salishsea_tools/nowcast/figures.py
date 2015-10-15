@@ -1007,8 +1007,15 @@ def isolate_wind_timing(
     return inds
 
 
-def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', domain_c='none'):
-    """Plots map of Salish Sea region, including the options to add a
+def plot_map(
+    ax,
+    grid_B,
+    PNW_coastline,
+    coastline='full',
+    land_c='burlywood',
+    domain_c='none',
+):
+    """Plot map of Salish Sea region, including the options to add a
     coastline, colour of the land, and colour of the domain.
 
     :arg ax: Axis for map.
@@ -1042,7 +1049,7 @@ def plot_map(ax, grid_B, PNW_coastline, coastline='full', land_c='burlywood', do
     elif coastline == 'none':
         pass
 
-    # land_c - thresold area for plotting a polygon
+    # land_c - threshold area for plotting a polygon
     thres = 1e-4
     if coastline == 'full':
         k = PNW_coastline['k']
