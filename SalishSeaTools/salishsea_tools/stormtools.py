@@ -289,7 +289,7 @@ def get_EC_observations(station, start_day, end_day):
         'Day': 1,
     }
     response = requests.get(url, params=query)
-    tree = ElementTree.parse(StringIO(response.content))
+    tree = ElementTree.parse(StringIO(response.text))
     root = tree.getroot()
     # read lat and lon
     for raw_info in root.findall('stationinformation'):
