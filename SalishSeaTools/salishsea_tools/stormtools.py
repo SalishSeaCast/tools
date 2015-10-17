@@ -403,7 +403,7 @@ def load_tidal_predictions(filename):
 
     #read msl
     line_number = 1
-    with open(filename, 'rb') as f:
+    with open(filename) as f:
         mycsv = csv.reader(f); mycsv = list(mycsv)
         msl = mycsv[line_number][1]
         msl=float(msl)
