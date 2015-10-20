@@ -1724,7 +1724,7 @@ def fittit(uaus, time, nconst):
         thesize = uaus.shape[1]
         # creating the right shape of space for each amplitude and phase for
         # every constituent.
-        for const, ap in apparam.iteritems():
+        for const, ap in apparam.items():
             for key2 in ap:
                 ap[key2] = np.zeros(thesize)
 
@@ -1751,7 +1751,7 @@ def fittit(uaus, time, nconst):
     # CASE 2 : a time series of an area of velocities at a single depth
     elif uaus.ndim == 3:
         thesize = (uaus.shape[1], uaus.shape[2])
-        for const, ap in apparam.iteritems():
+        for const, ap in apparam.items():
             for key2 in ap:
                 ap[key2] = np.zeros(thesize)
 
@@ -1771,7 +1771,7 @@ def fittit(uaus, time, nconst):
     # CASE 3: a time series of an area of velocities with depth
     elif uaus.ndim == 4:
         thesize = (uaus.shape[1], uaus.shape[2], uaus.shape[3])
-        for const, ap in apparam.iteritems():
+        for const, ap in apparam.items():
             for key2 in ap:
                 ap[key2] = np.zeros(thesize)
 
@@ -1793,7 +1793,7 @@ def fittit(uaus, time, nconst):
     # Case 4: a time series of a single location with a single depth.
     else:
         thesize = (0)
-        for const, ap in apparam.iteritems():
+        for const, ap in apparam.items():
             for key2 in ap:
                 ap[key2] = np.zeros(thesize)
 
@@ -1807,8 +1807,8 @@ def fittit(uaus, time, nconst):
                 apparam[const]['phase'] = fitted[2*k+1]
 
     # Mask the zero values
-    for const, ap in apparam.iteritems():
-        for key in ap.iterkeys():
+    for const, ap in apparam.items():
+        for key in ap.keys():
             ap[key] = np.ma.masked_values(ap[key], 0)
 
     return apparam

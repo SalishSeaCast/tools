@@ -6,6 +6,10 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[Improved TS Climatology Western Boundary.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Improved TS Climatology Western Boundary.ipynb)  
+    
+    This notebook is used to improve the salinity of the deep water at the model's western boundary.  
+
 * ##[Modifications_JDF_Sal.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Modifications_JDF_Sal.ipynb)  
     
     This notebook is designed to increase the salinity of the deep water at the Strait of Juan de Fuca boundary.  
