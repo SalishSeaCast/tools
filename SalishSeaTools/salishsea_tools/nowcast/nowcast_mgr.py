@@ -738,7 +738,8 @@ def rotate_log_files(config):
     try:
         for handler in logger.handlers:
             logger.info('rotating log file')
-            handler.doRollover()
+            if not hasattr(handler, 'when'):
+                handler.doRollover()
             level = logging.getLevelName(handler.level).lower()
             lib.fix_perms(config['logging']['log_files'][level])
             logger.info('log file rotated')

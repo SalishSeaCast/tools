@@ -5,6 +5,7 @@
 #
 #    $ cd tools
 #    $ conda env create -f SalishSeaTools/nowcast/environment.yaml
+#    $ source activate nowcast
 #    $ pip install --editable SalishSeaTools
 #    $ pip install --editable SalishSeaCmd
 
@@ -23,7 +24,7 @@ dependencies:
 - pyyaml
 - pyzmq
 - pip
-- python=2
+- python=3
 - requests
 - scipy
 - sphinx
