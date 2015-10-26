@@ -60,7 +60,11 @@ stations_c = cm.rainbow(np.linspace(0, 1, 7))
 colours = {
     'figure': {
         'facecolor': '#2B3E50',  # salishsea site Superhero theme background
-    }
+    },
+    'cbar': {
+        'label': 'white',
+        'tick labels': 'white',
+    },
 }
 # Time shift for plotting in PST
 time_shift = datetime.timedelta(hours=-8)
@@ -2011,9 +2015,10 @@ def thalweg_salinity(
         cmap=cmap, extend='both')
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(salinity_levels)
-
-    cbar.set_label('Practical Salinity [psu]', color='white', **axis_font)
-    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
+    cbar.set_label(
+        'Practical Salinity [psu]',
+        color=colours['cbar']['label'], **axis_font)
+    cbar.ax.axes.tick_params(labelcolor=colours['cbar']['tick labels'])
 
     timestamp = nc_tools.timestamp(grid_T_d, 0)
     ax.set_title(
