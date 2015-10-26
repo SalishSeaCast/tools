@@ -57,7 +57,11 @@ model_c = 'MediumBlue'
 observations_c = 'DarkGreen'
 predictions_c = 'MediumVioletRed'
 stations_c = cm.rainbow(np.linspace(0, 1, 7))
-
+colours = {
+    'figure': {
+        'facecolor': '#2B3E50',  # salishsea site Superhero theme background
+    }
+}
 # Time shift for plotting in PST
 time_shift = datetime.timedelta(hours=-8)
 hfmt = mdates.DateFormatter('%m/%d %H:%M')
@@ -1970,6 +1974,7 @@ def thalweg_salinity(
     salinity_levels=[
         26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
     cmap='hsv',
+    colours=colours,
     figsize=(20, 8),
 ):
     """Plot the daily average salinity field along the thalweg with
@@ -1986,6 +1991,9 @@ def thalweg_salinity(
     :arg cmap: Colour map to use for the contour shading.
     :type cmap: str or :py:class:`matplotlib.colors.Colormap`
 
+    :arg dict colours: Colours to use for various elements of the figure.
+                       Defaults to :py:data:`figures.colours`.
+
     :arg 2-tuple figsize:  Figure size (width, height) in inches.
 
     :returns: :py:class:`matplotlib.Figure.figure`
@@ -1996,16 +2004,14 @@ def thalweg_salinity(
     salinity = grid_T_d.variables['vosaline'][:]
     masked_salinity = np.ma.masked_values(
         salinity[:][0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]], 0)
-
-    # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
-    fig.patch.set_facecolor('#2B3E50')
+    fig.set_facecolor(colours['figure']['facecolor'])
     mesh = ax.contourf(
         x, z, masked_salinity.transpose(), salinity_levels,
         cmap=cmap, extend='both')
-
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(salinity_levels)
+
     cbar.set_label('Practical Salinity [psu]', color='white', **axis_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
 
