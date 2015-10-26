@@ -525,3 +525,113 @@ def _truncate_height(alt1, lon1, lat1, lon2, lat2):
     lat_small = lat1[j_st:j_ed + 1, i_st:i_ed + 1]
     lon_small = lon1[j_st:j_ed + 1, i_st:i_ed + 1]
     return h_small, lon_small, lat_small
+
+
+def define_shapes(filenames):
+    """Creates a dictionary object that stores the beginning and ending i, j
+    coordinate for each
+    subdomain file stored in names.
+    filenames should be orgnaized in a way that corresponds to the shape of the
+    region you are compiling.
+    The first axis (rows) of names is along y, second axis (columns) is along x
+    filenames[0,0] is the bottom left subdomain
+    filenames[-1,0] is the top left subdomain
+    filenames[0,-1] is the bottom right subdomain
+    filenames[-1,-1] is the top right subdomain
+
+    Beginning/ending i = iss/iee, beginning/ending j = jss/jee
+
+    :arg filenames: Filenames in the domain decomposition, organized into an
+    an array grid
+    :type filenames: numpy array
+
+    :returns: a dictionary of dictionarys. First level keys are the filenames,
+    second level are iss,iee,jss,jee
+    """
+    shapes = {}
+    jss = 0
+    for j in np.arange(filenames.shape[0]):
+        iss = 0
+        for i in np.arange(filenames.shape[1]):
+            name = filenames[j, i]
+            f = nc.Dataset(name)
+            x = f.dimensions['x'].__len__()
+            y = f.dimensions['y'].__len__()
+            shapes[name] = {}
+            shapes[name]['iss'] = iss
+            shapes[name]['iee'] = iss+x
+            shapes[name]['jss'] = jss
+            shapes[name]['jee'] = jss+y
+            iss = iss+x
+        jss = jss + y
+    return shapes
+
+
+def initialize_dimensions(newfile, oldfile):
+    """Initialize new file to have the same dimension names as oldfile
+    Dimensions that are not associated with the horizontal grid are also given
+    the same size as oldfile"
+
+    :arg newfile: the new netCDF file
+    :type newfile: netCDF4 file handle
+
+    :arg oldfile: the file from which dimensions are copied
+    :type oldfile: netCDF4 file handle
+    """
+    for dimname in oldfile.dimensions:
+        dim = oldfile.dimensions[dimname]
+        if dimname == 'x' or dimname == 'y':
+            newdim = newfile.createDimension(dimname)
+        else:
+            newdim = newfile.createDimension(dimname, size=dim.__len__())
+
+
+def initialize_variables(newfile, oldfile):
+    """Initialize new file to have the same variables as oldfile
+
+    :arg newfile: the new netCDF file
+    :type newfile: netCDF4 file handle
+
+    :arg oldfile: the file from which dimensions are copied
+    :type oldfile: netCDF4 file handle
+
+    :returns: newvars, a dictionary object with key varibale name, value netcdf
+    variable
+    """
+    newvars = {}
+    for varname in oldfile.variables:
+        var = oldfile.variables[varname]
+        dims = var.dimensions
+        newvar = newfile.createVariable(varname, 'float32', dims)
+        newvar[:] = var[:]
+        newvars[varname] = newvar
+
+    return newvars
+
+
+def concatentate_variables(filenames, shapes, variables):
+    """Concatentate netcdf variables listed in dictionary variables for all of
+    the files stored in filenames.
+    shapes is a dictionary object that stores the start and end index for
+    the subdomain in each file.
+
+    :arg filenames: array of filenames for each piece of subdomain
+    :type filenames: numpy array
+
+    :arg shapes: conatiner for shapes of each subdomain
+    :type shapes: dictionary
+
+    :arg variables: conatiner for the new variables
+    :type variables: dictionary with variable name key and netcdf array value
+    """
+    for name in filenames.flatten():
+        for varname in variables.keys():
+            newvar = variables[varname]
+            f = nc.Dataset(name)
+            oldvar = f.variables[varname]
+            x1 = shapes[name]['iss']
+            x2 = shapes[name]['iee']
+            y1 = shapes[name]['jss']
+            y2 = shapes[name]['jee']
+            if 'x' in newvar.dimensions:
+                newvar[..., y1:y2, x1:x2] = oldvar[..., :, :]
