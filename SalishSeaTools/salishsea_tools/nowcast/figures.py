@@ -1967,8 +1967,9 @@ def add_bathy(XX, lines, ax):
 def thalweg_salinity(
     grid_T_d,
     thalweg_pts_file='../../../bathymetry/thalweg_working.txt',
+    salinity_levels=[
+        26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
     figsize=(20, 8),
-    cs = [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
 ):
     """Plot the daily average salinity field along the thalweg with
     coloured contours.
@@ -1981,7 +1982,7 @@ def thalweg_salinity(
 
     :arg 2-tuple figsize:  Figure size (width, height) in inches.
 
-    :arg list cs: Salinity values for contour levels shading.
+    :arg list salinity_levels: Salinity values for contour levels shading.
 
     :returns: :py:class:`matplotlib.Figure.figure`
     """
@@ -1996,10 +1997,11 @@ def thalweg_salinity(
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     mesh = ax.contourf(
-        x, z, masked_salinity.transpose(), cs, cmap='hsv', extend='both')
+        x, z, masked_salinity.transpose(), salinity_levels,
+        cmap='hsv', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
-    cbar.set_ticks(cs)
+    cbar.set_ticks(salinity_levels)
     cbar.set_label('Practical Salinity [psu]', color='white', **axis_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
 
