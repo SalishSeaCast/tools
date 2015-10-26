@@ -529,8 +529,7 @@ def _truncate_height(alt1, lon1, lat1, lon2, lat2):
 
 def define_shapes(filenames):
     """Creates a dictionary object that stores the beginning and ending i, j
-    coordinate for each
-    subdomain file stored in names.
+    coordinate for each subdomain file stored in names.
     filenames should be orgnaized in a way that corresponds to the shape of the
     region you are compiling.
     The first axis (rows) of names is along y, second axis (columns) is along x
@@ -540,6 +539,8 @@ def define_shapes(filenames):
     filenames[-1,-1] is the top right subdomain
 
     Beginning/ending i = iss/iee, beginning/ending j = jss/jee
+
+    Used for recombining per-processor subdomain files
 
     :arg filenames: Filenames in the domain decomposition, organized into an
     an array grid
@@ -570,7 +571,8 @@ def define_shapes(filenames):
 def initialize_dimensions(newfile, oldfile):
     """Initialize new file to have the same dimension names as oldfile
     Dimensions that are not associated with the horizontal grid are also given
-    the same size as oldfile"
+    the same size as oldfile
+    Used for recombining per-processor subdomain files
 
     :arg newfile: the new netCDF file
     :type newfile: netCDF4 file handle
@@ -587,7 +589,8 @@ def initialize_dimensions(newfile, oldfile):
 
 
 def initialize_variables(newfile, oldfile):
-    """Initialize new file to have the same variables as oldfile
+    """Initialize new file to have the same variables as oldfile.
+    Used for recombining per-processor subdomain files
 
     :arg newfile: the new netCDF file
     :type newfile: netCDF4 file handle
@@ -611,9 +614,8 @@ def initialize_variables(newfile, oldfile):
 
 def concatentate_variables(filenames, shapes, variables):
     """Concatentate netcdf variables listed in dictionary variables for all of
-    the files stored in filenames.
-    shapes is a dictionary object that stores the start and end index for
-    the subdomain in each file.
+    the files stored in filenames. Concatentation on horizontal grid.
+    Used for recombining per-processor subdomain files
 
     :arg filenames: array of filenames for each piece of subdomain
     :type filenames: numpy array
