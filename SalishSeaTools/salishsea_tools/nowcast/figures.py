@@ -1969,6 +1969,7 @@ def thalweg_salinity(
     thalweg_pts_file='../../../bathymetry/thalweg_working.txt',
     salinity_levels=[
         26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
+    cmap='hsv',
     figsize=(20, 8),
 ):
     """Plot the daily average salinity field along the thalweg with
@@ -1980,9 +1981,12 @@ def thalweg_salinity(
     :arg grid_T_d: Daily tracer results dataset from NEMO.
     :type grid_T_d: :py:class:`netCDF4.Dataset`
 
-    :arg 2-tuple figsize:  Figure size (width, height) in inches.
-
     :arg list salinity_levels: Salinity values for contour levels shading.
+
+    :arg cmap: Colour map to use for the contour shading.
+    :type cmap: str or :py:class:`matplotlib.colors.Colormap`
+
+    :arg 2-tuple figsize:  Figure size (width, height) in inches.
 
     :returns: :py:class:`matplotlib.Figure.figure`
     """
@@ -1998,7 +2002,7 @@ def thalweg_salinity(
     fig.patch.set_facecolor('#2B3E50')
     mesh = ax.contourf(
         x, z, masked_salinity.transpose(), salinity_levels,
-        cmap='hsv', extend='both')
+        cmap=cmap, extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(salinity_levels)
