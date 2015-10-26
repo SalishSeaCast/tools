@@ -1988,18 +1988,15 @@ def thalweg_salinity(
     thalweg_pts = np.loadtxt(thalweg_pts_file, delimiter=' ', dtype=int)
     x, z = np.meshgrid(
         np.arange(thalweg_pts.shape[0]), -grid_T_d.variables['deptht'][:])
-
-    # Tracer data
-    sal_d = grid_T_d.variables['vosaline'][:]
-
-    # Salinity along thalweg
-    salP = sal_d[0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]]
-    salP = np.ma.masked_values(salP, 0)
+    salinity = grid_T_d.variables['vosaline'][:]
+    masked_salinity = np.ma.masked_values(
+        salinity[:][0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]], 0)
 
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    mesh = ax.contourf(x, z, salP.T, cs, cmap='hsv', extend='both')
+    mesh = ax.contourf(
+        x, z, masked_salinity.transpose(), cs, cmap='hsv', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
