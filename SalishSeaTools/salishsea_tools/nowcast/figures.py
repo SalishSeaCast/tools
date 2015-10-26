@@ -1986,13 +1986,11 @@ def thalweg_salinity(
     :returns: :py:class:`matplotlib.Figure.figure`
     """
     thalweg_pts = np.loadtxt(thalweg_pts_file, delimiter=' ', dtype=int)
+    x, z = np.meshgrid(
+        np.arange(thalweg_pts.shape[0]), -grid_T_d.variables['deptht'][:])
 
     # Tracer data
-    dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline'][:]
-
-    ds = np.arange(0, thalweg_pts.shape[0], 1)
-    XX, ZZ = np.meshgrid(ds, -dep_d[:])
 
     # Salinity along thalweg
     salP = sal_d[0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]]
@@ -2001,7 +1999,7 @@ def thalweg_salinity(
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    mesh = ax.contourf(XX, ZZ, salP.T, cs, cmap='hsv', extend='both')
+    mesh = ax.contourf(x, z, salP.T, cs, cmap='hsv', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
@@ -2018,7 +2016,7 @@ def thalweg_salinity(
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
     ########################
-    #add_bathy(XX, thalweg_pts, ax)
+    #add_bathy(x, thalweg_pts, ax)
     ########################
     return fig
 
