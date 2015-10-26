@@ -1963,39 +1963,39 @@ def add_bathy(XX, lines, ax):
     xe = XX.max()
     ax.bar(np.arange(xs, xe), baseline-thalweg_bottom[xs:xe], width=1, bottom = -1*baseline, color='burlywood');
 
+
 def thalweg_salinity(
-    grid_T_d, figsize=(20, 8),
+    grid_T_d,
+    thalweg_pts_file='../../../bathymetry/thalweg_working.txt',
+    figsize=(20, 8),
     cs = [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
 ):
-    """Plots the daily average salinity field along the thalweg.
+    """Plot the daily average salinity field along the thalweg with
+    coloured contours.
+
+    :arg str thalweg_pts_file: Path and file name to read the array of
+                               thalweg grid point from.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
-    :type grid_T_d: :class:`netCDF4.Dataset`
+    :type grid_T_d: :py:class:`netCDF4.Dataset`
 
-    :arg figsize:  Figure size (width, height) in inches.
-    :type figsize: 2-tuple
+    :arg 2-tuple figsize:  Figure size (width, height) in inches.
 
-    :arg cs: List of salinity contour levels for shading.
-    :type cs: list
+    :arg list cs: Salinity values for contour levels shading.
 
-    :returns: matplotlib figure object instance (fig).
+    :returns: :py:class:`matplotlib.Figure.figure`
     """
+    thalweg_pts = np.loadtxt(thalweg_pts_file, delimiter=' ', dtype=int)
 
     # Tracer data
     dep_d = grid_T_d.variables['deptht']
     sal_d = grid_T_d.variables['vosaline'][:]
 
-    # Call thalweg
-    lines = np.loadtxt(
-        '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-        delimiter=" ", unpack=False)
-    lines = lines.astype(int)
-
-    ds = np.arange(0, lines.shape[0], 1)
+    ds = np.arange(0, thalweg_pts.shape[0], 1)
     XX, ZZ = np.meshgrid(ds, -dep_d[:])
 
     # Salinity along thalweg
-    salP = sal_d[0, :, lines[:, 0], lines[:, 1]]
+    salP = sal_d[0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]]
     salP = np.ma.masked_values(salP, 0)
 
     # Figure
@@ -2018,7 +2018,7 @@ def thalweg_salinity(
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
     ########################
-    #add_bathy(XX, lines, ax)
+    #add_bathy(XX, thalweg_pts, ax)
     ########################
     return fig
 
