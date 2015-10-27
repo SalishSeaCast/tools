@@ -527,7 +527,40 @@ def _truncate_height(alt1, lon1, lat1, lon2, lat2):
     return h_small, lon_small, lat_small
 
 
-def define_shapes(filenames):
+def combine_subdomain(filenames, outfilename):
+    """Recombine per-processor subdomain files into one single file.
+
+    Note: filenames must be an array of files organized to reflect the
+    subdomain decompsition. filenames[0,0] is bottom left, filenames[0,-1] is
+    bottom right, filenames[-1,0] is top left, filenames[-1,-1] is top right.
+    For example,
+    filenames =  [[sub_00.nc, sub_01.nc], [sub_02.nc, sub_03.nc]].
+    This can be improved. At some point it would be worthwhile to autmotically
+    build the filenames array.
+    Also, we might want to add netcdf attributes like history, units, etc.
+
+    :arg filenames: An array containing the names of the files to be
+    recombined.
+    :type filenames: numpy array (2D)
+
+    :arg outfilename: The name of the file for saving output
+    :type outfilename: string
+    """
+    # Determine shape of each subdomain
+    shapes = _define_shapes(filenames)
+
+    # Initialize
+    new = nc.Dataset(outfilename, 'w')
+    _initialize_dimensions(new, nc.Dataset(filenames[0, 0]))
+    newvars = _initialize_variables(new, nc.Dataset(filenames[0, 0]))
+
+    # Build full array
+    _concatentate_variables(filenames, shapes, newvars)
+
+    new.close()
+
+
+def _define_shapes(filenames):
     """Creates a dictionary object that stores the beginning and ending i, j
     coordinate for each subdomain file stored in names.
     filenames should be orgnaized in a way that corresponds to the shape of the
@@ -568,7 +601,7 @@ def define_shapes(filenames):
     return shapes
 
 
-def initialize_dimensions(newfile, oldfile):
+def _initialize_dimensions(newfile, oldfile):
     """Initialize new file to have the same dimension names as oldfile
     Dimensions that are not associated with the horizontal grid are also given
     the same size as oldfile
@@ -588,7 +621,7 @@ def initialize_dimensions(newfile, oldfile):
             newdim = newfile.createDimension(dimname, size=dim.__len__())
 
 
-def initialize_variables(newfile, oldfile):
+def _initialize_variables(newfile, oldfile):
     """Initialize new file to have the same variables as oldfile.
     Used for recombining per-processor subdomain files
 
@@ -605,14 +638,14 @@ def initialize_variables(newfile, oldfile):
     for varname in oldfile.variables:
         var = oldfile.variables[varname]
         dims = var.dimensions
-        newvar = newfile.createVariable(varname, 'float32', dims)
+        newvar = newfile.createVariable(varname, var.datatype, dims)
         newvar[:] = var[:]
         newvars[varname] = newvar
 
     return newvars
 
 
-def concatentate_variables(filenames, shapes, variables):
+def _concatentate_variables(filenames, shapes, variables):
     """Concatentate netcdf variables listed in dictionary variables for all of
     the files stored in filenames. Concatentation on horizontal grid.
     Used for recombining per-processor subdomain files
