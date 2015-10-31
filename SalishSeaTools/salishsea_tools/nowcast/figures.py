@@ -2036,7 +2036,16 @@ def thalweg_salinity(
 
 
 def thalweg_distance(lons, lats):
-    """Calculate cumulative distance between points in lons, lats"""
+    """Calculate cumulative distance between points in lons, lats
+    
+    :arg lons: longitude points
+    :type lons: numpy array
+
+    :arg lats: latitude points
+    :type lats: numpy array
+
+    :returns: dist, a numpy array with distance along track
+    """
     dist = [0]
     for i in np.arange(1, lons.shape[0]):
         newdist = dist[i-1] + tidetools.haversine(lons[i], lats[i],
@@ -2044,6 +2053,7 @@ def thalweg_distance(lons, lats):
         dist.append(newdist)
     dist = np.array(dist)
     return dist
+
 
 def thalweg_temperature(
     grid_T_d, figsize=(20, 8),
@@ -2062,11 +2072,11 @@ def thalweg_temperature(
 
     :returns: matplotlib figure object instance (fig).
     """
+    # Load mesh mask and look up depth of w cells.
     mesh = nc.Dataset('/ocean/nsoontie/MEOPAR/Ariane/mesh_mask.nc')
-    dep_d = mesh.variables['gdept'][0, :, :, :]
+    dep_d = mesh.variables['gdepw'][0, :, :, :]
 
     # Tracer data
-    #dep_d = grid_T_d.variables['deptht']
     temp_d = grid_T_d.variables['votemper'][:]
     lons = grid_T_d.variables['nav_lon'][:]
     lats = grid_T_d.variables['nav_lat'][:]
@@ -2077,15 +2087,14 @@ def thalweg_temperature(
         delimiter=" ", unpack=False)
     lines = lines.astype(int)
 
-    #ds = np.arange(0, lines.shape[0], 1)
-    #XX, ZZ = np.meshgrid(ds, -dep_d[:])
-
     # Temp along thalweg
-    tempP = temp_d[0, :, lines[:, 0], lines[:, 1]]
+    # Use k+1 w-point for contour depth
+    tempP = temp_d[0, 0:-1, lines[:, 0], lines[:, 1]]
     tempP = np.ma.masked_values(tempP, 0)
-    dep_d = -dep_d[:, lines[:, 0], lines[:, 1]]
+    dep_d = -dep_d[1:, lines[:, 0], lines[:, 1]]
+    # Calculate distance along thalweg and expand into same shape as depth
     distance = thalweg_distance(lons[lines[:, 0], lines[:, 1]],
-                                lats[lines[:, 0], lines[:, 1]])     
+                                lats[lines[:, 0], lines[:, 1]])      
     distance = np.expand_dims(distance, 0)
     distance = distance + np.zeros(dep_d.shape)
     # Figure
