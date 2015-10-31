@@ -2035,6 +2035,16 @@ def thalweg_salinity(
     return fig
 
 
+def thalweg_distance(lons, lats):
+    """Calculate cumulative distance between points in lons, lats"""
+    dist = [0]
+    for i in np.arange(1, lons.shape[0]):
+        newdist = dist[i-1] + tidetools.haversine(lons[i], lats[i],
+                                                  lons[i-1], lats[i-1])
+        dist.append(newdist)
+    dist = np.array(dist)
+    return dist
+
 def thalweg_temperature(
     grid_T_d, figsize=(20, 8),
     cs = [6.9, 7,7.5, 8, 8.5, 9, 9.8,9.9,10.3,10.5, 11,11.5, 12, 13, 14, 15, 16, 17, 18, 19],
@@ -2052,10 +2062,14 @@ def thalweg_temperature(
 
     :returns: matplotlib figure object instance (fig).
     """
+    mesh = nc.Dataset('/ocean/nsoontie/MEOPAR/Ariane/mesh_mask.nc')
+    dep_d = mesh.variables['gdept'][0, :, :, :]
 
     # Tracer data
-    dep_d = grid_T_d.variables['deptht']
+    #dep_d = grid_T_d.variables['deptht']
     temp_d = grid_T_d.variables['votemper'][:]
+    lons = grid_T_d.variables['nav_lon'][:]
+    lats = grid_T_d.variables['nav_lat'][:]
 
     # Call thalweg
     lines = np.loadtxt(
@@ -2063,17 +2077,21 @@ def thalweg_temperature(
         delimiter=" ", unpack=False)
     lines = lines.astype(int)
 
-    ds = np.arange(0, lines.shape[0], 1)
-    XX, ZZ = np.meshgrid(ds, -dep_d[:])
+    #ds = np.arange(0, lines.shape[0], 1)
+    #XX, ZZ = np.meshgrid(ds, -dep_d[:])
 
     # Temp along thalweg
     tempP = temp_d[0, :, lines[:, 0], lines[:, 1]]
     tempP = np.ma.masked_values(tempP, 0)
-
+    dep_d = -dep_d[:, lines[:, 0], lines[:, 1]]
+    distance = thalweg_distance(lons[lines[:, 0], lines[:, 1]],
+                                lats[lines[:, 0], lines[:, 1]])     
+    distance = np.expand_dims(distance, 0)
+    distance = distance + np.zeros(dep_d.shape)
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
-    mesh = ax.contourf(XX, ZZ, tempP.T, cs, cmap='jet', extend='both')
+    mesh = ax.contourf(distance, dep_d, tempP.T, cs, cmap='jet', extend='both')
 
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
@@ -2086,7 +2104,7 @@ def thalweg_temperature(
         timestamp.format('DD-MMM-YYYY'),
         **title_font)
     ax.set_ylabel('Depth [m]', **axis_font)
-    ax.set_xlabel('Position along Thalweg', **axis_font)
+    ax.set_xlabel('Distance along Thalweg [km]', **axis_font)
     axis_colors(ax, 'white')
     ax.set_axis_bgcolor('burlywood')
 
