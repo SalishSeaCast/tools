@@ -2086,6 +2086,11 @@ def thalweg_temperature(
         '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
         delimiter=" ", unpack=False)
     lines = lines.astype(int)
+    # actual bathy
+    nc_filepath = '/data/nsoontie/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc'
+    b = nc.Dataset(nc_filepath, 'r')
+    depth_bathy = b.variables['Bathymetry'][:]
+    depth_bathy = depth_bathy[lines[:, 0], lines[:, 1]]
 
     # Temp along thalweg
     # Use k+1 w-point for contour depth
@@ -2106,7 +2111,8 @@ def thalweg_temperature(
     cbar.set_ticks(cs)
     cbar.set_label('Temperature [deg C]', color='white', **axis_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
-
+    # Plot actual bathymetry
+    ax.plot(distance[0,:], -depth_bathy, '-k')
     timestamp = nc_tools.timestamp(grid_T_d, 0)
     ax.set_title(
         'Temperature field along thalweg: ' +
