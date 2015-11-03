@@ -473,7 +473,7 @@ def get_NOAA_wlevels(station_no, start_date, end_date, product='water_level'):
     }
     response = requests.get(base_url, params=params)
 
-    fakefile = StringIO(response.content)
+    fakefile = StringIO(response.text)
     try:
         obs = pd.read_csv(
             fakefile, parse_dates=[0], date_parser=dateparse_NOAA)
@@ -527,7 +527,7 @@ def get_NOAA_tides(station_no, start_date, end_date, interval=''):
 
     response = requests.get(base_url, params=params)
 
-    fakefile = StringIO(response.content)
+    fakefile = StringIO(response.text)
     try:
         tides = pd.read_csv(
             fakefile, parse_dates=[0], date_parser=dateparse_NOAA)
