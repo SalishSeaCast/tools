@@ -155,6 +155,8 @@ def make_plots(run_date, run_type, plot_type, config, socket):
         model_path = os.path.join(model_path, 'fcst/')
     bathy = nc.Dataset(config['bathymetry'])
     coastline = sio.loadmat('/ocean/rich/more/mmapbase/bcgeo/PNW.mat')
+    mesh_mask = nc.Dataset(
+        '/data/nsoontie/MEOPAR/NEMO-forcing/grid/mesh_mask_SalishSea2.nc')
 
     # configure plot directory for saving
     dmy = run_date.strftime('%d%b%y').lower()
@@ -169,7 +171,8 @@ def make_plots(run_date, run_type, plot_type, config, socket):
             dmy, model_path, bathy, results_dir, plots_dir, coastline)
     else:
         make_research_plots(
-            dmy, model_path, bathy, results_dir, plots_dir, coastline)
+            dmy, model_path, bathy, results_dir, plots_dir, coastline,
+            mesh_mask)
 
     # Fix permissions on image files and copy them to salishsea site
     # prep directory
@@ -373,7 +376,7 @@ def make_comparisons_plots(
 
 
 def make_research_plots(
-    dmy, model_path, bathy, results_dir, plots_dir, coastline
+    dmy, model_path, bathy, results_dir, plots_dir, coastline, mesh_mask
 ):
     """Make the plots we wish to look at for research purposes.
     """
@@ -388,12 +391,12 @@ def make_research_plots(
     grid_e = results_dataset_gridded('east', results_dir)
 
     # do the plots
-    fig = figures.thalweg_salinity(grid_T_dy)
+    fig = figures.thalweg_salinity(grid_T_dy, mesh_mask, bathy)
     filename = os.path.join(
         plots_dir, 'Salinity_on_thalweg_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    fig = figures.thalweg_temperature(grid_T_dy)
+    fig = figures.thalweg_temperature(grid_T_dy, mesh_mask, bathy)
     filename = os.path.join(
         plots_dir, 'Temperature_on_thalweg_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
