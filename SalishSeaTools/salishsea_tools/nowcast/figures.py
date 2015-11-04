@@ -577,7 +577,6 @@ def get_maxes(ssh, t, res, lon, lat, model_path):
     t_final = t[-1]
     [wind, direc, t_wind, pr, tem, sol, the, qr, pre] = get_model_winds(
         lon, lat, t_orig, t_final, model_path)
-
     # Index where t_wind=tmax
     # (Find a match between the year, month, day and hour)
     ind_w = np.where(
@@ -1948,33 +1947,48 @@ def winds_average_max(
 
     return fig
 
-def add_bathy(XX, lines, ax):
-    baseline = 450.00
-    # read bathy
-    nc_filepath = '/ocean/sallen/allen/research/MEOPAR/NEMO-forcing/grid/grid_bathy.nc'
-    #nc_filepath = '/ocean/nsoontie/MEOPAR/sprint/bathy_meter_SalishSea2.nc'
-    bathy = nc.Dataset(nc_filepath, 'r')
-    depth = bathy.variables['grid_bathy']
-    # Get the depth
-    floor = np.empty_like(depth)
-    ceil = np.empty_like(depth)
-    ceil[0] = 0.
-    for k in range(1,40):
-        ceil[k] = floor[k-1]
-        floor[k] = 2*depth[k] -floor[k-1]
-    # find the actually bottom depth
-    bottom = np.max(floor, axis=0)
-    # find the values along the thalweg
-    thalweg_bottom = bottom[lines[:,0],lines[:,1]]
-    # draw
-    xs = XX.min()
-    xe = XX.max()
-    ax.bar(np.arange(xs, xe), baseline-thalweg_bottom[xs:xe], width=1, bottom = -1*baseline, color='burlywood');
+
+def add_bathy_patch(distance, grid_B, lines,  ax, color='burlywood',
+                    zmin=-450):
+    """Add a polygon shaped as the land in the thalweg section
+
+    :arg distance: distance along thalwrg in km
+    :type distance: 2D numpy array
+
+    :arg grid_B: bathymetry file
+    :type grid_B: netCDF handle
+
+    :arg lines: indices for the thalweg
+    :type lines: 2D numpy array
+
+    :arg ax: axis to plot in
+    :type ax: axis handle
+
+    :arg color: color of bathymetry patch
+    :type color: string
+
+    :arg zmin: minimum depth for plot in meters (use negative convention)
+    :type zmin: float
+    """
+    # Look up bottom bathymetry along thalweg
+    depth = grid_B.variables['Bathymetry'][:]
+    thalweg_bottom = -depth[lines[:, 0], lines[:, 1]]
+    # Construct bathy polygon
+    poly = np.zeros((thalweg_bottom.shape[0]+2, 2))
+    poly[0, 0] = 0
+    poly[0, 1] = zmin
+    poly[1:-1, 0] = distance[0, :]
+    poly[1:-1, 1] = thalweg_bottom
+    poly[-1, 0] = distance[0, -1]
+    poly[-1, 1] = zmin
+    # Add polygon patch to plot
+    ax.add_patch(patches.Polygon(poly, facecolor=color,
+                                 edgecolor=color))
 
 
 def thalweg_salinity(
-    grid_T_d,
-    thalweg_pts_file='../../../bathymetry/thalweg_working.txt',
+    grid_T_d, mesh_mask, grid_B,
+    thalweg_pts_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
     salinity_levels=[
         26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
     cmap='hsv',
@@ -1992,6 +2006,12 @@ def thalweg_salinity(
 
     :arg list salinity_levels: Salinity values for contour levels shading.
 
+    :arg mesh_mask: NEMO mesh_mask file.
+    :type mesh_mask: :class:`netCDF4.Dataset
+
+    :arg grid_B: Model bathymetry file.
+    :type grid_B: :class:`netCDF4.Dataset
+
     :arg cmap: Colour map to use for the contour shading.
     :type cmap: str or :py:class:`matplotlib.colors.Colormap`
 
@@ -2002,17 +2022,35 @@ def thalweg_salinity(
 
     :returns: :py:class:`matplotlib.Figure.figure`
     """
+
+    # Look up depth of tcells and thalweg points.
+    dep_d = mesh_mask.variables['gdept'][0, :, :, :]
     thalweg_pts = np.loadtxt(thalweg_pts_file, delimiter=' ', dtype=int)
-    x, z = np.meshgrid(
-        np.arange(thalweg_pts.shape[0]), -grid_T_d.variables['deptht'][:])
+
+    # Tracer data
     salinity = grid_T_d.variables['vosaline'][:]
-    masked_salinity = np.ma.masked_values(
-        salinity[:][0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]], 0)
+    lons = grid_T_d.variables['nav_lon'][:]
+    lats = grid_T_d.variables['nav_lat'][:]
+
+    # Actual bathy
+    depth_bathy = grid_B.variables['Bathymetry'][:]
+    depth_bathy = depth_bathy[thalweg_pts[:, 0], thalweg_pts[:, 1]]
+
+    # Salinity along thalweg
+    salinity = salinity[0, :, thalweg_pts[:, 0], thalweg_pts[:, 1]]
+    salinity = fill_in_bathy(salinity, mesh_mask, thalweg_pts)
+    salinity = np.ma.masked_values(salinity, 0)
+    dep_d = -dep_d[:, thalweg_pts[:, 0], thalweg_pts[:, 1]]
+    # Calculate distance along thalweg and expand into same shape as depth
+    distance = thalweg_distance(lons[thalweg_pts[:, 0], thalweg_pts[:, 1]],
+                                lats[thalweg_pts[:, 0], thalweg_pts[:, 1]])
+    distance = np.expand_dims(distance, 0)
+    distance = distance + np.zeros(dep_d.shape)
+    # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.set_facecolor(colours['figure']['facecolor'])
-    mesh = ax.contourf(
-        x, z, masked_salinity.transpose(), salinity_levels,
-        cmap=cmap, extend='both')
+    mesh = ax.contourf(distance, dep_d, salinity.T, salinity_levels,
+                       cmap=cmap, extend='both')
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(salinity_levels)
     cbar.set_label(
@@ -2026,18 +2064,17 @@ def thalweg_salinity(
         timestamp.format('DD-MMM-YYYY'),
         **title_font)
     ax.set_ylabel('Depth [m]', **axis_font)
-    ax.set_xlabel('Position along Thalweg', **axis_font)
+    ax.set_xlabel('Distance along Thalweg (km)', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('burlywood')
-    ########################
-    #add_bathy(x, thalweg_pts, ax)
-    ########################
+    # Add the bathymetry patch
+    add_bathy_patch(distance, grid_B, thalweg_pts, ax)
+
     return fig
 
 
 def thalweg_distance(lons, lats):
     """Calculate cumulative distance between points in lons, lats
-    
+
     :arg lons: longitude points
     :type lons: numpy array
 
@@ -2055,14 +2092,48 @@ def thalweg_distance(lons, lats):
     return dist
 
 
+def fill_in_bathy(variable, mesh_mask, lines):
+    """For each horizontal point in variable, fill in first vertically masked
+    point with the value just above.
+    Use mbathy in mesh_mask file to determine level of vertical masking
+
+    :arg variable: the variable to be filled
+    :type variable: 2D numpy array
+
+    :arg mesh_mask: NEMO mesh_mask file
+    :type mesh_mask: netCDF handle
+
+    :arg lines: indices for the thalweg
+    :type lines: 2D numpy array
+
+    :returns: newvar, the filled numpy array
+    """
+    mbathy = mesh_mask.variables['mbathy'][0, :, :]
+    newvar = np.copy(variable)
+
+    mbathy = mbathy[lines[:, 0], lines[:, 1]]
+    for i, level in enumerate(mbathy):
+        newvar[i, level] = variable[i, level-1]
+    return newvar
+
+
 def thalweg_temperature(
-    grid_T_d, figsize=(20, 8),
-    cs = [6.9, 7,7.5, 8, 8.5, 9, 9.8,9.9,10.3,10.5, 11,11.5, 12, 13, 14, 15, 16, 17, 18, 19],
+    grid_T_d, mesh_mask, grid_B,
+    thalweg_pts_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
+    figsize=(20, 8),
+    cs = [6.9, 7, 7.5, 8, 8.5, 9, 9.8, 9.9, 10.3, 10.5, 11, 11.5, 12, 13, 14,
+          15, 16, 17, 18, 19],
 ):
     """Plots the daily average temperature field along the thalweg.
 
     :arg grid_T_d: Daily tracer results dataset from NEMO.
     :type grid_T_d: :class:`netCDF4.Dataset`
+
+    :arg mesh_mask: NEMO mesh_mask file.
+    :type mesh_mask: :class:`netCDF4.Dataset
+
+    :arg grid_B: Model bathymetry file.
+    :type grid_B: :class:`netCDF4.Dataset
 
     :arg figsize:  Figure size (width, height) in inches.
     :type figsize: 2-tuple
@@ -2072,9 +2143,8 @@ def thalweg_temperature(
 
     :returns: matplotlib figure object instance (fig).
     """
-    # Load mesh mask and look up depth of w cells.
-    mesh = nc.Dataset('/ocean/nsoontie/MEOPAR/Ariane/mesh_mask.nc')
-    dep_d = mesh.variables['gdepw'][0, :, :, :]
+    # Look up depth of tcells.
+    dep_d = mesh_mask.variables['gdept'][0, :, :, :]
 
     # Tracer data
     temp_d = grid_T_d.variables['votemper'][:]
@@ -2082,37 +2152,30 @@ def thalweg_temperature(
     lats = grid_T_d.variables['nav_lat'][:]
 
     # Call thalweg
-    lines = np.loadtxt(
-        '/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-        delimiter=" ", unpack=False)
+    lines = np.loadtxt(thalweg_pts_file, delimiter=" ", unpack=False)
     lines = lines.astype(int)
-    # actual bathy
-    nc_filepath = '/data/nsoontie/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc'
-    b = nc.Dataset(nc_filepath, 'r')
-    depth_bathy = b.variables['Bathymetry'][:]
+    # Actual bathy
+    depth_bathy = grid_B.variables['Bathymetry'][:]
     depth_bathy = depth_bathy[lines[:, 0], lines[:, 1]]
 
     # Temp along thalweg
-    # Use k+1 w-point for contour depth
-    tempP = temp_d[0, 0:-1, lines[:, 0], lines[:, 1]]
+    tempP = temp_d[0, :, lines[:, 0], lines[:, 1]]
+    tempP = fill_in_bathy(tempP, mesh_mask, lines)
     tempP = np.ma.masked_values(tempP, 0)
-    dep_d = -dep_d[1:, lines[:, 0], lines[:, 1]]
+    dep_d = -dep_d[:, lines[:, 0], lines[:, 1]]
     # Calculate distance along thalweg and expand into same shape as depth
     distance = thalweg_distance(lons[lines[:, 0], lines[:, 1]],
-                                lats[lines[:, 0], lines[:, 1]])      
+                                lats[lines[:, 0], lines[:, 1]])
     distance = np.expand_dims(distance, 0)
     distance = distance + np.zeros(dep_d.shape)
     # Figure
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     fig.patch.set_facecolor('#2B3E50')
     mesh = ax.contourf(distance, dep_d, tempP.T, cs, cmap='jet', extend='both')
-
     cbar = fig.colorbar(mesh, ax=ax)
     cbar.set_ticks(cs)
     cbar.set_label('Temperature [deg C]', color='white', **axis_font)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
-    # Plot actual bathymetry
-    ax.plot(distance[0,:], -depth_bathy, '-k')
     timestamp = nc_tools.timestamp(grid_T_d, 0)
     ax.set_title(
         'Temperature field along thalweg: ' +
@@ -2121,11 +2184,8 @@ def thalweg_temperature(
     ax.set_ylabel('Depth [m]', **axis_font)
     ax.set_xlabel('Distance along Thalweg [km]', **axis_font)
     axis_colors(ax, 'white')
-    ax.set_axis_bgcolor('burlywood')
-
-    ########################
-    #add_bathy(XX, lines, ax)
-    ########################
+    # Add the bathymetry patch
+    add_bathy_patch(distance, grid_B, lines, ax)
 
     return fig
 
