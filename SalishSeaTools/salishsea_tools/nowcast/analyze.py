@@ -466,3 +466,17 @@ def depth_average(var, depths, depth_axis):
     average = integral/total_depth
 
     return average
+
+def depth_average_mask(var, e3, mask, depth_axis):
+    """Calculate depth average using the NEMO vertical scale factors and mask.
+    """
+    # If depth_axis is not 0, give e3 and mask a time dimension
+    if depth_axis != 0:
+        e3 = np.expand_dims(e3, 0)
+        mask = np.expand_dims(mask,0)
+
+    integral = np.sum(var*e3*mask, axis=depth_axis)
+    total_depth = np.sum(e3*mask, axis=depth_axis)
+    avg = integral/total_depth
+    avg = np.ma.masked_invalid(avg)
+    return avg
