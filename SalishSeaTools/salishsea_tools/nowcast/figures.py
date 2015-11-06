@@ -394,7 +394,7 @@ def load_archived_observations(name, start_date, end_date):
         s.post(base_url + form_handler, data=sitedata)
         r = s.get(base_url + data_provider)
     # Write the data to a fake file
-    fakefile = StringIO(r.content)
+    fakefile = StringIO(r.text)
     # Read the fake file
     try:
         wlev_meas = pd.read_csv(
