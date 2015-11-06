@@ -360,12 +360,14 @@ def retrieve_surge(day, dates, data):
     # Initialize forecast flag and surge array
     forecast_flag = False
     surge = []
+    # Load tides
+    ttide = figures.get_tides('Neah Bay')
     # Grab list of times on this day
     tc, ds = isolate_day(day, dates)
     for d in ds:
         # Convert datetime to string for comparing with times in data
         daystr = d.strftime('%m/%d %HZ')
-        tide = data.tide[data.date == daystr].item()
+        tide = ttide.pred_all[ttide.time == d].item()
         obs = data.obs[data.date == daystr].item()
         fcst = data.fcst[data.date == daystr].item()
         if obs == 99.90:
@@ -378,10 +380,10 @@ def retrieve_surge(day, dates, data):
                     # No values yet, so initialize with zero
                     surge = [0]
             else:
-                surge.append(feet_to_metres(fcst - tide))
+                surge.append(feet_to_metres(fcst) - tide)
                 forecast_flag = True
         else:
-            surge.append(feet_to_metres(obs - tide))
+            surge.append(feet_to_metres(obs) - tide)
     return surge, tc, forecast_flag
 
 
