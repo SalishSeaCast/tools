@@ -1519,7 +1519,7 @@ def compare_tidalpredictions_maxSSH(
     ax0 = fig.add_subplot(gs[0, 0])  # information box
     axis_colors(ax0, 'blue')
     plt.setp(
-        ax0.spines.values(),
+        list(ax0.spines.values()),
         visible=False)  # hide axes for information box
     ax0.xaxis.set_visible(False)
     ax0.yaxis.set_visible(False)
@@ -2593,7 +2593,7 @@ def plot_threshold_website(
     axs = [ax1, ax2, ax3]
     info_box = ['Point Atkinson', 'Campbell River', 'Victoria']
     for ax, name in zip(axs, info_box):
-        plt.setp(ax.spines.values(), visible=False)
+        plt.setp(list(ax.spines.values()), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         axis_colors(ax, 'blue')
