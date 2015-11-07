@@ -606,7 +606,7 @@ def compute_residual(ssh, t_model, ttide):
     """
 
     # interpolate tides to model time
-    tides_interp = interp_to_model_time(t_model, ttide.pred_8, ttide.time)
+    tides_interp = interp_to_model_time(t_model, ttide.pred_all, ttide.time)
 
     res = ssh - tides_interp
 
