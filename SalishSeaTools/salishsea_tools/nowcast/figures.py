@@ -1452,7 +1452,7 @@ def compare_water_levels(
 
 
 def compare_tidalpredictions_maxSSH(
-    grid_T, grid_B, model_path, PST=1, MSL=0, name='Point Atkinson',
+    grid_T, grid_B, grids, model_path, PST=1, MSL=0, name='Point Atkinson',
     figsize=(20, 12),
 ):
     """Plots a map for sea surface height when it was at its maximum at Point
@@ -1473,6 +1473,9 @@ def compare_tidalpredictions_maxSSH(
 
     :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
     :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg grids: high frequency model results
+    :type grids: dictionary
 
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
@@ -1499,17 +1502,16 @@ def compare_tidalpredictions_maxSSH(
     lon = SITES[name]['lon']
 
     # Time range
-    t_orig, t_final, t = get_model_time_variables(grid_T)
+    t_orig, t_final, thourly = get_model_time_variables(grid_T)
     tzone = PST * '[PST]' + abs((PST - 1)) * '[UTC]'
 
     # Bathymetry
     bathy, X, Y = tidetools.get_bathy_data(grid_B)
 
     # Get sea surface height
-    j, i = tidetools.find_closest_model_point(
-        lon, lat, X, Y, bathy, allow_land=False)
-    ssh = grid_T.variables['sossheig']
-    ssh_loc = ssh[:, j, i]
+    ssh_loc, t = load_model_ssh(grid_B, grid_T, grids, name)
+    # full field
+    ssh = grid_T.variables['sossheig'][:]
 
     # Figure
     fig = plt.figure(figsize=figsize)
@@ -1600,7 +1602,10 @@ def compare_tidalpredictions_maxSSH(
 
     # Map of sea surface height
     cs = [-1, -0.5, 0.5, 1, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.4, 2.6]
-    ssh_max_field = np.ma.masked_values(ssh[index], 0)
+    [j, i] = tidetools.find_closest_model_point(lon, lat, X, Y, bathy)
+    hourly_maxssh = np.argmax(ssh[:, j, i])
+
+    ssh_max_field = np.ma.masked_values(ssh[hourly_maxssh], 0)
     mesh = ax2.contourf(
         ssh_max_field, cs,
         cmap='nipy_spectral', extend='both', alpha=0.6)
@@ -1610,10 +1615,12 @@ def compare_tidalpredictions_maxSSH(
     cbar.set_ticks(cs)
     plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='w')
     cbar.set_label('[m]', color='white')
+    # Time for map
+    tmap = thourly[hourly_maxssh]
 
     ax2.set_title(
         'Sea Surface Height: {:%d-%b-%Y, %H:%M}'
-        .format(tmax + PST * time_shift),
+        .format(tmap + PST * time_shift),
         **title_font)
     ax2.set_xlabel('X Index', **axis_font)
     ax2.set_ylabel('Y Index', **axis_font)
@@ -1630,7 +1637,7 @@ def compare_tidalpredictions_maxSSH(
 
 
 def plot_thresholds_all(
-    grid_T, grid_B, model_path, PNW_coastline, PST=1, MSL=1,
+    grid_T, grid_B, grids, model_path, PNW_coastline, PST=1, MSL=1,
     figsize=(20, 25),
 ):
     """Plots sea surface height over one day with respect to warning
@@ -1688,10 +1695,7 @@ def plot_thresholds_all(
 
     for M, name in enumerate(TIDAL_SITES):
         # Get sea surface height
-        j, i = tidetools.find_closest_model_point(
-            SITES[name]['lon'], SITES[name]['lat'],
-            X, Y, bathy, allow_land=False)
-        ssh_loc = grid_T.variables['sossheig'][:, j, i]
+        ssh_loc, t = load_model_ssh(grid_B, grid_T, grids, name)
         msl = SITES[name]['msl']
 
         # Plot tides, corrected model and original model
@@ -2404,7 +2408,7 @@ def ssh_PtAtkinson(grid_T, grid_B=None, figsize=(20, 5)):
 
 
 def plot_threshold_website(
-    grid_B, grid_T, model_path, PNW_coastline, scale=0.1, PST=1,
+    grid_B, grid_T, grids, model_path, PNW_coastline, scale=0.1, PST=1,
     figsize=(18, 20),
 ):
     """Overview image for Salish Sea website.
@@ -2420,6 +2424,9 @@ def plot_threshold_website(
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg grids: high frequency model results
+    :type grids: dictionary
 
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
@@ -2489,12 +2496,9 @@ def plot_threshold_website(
 
     for name in TIDAL_SITES:
         # Get sea surface height
-        lat = SITES[name]['lat']
+        ssh_loc, t = load_model_ssh(grid_B, grid_T, grids, name)
         lon = SITES[name]['lon']
-        j, i = tidetools.find_closest_model_point(
-            lon, lat, X, Y, bathy, allow_land=False)
-        ssh_loc = grid_T.variables['sossheig'][:, j, i]
-
+        lat = SITES[name]['lat']
         # Get tides and ssh
         ttide = get_tides(name)
         ssh_corr = correct_model_ssh(ssh_loc, t, ttide)
