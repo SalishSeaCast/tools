@@ -1083,8 +1083,42 @@ def plot_map(
     return ax
 
 
-def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
-                      PST=1, figsize=(18, 20)):
+def load_model_ssh(grid_B, grid_T, grids, name):
+    """Load the model ssh time series.
+
+    :arg grid_B: Bathymetry dataset for the Salish Sea NEMO model.
+    :type grid_B: :class:`netCDF4.Dataset`
+
+    :arg grid_T: Hourly tracer results dataset from NEMO.
+    :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg grids: high frequency model results
+    :type grids: dictionary
+
+    :arg name: station name
+    :type name: string
+
+    :returns: ssh, time - the ssh array and time array
+    """
+    if name in ['Point Atkinson', 'Victoria', 'Campbell River']:
+        grid = grids[name]
+        ssh = grid.variables['sossheig'][:, 0, 0]
+        t_orig, t_final, t = get_model_time_variables(grid)
+    else:
+        # Bathymetry
+        bathy, X, Y = tidetools.get_bathy_data(grid_B)
+        lat = SITES[name]['lat']
+        lon = SITES[name]['lon']
+        # Get sea surface height
+        j, i = tidetools.find_closest_model_point(
+            lon, lat, X, Y, bathy, allow_land=False)
+        ssh = grid_T.variables['sossheig'][:, j, i]
+        t_orig, t_final, t = get_model_time_variables(grid_T)
+    return ssh, t
+
+
+def website_thumbnail(grid_B, grid_T, grids, model_path, PNW_coastline,
+                      scale=0.1, PST=1, figsize=(18, 20)):
     """Thumbnail for the UBC Storm Surge website includes the thresholds
     indicating the risk of flooding in three stations and the wind speeds and
     directions. It also includes a brief description of threshold colours.
@@ -1094,6 +1128,9 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
 
     :arg grid_T: Hourly tracer results dataset from NEMO.
     :type grid_T: :class:`netCDF4.Dataset`
+
+    :arg grids: high frequency model results
+    :type grids: dictionary
 
     :arg model_path: The directory where the model wind files are stored.
     :type model_path: string
@@ -1147,13 +1184,9 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     plot_map(ax, grid_B, PNW_coastline)
 
     for name in TIDAL_SITES:
+        ssh_loc, t = load_model_ssh(grid_B, grid_T, grids, name)
         lat = SITES[name]['lat']
         lon = SITES[name]['lon']
-        # Get sea surface height
-        j, i = tidetools.find_closest_model_point(
-            lon, lat, X, Y, bathy, allow_land=False)
-        ssh_loc = grid_T.variables['sossheig'][:, j, i]
-
         # Get tides and ssh
         ttide = get_tides(name)
         ssh_corr = correct_model_ssh(ssh_loc, t, ttide)
@@ -1219,7 +1252,7 @@ def website_thumbnail(grid_B, grid_T, model_path, PNW_coastline, scale=0.1,
     axs = [ax1, ax2, ax3]
     cs = ['green', 'Gold', 'red']
     for ax, thresh_c in zip(axs, cs):
-        plt.setp(ax.spines.values(), visible=False)
+        plt.setp(list(ax.spines.values()), visible=False)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
         axis_colors(ax, 'blue')
