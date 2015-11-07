@@ -212,16 +212,21 @@ def make_publish_plots(
 
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
+    grids_15m = {}
+    names = ['Point Atkinson', 'Victoria', 'Campbell River']
+    for name in names:
+        f = os.path.join(results_dir, '{}.nc'.format(name.replace(" ", "")))
+        grids_15m[name] = nc.Dataset(f)
 
     # do the plots
     fig = figures.website_thumbnail(
-        bathy, grid_T_hr, model_path, coastline)
+        bathy, grid_T_hr, grids_15m, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'Website_thumbnail_{date}.png'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.plot_threshold_website(
-        bathy, grid_T_hr, model_path, coastline)
+        bathy, grid_T_hr, grids_15m, model_path, coastline)
     filename = os.path.join(
         plots_dir, 'Threshold_website_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
@@ -232,31 +237,31 @@ def make_publish_plots(
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
-        grid_T_hr, bathy, model_path, name='Victoria')
+        grid_T_hr, bathy, grids_15m, model_path, name='Victoria')
     filename = os.path.join(
         plots_dir, 'Vic_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
-        grid_T_hr, bathy, model_path)
+        grid_T_hr, bathy, grids_15m, model_path)
     filename = os.path.join(
         plots_dir, 'PA_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
-        grid_T_hr, bathy, model_path, name='Campbell River')
+        grid_T_hr, bathy, grids_15m, model_path, name='Campbell River')
     filename = os.path.join(
         plots_dir, 'CR_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
-        grid_T_hr, bathy, model_path, name='Nanaimo')
+        grid_T_hr, bathy, grids_15m, model_path, name='Nanaimo')
     filename = os.path.join(
         plots_dir, 'Nan_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
     fig = figures.compare_tidalpredictions_maxSSH(
-        grid_T_hr, bathy, model_path, name='Cherry Point')
+        grid_T_hr, bathy, grids_15m, model_path, name='Cherry Point')
     filename = os.path.join(
         plots_dir, 'CP_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
@@ -266,7 +271,8 @@ def make_publish_plots(
         plots_dir, 'NOAA_ssh_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
 
-    fig = figures.plot_thresholds_all(grid_T_hr, bathy, model_path, coastline)
+    fig = figures.plot_thresholds_all(grid_T_hr, bathy, grids_15m, model_path,
+                                      coastline)
     filename = os.path.join(
         plots_dir, 'WaterLevel_Thresholds_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
