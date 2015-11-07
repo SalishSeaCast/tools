@@ -1195,7 +1195,7 @@ def website_thumbnail(grid_B, grid_T, grids, model_path, PNW_coastline,
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 70, 0.3, name)
 
         # Information
-        res = compute_residual(ssh_loc, t, ttide)
+        res = compute_residual(ssh_corr, t, ttide)
         [max_ssh,
          index_ssh,
          tmax,
@@ -1538,7 +1538,7 @@ def compare_tidalpredictions_maxSSH(
         '--', c=model_c, linewidth=1, label='Model')
 
     # Compute residual
-    res = compute_residual(ssh_loc, t, ttide)
+    res = compute_residual(ssh_corr, t, ttide)
 
     # Find maximim sea surface height and timing
     max_ssh, index, tmax, max_res, max_wind, ind_w = get_maxes(
@@ -2507,7 +2507,7 @@ def plot_threshold_website(
         plot_threshold_map(ax, ttide, ssh_corr, 'o', 55, 0.3, name)
 
         # Information
-        res = compute_residual(ssh_loc, t, ttide)
+        res = compute_residual(ssh_corr, t, ttide)
         [max_ssh,
          index_ssh,
          tmax,
