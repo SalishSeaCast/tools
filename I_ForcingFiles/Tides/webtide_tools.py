@@ -28,15 +28,9 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     theta = radians(29) #rotation of the grid = 29 degrees
 
     #correction factors
-    pha_K1 = 8.39 #K1 phase correction in degrees.    applied to velocity and ssh
-    amp_K1 = 0.921 #K1 amp correction factor      applied to velocity and ssh
-    pha_M2 = 11.69 #M2 phase correction in degrees     applied to velocity and ssh
-    pha_shift_M2 = 0 #M2 phase shift in degrees   velocity only
-    amp_M2 = 1.0793 # M2 amp correction               applied to velocity and ssh
-    corr_M2 = 1. # flux correction factor     velocity only
-
     corr_shift = 0
     corr = 1
+    base = constituent
 
     if constituent == "M2":
         corr_pha = CFactor['A2 Phase']
@@ -50,9 +44,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_pha = CFactor['A2 Phase'] + CFactor['N2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['N2 Amp']
         corr = CFactor['A2 Flux']
-    elif constituent == "K2":
-        corr_pha = CFactor['A2 Phase'] + CFactor['K2 Phase']
-        corr_amp = CFactor['A2 Amp'] * CFactor['K2 Amp']
+    elif constituent == "K2": # based on S2
+        base = "S2"
+        corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
+        corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
         corr = CFactor['A2 Flux']
     elif constituent == "K1":
         corr_pha = CFactor['A1 Phase']
@@ -60,9 +55,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     elif constituent == "O1":
         corr_pha = CFactor['A1 Phase'] + CFactor['O1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['O1 Amp']
-    elif constituent == "P1":
-        corr_pha = CFactor['A1 Phase'] + CFactor['P1 Phase']
-        corr_amp = CFactor['A1 Amp'] * CFactor['P1 Amp']
+    elif constituent == "P1": # based on K1
+        base = "P1"
+        corr_pha = CFactor['A1 Phase'] 
+        corr_amp = CFactor['A1 Amp'] 
     elif constituent == "Q1":
         corr_pha = CFactor['A1 Phase'] + CFactor['Q1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
@@ -74,7 +70,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                                           'Amplitude (m)': 'amp', 'Phase (deg GMT)': 'pha'})
 
 	#how long is the boundary?
-	boundlen = len(depth[depth!=0])
+        boundlen = len(depth[depth!=0])
 
 	#along western boundary, etaZ1 and etaZ2 are 0 in masked cells
         amp_W = numpy.zeros((boundlen+10,1))
@@ -85,8 +81,14 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 
         #allocate the M2 phase and amplitude from Webtide to the boundary cells
         #(CHECK: Are these allocated in the right order?)
-        amp_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].amp*corr_amp
-        pha_W[5:boundlen+5,0] = webtide[webtide.const==(constituent+':')].pha + corr_pha
+        amp_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].amp*corr_amp
+        pha_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].pha + corr_pha
+        if constituent = "P1":
+            amp_W = amp_W * 0.310
+            pha_W = pha_W - 3.5
+        elif consituent = "K2":
+            amp_W = amp_W * 0.235
+            pha_W = pha_W - 5.7
 
         #convert the phase and amplitude to cosine and sine format that NEMO likes
         Z1 = amp_W*numpy.cos(numpy.radians(pha_W))
@@ -101,15 +103,15 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                                           'V Amplitude (m)': 'nsamp', 'V Phase (deg GMT)': 'nspha'})
 
 	#how long is the boundary?
-	boundlen = len(depth[depth!=0])
+        boundlen = len(depth[depth!=0])
 
         #Convert amplitudes from north/south u/v into grid co-ordinates
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
-        va_ugrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
-        uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
-        vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
+        ua_ugrid = numpy.array(webtide[webtide.const==(base+':')].ewamp)*corr
+        va_ugrid = numpy.array(webtide[webtide.const==(base+':')].nsamp)*corr
+        uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].ewpha))
+        vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].nspha))
 
         uZ1 = ua_ugrid*numpy.cos(theta)*numpy.cos(uphi_ugrid) - va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
         uZ2 = ua_ugrid*numpy.cos(theta)*numpy.sin(uphi_ugrid) + va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
@@ -119,6 +121,15 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         pha=[]
         for i in range(0,len(amp)):
             pha.append(math.atan2(uZ2[i],uZ1[i])+numpy.radians(corr_pha+corr_shift))
+
+        if constituent = "P1":
+            amp_W = amp_W * 0.310
+            pha_W = pha_W - 3.5
+        elif consituent = "K2":
+            amp_W = amp_W * 0.235
+            pha_W = pha_W - 5.7
+
+
         uZ1 = amp*numpy.cos(pha)*corr_amp
         uZ2 = amp*numpy.sin(pha)*corr_amp
 
@@ -141,14 +152,14 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                                           'U Amplitude (m)': 'ewamp', 'U Phase (deg GMT)': 'ewpha',\
                                           'V Amplitude (m)': 'nsamp', 'V Phase (deg GMT)': 'nspha'})
 	#how long is the boundary?
-	boundlen = len(depth[depth!=0])
-	print(boundlen)
+        boundlen = len(depth[depth!=0])
+        print(boundlen)
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].ewamp)*corr
-        va_vgrid = numpy.array(webtide[webtide.const==(constituent+':')].nsamp)*corr
-        uphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].ewpha))
-        vphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(constituent+':')].nspha))
+        ua_vgrid = numpy.array(webtide[webtide.const==(base+':')].ewamp)*corr
+        va_vgrid = numpy.array(webtide[webtide.const==(base+':')].nsamp)*corr
+        uphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].ewpha))
+        vphi_vgrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].nspha))
 
         vZ1 = -ua_vgrid*numpy.sin(theta)*numpy.cos(uphi_vgrid) - va_vgrid*numpy.cos(theta)*numpy.sin(vphi_vgrid)
         vZ2 = -ua_vgrid*numpy.sin(theta)*numpy.sin(uphi_vgrid) + va_vgrid*numpy.cos(theta)*numpy.cos(vphi_vgrid)
@@ -158,6 +169,14 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         pha=[]
         for i in range(0,len(amp)):
             pha.append(math.atan2(vZ2[i],vZ1[i])+numpy.radians(corr_pha+corr_shift))
+
+        if constituent = "P1":
+            amp_W = amp_W * 0.310
+            pha_W = pha_W - 3.5
+        elif consituent = "K2":
+            amp_W = amp_W * 0.235
+            pha_W = pha_W - 5.7
+
         vZ1 = amp*numpy.cos(pha)*corr_amp
         vZ2 = amp*numpy.sin(pha)*corr_amp
 
