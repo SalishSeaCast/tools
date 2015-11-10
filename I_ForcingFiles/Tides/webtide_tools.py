@@ -86,7 +86,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         if constituent == "P1":
             amp_W = amp_W * 0.310
             pha_W = pha_W - 3.5
-        elif consituent == "K2":
+        elif constituent == "K2":
             amp_W = amp_W * 0.235
             pha_W = pha_W - 5.7
 
@@ -123,12 +123,11 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
             pha.append(math.atan2(uZ2[i],uZ1[i])+numpy.radians(corr_pha+corr_shift))
 
         if constituent == "P1":
-            amp_W = amp_W * 0.310
-            pha_W = pha_W - 3.5
-        elif consituent == "K2":
-            amp_W = amp_W * 0.235
-            pha_W = pha_W - 5.7
-
+            amp = amp * 0.310
+            pha[:] = [phase - numpy.radians(3.5) for phase in pha]
+        elif constituent == "K2":
+            amp = amp * 0.235
+            pha[:] = [phase - numpy.radians(5.7) for phase in pha]
 
         uZ1 = amp*numpy.cos(pha)*corr_amp
         uZ2 = amp*numpy.sin(pha)*corr_amp
@@ -170,12 +169,12 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         for i in range(0,len(amp)):
             pha.append(math.atan2(vZ2[i],vZ1[i])+numpy.radians(corr_pha+corr_shift))
 
-        if constituent = "P1":
-            amp_W = amp_W * 0.310
-            pha_W = pha_W - 3.5
-        elif consituent = "K2":
-            amp_W = amp_W * 0.235
-            pha_W = pha_W - 5.7
+        if constituent == "P1":
+            amp = amp * 0.310
+            pha[:] = [phase - numpy.radians(3.5) for phase in pha]
+        elif constituent == "K2":
+            amp = amp * 0.235
+            pha[:] = [phase - numpy.radians(5.7) for phase in pha]
 
         vZ1 = amp*numpy.cos(pha)*corr_amp
         vZ2 = amp*numpy.sin(pha)*corr_amp
