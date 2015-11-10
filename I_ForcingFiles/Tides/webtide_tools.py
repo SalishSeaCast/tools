@@ -25,9 +25,9 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     import numpy
     import math
 
-    theta = radians(29) #rotation of the grid = 29 degrees
+    theta = radians(29)  # rotation of the grid = 29 degrees
 
-    #correction factors
+    # correction factors
     corr_shift = 0
     corr = 1
     base = constituent
@@ -44,7 +44,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_pha = CFactor['A2 Phase'] + CFactor['N2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['N2 Amp']
         corr = CFactor['A2 Flux']
-    elif constituent == "K2": # based on S2
+    elif constituent == "K2":  # based on S2
         base = "S2"
         corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
@@ -55,14 +55,14 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     elif constituent == "O1":
         corr_pha = CFactor['A1 Phase'] + CFactor['O1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['O1 Amp']
-    elif constituent == "P1": # based on K1
+    elif constituent == "P1":  # based on K1
         base = "P1"
-        corr_pha = CFactor['A1 Phase'] 
-        corr_amp = CFactor['A1 Amp'] 
+        corr_pha = CFactor['A1 Phase']
+        corr_amp = CFactor['A1 Amp']
     elif constituent == "Q1":
         corr_pha = CFactor['A1 Phase'] + CFactor['Q1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
-    #WATER LEVEL ELEVATION
+    # WATER LEVEL ELEVATION
     if tidevar == 'T':
         webtide = pd.read_csv('Tidal Elevation Constituents T.csv',\
                               skiprows = 2)
@@ -83,10 +83,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         #(CHECK: Are these allocated in the right order?)
         amp_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].amp*corr_amp
         pha_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].pha + corr_pha
-        if constituent = "P1":
+        if constituent == "P1":
             amp_W = amp_W * 0.310
             pha_W = pha_W - 3.5
-        elif consituent = "K2":
+        elif consituent == "K2":
             amp_W = amp_W * 0.235
             pha_W = pha_W - 5.7
 
@@ -122,10 +122,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         for i in range(0,len(amp)):
             pha.append(math.atan2(uZ2[i],uZ1[i])+numpy.radians(corr_pha+corr_shift))
 
-        if constituent = "P1":
+        if constituent == "P1":
             amp_W = amp_W * 0.310
             pha_W = pha_W - 3.5
-        elif consituent = "K2":
+        elif consituent == "K2":
             amp_W = amp_W * 0.235
             pha_W = pha_W - 5.7
 
