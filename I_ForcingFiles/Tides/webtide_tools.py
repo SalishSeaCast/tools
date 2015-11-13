@@ -64,25 +64,33 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
     # WATER LEVEL ELEVATION
     if tidevar == 'T':
-        webtide = pd.read_csv('Tidal Elevation Constituents T.csv',\
-                              skiprows = 2)
-        webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
-                                          'Amplitude (m)': 'amp', 'Phase (deg GMT)': 'pha'})
+        webtide = pd.read_csv('Tidal Elevation Constituents T.csv',
+                              skiprows=2)
+        webtide = webtide.rename(columns={'Constituent': 'const',
+                                          'Longitude': 'lon',
+                                          'Latitude': 'lat',
+                                          'Amplitude (m)': 'amp',
+                                          'Phase (deg GMT)': 'pha'})
 
-	#how long is the boundary?
-        boundlen = len(depth[depth!=0])
+        # how long is the boundary?
+        boundlen = len(depth[depth != 0])
 
-	#along western boundary, etaZ1 and etaZ2 are 0 in masked cells
-        amp_W = numpy.zeros((boundlen+10,1))
-        pha_W = numpy.zeros((boundlen+10,1))
+        # along western boundary, etaZ1 and etaZ2 are 0 in masked cells
+        amp_W = numpy.zeros((boundlen+10, 1))
+        pha_W = numpy.zeros((boundlen+10, 1))
 
-        #find the boundary
-        I = numpy.where(depth!=0)
+        # find the boundary
+        I = numpy.where(depth != 0)
 
-        #allocate the M2 phase and amplitude from Webtide to the boundary cells
-        #(CHECK: Are these allocated in the right order?)
-        amp_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].amp*corr_amp
-        pha_W[5:boundlen+5,0] = webtide[webtide.const==(base+':')].pha + corr_pha
+        # allocate the M2 phase and amplitude from Webtide to the boundary cells
+        # (CHECK: Are these allocated in the right order?)
+        amp_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].amp * corr_amp
+        pha_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].pha + corr_pha
+
+        if constituent == "K1" or constituent == "M2":
+            print (constituent, "eta")
+            print pha_W
+
         if constituent == "P1":
             amp_W = amp_W * 0.310
             pha_W = pha_W - 3.5
@@ -90,37 +98,43 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
             amp_W = amp_W * 0.235
             pha_W = pha_W - 5.7
 
-        #convert the phase and amplitude to cosine and sine format that NEMO likes
-        Z1 = amp_W*numpy.cos(numpy.radians(pha_W))
-        Z2 = amp_W*numpy.sin(numpy.radians(pha_W))
+        # convert the phase and amplitude to cosine and sine format that NEMO likes
+        Z1 = amp_W * numpy.cos(numpy.radians(pha_W))
+        Z2 = amp_W * numpy.sin(numpy.radians(pha_W))
 
     #U VELOCITY
     if tidevar == 'U':
-        webtide = pd.read_csv('Tidal Current Constituents U.csv',\
-                                 skiprows = 2)
-        webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
-                                          'U Amplitude (m)': 'ewamp', 'U Phase (deg GMT)': 'ewpha',\
-                                          'V Amplitude (m)': 'nsamp', 'V Phase (deg GMT)': 'nspha'})
+        webtide = pd.read_csv('Tidal Current Constituents U.csv',
+                              skiprows=2)
+        webtide = webtide.rename(columns={'Constituent': 'const',
+                                          'Longitude': 'lon',
+                                          'Latitude': 'lat',
+                                          'U Amplitude (m)': 'ewamp',
+                                          'U Phase (deg GMT)': 'ewpha',
+                                          'V Amplitude (m)': 'nsamp',
+                                          'V Phase (deg GMT)': 'nspha'})
 
-	#how long is the boundary?
-        boundlen = len(depth[depth!=0])
+        # how long is the boundary?
+        boundlen = len(depth[depth != 0])
 
-        #Convert amplitudes from north/south u/v into grid co-ordinates
+        # Convert amplitudes from north/south u/v into grid co-ordinates
 
-        #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
-        ua_ugrid = numpy.array(webtide[webtide.const==(base+':')].ewamp)*corr
-        va_ugrid = numpy.array(webtide[webtide.const==(base+':')].nsamp)*corr
-        uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].ewpha))
-        vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const==(base+':')].nspha))
+        # Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
+        ua_ugrid = numpy.array(webtide[webtide.const == (base + ':')].ewamp) * corr
+        va_ugrid = numpy.array(webtide[webtide.const == (base + ':')].nsamp) * corr
+        uphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const == (base + ':')].ewpha))
+        vphi_ugrid = numpy.radians(numpy.array(webtide[webtide.const == (base + ':')].nspha))
 
-        uZ1 = ua_ugrid*numpy.cos(theta)*numpy.cos(uphi_ugrid) - va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
-        uZ2 = ua_ugrid*numpy.cos(theta)*numpy.sin(uphi_ugrid) + va_ugrid*numpy.sin(theta)*numpy.sin(vphi_ugrid)
+        uZ1 = (ua_ugrid * numpy.cos(theta) * numpy.cos(uphi_ugrid) -
+               va_ugrid * numpy.sin(theta) * numpy.sin(vphi_ugrid))
+        uZ2 = (ua_ugrid * numpy.cos(theta) * numpy.sin(uphi_ugrid) +
+               va_ugrid * numpy.sin(theta) * numpy.sin(vphi_ugrid))
 
         # adjustments for phase correction
-        amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2);
-        pha=[]
-        for i in range(0,len(amp)):
-            pha.append(math.atan2(uZ2[i],uZ1[i])+numpy.radians(corr_pha+corr_shift))
+        amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2)
+        pha = []
+        for i in range(0, len(amp)):
+            pha.append(math.atan2(uZ2[i], uZ1[i]) + numpy.radians(corr_pha + corr_shift))
 
         if constituent == "P1":
             amp = amp * 0.310
@@ -129,10 +143,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
             amp = amp * 0.235
             pha[:] = [phase - numpy.radians(5.7) for phase in pha]
 
-        uZ1 = amp*numpy.cos(pha)*corr_amp
-        uZ2 = amp*numpy.sin(pha)*corr_amp
+        uZ1 = amp * numpy.cos(pha) * corr_amp
+        uZ2 = amp * numpy.sin(pha) * corr_amp
 
-        #find the boundary
+        # find the boundary
         I = numpy.where(depth!=0)
 
         #allocate the z1 and z2 I calculated from Webtide to the boundary cells
