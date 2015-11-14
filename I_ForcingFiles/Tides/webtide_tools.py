@@ -28,27 +28,31 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
     theta = radians(29)  # rotation of the grid = 29 degrees
 
     # correction factors
-    corr_shift = 0
-    corr = 1
     base = constituent
+    corr = 1   # if not otherwise set
+    corr_shift = 0   # if not otherwise set
 
     if constituent == "M2":
         corr_pha = CFactor['A2 Phase']
         corr_amp = CFactor['A2 Amp']
         corr = CFactor['A2 Flux']
+        corr_shift = CFactor['A2 Shift']
     elif constituent == "S2":
         corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
         corr = CFactor['A2 Flux']
+        corr_shift = CFactor['A2 Shift']
     elif constituent == "N2":
         corr_pha = CFactor['A2 Phase'] + CFactor['N2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['N2 Amp']
         corr = CFactor['A2 Flux']
+        corr_shift = CFactor['A2 Shift']
     elif constituent == "K2":  # based on S2
         base = "S2"
         corr_pha = CFactor['A2 Phase'] + CFactor['S2 Phase']
         corr_amp = CFactor['A2 Amp'] * CFactor['S2 Amp']
         corr = CFactor['A2 Flux']
+        corr_shift = CFactor['A2 Shift']
     elif constituent == "K1":
         corr_pha = CFactor['A1 Phase']
         corr_amp = CFactor['A1 Amp']
@@ -82,7 +86,8 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         # find the boundary
         I = numpy.where(depth != 0)
 
-        # allocate the M2 phase and amplitude from Webtide to the boundary cells
+        # allocate the M2 phase and amplitude from Webtide
+        # to the boundary cells
         # (CHECK: Are these allocated in the right order?)
         amp_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].amp * corr_amp
         pha_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].pha + corr_pha
