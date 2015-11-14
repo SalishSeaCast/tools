@@ -112,6 +112,19 @@ The :file:`/results/` file system is organized as follows::
    |   |       |-- templates@ -> /results/nowcast-sys/tools/SalishSeaNowcast/www/templates/
    |   |       `-- salishsea-site/
    |   |           `-- ...
+   |   |-- nowcast-env/
+   |   |   |-- bin/
+   |   |   |-- conda-meta/
+   |   |   |-- etc/
+   |   |   |-- imports/
+   |   |   |-- include/
+   |   |   |-- lib/
+   |   |   |-- mkspecs/
+   |   |   |-- plugins/
+   |   |   |-- sbin/
+   |   |   |-- share/
+   |   |   |-- ssl/
+   |   |   `-- tests/
    |   |-- private-tools/
    |   |   `-- ...
    |   `-- tools/
