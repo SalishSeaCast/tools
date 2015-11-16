@@ -28,7 +28,7 @@ import pytest
 
 @pytest.fixture()
 def run_NEMO_module():
-    from salishsea_tools.nowcast.workers import run_NEMO
+    from nowcast.workers import run_NEMO
     return run_NEMO
 
 

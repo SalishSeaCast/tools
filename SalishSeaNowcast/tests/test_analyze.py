@@ -22,7 +22,7 @@ import netCDF4 as nc
 import os
 import pytest
 
-from salishsea_tools.nowcast import analyze
+from nowcast import analyze
 
 
 @pytest.fixture

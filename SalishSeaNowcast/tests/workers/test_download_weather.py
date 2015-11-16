@@ -25,7 +25,7 @@ import pytest
 
 @pytest.fixture
 def worker_module():
-    from salishsea_tools.nowcast.workers import download_weather
+    from nowcast.workers import download_weather
     return download_weather
 
 

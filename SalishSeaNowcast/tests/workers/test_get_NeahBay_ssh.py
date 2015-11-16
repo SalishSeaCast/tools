@@ -23,7 +23,7 @@ import pytz
 
 @pytest.fixture
 def get_NeahBay_ssh_module():
-    from salishsea_tools.nowcast.workers import get_NeahBay_ssh
+    from nowcast.workers import get_NeahBay_ssh
     return get_NeahBay_ssh
 
 

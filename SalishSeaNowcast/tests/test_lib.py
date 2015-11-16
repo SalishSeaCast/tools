@@ -25,7 +25,7 @@ import pytest
 ## TODO: Move to a conftest.py module
 @pytest.fixture
 def lib_module():
-    from salishsea_tools.nowcast import lib
+    from nowcast import lib
     return lib
 
 

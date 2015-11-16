@@ -23,14 +23,14 @@ import pytest
 
 @pytest.fixture()
 def make_site_page_module():
-    from salishsea_tools.nowcast.workers import make_site_page
+    from nowcast.workers import make_site_page
     return make_site_page
 
 
 class TestConfigureArgParser(object):
     """Unit test for configure_argparser() function.
     """
-    @patch('salishsea_tools.nowcast.workers.make_site_page.arrow.now')
+    @patch.object(make_site_page_module().arrow, 'now')
     def test_run_date_default_value(self, m_now, make_site_page_module):
         m_now.return_value = arrow.get(2015, 2, 8, 17, 40, 42)
         parser = make_site_page_module.configure_argparser(
