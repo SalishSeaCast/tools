@@ -20,8 +20,8 @@
 Salish Sea Model Results Server
 *******************************
 
-Model Results & Downloaded Observations Storage
-===============================================
+Model Results & Forcing Files Storage
+=====================================
 
 The :file:`/results/` file system on :kbd:`skookum` houses the storage used for:
 
