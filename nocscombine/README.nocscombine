@@ -1,0 +1,98 @@
+NOCSCOMBINE
+
+FORTRAN program that assembles a global NetCDF archive from a series of
+NEMO output files.
+
+USAGE :: nocscombine -f inputfile [-o outfile] [-v] [-s]
+                     [-d list of variables] [-ts tstart] [-te tend]
+
+     -f  inputfile
+         Mandatory argument. inputfile is the filename of
+         one of the NEMO restart or diagnostic files.
+         This should be the whole filename of one of the individual
+         processor files (i.e. include the
+         node number, eg. ORCA1_00010101_restart_0012.nc).
+         This program works on NetCDF NEMO output files. The program will
+         create a NetCDF archive covering the entire global domain.
+
+    [-o outputfile ]
+         Optional argument. outputfilename is the required name
+         of the outputfile. By default this name will be constructed from
+         the inputfilename by stripping off the processor number. I.e.:
+         inputfile : ORCA1_00010101_restart_0012.nc
+         outputfile: ORCA1_00010101_restart.nc
+         The -o option permits the user to override this behaviour.
+
+    [-c coordinatefile ]
+         Optional argument. coordinatefile is the name
+         of the global coordinate file relevant to the NEMO model which
+         produced the individual processor files. This file is required to
+         ensure complete nav_lon and nav_lat fields in cases where wholly
+         land areas have been omitted from a parallel run (i.e.
+         jpnij .ne. jpni*jpnj). The corrections are applied after
+         the collation phase. If this argument is supplied and the output
+         file exists then the collation phase is not performed but the
+         coordinate corrections are still applied. In the latter scenario
+         the (otherwise) mandatory inputfile argument is not required.
+
+    [-n processor_offset ]
+         Optional argument. Start collating from this processor number and
+         process domains in order, cycling back through 0 if necessary. This
+         is useful to prevent multiple simulataneous accesses when running
+         nocscombine in a task-farming environment
+
+    [-v]
+         Optional argument. Switches on verbose reporting for debugging
+
+    [-s]
+         Optional argument. Normal behaviour is to show a limited amount
+         of progress information. This option runs the utility without any
+         output to stdout.
+
+    [-showhaloes]
+         Optional argument. Early versions of nocscombine erroneously
+         copied across the halo rows and columns too. Potentially producing
+         lines of unset values if the halo points were not set in the
+         individual restart files (as could happen for some purely
+         diagnostic fields). Use -showhaloes to reproduce this feature
+         if required.
+
+    [-d] comma-separated list of variables
+         Collate only the named datasets
+
+    [-ts] time-slice (integer) to begin extraction at
+
+    [-te] time-slice (integer) to end extraction at. If the -te option
+          is not used then only one time-instance is extracted (as set
+          by the -ts option)
+
+Examples:
+---------
+
+nocscombine -f ORCA025-N10_1m_19670913_19680410_grid_T_0220.nc \
+            -o N10_1967_Tvars.nc \
+            -d "sosstsst,sosaline,sossheig,sowaflep,sowaflup,sorunoff,sowaflcd,
+                sosalflx,sohefldo,soshfldo,somxl010,somixhgt,soicecov,sohefldp,
+                sowafldp,sosafldp,sobowlin" \
+            -ts 1 -te 4
+
+On Hector the Lustre filesystem can be used to speed up i/o by "striping"
+the named output file:
+
+lfs setstripe N10_nov1967_pt.nc 0 -1 3
+nocscombine -f ORCA025-N10_1m_19670913_19680410_grid_T_0220.nc \
+            -o N10_nov1967_pt.nc -d votemper -ts 2
+
+N10_nov1967_pt.nc
+[ 0] [ 1] [ 2] ..........
+Completed in  148.805 seconds
+
+
+lfs setstripe N10_nov1967_s.nc 0 -1 3
+nocscombine -f ORCA025-N10_1m_19670913_19680410_grid_T_0220.nc \
+            -o N10_nov1967_s.nc -d vosaline  -ts 2
+
+N10_nov1967_s.nc
+[ 0] [ 1] [ 2] ..........
+Completed in  147.961 seconds
+
