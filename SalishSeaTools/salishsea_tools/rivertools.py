@@ -355,23 +355,35 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
                 'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser1': {
-                'prop': Fraser * 0.75, 'i': 414, 'j': 334, 'di': 3, 'dj': 1, 'depth': 3,
+                'prop': Fraser * 0.75, 'i': 414, 'j': 334,
+                'di': 3, 'dj': 1, 'depth': 3,
             },              # Fraser1 is main arm
             'Fraser2': {
-                'prop': Fraser * 0.05, 'i': 409, 'j': 315, 'di': 2, 'dj': 1, 'depth': 3,
-            },              # Fraser2 was Deas, moved to south arm (i.e. south of Westham)
+                'prop': Fraser * 0.05, 'i': 409, 'j': 315,
+                'di': 2, 'dj': 1, 'depth': 3,
+            },   # Fraser2 was Deas, moved to south arm (i.e. south of Westham)
+            'Zero2': {
+                'prop': 0, 'i': 411, 'j': 324,
+                'di': 2, 'dj': 1, 'depth': 3,
+            },   # Remove Deas
             'Fraser3': {
-                'prop': Fraser * 0.05, 'i': 434, 'j': 318, 'di': 2, 'dj': 1, 'depth': 3,
-            },              # Fraser3 is Middle arm 
+                'prop': Fraser * 0.05, 'i': 434, 'j': 318,
+                'di': 2, 'dj': 1, 'depth': 3,
+            },              # Fraser3 is Middle arm
             'Fraser4': {
-                'prop': Fraser * 0.15, 'i': 440, 'j': 323, 'di': 1, 'dj': 2, 'depth': 3,
+                'prop': Fraser * 0.15, 'i': 440, 'j': 323,
+                'di': 1, 'dj': 2, 'depth': 3,
             }}              # Fraser4 is North arm
         if Fraser_River == 'long':
             prop_dict['Fraser1'] = {
-                'prop': Fraser * 0.75, 'i': 500, 'j': 395, 'di': 1, 'dj': 1, 'depth': 3}
+                'prop': Fraser * 0.75, 'i': 500, 'j': 395,
+                'di': 1, 'dj': 1, 'depth': 3}
+            prop_dict['Zero1'] = {
+                'prop': 0., 'i': 414, 'j': 334,
+                'di': 3, 'dj': 1, 'depth': 3}  # Remove original
         elif Fraser_River != 'short':
             print ('Problem: Fraser Length specified badly')
-        
+
     if watershedname == 'evi_n':
         totalarea = 9709.0
         prop_dict = {'Oyster': {'prop': 363 / totalarea, 'i': 705, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3},
