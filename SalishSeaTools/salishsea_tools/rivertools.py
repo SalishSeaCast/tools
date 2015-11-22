@@ -520,7 +520,7 @@ def get_watershed_prop_dict(watershedname):
 
 
 def get_bathy_cell_size(
-    grid='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+    grid='../../../nemo-forcing/grid/'
          'coordinates_seagrid_SalishSea.nc',
 ):
     """Get the bathymetry and size of each cell.
