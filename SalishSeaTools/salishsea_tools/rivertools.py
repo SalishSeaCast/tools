@@ -537,7 +537,7 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
 
 
 def get_bathy_cell_size(
-    grid='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+    grid='../../../nemo-forcing/grid/'
          'coordinates_seagrid_SalishSea.nc',
 ):
     """Get the bathymetry and size of each cell.
@@ -549,7 +549,7 @@ def get_bathy_cell_size(
 
 
 def init_runoff_array(
-    bathy='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+    bathy='../../../nemo-forcing/grid/'
           'bathy_meter_SalishSea.nc'
 ):
     """Initialise the runoff array.
@@ -580,7 +580,7 @@ def init_runoff_array_new(
 
 
 def init_runoff_array_monthly(
-    bathy='/ocean/sallen/allen/research/MEOPAR/nemo-forcing/grid/'
+    bathy='../../../nemo-forcing/grid/'
           'bathy_meter_SalishSea.nc'
 ):
     """Initialise the runoff array for each month.
