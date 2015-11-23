@@ -149,6 +149,8 @@ The :file:`/results/` file system is organized as follows::
        |       |-- 24-26sep14/
        |       |-- ...
        |       `-- 25-26oct14/
+       |-- nowcast-green/
+       |   `-- ...
        `-- spin-up/
            |-- 2002/
            |   |-- 16sep/
