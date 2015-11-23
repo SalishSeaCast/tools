@@ -164,3 +164,8 @@ The :file:`/results/` file system is organized as follows::
            |-- 1jan5jan/
            |-- ...
            `-- 27dec31dec/
+
+The :file:`/results/lost+found/` directory is a `filesystem maintenance directory used by Linux`_
+Don't worry about it.
+
+.. _filesystem maintenance directory used by Linux: http://unix.stackexchange.com/questions/18154/what-is-the-purpose-of-the-lostfound-folder-in-linux-and-unix.
