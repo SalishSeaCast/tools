@@ -386,7 +386,7 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
 
     if watershedname == 'evi_n':
         totalarea = 9709.0
-        prop_dict = {'Oyster': {'prop': 363 / totalarea, 'i': 705, 'j': 121, 'di': 1, 'dj': 1, 'depth': 3},
+        prop_dict = {'Oyster': {'prop': 363 / totalarea, 'i': 705, 'j': 122, 'di': 1, 'dj': 1, 'depth': 3},
                      'Qunisam': {'prop': 1470 / totalarea, 'i': 749, 'j': 123, 'di': 2, 'dj': 1, 'depth': 3},
                      'Snowden': {'prop': 139 / totalarea, 'i': 770, 'j': 117, 'di': 1, 'dj': 1, 'depth': 3},
                      'Menzies': {'prop': 31 / totalarea, 'i': 773, 'j': 117, 'di': 1, 'dj': 1, 'depth': 3},
@@ -414,13 +414,13 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
         Jervis = 0.25
         prop_dict = {
             'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood': {
-                'prop': Jervis * 0.60, 'i': 648, 'j': 318, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Jervis * 0.60, 'i': 650, 'j': 309, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Glacial': {
-                'prop': Jervis * 0.05, 'i': 647, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Jervis * 0.05, 'i': 649, 'j': 310, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Seshal': {
-                'prop': Jervis * 0.05, 'i': 650, 'j': 317, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': Jervis * 0.05, 'i': 651, 'j': 307, 'di': 1, 'dj': 1, 'depth': 3,
             },
             'Brittain': {
                 'prop': Jervis * 0.10, 'i': 650, 'j': 301, 'di': 1, 'dj': 1, 'depth': 3,
@@ -550,38 +550,25 @@ def get_bathy_cell_size(
 
 def init_runoff_array(
     bathy='../../../nemo-forcing/grid/'
-          'bathy_meter_SalishSea.nc'
+          'bathy_meter_SalishSea.nc', init_depth=-1, init_temp=-99
 ):
-    """Initialise the runoff array.
+    """Initialise the runoff array. If you want to use a different bathymetry
+                      set it in the call e.g.
+                      init_runoff_array(bathy='/ocean/jieliu/research/meopar/river-treatment/
+                                              bathy_meter_SalishSea6.nc')
     """
     fb = NC.Dataset(bathy)
     d = fb.variables['Bathymetry'][:]
     ymax, xmax = d.shape
     runoff = np.zeros((ymax, xmax))
-    run_depth = -np.ones((ymax, xmax))
-    run_temp = -99 * np.ones((ymax, xmax))
+    run_depth = init_depth * np.ones((ymax, xmax))
+    run_temp = init_temp * np.ones((ymax, xmax))
     return runoff, run_depth, run_temp
-
-
-def init_runoff_array_new(
-    bathy='/ocean/jieliu/research/meopar/river-treatment/'
-          'bathy_meter_SalishSea6.nc'
-):
-    """Initialise the runoff array.
-    """
-    fb = NC.Dataset(bathy)
-    d = fb.variables['Bathymetry'][:]
-    ymax, xmax = d.shape
-    runoff = np.zeros((ymax, xmax))
-    run_depth = -np.ones((ymax, xmax))
-    run_temp = -99 * np.ones((ymax, xmax))
-    return runoff, run_depth, run_temp
-
 
 
 def init_runoff_array_monthly(
     bathy='../../../nemo-forcing/grid/'
-          'bathy_meter_SalishSea.nc'
+          'bathy_meter_SalishSea.nc', init_depth=-1, init_temp=-99
 ):
     """Initialise the runoff array for each month.
     """
@@ -589,23 +576,13 @@ def init_runoff_array_monthly(
     d = fb.variables['Bathymetry'][:]
     ymax, xmax = d.shape
     runoff = np.zeros((12, ymax, xmax))
-    run_depth = -np.ones((12, ymax, xmax))
-    run_temp = -99 * np.ones((12, ymax, xmax))
-    return runoff, run_depth, run_temp
-
-
-def init_runoff_array_monthly_new(
-    bathy='/ocean/jieliu/research/meopar/river-treatment/'
-          'bathy_meter_SalishSea6.nc'
-):
-    """Initialise the runoff array for each month.
-    """
-    fb = NC.Dataset(bathy)
-    d = fb.variables['Bathymetry'][:]
-    ymax, xmax = d.shape
-    runoff = np.zeros((12, ymax, xmax))
-    run_depth = -np.ones((12, ymax, xmax))
-    run_temp = -99 * np.ones((12, ymax, xmax))
+    run_depth = init_depth * np.ones((12, ymax, xmax))
+    run_temp = np.ones((12, ymax, xmax))
+    if init_temp == -99:
+        run_temp = init_temp * run_temp
+    else:
+        for month in range(1, 13):
+            run_temp[(month - 1)] = rivertemp(month)
     return runoff, run_depth, run_temp
 
 
