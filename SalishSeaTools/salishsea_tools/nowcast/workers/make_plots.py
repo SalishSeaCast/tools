@@ -213,10 +213,13 @@ def make_publish_plots(
     # get the results
     grid_T_hr = results_dataset('1h', 'grid_T', results_dir)
     grids_15m = {}
-    names = ['Point Atkinson', 'Victoria', 'Campbell River']
-    for name in names:
-        f = os.path.join(results_dir, '{}.nc'.format(name.replace(" ", "")))
-        grids_15m[name] = nc.Dataset(f)
+    names = ['Point Atkinson', 'Victoria', 'Campbell River',
+             'Friday Harbor', 'Neah Bay', 'Nanaimo', 'Sandheads']
+    filepath_tmpl = os.path.join(results_dir, '{}.nc')
+    grids_15m = {
+        name: nc.Dataset(filepath_tmpl.format(name.replace(" ",  "")))
+        for name in names
+    }
 
     # do the plots
     fig = figures.website_thumbnail(
