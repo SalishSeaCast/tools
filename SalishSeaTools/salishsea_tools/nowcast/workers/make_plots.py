@@ -269,7 +269,7 @@ def make_publish_plots(
         plots_dir, 'CP_maxSSH_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor(), bbox_inches='tight')
 
-    fig = figures.compare_water_levels(grid_T_hr, bathy, coastline)
+    fig = figures.compare_water_levels(grid_T_hr, bathy, grids_15m, coastline)
     filename = os.path.join(
         plots_dir, 'NOAA_ssh_{date}.svg'.format(date=dmy))
     fig.savefig(filename, facecolor=fig.get_facecolor())
