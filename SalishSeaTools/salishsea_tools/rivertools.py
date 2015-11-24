@@ -587,10 +587,11 @@ def init_runoff_array_monthly(
 
 
 def fill_runoff_array(
-        flux, istart, di, jstart, dj, depth_of_flux, runoff, run_depth):
+        flux, istart, di, jstart, dj, depth_of_flux, runoff, run_depth,
+        grid='../../../nemo-forcing/grid/coordinates_seagrid_SalishSea.nc'):
     """Fill the runoff array.
     """
-    e1t, e2t = get_bathy_cell_size()
+    e1t, e2t = get_bathy_cell_size(grid=grid)
     number_cells = di * dj
     area = number_cells * e1t[0, istart, jstart] * e2t[0, istart, jstart]
     w = flux / area * 1000.   # w is in kg/s not m/s
