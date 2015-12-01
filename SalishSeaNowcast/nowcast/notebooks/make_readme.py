@@ -1,4 +1,4 @@
-"""Salish Sea NEMO IPython Notebook collection README generator
+"""Salish Sea NEMO Jupyter Notebook collection README generator
 
 
 Copyright 2013-2015 The Salish Sea MEOPAR Contributors
@@ -25,16 +25,16 @@ import re
 
 NBVIEWER = 'http://nbviewer.ipython.org/urls'
 REPO = 'bitbucket.org/salishsea/tools/raw/tip'
-REPO_DIR = 'SalishSeaTools/salishsea_tools/nowcast'
+REPO_DIR = 'SalishSeaNowcast/nowcast/notebooks'
 TITLE_PATTERN = re.compile('#{1,6} ?')
 
 
 def main():
     url = os.path.join(NBVIEWER, REPO, REPO_DIR)
     readme = """\
-The IPython Notebooks in this directory document
+The Jupyter Notebooks in this directory document
 the development stage of the figure plotting functions in the
-`salishsea_tools.nowcast.figures` module.
+`SalishSeaNowcast.nowcast.figures` module.
 
 The
 [DevelopingNowcastFigureFunctions.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/salishsea_tools/nowcast/DevelopingNowcastFigureFunctions.ipynb)
@@ -53,7 +53,7 @@ Descriptions under the links below are from the first cell of the notebooks
     license = """
 ##License
 
-These notebooks and files are copyright {this_year}
+These notebooks and files are copyright 2013-{this_year}
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
