@@ -149,6 +149,8 @@ The :file:`/results/` file system is organized as follows::
        |       |-- 24-26sep14/
        |       |-- ...
        |       `-- 25-26oct14/
+       |-- nowcast-green/
+       |   `-- ...
        `-- spin-up/
            |-- 2002/
            |   |-- 16sep/
@@ -162,3 +164,33 @@ The :file:`/results/` file system is organized as follows::
            |-- 1jan5jan/
            |-- ...
            `-- 27dec31dec/
+
+The :file:`/results/lost+found/` directory is a `filesystem maintenance directory used by Linux`_.
+Don't worry about it.
+
+.. _filesystem maintenance directory used by Linux: http://unix.stackexchange.com/questions/18154/what-is-the-purpose-of-the-lostfound-folder-in-linux-and-unix.
+
+
+.. _SalishSeaModelResults:
+
+Salish Sea Model Results
+========================
+
+The Salish Sea NEMO Model results from "production" runs of the model are stored in the :file:`/results/SalishSea/` directory.
+The sub-directories there are:
+
+* :file:`/results/SalishSea/forecast/`
+    Results from the nowcast system daily forecast runs
+
+* :file:`/results/SalishSea/forecast2/`
+    Results from the nowcast system daily forecast2 runs
+
+* :file:`/results/SalishSea/nowcast/`
+    Results from the nowcast system daily nowcast runs
+
+* :file:`/results/SalishSea/nowcast-green/`
+    Results from the nowcast system daily nowcast green ocean runs
+
+* :file:`/results/SalishSea/spin-up/`
+    Results from the Salish Sea model spin-up runs
+

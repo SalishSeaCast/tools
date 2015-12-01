@@ -1,1 +1,0 @@
-/ocean/sallen/allen/research/MEOPAR/private-tools/PThupaki/grid_defn.pl
