@@ -14,11 +14,9 @@
 # limitations under the License.
 
 
-"""A collection of Python functions to producemodel residual calulcations and
+"""A collection of Python functions to produce model residual calculations and
 visualizations.
 """
-from __future__ import division
-
 import datetime
 
 from dateutil import tz
@@ -29,20 +27,18 @@ import netCDF4 as nc
 import numpy as np
 import pandas as pd
 
-from salishsea_tools import (
-    tidetools,
-)
+from salishsea_tools import tidetools
 
-from salishsea_tools.nowcast import (
+from nowcast import (
     figures,
     analyze,
 )
 
 # Module constants
 
-paths = {'nowcast': '/data/dlatorne/MEOPAR/SalishSea/nowcast/',
-         'forecast': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast/',
-         'forecast2': '/ocean/sallen/allen/research/MEOPAR/SalishSea/forecast2/'}
+paths = {'nowcast': '/results/SalishSea/nowcast/',
+         'forecast': '/results/SalishSea/forecast/',
+         'forecast2': '/results/SalishSea/forecast2/'}
 
 colours = {'nowcast': 'DodgerBlue',
            'forecast': 'ForestGreen',
