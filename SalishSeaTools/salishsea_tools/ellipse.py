@@ -18,7 +18,7 @@
 import numpy as np
 import netCDF4 as nc
 from salishsea_tools import (tidetools)
-from salishsea_tools.nowcast import (analyze, research_VENUS)
+from nowcast import (analyze, research_VENUS)
 
 
 def ellipse_params(uamp, upha, vamp, vpha):
