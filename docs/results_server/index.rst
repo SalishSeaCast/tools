@@ -194,3 +194,10 @@ The sub-directories there are:
 * :file:`/results/SalishSea/spin-up/`
     Results from the Salish Sea model spin-up runs
 
+Details on Configuration for Results
+=======================
+
+.. toctree::
+   :maxdepth: 2
+
+   nowcast-green
