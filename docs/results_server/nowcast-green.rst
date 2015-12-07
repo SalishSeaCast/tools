@@ -1,8 +1,8 @@
-.. _NowcastGreenResults
+.. _NowcastGreenResults:
 
-*******************************
+***************************
 Nowcast Green Model Results
-*******************************
+***************************
 
  :file:`/results/SalishSea/nowcast-green/`
   Holds the results from the daily nowcast green ocean runs
@@ -15,7 +15,7 @@ Initial run used:
 * TS4 tides
 * SOG biological model
 * practical salinity
-* Hollingsworth + energy and enstrophy conserving 
+* Hollingsworth + energy and enstrophy conserving
 
 Updates needed include:
 
@@ -24,10 +24,10 @@ Updates needed include:
 * not yet using reverse barometer
 * should increase rn_shlat to 0.5
 * add sea surface currents to wind stress calculation
-* switch salinity to absolute salinity (TEOS-10)  
+* switch salinity to absolute salinity (TEOS-10)
 
 =========== ============================== ==========
- Date                      Change                                                               New Value
+ Date                      Change          New Value
 =========== ============================== ==========
 Dec 5, 2015          start
 =========== ============================== ==========
