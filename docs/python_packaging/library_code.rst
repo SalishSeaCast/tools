@@ -16,8 +16,9 @@
 
 .. _GuidelinesAndBestPracticesForWritingLibraryCode:
 
+******************************************************
 Guidelines and Best Practices for Writing Library Code
-======================================================
+******************************************************
 
 The notes in this section are about writing readable,
 maintainable Python code that your future self and other people will be able to use,
@@ -35,3 +36,86 @@ Installing the `flake8`_ static analysis tool and enabling your editor to use it
 See :ref:`PythonSourceCodeCheckingViaFlake8` for details of how to set that up for emacs.
 
 .. _flake8: https://flake8.readthedocs.org/en/latest/
+
+If you are looking for examples of the coding style preferred in Salish Sea project modules,
+checkout out the code in these packages:
+
+* :ref:`SalishSeaCmdProcessor`
+* :ref:`SalishSeaNowcastPackage`
+* :ref:`Marlin`
+
+
+Python 3
+========
+
+The Salish Sea project uses Python 3.
+Your should write and test your code using Python 3.
+See :ref:`AnacondaPythonDistro` for instructions on how to install a Python 3 working environment,
+or :ref:`Python3Enviro` if you want to set up a Python 3 environment within your Anaconda Python 2 installation.
+
+Because of the way that the module systems on :kbd:`jasper` and :kbd:`orcinus` work the :ref:`SalishSeaToolsPackage` and :ref:`SalishSeaCmdProcessor` (:kbd:`SalishSeaCmd` package) must retain backward compatibility to Pythion 2.7.
+The primary implication of that is that modules that use the division operation should have:
+
+.. code-block:: python
+
+    from __future__ import division
+
+as their first import so that floating point division is enabled.
+
+
+Imports
+=======
+
+* Only import thimgs that you are actually using in your module.
+  `flake8`_ will identify unused imports for you.
+
+* Never use:
+
+  .. code-block:: python
+
+      from something import *
+
+* When you are importing several things from the same place do it like this:
+
+  .. code-block:: python
+
+      from salishsea_tools import (
+          nc_tools,
+          viz_tools,
+          stormtools,
+          tidetools,
+      )
+
+* Imports should be grouped:
+
+  * Python standard library
+  * Other installed libraries
+  * Other Salish Sea proecjt libraries
+  * The library that the module is part of
+
+  The groups should be separated by an empty line,
+  and the imports should be sorted alphabetically within the groups.
+
+  An example from the ::py:mod:`SalishSeaNowcast.nowcast.workers.get_NeahBay_ssh` nowcast system worker module:
+
+  .. code-block:: python
+
+      import datetime
+      import logging
+      import os
+      import shutil
+
+      from bs4 import BeautifulSoup
+      import matplotlib
+      import netCDF4 as nc
+      import numpy as np
+      import pandas as pd
+      import pytz
+
+      from salishsea_tools import nc_tools
+
+      from nowcast import (
+          figures,
+          lib,
+      )
+      from nowcast.nowcast_worker import NowcastWorker
