@@ -552,10 +552,13 @@ def init_runoff_array(
     bathy='../../../nemo-forcing/grid/'
           'bathy_meter_SalishSea.nc', init_depth=-1, init_temp=-99
 ):
-    """Initialise the runoff array. If you want to use a different bathymetry
-                      set it in the call e.g.
-                      init_runoff_array(bathy='/ocean/jieliu/research/meopar/river-treatment/
-                                              bathy_meter_SalishSea6.nc')
+    """Initialise the runoff array.
+
+    If you want to use a different bathymetry set it in the call;
+    e.g.::
+
+      init_runoff_array(
+          bathy='/ocean/jieliu/research/meopar/river-treatment/bathy_meter_SalishSea6.nc')
     """
     fb = NC.Dataset(bathy)
     d = fb.variables['Bathymetry'][:]
