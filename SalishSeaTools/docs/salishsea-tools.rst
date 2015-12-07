@@ -14,13 +14,13 @@
 .. limitations under the License.
 
 
-.. _SalishSeaTools:
+.. _SalishSeaToolsPackage:
 
-*********************************
-:py:mod:`salishsea_tools` Package
-*********************************
+*****************************
+:kbd:`SalishSeaTools` Package
+*****************************
 
-The Salish Sea Tools package is a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
+The :kbd:`SalishSeaTools` package is a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
 
 
 Installation

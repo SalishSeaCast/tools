@@ -11,7 +11,7 @@ Links to statically rendered versions of these notebooks can be found in the :re
 
 .. _README: https://bitbucket.org/salishsea/tools/src/tip/I_ForcingFiles/
 
-Many of these notebooks use modules from the :ref:`SalishSeaTools` package so please ensure that you have it installed correctly.
+Many of these notebooks use modules from the :ref:`SalishSeaToolsPackage` so please ensure that you have it installed correctly.
 
 
 * :file:`AddRivers.ipynb`: an IPython Notebook that prepares the Rivers file for the large Salish Sea NEMO 3.4 domain.
