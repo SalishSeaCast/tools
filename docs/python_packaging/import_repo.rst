@@ -14,16 +14,6 @@
 .. limitations under the License.
 
 
-.. _PythonPackagesStructureAndMaintenance:
-
-*****************************************
-Python Packages Structure and Maintenance
-*****************************************
-
-This section describes how the Python packages in the :file:`tools` repo are structured.
-There are also notes here on package maintenance topics such as :ref:`ImportingFilesFromAnotherMercurialRepo` to form the basis of a new package.
-
-
 .. _ImportingFilesFromAnotherMercurialRepo:
 
 Importing Files from Another Mercurial Repo
@@ -59,10 +49,10 @@ The most important step of importing files from another repo is the creation of 
 The `Convert Extension`_ docs explain the syntax and effect of the file map directives.
 Here is the file map for the `SOG_utils`_ import into :file:`tools/SOGTools/`:
 
-.. include:: ../SOG_utitls_SOGTools_filemap.txt
+.. include:: ../../SOG_utils_SOGTools_filemap.txt
     :literal:
 
-That file map is stored in :file:`tools/SOG_utitls_SOGTools_filemap.txt` and tracked by Mercurial as part of the record of the creation of the :kbd:`SOGTools` package.
+That file map is stored in :file:`tools/SOG_utils_SOGTools_filemap.txt` and tracked by Mercurial as part of the record of the creation of the :kbd:`SOGTools` package.
 It causes the :file:`SOG_loader.py` and :file:`carbonate.py` files the be stored in :file:`SOGTools/sog_tools/`,
 and the :file:`SOG_plotting.ipynb` IPython notebook file to be stored in :file:`SOGTools/notebooks/`.
 The necessary directories are created as part of the :command:`hg convert` process.
