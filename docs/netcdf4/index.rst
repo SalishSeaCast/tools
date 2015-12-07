@@ -18,7 +18,7 @@ is assumed.
 .. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
 .. _netCDF4-python: http://unidata.github.io/netcdf4-python/
 
-The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaTools` is a library of Python functions for exploring and managing the attributes of netCDF files.
+The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaToolsPackage` is a library of Python functions for exploring and managing the attributes of netCDF files.
 The `PrepareTS.ipynb`_ notebook shows examples of the use of those functions.
 
 .. _PrepareTS.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Initial/PrepareTS.ipynb

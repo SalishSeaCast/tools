@@ -31,7 +31,7 @@ Dependencies
 On :kbd:`salish` pysvn_ is installed as the system-side :kbd:`python-svn` package.
 Include it in the virtualenv in which :py:obj:`Marlin` is installed by symlinking it into the virtualenv :file:`site-packages/` directory.
 
-:py:obj:`Marlin` also depends on the :ref:`SalishSeaTools` :ref:`salishsea_tools.hg_commands`
+:py:obj:`Marlin` also depends on the :ref:`SalishSeaToolsPackage` :ref:`salishsea_tools.hg_commands`
 
 Details of how to install both of these dependencies are included in the :ref:`BasicInstallation` section below.
 

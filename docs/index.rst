@@ -16,7 +16,7 @@ The :file:`tools` repo contains several Python packages:
 
 * :py:obj:`SalishSeaCmd` - the :ref:`SalishSeaCmdProcessor`
 
-* :py:obj:`SalishSeaTools` - a :ref:`collection of Python modules <SalishSeaTools>` that facilitate code reuse across the Salish Sea MEOPAR project
+* :py:obj:`SalishSeaToolsPackage` - a :ref:`collection of Python modules <SalishSeaToolsPackage>` that facilitate code reuse across the Salish Sea MEOPAR project
 
 * :py:obj:`SalishSeaNowcast` - a :ref:`collection of Python modules <SalishSeaNowcastPackage>` associated with running the Salish Sea NEMO model in a daily nowcast/forecast mode
 
@@ -51,7 +51,7 @@ Contents:
    I_ForcingFiles/index
    results_server/index
    Marlin/index
-   python_packaging
+   python_packaging/index
    nemo-tools/index
    legacy_docs/index
 
