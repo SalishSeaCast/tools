@@ -18,6 +18,8 @@ The :file:`tools` repo contains several Python packages:
 
 * :py:obj:`SalishSeaTools` - a :ref:`collection of Python modules <SalishSeaTools>` that facilitate code reuse across the Salish Sea MEOPAR project
 
+* :py:obj:`SalishSeaNowcast` - a :ref:`collection of Python modules <SalishSeaNowcastPackage>` associated with running the Salish Sea NEMO model in a daily nowcast/forecast mode
+
 * :py:obj:`SOGTools` - :ref:`Python functions <SOGTools>` for working with the output of the SOG 1-D model
 
 * :py:obj:`Marlin` - the :ref:`Salish Sea NEMO svn-hg Maintenance Tool <Marlin>`
