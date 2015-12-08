@@ -5,8 +5,4 @@
 # are not supported,
 # and in other environments where those packages may not be installed
 
-mock
-sphinxcontrib-programoutput
-
 -e SalishSeaCmd
-
