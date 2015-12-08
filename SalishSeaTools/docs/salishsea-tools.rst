@@ -91,6 +91,7 @@ or import modules from it:
 .. automodule:: salishsea_tools.namelist
     :members: namelist2dict
 
+
 .. _salishsea_tools.nc_tools:
 
 :py:mod:`nc_tools` Module
@@ -99,6 +100,7 @@ or import modules from it:
 .. automodule:: salishsea_tools.nc_tools
     :members:
 
+
 .. _salishsea_tools.rivertools:
 
 :py:mod:`rivertools` Module
@@ -106,6 +108,25 @@ or import modules from it:
 
 .. automodule:: salishsea_tools.rivertools
     :members:
+
+
+.. _salishsea_tools.stormtools:
+
+:py:mod:`stormtools` Module
+===========================
+
+.. automodule:: salishsea_tools.stormtools
+    :members:
+
+
+.. _salishsea_tools.teos_tools:
+
+:py:mod:`teos_tools` Module
+===========================
+
+.. automodule:: salishsea_tools.teos_tools
+    :members:
+
 
 .. _salishsea_tools.tidetools:
 
@@ -122,13 +143,4 @@ or import modules from it:
 ==========================
 
 .. automodule:: salishsea_tools.viz_tools
-    :members:
-
-
-.. _salishsea_tools.stormtools:
-
-:py:mod:`stormtools` Module
-===========================
-
-.. automodule:: salishsea_tools.stormtools
     :members:
