@@ -17,6 +17,7 @@
 """
 from __future__ import division
 
+import numpy as np
 import pytest
 
 
@@ -50,6 +51,13 @@ def test_psu_teos(psu, expected, teos_tools_module):
     assert equal_enough(teos_tools_module.psu_teos(psu), expected)
 
 
+def test_psu_teos_ndarray(teos_tools_module):
+    psu = np.array([0, 30, 35, 70])
+    teos = teos_tools_module.psu_teos(psu)
+    expected = np.array([0, 30.14146, 35.16504, 70.33008])
+    np.testing.assert_allclose(teos, expected)
+
+
 @pytest.mark.parametrize('teos, expected', [
     (0, 0),
     (35.16504, 35),
@@ -58,3 +66,10 @@ def test_psu_teos(psu, expected, teos_tools_module):
 ])
 def test_teos_psu(teos, expected, teos_tools_module):
     assert equal_enough(teos_tools_module.teos_psu(teos), expected)
+
+
+def test_teos_psu_ndarray(teos_tools_module):
+    teos = np.array([0, 30.14146, 35.16504, 70.33008])
+    psu = teos_tools_module.teos_psu(teos)
+    expected = np.array([0, 30, 35, 70])
+    np.testing.assert_allclose(psu, expected)
