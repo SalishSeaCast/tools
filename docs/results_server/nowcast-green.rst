@@ -10,6 +10,7 @@ Those runs started 5-Dec-2015 using physical initial conditions from spin-up run
 
 Initial run used:
 
+* NEMO-3.6
 * Bathymetry #6 (extended Fraser River)
 * TS4 tides
 * SOG biological model
