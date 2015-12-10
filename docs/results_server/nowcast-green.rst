@@ -4,10 +4,9 @@
 Nowcast Green Model Results
 ***************************
 
- :file:`/results/SalishSea/nowcast-green/`
-  Holds the results from the daily nowcast green ocean runs
+:file:`/results/SalishSea/nowcast-green/` holds the results from the daily nowcast green ocean runs.
 
-These runs started Dec 5, 2012 using physical initial conditions from spin-up run at Dec 1, 2002 and biological initial conditions from observations on Oct ?, ????.
+Those runs started 5-Dec-2015 using physical initial conditions from spin-up run at 1-Dec-2002 and biological initial conditions from observations on Oct ?, ????.
 
 Initial run used:
 
@@ -29,5 +28,5 @@ Updates needed include:
 =========== ============================== ==========
  Date                      Change          New Value
 =========== ============================== ==========
-Dec 5, 2015          start
+5-Dec-2015  1st run results                N/A
 =========== ============================== ==========
