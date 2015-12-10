@@ -150,6 +150,7 @@ The :file:`/results/` file system is organized as follows::
        |       |-- ...
        |       `-- 25-26oct14/
        |-- nowcast-green/
+       |   |-- 05dec15/
        |   `-- ...
        `-- spin-up/
            |-- 2002/
@@ -189,12 +190,17 @@ The sub-directories there are:
     Results from the nowcast system daily nowcast runs
 
 * :file:`/results/SalishSea/nowcast-green/`
-    Results from the nowcast system daily nowcast green ocean runs
+    Results from the nowcast system daily nowcast green ocean runs.
+
+    Earliest daily results directory is :file:`/results/SalishSea/nowcast-green/05dec15/`.
+
+    See :ref:`NowcastGreenResults` for details of the configuration and model parameter values changes over time.
 
 * :file:`/results/SalishSea/spin-up/`
     Results from the Salish Sea model spin-up runs
 
-Details of Configurationa for Results
+
+Details of Configurations for Results
 =====================================
 
 .. toctree::
