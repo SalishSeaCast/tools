@@ -181,13 +181,42 @@ The Salish Sea NEMO Model results from "production" runs of the model are stored
 The sub-directories there are:
 
 * :file:`/results/SalishSea/forecast/`
-    Results from the nowcast system daily forecast runs
+    Results from the nowcast system daily forecast runs.
+    Forecast for :kbd:`day + 1` based on restart file from nowcast run for :kbd:`day`,
+    same atmospheric and river run-off forcing,
+    and updated western boundary sea surface height forcing.
+
+    Earliest daily results directory is :file:`/results/SalishSea/forecast/20nov14/`.
+    Most,
+    but not all dates since then are available.
+    :file:`forecast/` runs are secondary priority
+    (below :file:`nowcast/`)
+    when the nowcast automation system has difficulties.
+
+    See :ref:`NowcastResults` for details of the configuration and model parameter values changes over time.
 
 * :file:`/results/SalishSea/forecast2/`
-    Results from the nowcast system daily forecast2 runs
+    Results from the nowcast system daily forecast2 runs.
+    Forecast for :kbd:`day + 2` based on restart file from forecast run for :kbd:`day + 1`,
+    updated atmospheric,
+    river run-off forcing,
+    and western boundary sea surface height forcing.
+
+    Earliest daily results directory is :file:`/results/SalishSea/forecast2/28nov14/`.
+    Most,
+    but not all dates since then are available.
+    :file:`forecast2/` runs are lowest priority
+    (below :file:`forecast/`)
+    when the nowcast automation system has difficulties.
+
+    See :ref:`NowcastResults` for details of the configuration and model parameter values changes over time.
 
 * :file:`/results/SalishSea/nowcast/`
-    Results from the nowcast system daily nowcast runs
+    Results from the nowcast system daily nowcast runs.
+
+    Earliest daily results directory is :file:`/results/SalishSea/nowcast/27oct14/`.
+
+    See :ref:`NowcastResults` for details of the configuration and model parameter values changes over time.
 
 * :file:`/results/SalishSea/nowcast-green/`
     Results from the nowcast system daily nowcast green ocean runs.
@@ -196,8 +225,10 @@ The sub-directories there are:
 
     See :ref:`NowcastGreenResults` for details of the configuration and model parameter values changes over time.
 
+    The :file:`/results/SalishSea/nowcast/early-days/` directory contains results from multi-day runs between :file:`24-26sep14/` and :file:`25-26oct14/` that were the spin-up of the nowcast system.
+
 * :file:`/results/SalishSea/spin-up/`
-    Results from the Salish Sea model spin-up runs
+    Results from the Salish Sea model spin-up runs.
 
 
 Details of Configurations for Results
@@ -206,4 +237,5 @@ Details of Configurations for Results
 .. toctree::
    :maxdepth: 2
 
+   nowcast
    nowcast-green
