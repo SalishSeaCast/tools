@@ -19,15 +19,18 @@ Initial run used:
 
 Updates needed include:
 
-* iodef.xml file: needs daily, needs tidal stations
-* not yet using ssh
-* not yet using reverse barometer
 * should increase rn_shlat to 0.5
-* add sea surface currents to wind stress calculation
 * switch salinity to absolute salinity (TEOS-10)
 
-=========== ============================== ==========
- Date                      Change          New Value
-=========== ============================== ==========
-5-Dec-2015  1st run results                N/A
-=========== ============================== ==========
+=========== ============================== ========== ==============================
+ Date                      Change          New Value     Comments
+=========== ============================== ========== ==============================
+5-Dec-2015           N/A      N/A  1st run results
+=========== ============================== ========== ==============================
+8-Dec-2015           N/A      N/A   Nutrients went NaN
+=========== ============================== ========== ==============================
+12-Dec-2015         ssh       N/A   Added ssh on western boundary
+           -                  ssh       N/A   Added reversed barometer
+           -                 rn_vfac  1       Added relative winds/currents
+           -                  N/A      N/A   Added daily and tidal output files
+=========== ============================== ========== ==============================
