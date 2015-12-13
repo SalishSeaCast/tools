@@ -22,15 +22,16 @@ Updates needed include:
 * should increase rn_shlat to 0.5
 * switch salinity to absolute salinity (TEOS-10)
 
-=========== ============================== ========== ===================================
- Date        Change                         New Value  Comments
-=========== ============================== ========== ===================================
-5-Dec-2015   N/A                            N/A        1st run results
-8-Dec-2015   N/A                            N/A        Nutrients went NaN
-12-Dec-2015  ssh                            N/A        Added ssh west boundary
-12-Dec-2015  ssh                            N/A        Added reversed barometer 
-12-Dec-2015  rn_vfac                        1          Added relative winds/currents 
-12-Dec-2015  N/A                            N/A        Added daily and tidal output files
-=========== ============================== ========== ===================================
+=========== ======================= ============= ===================================
+ Date        Change                  New Value     Comments
+=========== ======================= ============= ===================================
+5-Dec-2015   N/A                     N/A           1st run results
+8-Dec-2015   N/A                     N/A           Nutrients went NaN
+12-Dec-2015  ssh                     N/A           Added ssh west boundary
+12-Dec-2015  ssh                     N/A           Added reversed barometer 
+12-Dec-2015  rn_vfac                 1             Added relative winds/currents 
+12-Dec-2015  N/A                     N/A           Added daily and tidal output files
+12-Dec-2015  biology starting        07-Dec-2015   Biology restart 07Dec2015 file
+=========== ======================= ============= ===================================
 
 
