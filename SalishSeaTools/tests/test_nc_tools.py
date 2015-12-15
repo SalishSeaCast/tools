@@ -61,7 +61,7 @@ def test_show_dimensions(capsys, nc_dataset):
     nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
     assert out.splitlines()[0] == (
-        "<type 'netCDF4.Dimension'>: name = 'foo', size = 42")
+        "<class 'netCDF4._netCDF4.Dimension'>: name = 'foo', size = 42")
 
 
 def test_show_dimensions_order(capsys, nc_dataset):
@@ -72,7 +72,7 @@ def test_show_dimensions_order(capsys, nc_dataset):
     nc_tools.show_dimensions(nc_dataset)
     out, err = capsys.readouterr()
     assert out.splitlines()[2] == (
-        "<type 'netCDF4.Dimension'>: name = 'bar', size = 24")
+        "<class 'netCDF4._netCDF4.Dimension'>: name = 'bar', size = 24")
 
 
 def test_show_variables(capsys, nc_dataset):
@@ -82,7 +82,7 @@ def test_show_variables(capsys, nc_dataset):
     nc_dataset.createVariable('foo', float, ('x',))
     nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.splitlines()[0] == "['foo']"
+    assert out.splitlines()[0] == "odict_keys(['foo'])"
 
 
 def test_show_variables_order(capsys, nc_dataset):
@@ -93,7 +93,7 @@ def test_show_variables_order(capsys, nc_dataset):
     nc_dataset.createVariable('bar', float, ('x',))
     nc_tools.show_variables(nc_dataset)
     out, err = capsys.readouterr()
-    assert out.splitlines()[0] == "['foo', 'bar']"
+    assert out.splitlines()[0] == "odict_keys(['foo', 'bar'])"
 
 
 def test_show_variable_attrs(capsys, nc_dataset):
@@ -105,12 +105,12 @@ def test_show_variable_attrs(capsys, nc_dataset):
     nc_tools.show_variable_attrs(nc_dataset)
     out, err = capsys.readouterr()
     assert out == (
-        "<type 'netCDF4.Variable'>\n"
+        "<class 'netCDF4._netCDF4.Variable'>\n"
         "float64 foo(x)\n"
         "    units: m\n"
         "unlimited dimensions: \n"
         "current shape = (42,)\n"
-        "filling on, default _FillValue of 9.96920996839e+36 used\n\n"
+        "filling on, default _FillValue of 9.969209968386869e+36 used\n\n"
     )
 
 
@@ -135,12 +135,12 @@ def test_show_variable_attrs_spec_var(capsys, nc_dataset):
     nc_tools.show_variable_attrs(nc_dataset, 'foo')
     out, err = capsys.readouterr()
     assert out == (
-        "<type 'netCDF4.Variable'>\n"
+        "<class 'netCDF4._netCDF4.Variable'>\n"
         "float64 foo(x)\n"
         "    units: m\n"
         "unlimited dimensions: \n"
         "current shape = (42,)\n"
-        "filling on, default _FillValue of 9.96920996839e+36 used\n\n"
+        "filling on, default _FillValue of 9.969209968386869e+36 used\n\n"
     )
 
 

@@ -62,7 +62,7 @@ def show_dimensions(dataset):
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
     """
-    for dim in dataset.dimensions.itervalues():
+    for dim in dataset.dimensions.values():
         print(dim)
 
 
@@ -91,7 +91,7 @@ def show_variable_attrs(dataset, *vars):
         for var in vars:
             print(dataset.variables[var])
     else:
-        for var in dataset.variables.itervalues():
+        for var in dataset.variables.values():
             print(var)
 
 
@@ -305,7 +305,7 @@ def check_dataset_attrs(dataset):
             value = dataset.getncattr(attr)
             if value in ('', 'REQUIRED'):
                 print('Missing value for dataset attribute: {}'.format(attr))
-    for var_name, var in dataset.variables.iteritems():
+    for var_name, var in dataset.variables.items():
         for attr in reqd_variable_attrs:
             if attr not in var.ncattrs():
                 print('Missing required variable attribute for {}: {}'
