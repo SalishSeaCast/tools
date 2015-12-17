@@ -28,10 +28,13 @@ Updates needed include:
 5-Dec-2015   N/A                     N/A           1st run results
 8-Dec-2015   N/A                     N/A           Nutrients went NaN
 12-Dec-2015  ssh                     N/A           Added ssh west boundary
-12-Dec-2015  ssh                     N/A           Added reversed barometer 
-12-Dec-2015  rn_vfac                 1             Added relative winds/currents 
+12-Dec-2015  ssh                     N/A           Added reversed barometer
+12-Dec-2015  rn_vfac                 1             Added relative winds/currents
 12-Dec-2015  N/A                     N/A           Added daily and tidal output files
 12-Dec-2015  biology starting        07-Dec-2015   Biology restart 07Dec2015 file
+13-Dec-2015  biology starting        original      Repeatedly using initial file
+15-Dec-2015  wind forecast           N/A           no weather, used previous fcst
+17-Dec-2015  rdt                     30 s          Decrease baroclinic time step
 =========== ======================= ============= ===================================
 
 
