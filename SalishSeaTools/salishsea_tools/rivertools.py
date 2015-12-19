@@ -21,8 +21,7 @@ import numpy as np
 
 
 def put_watershed_into_runoff(
-    rivertype, watershedname, flux, runoff, run_depth, run_temp,
-        grid):
+    rivertype, watershedname, flux, runoff, run_depth, run_temp):
     """Fill the river file with the rivers of one watershed.
     """
     # Get the proportion that each river occupies in the watershed
@@ -39,7 +38,7 @@ def put_watershed_into_runoff(
                 flux * river['prop'], river['i'],
                 river['di'], river['j'], river['dj'],
                 river['depth'], runoff, run_depth,
-                run_temp,grid)
+                run_temp)
     return runoff, run_depth, run_temp
 
 
@@ -605,11 +604,10 @@ def fill_runoff_array(
 
 def fill_runoff_array_monthly(
         flux, istart, di, jstart, dj,
-        depth_of_flux, runoff, run_depth, run_temp,
-        grid ='../../../nemo-forcing/grid/coordinates_seagrid_SalishSea.nc'):
+        depth_of_flux, runoff, run_depth, run_temp):
     """Fill the monthly runoff array.
     """
-    e1t, e2t = get_bathy_cell_size(grid=grid)
+    e1t, e2t = get_bathy_cell_size()
     number_cells = di * dj
     area = number_cells * e1t[0, istart, jstart] * e2t[0, istart, jstart]
     for month in range(1, 13):
