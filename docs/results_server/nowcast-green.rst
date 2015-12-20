@@ -35,6 +35,9 @@ Updates needed include:
 13-Dec-2015  biology starting        original      Repeatedly using initial file
 15-Dec-2015  wind forecast           N/A           no weather, used previous fcst
 17-Dec-2015  rdt                     30 s          Decrease baroclinic time step
+18-Dec-2015  rdt                     40 s          Restore baroclinic time step
+18-Dec-2015  vert. adv. tracers      N/A           Hack sub-stepping passive tracers
+19-Dec-2015  biology restart         N/A           use restart file from prev. day
 =========== ======================= ============= ===================================
 
 
