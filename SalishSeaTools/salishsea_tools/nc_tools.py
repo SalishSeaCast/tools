@@ -13,8 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A library of Python functions for exploring and managing
-the attributes of netCDF files.
+"""A library of Python functions for working with netCDF files.
+
+Included are functions for:
+
+* exploring the attributes of netCDF files
+* managing those attributes during netCDF file creation and updating
+* obtaining variable values from netCDF files
+* creation of special purpose netCDF files
+* combining per-processor sub-domain output files fron NEMO into a single
+  netCDF file
 """
 from __future__ import (
     absolute_import,
@@ -35,11 +43,15 @@ from salishsea_tools import hg_commands as hg
 
 __all__ = [
     'check_dataset_attrs',
+    'combine_subdomain',
+    'generate_pressure_file',
+    'generate_pressure_file_ops',
     'init_dataset_attrs',
     'show_dataset_attrs',
     'show_dimensions',
     'show_variables',
     'show_variable_attrs',
+    'ssh_timeseries',
     'time_origin',
     'timestamp',
 ]
@@ -151,6 +163,28 @@ def timestamp(dataset, tindex):
         return results
     else:
         return results[0]
+
+
+def ssh_timeseries(grid_T, datetimes=False):
+    """Return the sea surface height and time counter values from a
+    NEMO tracer results dataset.
+
+    :arg grid_T: Tracer results dataset from NEMO.
+    :type grid_T: :py:class:`netCDF4.Dataset`
+
+    :arg boolean datetimes: Return time counter values as
+                            :py:class:`datetime.datetime` objects if
+                            :py:obj:`True`, otherwise return them as
+                            :py:class:`arrow.Arrow` objects (the default).
+
+    :returns: 2-tuple of 1-dimensional :py:class:`numpy.ndarray` objects,
+              (sea surface height, time)
+    """
+    ssh = grid_T.variables['sossheig'][:, 0, 0]
+    time_ = timestamp(grid_T, range(len(ssh)))
+    if datetimes:
+        time_ = np.array([a.datetime for a in time_])
+    return ssh, time_
 
 
 def init_dataset_attrs(
