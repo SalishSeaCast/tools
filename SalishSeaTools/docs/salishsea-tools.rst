@@ -101,6 +101,15 @@ or import modules from it:
     :members:
 
 
+.. _salishsea_tools.places:
+
+:py:mod:`places` Module
+=========================
+
+.. automodule:: salishsea_tools.places
+    :members:
+
+
 .. _salishsea_tools.rivertools:
 
 :py:mod:`rivertools` Module

@@ -119,3 +119,36 @@ Imports
           lib,
       )
       from nowcast.nowcast_worker import NowcastWorker
+
+
+Module-Specific Best Practices
+==============================
+
+:py:mod:`salishsea_tools.places`
+--------------------------------
+
+The SalishSeaTools.salishsea_tools.places.PLACES` data structure is
+intended to be the single source of truth for information about
+geographic places that are used in analysis and presentation of
+Salish Sea NEMO model results.
+
+It is intended to replace data structures like
+:py:data:`SalishSeaNowcast.nowcast.figures.SITES`,
+:py:data:`SalishSeaNowcast.nowcast.research_ferries.ferry_stations`,
+etc.
+
+Library code that uses the :py:data:`~salishsea_tools.places.PLACES`
+data structure should use :kbd:`try...except` to catch :py:exc:`KeyError`
+exceptions and produce an error message that is more informative than
+the default,
+for example:
+
+.. code-block:: python
+
+    try:
+        max_tide_ssh = max(ttide.pred_all) + PLACES[site_name]['mean sea lvl']
+        max_historic_ssh = PLACES[site_name]['hist max sea lvl']
+    except KeyError as e:
+        raise KeyError(
+            'place name or info key not found in '
+            'salishsea_tools.places.PLACES: {}'.format(e))
