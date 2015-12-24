@@ -74,7 +74,7 @@ class TestPlotCoastline(object):
         axes = Mock()
         viz_tools_module.plot_coastline(axes, 'bathyfile')
         m_dataset.assert_called_once_with('bathyfile')
-        m_dataset.close.assert_called_once()
+        m_dataset().close.assert_called_once_with()
 
     @patch('salishsea_tools.viz_tools.nc.Dataset')
     def test_plot_coastline_defaults_bathy_netCDF_obj(
@@ -180,7 +180,7 @@ class TestPlotLandMask(object):
         axes = Mock()
         viz_tools_module.plot_land_mask(axes, 'bathyfile')
         m_dataset.assert_called_once_with('bathyfile')
-        m_dataset.close.assert_called_once()
+        m_dataset().close.assert_called_once_with()
 
     @patch('salishsea_tools.viz_tools.nc.Dataset')
     def test_plot_land_mask_defaults_bathy_netCDF_obj(
