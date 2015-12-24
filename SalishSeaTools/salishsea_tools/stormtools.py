@@ -30,6 +30,51 @@ import pandas as pd
 import requests
 
 from salishsea_tools import tidetools
+from salishsea_tools.places import PLACES
+
+
+def storm_surge_risk_level(site_name, max_ssh, ttide):
+    """Calculate the storm surge risk level for :kbd:`site_name`,
+    a tide gauge station name.
+
+    Thresholds are:
+
+    * Highest predicted tide
+    * Half way between highest predicted tide and highest historical
+      water level
+    * Highest historical water level
+
+    Threshold levels are obtained from
+    :py:data:`salishsea_tools.places.PLACES` dict.
+
+    :arg str site_name` Name of a tide gauge station at which to
+                        calculate the storm surge risk.
+
+    :arg float max_ssh: The maximum sea surface height predicted for
+                        :kbd:`site_name`.
+
+    :arg ttide: Tidal predictions from ttide.
+    :type ttide: :py:class:`pandas.DataFrame`
+
+    :returns: :py:obj:`None` for no storm surge risk,
+              :kbd:`moderate risk` for water level between max tide level
+              and the half-way threshold,
+              and :kbd:`extreme risk` for water level above the half-way
+              threshold
+    """
+    try:
+        max_tide_ssh = max(ttide.pred_all) + PLACES[site_name]['mean sea lvl']
+        max_historic_ssh = PLACES[site_name]['hist max sea lvl']
+    except KeyError as e:
+        raise KeyError(
+            'place name or info key not found in '
+            'salishsea_tools.places.PLACES: {}'.format(e))
+    extreme_threshold = max_tide_ssh + (max_historic_ssh - max_tide_ssh) / 2
+    risk_level = (
+        None if max_ssh < max_tide_ssh
+        else 'extreme risk' if max_ssh > extreme_threshold
+        else 'moderate risk')
+    return risk_level
 
 
 def convert_date_seconds(times, start):
