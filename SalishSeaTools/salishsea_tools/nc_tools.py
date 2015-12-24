@@ -574,7 +574,7 @@ def combine_subdomain(filenames, outfilename):
     Also, we might want to add netcdf attributes like history, units, etc.
 
     :arg filenames: An array containing the names of the files to be
-    recombined.
+                    recombined.
     :type filenames: numpy array (2D)
 
     :arg outfilename: The name of the file for saving output
