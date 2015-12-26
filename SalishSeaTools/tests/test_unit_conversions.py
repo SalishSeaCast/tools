@@ -17,6 +17,7 @@
 """
 from __future__ import division
 
+import arrow
 import numpy as np
 import pytest
 
@@ -86,7 +87,7 @@ def test_wind_to_from_ndarray(unit_conversions_module):
     (wind_from, np.array([270, 180, 90, 0, 271]))
 
 
-class TestBearingHEading(object):
+class TestBearingHeading(object):
     """Unit tests for bearing_heading() function.
     """
     @pytest.mark.parametrize('bearing, expected', [
@@ -112,3 +113,36 @@ class TestBearingHEading(object):
             bearing,
             headings=['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
         assert heading == expected
+
+
+class TestHumanizeTimeOfDay(object):
+    """Unit tests for humanize_time_of_day() function.
+    """
+    @pytest.mark.parametrize('date_time, expected', [
+        (arrow.get('2015-12-26 00:00:00'), 'overnight Saturday'),
+        (arrow.get('2015-12-26 02:15:42'), 'overnight Saturday'),
+        (arrow.get('2015-12-26 05:59:59'), 'overnight Saturday'),
+        (arrow.get('2015-12-26 06:00:00'), 'early Saturday morning'),
+        (arrow.get('2015-12-26 07:22:51'), 'early Saturday morning'),
+        (arrow.get('2015-12-26 08:59:59'), 'early Saturday morning'),
+        (arrow.get('2015-12-26 09:00:00'), 'late Saturday morning'),
+        (arrow.get('2015-12-26 09:52:43'), 'late Saturday morning'),
+        (arrow.get('2015-12-26 11:59:59'), 'late Saturday morning'),
+        (arrow.get('2015-12-25 12:00:00'), 'early Friday afternoon'),
+        (arrow.get('2015-12-25 13:36:11'), 'early Friday afternoon'),
+        (arrow.get('2015-12-25 14:59:59'), 'early Friday afternoon'),
+        (arrow.get('2015-12-25 15:00:00'), 'late Friday afternoon'),
+        (arrow.get('2015-12-25 16:09:21'), 'late Friday afternoon'),
+        (arrow.get('2015-12-25 17:59:59'), 'late Friday afternoon'),
+        (arrow.get('2015-12-27 18:00:00'), 'early Sunday evening'),
+        (arrow.get('2015-12-27 18:01:56'), 'early Sunday evening'),
+        (arrow.get('2015-12-27 20:59:59'), 'early Sunday evening'),
+        (arrow.get('2015-12-27 21:00:00'), 'late Sunday evening'),
+        (arrow.get('2015-12-27 23:43:43'), 'late Sunday evening'),
+        (arrow.get('2015-12-27 23:59:59'), 'late Sunday evening'),
+    ])
+    def test_humanize_time_of_day(
+        self, date_time, expected, unit_conversions_module,
+    ):
+        result = unit_conversions_module.humanize_time_of_day(date_time)
+        assert result == expected

@@ -27,6 +27,14 @@ from salishsea_tools.teos_tools import (
 )
 
 
+__all__ = [
+    'PSU_TEOS', 'TEOS_PSU', 'psu_teos', 'teos_psu',
+    'M_PER_S__KM_PER_HR', 'M_PER_S__KNOTS', 'mps_kph', 'mps_knots',
+    'wind_to_from', 'bearing_heading',
+    'humanize_time_of_day',
+]
+
+
 #: Conversion factor from m/s to km/hr
 M_PER_S__KM_PER_HR = 3600 / 1000
 #: Conversion factor from m/s to knots
@@ -101,3 +109,34 @@ def bearing_heading(
     :rtype: str
     """
     return headings[int(round(bearing * (len(headings) - 1) / 360, 0))]
+
+
+def humanize_time_of_day(date_time):
+    """Return a "humanized" time of day string like "early Monday afternoon"
+    that corresponds to :kbd:`date_time`.
+
+    We use the same terminology as is used in the Environment Canada
+    weather forecasts:
+    https://www.ec.gc.ca/meteo-weather/default.asp?lang=En&n=10220A6B-1#c4
+
+    :arg date_time: Date/time to humanize.
+    :type date_time: :py:class:`arrow.Arrow`
+
+    :returns: Humanized time of day and day name;
+              e.g. early Monday afternoon
+    :rtype: str
+    """
+    day_of_week = date_time.format('dddd')
+    if date_time.hour < 6:
+        part_of_day = ''
+        early_late = 'overnight'
+    elif date_time.hour < 12:
+        part_of_day = 'morning'
+        early_late = 'early' if date_time.hour < 9 else 'late'
+    elif date_time.hour >= 12 and date_time.hour < 18:
+        part_of_day = 'afternoon'
+        early_late = 'early' if date_time.hour < 15 else 'late'
+    else:
+        part_of_day = 'evening'
+        early_late = 'early' if date_time.hour < 21 else 'late'
+    return ' '.join((early_late, day_of_week, part_of_day)).rstrip()
