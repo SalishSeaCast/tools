@@ -34,10 +34,9 @@ def psu_teos(psu):
     """Convert salinity in practical salinity units (psu) to TEOS-10
     reference salinity in g/kg.
 
-    :arg float psu: Practical salinity units (psu) value to convert.
+    :arg psu: Practical salinity units (psu) value to convert.
 
     :returns: TEOS-10 reference salinity in g/kg.
-    :rtype: float
     """
     return psu * PSU_TEOS
 
@@ -46,9 +45,8 @@ def teos_psu(teos):
     """Convert TEOS-10 reference salinity in g/kg to salinity in
     practical salinity units (psu).
 
-    :arg float psu: TEOS-10 reference salinity value [g/kg] to convert.
+    :arg psu: TEOS-10 reference salinity value [g/kg] to convert.
 
     :returns: Practical salinity units (psu) value.
-    :rtype: float
     """
     return teos * TEOS_PSU
