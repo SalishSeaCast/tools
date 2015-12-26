@@ -146,6 +146,15 @@ or import modules from it:
     :members:
 
 
+.. _salishsea_tools.unit_conversions:
+
+:py:mod:`unit_conversions` Module
+=================================
+
+.. automodule:: salishsea_tools.unit_conversions
+    :members:
+
+
 .. _salishsea_tools.viz_tools:
 
 :py:mod:`viz_tools` Module
