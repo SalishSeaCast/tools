@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Salish Sea NEMO model places information.
+"""Salish Sea NEMO model geographic places information.
 
 It is recommended that library code that uses the :py:data:`PLACES` data
 structure from this module should use :kbd:`try...except` to catch
