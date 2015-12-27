@@ -24,11 +24,9 @@ Included are functions for:
 * combining per-processor sub-domain output files fron NEMO into a single
   netCDF file
 """
-from __future__ import (
-    absolute_import,
-    division,
-)
+from __future__ import division
 
+from collections import namedtuple
 from datetime import (
     datetime,
     timedelta,
@@ -177,14 +175,62 @@ def ssh_timeseries(grid_T, datetimes=False):
                             :py:obj:`True`, otherwise return them as
                             :py:class:`arrow.Arrow` objects (the default).
 
-    :returns: 2-tuple of 1-dimensional :py:class:`numpy.ndarray` objects,
-              (sea surface height, time)
+    :returns: 2-tuple of 1-dimensional :py:class:`numpy.ndarray` objects.
+              The :py:attr:`ssh` attribute holds the sea surface heights,
+              and the :py:attr:`time` attribute holds the time counter
+              values.
+    :rtype: :py:class:`collections.namedtuple`
     """
     ssh = grid_T.variables['sossheig'][:, 0, 0]
-    time_ = timestamp(grid_T, range(len(ssh)))
+    time = timestamp(grid_T, range(len(ssh)))
     if datetimes:
-        time_ = np.array([a.datetime for a in time_])
-    return ssh, time_
+        time = np.array([a.datetime for a in time])
+    ssh_ts = namedtuple('ssh_ts', 'ssh, time')
+    return ssh_ts(ssh, time)
+
+
+def uv_wind_timeseries_at_point(grid_weather, j, i, datetimes=False):
+    """Return the u and v wind components and time counter values
+    at a single grid point from a weather forcing dataset.
+
+    :arg grid_weather: Weather forcing dataset, typically from an
+                       :file:`ops_yYYYYmMMdDD.nc` file produced by the
+                       :py:mod:`nowcast.workers.grid_to_netcdf` worker.
+    :type grid_weather: :py:class:`netCDF4.Dataset`
+
+    :arg int j: j-direction (longitude) index of grid point to get wind
+                components at.
+
+    :arg int i: i-direction (latitude) index of grid point to get wind
+                components at.
+
+    :arg boolean datetimes: Return time counter values as
+                            :py:class:`datetime.datetime` objects if
+                            :py:obj:`True`, otherwise return them as
+                            :py:class:`arrow.Arrow` objects (the default).
+
+    :returns: 2-tuple of 1-dimensional :py:class:`numpy.ndarray` objects,
+              The :py:attr:`u` attribute holds the u-direction wind
+              component,
+              The :py:attr:`v` attribute holds the v-direction wind
+              component,
+              and the :py:attr:`time` attribute holds the time counter
+              values.
+    :rtype: :py:class:`collections.namedtuple`
+    """
+    u_wind = grid_weather.variables['u_wind'][:, j, i]
+    v_wind = grid_weather.variables['v_wind'][:, j, i]
+    # When https://bitbucket.org/salishsea/tools/issues/26 is fixed
+    # we'll be able to use:
+    #time = timestamp(grid_weather, range(len(u_wind)))
+    # In the meantime...
+    time_origin = arrow.get('1970-01-01 00:00:00')
+    time_counter = grid_weather.variables['time_counter']
+    time = np.array([time_origin + timedelta(seconds=t) for t in time_counter])
+    if datetimes:
+        time = np.array([a.datetime for a in time])
+    wind_ts = namedtuple('wind_ts', 'u, v, time')
+    return wind_ts(u_wind, v_wind, time)
 
 
 def init_dataset_attrs(
@@ -665,7 +711,7 @@ def _initialize_variables(newfile, oldfile):
     :arg oldfile: the file from which dimensions are copied
     :type oldfile: netCDF4 file handle
 
-    :returns: newvars, a dictionary object with key varibale name, value netcdf
+    :returns: newvars, a dictionary object with key variable name, value netcdf
     variable
     """
     newvars = {}

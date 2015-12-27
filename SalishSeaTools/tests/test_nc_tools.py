@@ -252,9 +252,39 @@ def test_ssh_timeseries_time_counter_type(datetimes, expected, nc_dataset):
         'time_counter', float, ('time_counter',))
     time_counter.time_origin = '2002-OCT-26 00:00:00'
     time_counter[:] = np.array([0.5, 1.5]) * 60*60
-    ssh_model, t_model = nc_tools.ssh_timeseries(nc_dataset, datetimes)
-    np.testing.assert_array_equal(ssh_model, np.array([5.0, 5.3]))
-    assert isinstance(t_model[0], expected)
+    ssh_ts = nc_tools.ssh_timeseries(nc_dataset, datetimes)
+    np.testing.assert_array_equal(ssh_ts.ssh, np.array([5.0, 5.3]))
+    assert isinstance(ssh_ts.time[0], expected)
+
+
+@pytest.mark.parametrize('datetimes, expected', [
+    (False, arrow.Arrow),
+    (True, datetime.datetime),
+])
+def test_uv_wind_timeseries_at_point_time_counter_type(
+    datetimes, expected, nc_dataset,
+):
+    """u and v wind components timeseries time counter values have expected type
+    """
+    nc_dataset.createDimension('time_counter')
+    nc_dataset.createDimension('y', 1)
+    nc_dataset.createDimension('x', 1)
+    u_wind = nc_dataset.createVariable(
+        'u_wind', float, ('time_counter', 'y', 'x'))
+    u_wind[:] = np.array([-8.75, -4.41])
+    v_wind = nc_dataset.createVariable(
+        'v_wind', float, ('time_counter', 'y', 'x'))
+    v_wind[:] = np.array([0.43, -0.37])
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    # Files produced by grib_to_netcdf presently lack at time_origin
+    # attribute; see https://bitbucket.org/salishsea/tools/issues/26
+    #time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_counter[:] = np.array([0.5, 1.5]) * 60*60
+    wind_ts = nc_tools.uv_wind_timeseries_at_point(nc_dataset, 0, 0, datetimes)
+    np.testing.assert_array_equal(wind_ts.u, np.array([-8.75, -4.41]))
+    np.testing.assert_array_equal(wind_ts.v, np.array([0.43, -0.37]))
+    assert isinstance(wind_ts.time[0], expected)
 
 
 @patch('salishsea_tools.nc_tools._notebook_hg_url')
