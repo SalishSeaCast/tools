@@ -239,7 +239,9 @@ def test_timestamp_index_error(nc_dataset):
     (False, arrow.Arrow),
     (True, datetime.datetime),
 ])
-def test_ssh_timeseries_time_counter_type(datetimes, expected, nc_dataset):
+def test_ssh_timeseries_at_point_time_counter_type(
+    datetimes, expected, nc_dataset,
+):
     """Sea surface height timeseries time counter values have expected type
     """
     nc_dataset.createDimension('time_counter')
@@ -252,7 +254,7 @@ def test_ssh_timeseries_time_counter_type(datetimes, expected, nc_dataset):
         'time_counter', float, ('time_counter',))
     time_counter.time_origin = '2002-OCT-26 00:00:00'
     time_counter[:] = np.array([0.5, 1.5]) * 60*60
-    ssh_ts = nc_tools.ssh_timeseries(nc_dataset, datetimes)
+    ssh_ts = nc_tools.ssh_timeseries_at_point(nc_dataset, 0, 0, datetimes)
     np.testing.assert_array_equal(ssh_ts.ssh, np.array([5.0, 5.3]))
     assert isinstance(ssh_ts.time[0], expected)
 
