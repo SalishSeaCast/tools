@@ -162,3 +162,12 @@ or import modules from it:
 
 .. automodule:: salishsea_tools.viz_tools
     :members:
+
+
+.. _salishsea_tools.wind_tools:
+
+:py:mod:`wind_tools` Module
+===========================
+
+.. automodule:: salishsea_tools.wind_tools
+    :members:
