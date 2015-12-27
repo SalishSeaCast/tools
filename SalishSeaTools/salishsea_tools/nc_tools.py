@@ -163,12 +163,18 @@ def timestamp(dataset, tindex):
         return results[0]
 
 
-def ssh_timeseries(grid_T, datetimes=False):
-    """Return the sea surface height and time counter values from a
-    NEMO tracer results dataset.
+def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
+    """Return the sea surface height and time counter values
+    at a single grid point from a NEMO tracer results dataset.
 
     :arg grid_T: Tracer results dataset from NEMO.
     :type grid_T: :py:class:`netCDF4.Dataset`
+
+    :arg int j: j-direction (longitude) index of grid point to get wind
+                components at.
+
+    :arg int i: i-direction (latitude) index of grid point to get wind
+                components at.
 
     :arg boolean datetimes: Return time counter values as
                             :py:class:`datetime.datetime` objects if
@@ -181,7 +187,7 @@ def ssh_timeseries(grid_T, datetimes=False):
               values.
     :rtype: :py:class:`collections.namedtuple`
     """
-    ssh = grid_T.variables['sossheig'][:, 0, 0]
+    ssh = grid_T.variables['sossheig'][:, j, i]
     time = timestamp(grid_T, range(len(ssh)))
     if datetimes:
         time = np.array([a.datetime for a in time])
