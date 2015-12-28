@@ -28,18 +28,16 @@ def unit_conversions_module():
     return unit_conversions
 
 
-def equal_enough(value, expected, abs_diff=0.00001):
-    return abs(value - expected) < abs_diff
-
-
 def test_M_PER_S__KM_PER_HR_constant_value(unit_conversions_module):
     expected = 3600 / 1000
-    assert equal_enough(unit_conversions_module.M_PER_S__KM_PER_HR, expected)
+    np.testing.assert_allclose(
+        unit_conversions_module.M_PER_S__KM_PER_HR, expected)
 
 
 def test_M_PER_S__KNOTS_constant_value(unit_conversions_module):
     expected = 3600 / 1852
-    assert equal_enough(unit_conversions_module.M_PER_S__KNOTS, expected)
+    np.testing.assert_allclose(
+        unit_conversions_module.M_PER_S__KNOTS, expected)
 
 
 @pytest.mark.parametrize('m_per_s, expected', [
@@ -47,7 +45,8 @@ def test_M_PER_S__KNOTS_constant_value(unit_conversions_module):
     (1, 3.6),
 ])
 def test_mps_kph(m_per_s, expected, unit_conversions_module):
-    assert equal_enough(unit_conversions_module.mps_kph(m_per_s), expected)
+    np.testing.assert_allclose(
+        unit_conversions_module.mps_kph(m_per_s), expected)
 
 
 def test_mps_kph_ndarray(unit_conversions_module):
@@ -57,15 +56,16 @@ def test_mps_kph_ndarray(unit_conversions_module):
 
 @pytest.mark.parametrize('m_per_s, expected', [
     (0, 0),
-    (1, 1.94384449),
+    (1, 1.94384),
 ])
 def test_mps_knots(m_per_s, expected, unit_conversions_module):
-    assert equal_enough(unit_conversions_module.mps_knots(m_per_s), expected)
+    np.testing.assert_allclose(
+        unit_conversions_module.mps_knots(m_per_s), expected, rtol=1e-05)
 
 
 def test_mps_knots_ndarray(unit_conversions_module):
     knots = unit_conversions_module.mps_knots(np.array([0, 1]))
-    np.testing.assert_allclose(knots, np.array([0, 1.94384449]))
+    np.testing.assert_allclose(knots, np.array([0, 1.94384]), rtol=1e-05)
 
 
 @pytest.mark.parametrize('wind_to, expected', [
@@ -76,7 +76,7 @@ def test_mps_knots_ndarray(unit_conversions_module):
     (359, 271),
 ])
 def test_wind_to_from(wind_to, expected, unit_conversions_module):
-    assert equal_enough(
+    np.testing.assert_allclose(
         unit_conversions_module.wind_to_from(wind_to), expected)
 
 

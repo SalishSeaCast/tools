@@ -27,18 +27,14 @@ def teos_tools_module():
     return teos_tools
 
 
-def equal_enough(value, expected, abs_diff=0.00001):
-    return abs(value - expected) < abs_diff
-
-
 def test_PSU_TEOS_constant_value(teos_tools_module):
     expected = 35.16504 / 35
-    assert equal_enough(teos_tools_module.PSU_TEOS, expected)
+    np.testing.assert_allclose(teos_tools_module.PSU_TEOS, expected)
 
 
 def test_TEOS_PSU_constant_value(teos_tools_module):
     expected = 35 / 35.16504
-    assert equal_enough(teos_tools_module.TEOS_PSU, expected)
+    np.testing.assert_allclose(teos_tools_module.TEOS_PSU, expected)
 
 
 @pytest.mark.parametrize('psu, expected', [
@@ -48,7 +44,7 @@ def test_TEOS_PSU_constant_value(teos_tools_module):
     (70, 70.33008),
 ])
 def test_psu_teos(psu, expected, teos_tools_module):
-    assert equal_enough(teos_tools_module.psu_teos(psu), expected)
+    np.testing.assert_allclose(teos_tools_module.psu_teos(psu), expected)
 
 
 def test_psu_teos_ndarray(teos_tools_module):
@@ -65,7 +61,7 @@ def test_psu_teos_ndarray(teos_tools_module):
     (70.33008, 70),
 ])
 def test_teos_psu(teos, expected, teos_tools_module):
-    assert equal_enough(teos_tools_module.teos_psu(teos), expected)
+    np.testing.assert_allclose(teos_tools_module.teos_psu(teos), expected)
 
 
 def test_teos_psu_ndarray(teos_tools_module):
