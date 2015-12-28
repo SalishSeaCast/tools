@@ -19,6 +19,9 @@ from __future__ import division
 
 import numpy as np
 
+# For convenience we import the TEOS-10 salinity conversion factors
+# and functions so that they can be used from either here or the
+# :py:mod:`salishsea_tools.teos_tools` module
 from salishsea_tools.teos_tools import (
     PSU_TEOS,
     TEOS_PSU,
@@ -44,6 +47,10 @@ M_PER_S__KNOTS = 3600 / 1852
 def mps_kph(m_per_s):
     """Convert speed from m/s to km/hr.
 
+    :kbd:`m_per_s` may be either a scalar number or a
+    :py:class:`numpy.ndarray` object,
+    and the return value will be of the same type.
+
     :arg m_per_s: Speed in m/s to convert.
 
     :returns: Speed in km/hr.
@@ -53,6 +60,10 @@ def mps_kph(m_per_s):
 
 def mps_knots(m_per_s):
     """Convert speed from m/s to knots.
+
+    :kbd:`m_per_s` may be either a scalar number or a
+    :py:class:`numpy.ndarray` object,
+    and the return value will be of the same type.
 
     :arg m_per_s: Speed in m/s to convert.
 
@@ -73,6 +84,10 @@ def wind_to_from(wind_to):
 
     Example: 0° on the physics compass indicates air flow to the east
     which is called a west (270°) wind on the human compass.
+
+    :kbd:`wind_to` may be either a scalar number or a
+    :py:class:`numpy.ndarray` object,
+    and the return value will be of the same type.
 
     :arg wind_to: Bearing on physics (to) compass to convert.
 
