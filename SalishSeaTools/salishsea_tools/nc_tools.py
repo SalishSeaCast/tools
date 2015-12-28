@@ -49,9 +49,10 @@ __all__ = [
     'show_dimensions',
     'show_variables',
     'show_variable_attrs',
-    'ssh_timeseries',
+    'ssh_timeseries_at_point',
     'time_origin',
     'timestamp',
+    'uv_wind_timeseries_at_point',
 ]
 
 
