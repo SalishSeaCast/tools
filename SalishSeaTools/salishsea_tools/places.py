@@ -37,9 +37,16 @@ informative than the default, for example:
 PLACES = {
     # Tide gauge stations
     'Point Atkinson': {
-        'lat lon': (49.33, -123.25),  # deg N, deg E
-        'stn number': 7795,  # Canadian Hydrographic Service (CHS)
-        'mean sea lvl': 3.09,  # m above chart datum
-        'hist max sea lvl': 5.61,  # m above chart datum
+        # deg N, deg E
+        'lat lon': (49.33, -123.25),
+        # Canadian Hydrographic Service (CHS)
+        'stn number': 7795,
+        # m above chart datum
+        'mean sea lvl': 3.09,
+        # m above chart datum
+        'hist max sea lvl': 5.61,
+        # indices of nearest weather forcing grid point
+        # j is the longitue direction, i is the latitude direction
+        'wind grid ji': (146, 155),
     },
 }
