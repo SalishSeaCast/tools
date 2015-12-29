@@ -279,9 +279,7 @@ def test_uv_wind_timeseries_at_point_time_counter_type(
     v_wind[:] = np.array([0.43, -0.37])
     time_counter = nc_dataset.createVariable(
         'time_counter', float, ('time_counter',))
-    # Files produced by grib_to_netcdf presently lack at time_origin
-    # attribute; see https://bitbucket.org/salishsea/tools/issues/26
-    #time_counter.time_origin = '2002-OCT-26 00:00:00'
+    time_counter.time_origin = '2002-OCT-26 00:00:00'
     time_counter[:] = np.array([0.5, 1.5]) * 60*60
     wind_ts = nc_tools.uv_wind_timeseries_at_point(nc_dataset, 0, 0, datetimes)
     np.testing.assert_array_equal(wind_ts.u, np.array([-8.75, -4.41]))
