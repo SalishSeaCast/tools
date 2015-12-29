@@ -227,13 +227,7 @@ def uv_wind_timeseries_at_point(grid_weather, j, i, datetimes=False):
     """
     u_wind = grid_weather.variables['u_wind'][:, j, i]
     v_wind = grid_weather.variables['v_wind'][:, j, i]
-    # When https://bitbucket.org/salishsea/tools/issues/26 is fixed
-    # we'll be able to use:
-    #time = timestamp(grid_weather, range(len(u_wind)))
-    # In the meantime...
-    time_origin = arrow.get('1970-01-01 00:00:00')
-    time_counter = grid_weather.variables['time_counter']
-    time = np.array([time_origin + timedelta(seconds=t) for t in time_counter])
+    time = timestamp(grid_weather, range(len(u_wind)))
     if datetimes:
         time = np.array([a.datetime for a in time])
     wind_ts = namedtuple('wind_ts', 'u, v, time')
