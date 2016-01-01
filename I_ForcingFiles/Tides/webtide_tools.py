@@ -94,7 +94,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 
         if constituent == "K1" or constituent == "M2":
             print (constituent, "eta")
-            print pha_W
+            print (pha_W)
 
         if constituent == "P1":
             amp_W = amp_W * 0.310
@@ -271,9 +271,9 @@ def create_tide_netcdf(tidevar,constituent,depth,number,code,CFactors):
         z2.longname = 'tidal elevation: sine'
         z1[0,0:boundlen+10] = Z1[:,0]
         z2[0,0:boundlen+10] = Z2[:,0]
-	print(Z1.size)
-	print(z1.size)
-	print(z2.size)
+        print(Z1.size)
+        print(z1.size)
+        print(z2.size)
         #z1[0,a:] = 0.
         #z2[0,a:] = 0.
 
@@ -340,7 +340,7 @@ def create_northern_tides(Z1,Z2,tidevar,constituent,code):
     nbrdta = nemo.createVariable('nbrdta', 'int32' , ('yb','xb'))
     nbrdta.long_name = 'position from boundary'
     nbrdta.units = 1
-    print nbidta.shape
+    print (nbidta.shape)
     # add in the counter around the boundary (taken from Susan's code in Prepare Tide Files)
     xb = nemo.createVariable('xb', 'int32', ('xb',),zlib=True)
     xb.units = 'non dim'
@@ -425,7 +425,7 @@ def create_northern_tides_contd(Z1,Z2,tidevar,constituent,code):
     nbrdta = nemo.createVariable('nbrdta', 'int32' , ('yb','xb'))
     nbrdta.long_name = 'position from boundary'
     nbrdta.units = 1
-    print nbidta.shape
+    print (nbidta.shape)
     # add in the counter around the boundary (taken from Susan's code in Prepare Tide Files)
     xb = nemo.createVariable('xb', 'int32', ('xb',),zlib=True)
     xb.units = 'non dim'
