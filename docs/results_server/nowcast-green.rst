@@ -38,6 +38,8 @@ Updates needed include:
 18-Dec-2015  rdt                     40 s          Restore baroclinic time step
 18-Dec-2015  vert. adv. tracers      N/A           Hack sub-stepping passive tracers
 19-Dec-2015  biology restart         N/A           use restart file from prev. day
+22-Dec-2015  vert. adv. tracers      N/A           Elise's proper sub-stepping
+23-Dec-2015  ln_qsr_bio              True          use biol. light in phys. model 
 =========== ======================= ============= ===================================
 
 
