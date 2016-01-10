@@ -51,6 +51,8 @@ Model Parameter Changes Over Time
 27-Nov-2015  Changed from using Neah Bay forecast residuals |br|  see changeset  65ce47429291_
              to using that forecast and calculating our own |br|
              residuals via ttide
+15-Dec-2015  On day only: no weather available, used |br|         N/A            N/A
+             14-Dec-2015 forecast
 ===========  ===================================================  =============  ==============
 
 .. _efa8c39a9a7c: https://bitbucket.org/salishsea/ss-run-sets/commits/efa8c39a9a7c
