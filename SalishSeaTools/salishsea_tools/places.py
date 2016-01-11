@@ -36,17 +36,44 @@ informative than the default, for example:
 #: presentation of Salish Sea NEMO model results.
 PLACES = {
     # Tide gauge stations
-    'Point Atkinson': {
-        # deg N, deg E
-        'lat lon': (49.33, -123.25),
-        # Canadian Hydrographic Service (CHS)
-        'stn number': 7795,
+    'Campbell River': {
+        # deg N, deg E        
+        'lat lon': (50.04, -125.24),
+        # Canadian Hydrographic Service (CHS) or NOAA
+        'stn number': 8074,
         # m above chart datum
-        'mean sea lvl': 3.09,
+        'mean sea lvl': 2.916,
         # m above chart datum
-        'hist max sea lvl': 5.61,
+        'hist max sea lvl': 5.35,
         # indices of nearest weather forcing grid point
-        # j is the longitue direction, i is the latitude direction
+        # j is the longitude direction, i is the latitude direction
+        'wind grid ji': (190, 102),
+    },
+    'Cherry Point': {
+        'lat lon': (48.866667, -122.766667),
+        'stn number': 9449424,
+        'mean sea lvl': 3.543,
+        'hist max sea lvl': 5.846,
+        'wind grid ji': (122, 166),
+    },
+    'Nanaimo': {
+        'lat lon': (49.16, -123.93),
+        'mean sea lvl': 3.08,
+        'hist max sea lvl': 5.47,
+        'wind grid ji': (142, 133),
+    },
+    'Point Atkinson': {
+        'lat lon': (49.33, -123.25),
+        'stn number': 7795,
+        'mean sea lvl': 3.09,
+        'hist max sea lvl': 5.61,
         'wind grid ji': (146, 155),
+    },
+    'Victoria': {
+        'lat lon': (48.41, -123.36),
+        'stn number': 7120,
+        'mean sea lvl': 1.8810,
+        'hist max sea lvl': 3.76,
+        'wind grid ji': (104, 144),
     },
 }
