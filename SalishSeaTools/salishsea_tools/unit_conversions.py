@@ -42,6 +42,8 @@ __all__ = [
 M_PER_S__KM_PER_HR = 3600 / 1000
 #: Conversion factor from m/s to knots
 M_PER_S__KNOTS = 3600 / 1852
+#: Conversion factor from knots to m/s
+KNOTS__M_PER_S = 1852 / 3600
 
 
 def mps_kph(m_per_s):
@@ -70,6 +72,20 @@ def mps_knots(m_per_s):
     :returns: Speed in knots.
     """
     return m_per_s * M_PER_S__KNOTS
+
+
+def knots_mps(knots):
+    """Convert speed from knots to m/s.
+
+    :kbd:`knots` may be either a scalar number or a
+    :py:class:`numpy.ndarray` object,
+    and the return value will be of the same type.
+
+    :arg knots: Speed in knots to convert.
+
+    :returns: Speed in m/s.
+    """
+    return knots * KNOTS__M_PER_S
 
 
 def wind_to_from(wind_to):
