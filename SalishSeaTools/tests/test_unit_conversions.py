@@ -40,6 +40,12 @@ def test_M_PER_S__KNOTS_constant_value(unit_conversions_module):
         unit_conversions_module.M_PER_S__KNOTS, expected)
 
 
+def test_KNOTS__M_PER_S_constant_value(unit_conversions_module):
+    expected = 1852 / 3600
+    np.testing.assert_allclose(
+        unit_conversions_module.KNOTS__M_PER_S, expected)
+
+
 @pytest.mark.parametrize('m_per_s, expected', [
     (0, 0),
     (1, 3.6),
@@ -66,6 +72,20 @@ def test_mps_knots(m_per_s, expected, unit_conversions_module):
 def test_mps_knots_ndarray(unit_conversions_module):
     knots = unit_conversions_module.mps_knots(np.array([0, 1]))
     np.testing.assert_allclose(knots, np.array([0, 1.94384]), rtol=1e-05)
+
+
+@pytest.mark.parametrize('knots, expected', [
+    (0, 0),
+    (1, 0.514444),
+])
+def test_knots_mps(knots, expected, unit_conversions_module):
+    np.testing.assert_allclose(
+        unit_conversions_module.knots_mps(knots), expected, rtol=1e-05)
+
+
+def test_knots_mps_ndarray(unit_conversions_module):
+    knots = unit_conversions_module.knots_mps(np.array([0, 1]))
+    np.testing.assert_allclose(knots, np.array([0, 0.514444]), rtol=1e-05)
 
 
 @pytest.mark.parametrize('wind_to, expected', [
