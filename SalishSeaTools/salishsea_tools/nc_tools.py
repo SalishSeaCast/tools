@@ -193,7 +193,7 @@ def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
     if datetimes:
         time = np.array([a.datetime for a in time])
     ssh_ts = namedtuple('ssh_ts', 'ssh, time')
-    return ssh_ts(ssh, time)
+    return ssh_ts(ssh, np.array(time))
 
 
 def uv_wind_timeseries_at_point(grid_weather, j, i, datetimes=False):
@@ -231,7 +231,7 @@ def uv_wind_timeseries_at_point(grid_weather, j, i, datetimes=False):
     if datetimes:
         time = np.array([a.datetime for a in time])
     wind_ts = namedtuple('wind_ts', 'u, v, time')
-    return wind_ts(u_wind, v_wind, time)
+    return wind_ts(u_wind, v_wind, np.array(time))
 
 
 def init_dataset_attrs(
