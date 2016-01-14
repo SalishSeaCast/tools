@@ -37,7 +37,7 @@ informative than the default, for example:
 PLACES = {
     # Tide gauge stations
     'Campbell River': {
-        # deg N, deg E        
+        # deg N, deg E
         'lat lon': (50.04, -125.24),
         # Canadian Hydrographic Service (CHS) or NOAA
         'stn number': 8074,
