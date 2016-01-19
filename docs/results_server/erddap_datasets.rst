@@ -32,7 +32,7 @@ Initial test:
     ? /results/SalishSea/nowcast/
 
     File name regex (e.g., ".*\.nc") (default="")
-    ? .*\PointAtkinson.nc$
+    ? .*PointAtkinson.nc$
 
     Full file name of one file (default="")
     ? /results/SalishSea/nowcast/13jan16/PointAtkinson.nc
@@ -172,10 +172,11 @@ Dataset Attributes
 
 Changes:
 
-* :kbd:`datasetID` to :kbd:`ubcSSNPointAtkinsonSSH15m`
+* :kbd:`datasetID` to :kbd:`ubcSSnPointAtkinsonSSH15m`
 
   * :kbd:`ubc` means UBC
-  * :kbd:`SSN` means Salish Sea NEMO Model
+  * :kbd:`SS` means Salish Sea NEMO Model
+  * :kbd:`n` means nowcast (:kbd:`f` for forecast, :kbd:`f2` for forecast2, :kbd:`ng` for nowcast-green)
   * :kbd:`PointAtkinson` means Point Atkinson
   * :kbd:`SSH` means Sea Surface Height
   * :kbd:`15m` means 15 minute averaged values
@@ -199,27 +200,26 @@ Changes:
 
 Additions:
 
-* acknowledgements:
+* acknowledgement:
 
   * .. code-block:: xml
 
-      <att name="acknowledgment">MEOPAR</att>
-      <att name="acknowledgment">ONC</att>
-      <att name="acknowledgment">Compute Canada</att>
+      <att name="acknowledgment">MEOPAR, ONC, Compute Canada</att>
 
-* creator_name
-* creator_email
-* creator_url
-* date_created
-* date_modified
-* date_issued
-* :kbd:`<att name="drawLandMask">over</att>`
+* :kbd:`<att name="creator_name">Salish Sea MEOPAR Project Contributors</att>`
+* :kbd:`<att name="creator_email">sallen@eos.ubc.ca</att>`
+* ::kbd:`<att name="creator_url">http://salishsea-meopar-docs.readthedocs.org/</att>`
+* :kbd:`<att name="drawLandMask">over</att>` (not really relevant for this single location dataset)
 * :kbd:`<att name="project">Salish Sea MEOPAR NEMO Model</att>`
+* :kbd:`<att name="coverage_content_type">modelResult</att>`
 * :kbd:`summary`::
 
     Nowcast, Point Atkinson, Sea Surface Height, 15min.
 
     Sea surface height values averaged over 15 minute intervals from Salish Sea NEMO model nowcast runs. The values are calculated at the model grid point closest to the Point Atkinson tide gauge station on the north side of English Bay, near Vancouver, British Columbia.
+
+
+* :kbd:`<att name="institution_fullname">Earth, Ocean &amp; Atmospheric Sciences, University of British Columbia</att>`
 
 
 Axis Variables
@@ -268,7 +268,7 @@ Initial test:
 .. code-block:: none
 
     Which datasetID (default="")?
-    ubcSSNPointAtkinsonSSH15m
+    ubcSSnPointAtkinsonSSH15m
 
 After no errors,
 and sane looking :kbd:`.das` and :kbd:`.dds` output,
@@ -276,7 +276,7 @@ preemptively load the dataset by putting a file with its :kbd:`datasetID` value 
 
 .. code-block:: bash
 
-    touch /results/erddapflag/ubcSSNPointAtkinsonSSH15m
+    touch /results/erddapflag/ubcSSnPointAtkinsonSSH15m
 
 That causes ERDDAP to load the dataset immediately,
 and delete the flag file when it is done.
