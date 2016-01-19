@@ -208,7 +208,7 @@ Additions:
 
 * :kbd:`<att name="creator_name">Salish Sea MEOPAR Project Contributors</att>`
 * :kbd:`<att name="creator_email">sallen@eos.ubc.ca</att>`
-* ::kbd:`<att name="creator_url">http://salishsea-meopar-docs.readthedocs.org/</att>`
+* :kbd:`<att name="creator_url">http://salishsea-meopar-docs.readthedocs.org/</att>`
 * :kbd:`<att name="drawLandMask">over</att>` (not really relevant for this single location dataset)
 * :kbd:`<att name="project">Salish Sea MEOPAR NEMO Model</att>`
 * :kbd:`<att name="coverage_content_type">modelResult</att>`
