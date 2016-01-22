@@ -167,6 +167,9 @@ generates:
     </dataset>
 
 
+regex for hourly results: :kbd:`.*SalishSea_1h_\d{8}_\d{8}_grid_[TUVW]\.nc$`
+
+
 Dataset Attributes
 ==================
 
