@@ -18,6 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import datetime
+from pathlib import Path
 from unittest.mock import patch
 
 import arrow
@@ -26,6 +27,28 @@ import numpy as np
 import pytest
 
 from salishsea_tools import nc_tools
+
+
+@pytest.fixture
+def nc_tools_module():
+    from salishsea_tools import nc_tools
+    return nc_tools
+
+
+@pytest.mark.parametrize('path, args, kwargs, expected', [
+    ('foo/bar.nc', [], {}, 'foo/bar.nc'),
+    ('foo/bar.nc', ['w'], {}, 'foo/bar.nc'),
+    ('foo/bar.nc', ['w'], {'format': 'NETCDF4_CLASSIC'}, 'foo/bar.nc'),
+    (Path('foo/bar.nc'), [], {}, 'foo/bar.nc'),
+    (Path('foo/bar.nc'), ['w'], {}, 'foo/bar.nc'),
+    (Path('foo/bar.nc'), ['w'], {'format': 'NETCDF4_CLASSIC'}, 'foo/bar.nc'),
+])
+def test_dataset_from_path(path, args, kwargs, expected, nc_tools_module):
+    """dataset_from_path calls netCDF4.Dataset w/ path as str, args & kwargs
+    """
+    with patch.object(nc_tools_module.nc, 'Dataset') as m_Dataset:
+        dataset = nc_tools_module.dataset_from_path(path, *args, **kwargs)
+    assert dataset == m_Dataset(expected, *args, **kwargs)
 
 
 def test_show_dataset_attrs_file_format(capsys, nc_dataset):

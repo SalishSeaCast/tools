@@ -32,9 +32,10 @@ from datetime import (
     timedelta,
 )
 import os
+
+import arrow
 import netCDF4 as nc
 import numpy as np
-import arrow
 
 from salishsea_tools import hg_commands as hg
 
@@ -42,6 +43,7 @@ from salishsea_tools import hg_commands as hg
 __all__ = [
     'check_dataset_attrs',
     'combine_subdomain',
+    'dataset_from_path',
     'generate_pressure_file',
     'generate_pressure_file_ops',
     'init_dataset_attrs',
@@ -54,6 +56,31 @@ __all__ = [
     'timestamp',
     'uv_wind_timeseries_at_point',
 ]
+
+
+def dataset_from_path(path, *args, **kwargs):
+    """Return a dataset constructed from the file given by :kbd:`path`.
+
+    This is a shim that facilitates constructing a
+    :py:class:`netCDF4.Dataset` instance from a file that is identified
+    by path/filename that is either a string or a :py:class:`pathlib.Path`
+    instance.
+    The :py:class:`netCDF4.Dataset` constructor cannot handle
+    :py:class:`pathlib.Path` instances.
+
+    :arg path: Path/filename to construct the dataset from.
+    :type path: :py:class:`pathlib.Path` or :py:class`str`
+
+    :arg list args: Positional arguments to pass through to the
+                    :py:class:`netCDF4.Dataset` constructor.
+
+    :arg dict kwargs: Keyword arguments to pass through to the
+                      :py:class:`netCDF4.Dataset` constructor.
+
+    :returns: Dataset from file at :kbd:`path`.
+    :rtype: :py:class:`netCDF4.Dataset`
+    """
+    return nc.Dataset(str(path), *args, **kwargs)
 
 
 def show_dataset_attrs(dataset):
