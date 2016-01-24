@@ -79,8 +79,18 @@ def dataset_from_path(path, *args, **kwargs):
 
     :returns: Dataset from file at :kbd:`path`.
     :rtype: :py:class:`netCDF4.Dataset`
+
+    :raises: :py:exc:`IOError` if there the :py:class:`netCDF4.Dataset`
+             constructor raises a :py:exc:`RuntimeError` that indicates
+             that the file or directory at path is not found.
     """
-    return nc.Dataset(str(path), *args, **kwargs)
+    try:
+        return nc.Dataset(str(path), *args, **kwargs)
+    except RuntimeError as e:
+        if str(e) == 'No such file or directory':
+            raise IOError('No such file or directory')
+        else:
+            raise
 
 
 def show_dataset_attrs(dataset):
