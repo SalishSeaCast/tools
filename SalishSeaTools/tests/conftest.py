@@ -1,4 +1,4 @@
-# Copyright 2013-2015 The Salish Sea MEOPAR contributors
+# Copyright 2013-2016 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,13 @@ import netCDF4 as nc
 import pytest
 
 
-@pytest.fixture()
-def nc_dataset(request):
+@pytest.yield_fixture()
+def nc_dataset():
     """Return a netCDF4.Dataset instance called foo that is open for writing.
 
     Remove the created file as a clean-up operation.
     """
     dataset = nc.Dataset('foo', 'w')
-
-    def teardown():
-        dataset.close()
-        os.remove('foo')
-    request.addfinalizer(teardown)
-    return dataset
+    yield dataset
+    dataset.close()
+    os.remove('foo')
