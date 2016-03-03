@@ -76,4 +76,26 @@ PLACES = {
         'hist max sea lvl': 3.76,
         'wind grid ji': (104, 144),
     },
+
+    # Ferry terminals
+    'Tsawwassen': {
+        'lat lon': (49.0084, -123.1281)
+    },
+    'Duke Pt.': {
+        'lat lon': (49.1632, -123.8909)
+    },
+    'Horseshoe Bay': {
+        'lat lon': (49.3742, -123.2728)
+    },
+    'Departure Bay': {
+        'lat lon': (49.1632, -123.8909)
+    },
+    'Swartz Bay': {
+        'lat lon': (48.6882, -123.4102),
+    },
+
+    # Cities
+    'Vancouver': {
+        'lat lon': (49.2827, -123.1207)
+    },
 }
