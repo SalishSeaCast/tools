@@ -60,7 +60,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_pha = CFactor['A1 Phase'] + CFactor['O1 Phase']
         corr_amp = CFactor['A1 Amp'] * CFactor['O1 Amp']
     elif constituent == "P1":  # based on K1
-        base = "P1"
+        base = "K1"
         corr_pha = CFactor['A1 Phase']
         corr_amp = CFactor['A1 Amp']
     elif constituent == "Q1":
