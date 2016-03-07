@@ -10,9 +10,9 @@ Descriptions below the links are from the first cell of the notebooks
     
     This notebook is used to improve the salinity of the deep water at the model's western boundary.  
 
-* ##[Modifications_JDF_Sal.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Modifications_JDF_Sal.ipynb)  
+* ##[TEOSfromPracticalOBC.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/TEOSfromPracticalOBC.ipynb)  
     
-    This notebook is designed to increase the salinity of the deep water at the Strait of Juan de Fuca boundary.  
+    Convert practical salinity open boundary files to TEOS-10 reference salinity open boundary files  
 
 * ##[TS_OBC_Softstart.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/TS_OBC_Softstart.ipynb)  
     
@@ -31,6 +31,8 @@ Descriptions below the links are from the first cell of the notebooks
 * ##[PrepareSimpleTS-Johnstone.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/PrepareSimpleTS-Johnstone.ipynb)  
     
     Notebook to prepare simple OBC files for T&S for Johnstone Strait from Thomson, 1981 (The book)  
+      
+    Corrected to Full Depth 2015-12-30  
 
 * ##[SSH_Tofino.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/SSH_Tofino.ipynb)  
     
@@ -40,10 +42,6 @@ Descriptions below the links are from the first cell of the notebooks
     
     Notebook to prepare climatology of sea surface height (SSH) at Juan de Fuca boundary.  Data is from  
     http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no=8615 and I downloaded 2000 through 2013 complete.  Sets barotropic velocities to zero.  
-
-* ##[SSH_NeahBay.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/SSH_NeahBay.ipynb)  
-    
-    This notebook creates daily forcing files for the sea surface height (hourly frequency) at Neah Bay. This can be used to create "obs" forcing files for nowcasts in the event of a automation system error.  
 
 * ##[MassonClimatology.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/MassonClimatology.ipynb)  
     
@@ -69,7 +67,7 @@ Descriptions below the links are from the first cell of the notebooks
 
 ##License
 
-These notebooks and files are copyright 2013-2015
+These notebooks and files are copyright 2013-2016
 by the [Salish Sea MEOPAR Project Contributors](https://bitbucket.org/salishsea/docs/src/tip/CONTRIBUTORS.rst)
 and The University of British Columbia.
 
