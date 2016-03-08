@@ -166,7 +166,10 @@ def time_origin(dataset, time_var='time_counter'):
         raise AttributeError(
             'NetCDF: '
             'time_counter variable does not have time_origin attribute')
-    value = arrow.get(time_origin, 'YYYY-MMM-DD HH:mm:ss')
+    value = arrow.get(
+        time_origin,
+        ['YYYY-MMM-DD HH:mm:ss',
+         'YYYY-MM-DD HH:mm:ss'])
     return value
 
 
