@@ -14,55 +14,14 @@
 .. limitations under the License.
 
 
-.. _SalishSeaToolsPackage:
+.. _SalishSeaToolsAPI:
 
-*****************************
-:kbd:`SalishSeaTools` Package
-*****************************
+*************************
+:kbd:`SalishSeaTools` API
+*************************
 
-The :kbd:`SalishSeaTools` package is a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
-
-
-Installation
-============
-
-These instructions assume that:
-
-* You have an up to date clone of the `tools repo`_
-* You have the :ref:`AnacondaPythonDistro` installed
-* :file:`$HOME/anaconda/bin` is included in your :envvar:`PATH` environment variable
-
-.. _tools repo: https://bitbucket.org/salishsea/tools/
-
-Use :program:`pip`
-(the Python package installer)
-to install the :kbd:`SalishSeaTools` package from the `tools repo`_ in editable mode so that the package will be automatically updated as the repo evolves:
-
-.. code-block:: bash
-
-    cd tools/SalishSeaTools
-    pip install --editable .
-
-Experienced Python developers may wish to install the package in other ways:
-
-* In a Python virtual environment
-* In :file:`$HOME/.local/` via the :command:`pip install --user` option
-
-To use the package in your IPython Notebooks or Python scripts import the package:
-
-.. code-block:: python
-
-    import salishsea_tools
-
-    salishsea_tools.bathy_tools.plot_colourmesh(...)
-
-or import modules from it:
-
-.. code-block:: python
-
-    from salishsea_tools import nc_tools
-
-    nc_tools.check_dataset_attrs(...)
+This section documents the :kbd:`SalishSeaTools` API (Application Programming Interface).
+These API docs provide function signatures and docstrings derived directly from the code modules.
 
 
 .. _salishsea_tools.bathy_tools:
