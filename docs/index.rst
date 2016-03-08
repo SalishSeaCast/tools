@@ -43,7 +43,7 @@ Contents:
    :maxdepth: 2
 
    SalishSeaCmd/index
-   SalishSeaTools/salishsea-tools
+   SalishSeaTools/index
    SalishSeaNowcast/index
    SOGTools/index
    netcdf4/index
