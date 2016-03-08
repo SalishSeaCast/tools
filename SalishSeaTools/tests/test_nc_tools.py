@@ -190,6 +190,18 @@ def test_time_origin_value(nc_dataset):
     assert time_origin == arrow.get(2002, 10, 26, 0, 0, 0)
 
 
+def test_time_origin_value_format2(nc_dataset):
+    """time_origin returns expected Arrow instance.
+    time_origin format is 'YYYY-MM-DD HH:mm:ss'
+    """
+    nc_dataset.createDimension('time_counter')
+    time_counter = nc_dataset.createVariable(
+        'time_counter', float, ('time_counter',))
+    time_counter.time_origin = '2002-10-26 00:00:00'
+    time_origin = nc_tools.time_origin(nc_dataset)
+    assert time_origin == arrow.get(2002, 10, 26, 0, 0, 0)
+
+
 def test_time_origin_UTC_timezone(nc_dataset):
     """time_origin return value has UTC timezone
     """
