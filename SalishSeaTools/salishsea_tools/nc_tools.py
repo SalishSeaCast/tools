@@ -143,18 +143,21 @@ def show_variable_attrs(dataset, *vars):
             print(var)
 
 
-def time_origin(dataset):
-    """Return the time_counter.time_origin value.
+def time_origin(dataset, time_var='time_counter'):
+    """Return the time_var.time_origin value.
 
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
+
+    :arg time_var: name of time variable
+    :type time_var: str
 
     :returns: Value of the time_origin attribute of the time_counter
               variable.
     :rtype: :py:class:`Arrow` instance
     """
     try:
-        time_counter = dataset.variables['time_counter']
+        time_counter = dataset.variables[time_var]
     except KeyError:
         raise KeyError('dataset does not have time_counter variable')
     try:
@@ -167,7 +170,7 @@ def time_origin(dataset):
     return value
 
 
-def timestamp(dataset, tindex):
+def timestamp(dataset, tindex, time_var='time_counter'):
     """Return the time stamp of the tindex time_counter value(s) in dataset.
 
     The time stamp is calculated by adding the time_counter[tindex] value
@@ -179,11 +182,14 @@ def timestamp(dataset, tindex):
     :arg tindex: time_counter variable index.
     :type tindex: int or list
 
+    :arg time_var: name of the time variable
+    :type time_var: str
+
     :returns: Time stamp value(s) at tindex in the dataset.
     :rtype: :py:class:`Arrow` instance or list of instances
     """
-    time_orig = time_origin(dataset)
-    time_counter = dataset.variables['time_counter']
+    time_orig = time_origin(dataset, time_var=time_var)
+    time_counter = dataset.variables[time_var]
     try:
         iter(tindex)
     except TypeError:
