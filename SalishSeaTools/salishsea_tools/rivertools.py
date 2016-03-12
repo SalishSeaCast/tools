@@ -21,11 +21,12 @@ import numpy as np
 
 
 def put_watershed_into_runoff(
-    rivertype, watershedname, flux, runoff, run_depth, run_temp):
+        rivertype, watershedname, flux, runoff, run_depth, run_temp,
+        Fraser_River='short'):
     """Fill the river file with the rivers of one watershed.
     """
     # Get the proportion that each river occupies in the watershed
-    pd = get_watershed_prop_dict(watershedname)
+    pd = get_watershed_prop_dict(watershedname, Fraser_River=Fraser_River)
     for key in pd:
         river = pd[key]
         if rivertype == 'constant':
