@@ -166,7 +166,7 @@ def humanize_time_of_day(date_time):
     elif date_time.hour < 12:
         part_of_day = 'morning'
         early_late = 'early' if date_time.hour < 9 else 'late'
-    elif date_time.hour >= 12 and date_time.hour < 18:
+    elif 12 <= date_time.hour < 18:
         part_of_day = 'afternoon'
         early_late = 'early' if date_time.hour < 15 else 'late'
     else:
