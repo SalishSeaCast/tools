@@ -1,3 +1,5 @@
+# coding=utf-8
+
 # Copyright 2013-2016 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
