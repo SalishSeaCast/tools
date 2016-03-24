@@ -133,7 +133,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         uZ1 = (ua_ugrid * numpy.cos(theta) * numpy.cos(uphi_ugrid) -
                va_ugrid * numpy.sin(theta) * numpy.sin(vphi_ugrid))
         uZ2 = (ua_ugrid * numpy.cos(theta) * numpy.sin(uphi_ugrid) +
-               va_ugrid * numpy.sin(theta) * numpy.sin(vphi_ugrid))
+               va_ugrid * numpy.sin(theta) * numpy.cos(vphi_ugrid))
 
         # adjustments for phase correction
         amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2)
