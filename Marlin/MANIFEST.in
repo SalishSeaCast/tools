@@ -1,0 +1,2 @@
+include README.rst
+include __pkg_metadata__.py

@@ -1,0 +1,12 @@
+# Python packages and versions used in the Marlin development environment
+
+argparse==1.2.1
+arrow==0.4.2
+cliff==1.5.2
+cmd2==0.6.7
+prettytable==0.7.2
+pyparsing==2.0.1
+python-dateutil==2.2
+six==1.5.2
+stevedore==0.14.1
+wsgiref==0.1.2
