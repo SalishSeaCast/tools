@@ -1,0 +1,8 @@
+# Python packages required by the modules in this repo
+#
+# This file exists to provide the mock package to facilitate building
+# the docs on readthedocs.org where the matplotlib and NumPy C-extensions
+# are not supported,
+# and in other environments where those packages may not be installed
+
+-e SalishSeaCmd

@@ -1,0 +1,8 @@
+[run]
+branch = True
+source =
+    salishsea_tools
+    tests
+
+[report]
+show_missing = True
