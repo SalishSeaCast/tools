@@ -26,7 +26,7 @@ The :file:`tools` repo contains several Python packages:
 
 Also documented here are:
 
-* Notes are how the Python packages in the repo are :ref:`structured and maintained <PythonPackagesStructureAndMaintenance>`
+* Notes are how the Python packages in the repo are :ref:`developed and maintained <PythonPackagesDevelopmentAndMaintenance>`
 
 * How we :ref:`create netCDF4 files and the metadata conventions <netCDF4FilesCreationAndConventions>` that we use in them
 

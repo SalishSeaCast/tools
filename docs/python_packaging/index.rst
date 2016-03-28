@@ -14,13 +14,13 @@
 .. limitations under the License.
 
 
-.. _PythonPackagesStructureAndMaintenance:
+.. _PythonPackagesDevelopmentAndMaintenance:
 
-*****************************************
-Python Packages Structure and Maintenance
-*****************************************
+*******************************************
+Python Packages Development and Maintenance
+*******************************************
 
-This section describes how the Python packages in the :file:`tools` repo are structured.
+This section describes how the Python packages in the :file:`tools` repo are developed.
 There are also notes here on package maintenance topics such as:
 
 * :ref:`GuidelinesAndBestPracticesForWritingLibraryCode`
