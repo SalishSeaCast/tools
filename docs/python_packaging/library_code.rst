@@ -63,6 +63,60 @@ The primary implication of that is that modules that use the division operation 
 as their first import so that floating point division is enabled.
 
 
+.. _LibraryCodeStandardCopyrightHeaderBlock:
+
+Standard Copyright Header Block
+===============================
+
+Every Python library module show start with our standard copyright notice::
+
+  # Copyright 2013-2016 The Salish Sea MEOPAR contributors
+  # and The University of British Columbia
+
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
+
+  #    http://www.apache.org/licenses/LICENSE-2.0
+
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
+
+The copyright notice is marked as comments with the :kbd:`#` character at the beginning of lines rather than enclosing the block in triple quotes so that it will not be interpreted by code introspection tools as the module docstring.
+
+The exception to using the above notice is if the module contains code that we have copied from somewhere.
+In that case the copyright ownership needs to be changed to make appropriate attribution.
+The license notice may also need to be changed if the code is released under a license other than Apache 2.0.
+If you have questions about the attirbution and licensing of a piece of code,
+please talk to Doug.
+
+The :ref:`salishsea_tools.namelist` is a (rare) example of differently licensed code from another developer that we include in our libraries.
+
+Sphinx documentation files in the :ref:`tools-repo` repo should also start with the same standard copyright notice::
+
+  .. Copyright 2013-2016 The Salish Sea MEOPAR conttributors
+  .. and The University of British Columbia
+  ..
+  .. Licensed under the Apache License, Version 2.0 (the "License");
+  .. you may not use this file except in compliance with the License.
+  .. You may obtain a copy of the License at
+  ..
+  ..    http://www.apache.org/licenses/LICENSE-2.0
+  ..
+  .. Unless required by applicable law or agreed to in writing, software
+  .. distributed under the License is distributed on an "AS IS" BASIS,
+  .. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  .. See the License for the specific language governing permissions and
+  .. limitations under the License.
+
+though the comment indicator at the beginning of the lines is,
+of course,
+different.
+
+
 Imports
 =======
 
