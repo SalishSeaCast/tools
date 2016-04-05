@@ -67,10 +67,10 @@ def contour_thalweg(
     :type xcoord_distance: boolean
 
     :arg thalweg_pts_file: Path and file name to read the array of
-    thalweg grid point from.
+                           thalweg grid points from.
     :type thalweg_pts_file: str
 
-    :returns: cbar, the matplotlib colorbar object
+    :returns: matplotlib colorbar object
     """
     thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
     depth = mesh_mask.variables[mesh_mask_depth_var][:]
@@ -208,7 +208,7 @@ def distance_along_curve(lons, lats):
     :arg lats: latitude points
     :type lats: 1D numpy array
 
-    :returns: dist, a numpy array with distance along track in km
+    :returns: numpy array with distance along track in km
     """
     dist = [0]
     for i in np.arange(1, lons.shape[0]):
