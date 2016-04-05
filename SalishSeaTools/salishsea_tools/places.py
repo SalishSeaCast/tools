@@ -37,8 +37,8 @@ informative than the default, for example:
 PLACES = {
     # Tide gauge stations
     'Campbell River': {
-        # deg N, deg E
-        'lat lon': (50.04, -125.24),
+        # deg E, deg N
+        'lon lat': (-125.24, 50.04),
         # Canadian Hydrographic Service (CHS) or NOAA
         'stn number': 8074,
         # m above chart datum
@@ -50,27 +50,27 @@ PLACES = {
         'wind grid ji': (190, 102),
     },
     'Cherry Point': {
-        'lat lon': (48.866667, -122.766667),
+        'lon lat': (-122.766667, 48.866667),
         'stn number': 9449424,
         'mean sea lvl': 3.543,
         'hist max sea lvl': 5.846,
         'wind grid ji': (122, 166),
     },
     'Nanaimo': {
-        'lat lon': (49.16, -123.93),
+        'lon lat': (-123.93, 49.16),
         'mean sea lvl': 3.08,
         'hist max sea lvl': 5.47,
         'wind grid ji': (142, 133),
     },
     'Point Atkinson': {
-        'lat lon': (49.33, -123.25),
+        'lon lat': (-123.25, 49.33),
         'stn number': 7795,
         'mean sea lvl': 3.09,
         'hist max sea lvl': 5.61,
         'wind grid ji': (146, 155),
     },
     'Victoria': {
-        'lat lon': (48.41, -123.36),
+        'lon lat': (-123.36, 48.41),
         'stn number': 7120,
         'mean sea lvl': 1.8810,
         'hist max sea lvl': 3.76,
@@ -79,23 +79,23 @@ PLACES = {
 
     # Ferry terminals
     'Tsawwassen': {
-        'lat lon': (49.0084, -123.1281)
+        'lon lat': (-123.1281, 49.0084)
     },
     'Duke Pt.': {
-        'lat lon': (49.1632, -123.8909)
+        'lon lat': (-123.8909, 49.1632)
     },
     'Horseshoe Bay': {
-        'lat lon': (49.3742, -123.2728)
+        'lon lat': (-123.2728, 49.3742)
     },
     'Departure Bay': {
-        'lat lon': (49.1632, -123.8909)
+        'lon lat': (-123.8909, 49.1632)
     },
     'Swartz Bay': {
-        'lat lon': (48.6882, -123.4102),
+        'lon lat': (-123.4102, 48.6882),
     },
 
     # Cities
     'Vancouver': {
-        'lat lon': (49.2827, -123.1207)
+        'lon lat': (-123.1207, 49.2827)
     },
 }
