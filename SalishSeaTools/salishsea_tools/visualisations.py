@@ -49,12 +49,14 @@ def contour_thalweg(
     :type mesh_mask: :py:class:`netCDF4.Dataset`
 
     :arg str mesh_mask_depth_var: name of depth variable in :kbd:`mesh_mask`
-    that is appropriate for :kbd:`var`.
+                                  that is appropriate for :kbd:`var`.
 
     :arg clevels: argument for determining contour levels. Choices are
-    1. 'salinity' or 'temperature' for pre-determined levels used in nowcast.
-    2. an integer N, for N automatically determined levels.
-    3. a sequence V of contour levels, which must be in increasing order.
+                  1. 'salinity' or 'temperature' for pre-determined levels
+                  used in nowcast.
+                  2. an integer N, for N automatically determined levels.
+                  3. a sequence V of contour levels, which must be in
+                  increasing order.
     :type clevels: str or int or iterable
 
     :arg str cmap: matplotlib colormap
