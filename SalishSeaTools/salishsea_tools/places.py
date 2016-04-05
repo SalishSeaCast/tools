@@ -99,3 +99,11 @@ PLACES = {
         'lon lat': (-123.1207, 49.2827)
     },
 }
+
+
+#: Names of tide gauge sites,
+#: ordered from south and west to north and east.
+#: These names are keys of the :py:data:`~salishsea_tools.places.PLACES` dict.
+TIDE_GAUGE_SITES = (
+    'Victoria', 'Cherry Point', 'Point Atkinson', 'Nanaimo', 'Campbell River',
+)
