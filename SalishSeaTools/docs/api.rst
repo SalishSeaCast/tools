@@ -114,6 +114,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.visualisations:
+
+:py:mod:`visualisations` Module
+==========================
+
+.. automodule:: salishsea_tools.visualisations
+    :members:
+
+
 .. _salishsea_tools.viz_tools:
 
 :py:mod:`viz_tools` Module
