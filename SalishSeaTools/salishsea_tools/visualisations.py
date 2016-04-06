@@ -150,7 +150,7 @@ def load_thalweg(depths, var, lons, lats, thalweg_pts):
     :arg lons: Salish Sea NEMO model longitude grid data
     :type lons: :py:class:`numpy.ndarray`
 
-    :arg lons: Salish Sea NEMO model latitude grid data
+    :arg lats: Salish Sea NEMO model latitude grid data
     :type lats: :py:class:`numpy.ndarray`
 
     :arg thalweg_pts: Salish Sea NEMO model grid indices along thalweg
