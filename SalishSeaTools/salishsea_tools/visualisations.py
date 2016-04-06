@@ -74,7 +74,7 @@ def contour_thalweg(
     """
     thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
     depth = mesh_mask.variables[mesh_mask_depth_var][:]
-    dep_thal, distance, var_thal = _load_thalweg(
+    dep_thal, distance, var_thal = load_thalweg(
         depth[0, ...], var, lons, lats, thalweg_pts)
     if xcoord_distance:
         xx_thal = distance
@@ -138,7 +138,7 @@ def _add_bathy_patch(xcoord, bathy, thalweg_pts, ax, color, zmin=450):
     ax.add_patch(patches.Polygon(poly, facecolor=color, edgecolor=color))
 
 
-def _load_thalweg(depths, var, lons, lats, thalweg_pts):
+def load_thalweg(depths, var, lons, lats, thalweg_pts):
     """Returns depths, cummulative distance and variable along thalweg.
 
     :arg depths: depth array for variable. Can be 1D or 3D.
@@ -153,7 +153,7 @@ def _load_thalweg(depths, var, lons, lats, thalweg_pts):
     :arg lons: Salish Sea NEMO model latitude grid data
     :type lats: :py:class:`numpy.ndarray`
 
-    :arg thalweg_pts: Salish Sea NEMO model grid incices along thalweg
+    :arg thalweg_pts: Salish Sea NEMO model grid indices along thalweg
     :type thalweg_pts: 2D numpy array
 
     :returns: dep_thal, xx_thal, var_thal, all the same shape
