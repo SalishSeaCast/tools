@@ -16,15 +16,16 @@
 """Functions for common model visualisations
 """
 
+import matplotlib.pyplot as plt
+from matplotlib import patches
 import numpy as np
-import matplotlib.patches as patches
 
-from salishsea_tools import (tidetools)
+from salishsea_tools import tidetools
 
 
 def contour_thalweg(
-    axes, var, grid_B, mesh_mask, depthname, clevels,
-    cmap='hsv', land_colour='burlywood', xcoord='distance',
+    axes, var, bathy, lons, lats, mesh_mask, mesh_mask_depth_var, clevels,
+    cmap='hsv', land_colour='burlywood', xcoord_distance=True,
     thalweg_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt'
 ):
     """Contour the data stored in var along the domain thalweg.
@@ -32,73 +33,96 @@ def contour_thalweg(
     :arg axes: Axes instance to plot thalweg contour on.
     :type axes: :py:class:`matplotlib.axes.Axes`
 
-    :arg var: variable to be contoured
-    :type var: numpy array, shape (40,898,398)
+    :arg var: Salish Sea NEMO model results variable to be contoured
+    :type var: :py:class:`numpy.ndarray`
 
-    :arg grid_B: model bathymetry data
-    :type lons: netCDF handle
+    :arg bathy: Salish Sea NEMO model bathymetry data
+    :type bathy: :py:class:`numpy.ndarray`
 
-    :arg mesh_mask: model mesh_mask data
-    :type mesh_mask: netCDF handle
+    :arg lons: Salish Sea NEMO model longitude grid data
+    :type lons: :py:class:`numpy.ndarray`
 
-    :arg depthname: name of appropriate depth variable in mesh_mask
-    :type depthname: str
+    :arg lats: Salish Sea NEMO model latitude grid data
+    :type lats: :py:class:`numpy.ndarray`
 
-    :arg clevels: levels for contouring
-    :type clevels: list of numbers
+    :arg mesh_mask: Salish Sea NEMO model mesh_mask data
+    :type mesh_mask: :py:class:`netCDF4.Dataset`
 
-    :arg cmap: colormap
-    :type cmap: str representing a matplotlib colormap
+    :arg str mesh_mask_depth_var: name of depth variable in :kbd:`mesh_mask`
+                                  that is appropriate for :kbd:`var`.
 
-    :arg land_colour: colour for land
-    :type land_colour: str
+    :arg clevels: argument for determining contour levels. Choices are
+                  1. 'salinity' or 'temperature' for pre-determined levels
+                  used in nowcast.
+                  2. an integer N, for N automatically determined levels.
+                  3. a sequence V of contour levels, which must be in
+                  increasing order.
+    :type clevels: str or int or iterable
 
-    :arg xcoord: plot along thalweg distance or index
-    :type xcoord: str, 'distance' or 'index'
+    :arg str cmap: matplotlib colormap
+
+    :arg str land_colour: matplotlib colour for land
+
+    :arg xcoord_distance: plot along thalweg distance (True) or index (False)
+    :type xcoord_distance: boolean
 
     :arg thalweg_pts_file: Path and file name to read the array of
-                           thalweg grid point from.
+                           thalweg grid points from.
     :type thalweg_pts_file: str
 
-    :returns: mesh, the matplotlib contour mesh object
+    :returns: matplotlib colorbar object
     """
-    # Load thalweg points, bathymetry, depths and variable along thalweg
     thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
-    bathy, X, Y = tidetools.get_bathy_data(grid_B)
-    depth = mesh_mask.variables[depthname][:]
-    dep_thal, distance, var_thal = _load_thalweg(depth[0, ...], var, X, Y,
-                                                 thalweg_pts)
-    if xcoord == 'distance':
+    depth = mesh_mask.variables[mesh_mask_depth_var][:]
+    dep_thal, distance, var_thal = load_thalweg(
+        depth[0, ...], var, lons, lats, thalweg_pts)
+    if xcoord_distance:
         xx_thal = distance
-    elif xcoord == 'index':
+        axes.set_xlabel('Distance along thalweg [km]')
+    else:
         xx_thal, _ = np.meshgrid(np.arange(var_thal.shape[-1]), dep_thal[:, 0])
-    # Prepare for plotting by filling in grids above bathymetry
+        axes.set_xlabel('Thalweg index')
+    # Determine contour levels
+    clevels_default = {
+        'salinity': [
+            26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34
+        ],
+        'temperature': [
+            6.9, 7, 7.5, 8, 8.5, 9, 9.8, 9.9, 10.3, 10.5, 11, 11.5, 12,
+            13, 14, 15, 16, 17, 18, 19
+        ]
+    }
+    if isinstance(clevels, str):
+        try:
+            clevels = clevels_default[clevels]
+        except KeyError:
+            raise KeyError('no default clevels defined for {}'.format(clevels))
+    # Prepare for plotting by filling in grid points just above bathymetry
     var_plot = _fill_in_bathy(var_thal, mesh_mask, thalweg_pts)
     mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
                          extend='both')
     _add_bathy_patch(xx_thal, bathy, thalweg_pts, axes, color=land_colour)
+    cbar = plt.colorbar(mesh, ax=axes)
+    axes.set_ylabel('Depth [m]')
+    return cbar
 
-    return mesh
 
-
-def _add_bathy_patch(xcoord, bathy, thalweg_pts,  ax, color,
-                     zmin=450):
+def _add_bathy_patch(xcoord, bathy, thalweg_pts, ax, color, zmin=450):
     """Add a polygon shaped as the land in the thalweg section
 
     :arg xcoord: x grid along thalweg
     :type xcoord: 2D numpy array
 
-    :arg bathy: bathymetry array, shape (898, 398)
-    :type bathy: numpy array
+    :arg bathy: Salish Sea NEMO model bathymetry data
+    :type bathy: :py:class:`numpy.ndarray`
 
-    :arg lines: indices for the thalweg
-    :type lines: 2D numpy array
+    :arg thalweg_pts: Salish Sea NEMO model grid indices along thalweg
+    :type thalweg_pts: 2D numpy array
 
-    :arg ax: axis to plot in
-    :type ax: axis handle
+    :arg ax:  Axes instance to plot thalweg contour on.
+    :type ax: :py:class:`matplotlib.axes.Axes`
 
-    :arg color: color of bathymetry patch
-    :type color: string
+    :arg str color: color of bathymetry patch
 
     :arg zmin: minimum depth for plot in meters
     :type zmin: float
@@ -107,50 +131,46 @@ def _add_bathy_patch(xcoord, bathy, thalweg_pts,  ax, color,
     thalweg_bottom = bathy[thalweg_pts[:, 0], thalweg_pts[:, 1]]
     # Construct bathy polygon
     poly = np.zeros((thalweg_bottom.shape[0]+2, 2))
-    poly[0, 0] = 0
-    poly[0, 1] = zmin
+    poly[0, :] = 0, zmin
     poly[1:-1, 0] = xcoord[0, :]
-    poly[1:-1, 1] = thalweg_bottom
-    poly[-1, 0] = xcoord[0, -1]
-    poly[-1, 1] = zmin
-    # Add polygon patch to plot
+    poly[1:-1:, 1] = thalweg_bottom
+    poly[-1, :] = xcoord[0, -1], zmin
     ax.add_patch(patches.Polygon(poly, facecolor=color, edgecolor=color))
 
 
-def _load_thalweg(depths, var, lons, lats, thalweg_points):
+def load_thalweg(depths, var, lons, lats, thalweg_pts):
     """Returns depths, cummulative distance and variable along thalweg.
 
     :arg depths: depth array for variable. Can be 1D or 3D.
-    :type depths: numpy array
+    :type depths: :py:class:`numpy.ndarray`
 
-    :arg var: 3D variable
-    :type var: numpy array, shape (40, 898, 398)
+    :arg var: 3D Salish Sea NEMO model results variable
+    :type var: :py:class:`numpy.ndarray`
 
-    :arg lons: full NEMO longitude
-    :type lons: numpy array, shape (898, 398)
+    :arg lons: Salish Sea NEMO model longitude grid data
+    :type lons: :py:class:`numpy.ndarray`
 
-    :arg lons: full NEMO latitude
-    :type lats: numpy array, shape (898, 398)
+    :arg lats: Salish Sea NEMO model latitude grid data
+    :type lats: :py:class:`numpy.ndarray`
 
-    :arg thalweg_points: indices for the thalweg
-    :type thalweg_points: 2D numpy array
+    :arg thalweg_pts: Salish Sea NEMO model grid indices along thalweg
+    :type thalweg_pts: 2D numpy array
 
     :returns: dep_thal, xx_thal, var_thal, all the same shape
     (depth, thalweg length)
     """
 
-    lons_thal = lons[thalweg_points[:, 0], thalweg_points[:, 1]]
-    lats_thal = lats[thalweg_points[:, 0], thalweg_points[:, 1]]
-    var_thal = var[:, thalweg_points[:, 0], thalweg_points[:, 1]]
+    lons_thal = lons[thalweg_pts[:, 0], thalweg_pts[:, 1]]
+    lats_thal = lats[thalweg_pts[:, 0], thalweg_pts[:, 1]]
+    var_thal = var[:, thalweg_pts[:, 0], thalweg_pts[:, 1]]
 
     xx_thal = distance_along_curve(lons_thal, lats_thal)
     xx_thal = xx_thal + np.zeros(var_thal.shape)
 
     if depths.ndim > 1:
-        dep_thal = depths[:, thalweg_points[:, 0], thalweg_points[:, 1]]
+        dep_thal = depths[:, thalweg_pts[:, 0], thalweg_pts[:, 1]]
     else:
-        dep_thal, _ = np.meshgrid(depths, xx_thal[0, :])
-        dep_thal = dep_thal.T
+        _, dep_thal = np.meshgrid(xx_thal[0, :], depths)
     return dep_thal, xx_thal, var_thal
 
 
@@ -162,10 +182,10 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     :arg variable: the variable to be filled
     :type variable: 2D numpy array
 
-    :arg mesh_mask: NEMO mesh_mask file
-    :type mesh_mask: netCDF handle
+    :arg mesh_mask: Salish Sea NEMO model mesh_mask data
+    :type mesh_mask: :py:class:`netCDF4.Dataset`
 
-    :arg thalweg_pts: indices for the thalweg
+    :arg thalweg_pts: Salish Sea NEMO model grid indices along thalweg
     :type thalweg_pts: 2D numpy array
 
     :returns: newvar, the filled numpy array
@@ -183,12 +203,12 @@ def distance_along_curve(lons, lats):
     """Calculate cumulative distance in km between points in lons, lats
 
     :arg lons: longitude points
-    :type lons: numpy array
+    :type lons: 1D numpy array
 
     :arg lats: latitude points
-    :type lats: numpy array
+    :type lats: 1D numpy array
 
-    :returns: dist, a numpy array with distance along track in km
+    :returns: numpy array with distance along track in km
     """
     dist = [0]
     for i in np.arange(1, lons.shape[0]):
