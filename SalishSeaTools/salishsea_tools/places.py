@@ -79,16 +79,16 @@ PLACES = {
 
     # Ferry terminals
     'Tsawwassen': {
-        'lon lat': (-123.1281, 49.0084)
+        'lon lat': (-123.1281, 49.0084),
     },
     'Duke Pt.': {
-        'lon lat': (-123.8909, 49.1632)
+        'lon lat': (-123.8909, 49.1632),
     },
     'Horseshoe Bay': {
-        'lon lat': (-123.2728, 49.3742)
+        'lon lat': (-123.2728, 49.3742),
     },
     'Departure Bay': {
-        'lon lat': (-123.8909, 49.1632)
+        'lon lat': (-123.8909, 49.1632),
     },
     'Swartz Bay': {
         'lon lat': (-123.4102, 48.6882),
@@ -96,7 +96,29 @@ PLACES = {
 
     # Cities
     'Vancouver': {
-        'lon lat': (-123.1207, 49.2827)
+        'lon lat': (-123.1207, 49.2827),
+    },
+
+    # Provinces and states
+    'British Columbia': {
+        'lon lat': (-123.6, 49.9),
+    },
+    'Washington State': {
+        'lon lat': (-123.8, 47.8),
+    },
+
+    # Bodies of water
+    'Pacific Ocean': {
+        'lon lat': (-125.6, 48.1),
+    },
+    'Juan de Fuca Strait': {
+        'lon lat': (-124.7, 48.47),
+    },
+    'Puget Sound': {
+        'lon lat': (-122.67, 48),
+    },
+    'Strait of Georgia': {
+        'lon lat': (-123.8, 49.3),
     },
 }
 
