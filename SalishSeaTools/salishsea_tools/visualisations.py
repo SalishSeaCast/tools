@@ -157,7 +157,7 @@ def load_thalweg(depths, var, lons, lats, thalweg_pts):
     :type thalweg_pts: 2D numpy array
 
     :returns: dep_thal, xx_thal, var_thal, all the same shape
-    (depth, thalweg length)
+              (depth, thalweg length)
     """
 
     lons_thal = lons[thalweg_pts[:, 0], thalweg_pts[:, 1]]
