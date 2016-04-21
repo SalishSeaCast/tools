@@ -97,6 +97,26 @@ Descriptions under the links below are from the first cell of the notebooks
     * Exploring netCDF dataset dimensions, variables, and attributes  
     * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays  
 
+* ##[Exploring a Nowcast Time Series from ERDDAP.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Exploring a Nowcast Time Series from ERDDAP.ipynb)  
+    
+    **Exploring a Nowcast Time Series from ERDDAP**  
+      
+    This notebook contains discussion and examples of accessing a time series of  
+    results from the Salish Sea NEMO Nowcast system from the ERDDAP server.  
+    The time series of interest span several days of nowcast runs,  
+    so ERDDAP provides a more convenient way of accessing the results than building  
+    the time series by loading several single day nowcast results file.  
+    We'll use the [xarray](http://xarray.pydata.org/) to demonstrate it powerful  
+    time period selection,  
+    and built-in plotting features that facilitate quick dataset visualization.  
+    Topics include:  
+      
+    * Opening ERDDAP datasets with `xarray`  
+    * Examining dataset and variable metadata  
+    * Creating rudimentary plots of dataset variable for quick visualization  
+    * Selecting single point values of variables from datasets by index and by value  
+    * Selecting time series slices of variables from datasets by date/time ranges  
+
 * ##[Exploring netCDF Datasets Using xarray.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/analysis_tools/Exploring netCDF Datasets Using xarray.ipynb)  
     
     **Exploring netCDF Datasets Using the xarray Package**  
