@@ -17,7 +17,7 @@
 """
 import numpy as np
 
-import tidetools
+from salishsea_tools import tidetools
 
 
 def distance_along_curve(lons, lats):
