@@ -445,7 +445,7 @@ def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
     to a specified lon/lat.
 
     e.g. yind, xind = find_closest_model_point(-125.5,49.2,X,Y,bathy)
-    where bathy, X and Y are returned from get_SS_bathy_data().
+    where bathy, X and Y are returned from get_bathy_data(grid).
     yind is the y-index(latitude), xind is the x-index(longitude)
 
     :arg lon: specified longitude
@@ -909,7 +909,7 @@ def haversine(lon1, lat1, lon2, lat2):
 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
     """Plot two locations on a contour map of bathymetry,
-    where bathy, X and Y are returned from get_SS_bathy_data();
+    where bathy, X and Y are returned from get_bathy_data(grid);
     e.g. plot_meas_mod_locations(-124.0, 48.4, -124.2, 48.1,X,Y,bathy)
 
     :arg measlon: longitude of point 1
