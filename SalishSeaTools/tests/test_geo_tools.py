@@ -15,7 +15,7 @@
 
 """Unit tests for geo_tools module.
 """
-
+import numpy as np
 import pytest
 
 
@@ -25,8 +25,22 @@ def geo_tools_module():
     return geo_tools
 
 
-class TestSomeFunction:
-    def test_some_function(self, geo_tools_module):
-        result = geo_tools_module.some_function()
-        assert result == expected
+class TestDistanceAlongCurve:
+    """Unit tests for distance_along_curve() function.
+    """
+    KM_PER_NM = 1.852
+    # The distance_along_curve() function uses the haversine formula which
+    # has a typical error of up to 0.3% due to the Earth not being a perfect
+    # spere.
+    # See http://www.movable-type.co.uk/scripts/latlong.html
+    HAVERSINE_RTOL = 0.003
 
+    @pytest.mark.parametrize('lons, lats, expected', [
+        (np.array([0, 0]), np.array([0, 1]),
+         np.array([0, 60*KM_PER_NM])),
+        (np.array([-123, -123, -123.5]), np.array([49, 50, 50.5]),
+         np.array([0, 60*KM_PER_NM, 60*KM_PER_NM + 65.99])),
+    ])
+    def test_distance_along_curve(self, lons, lats, expected, geo_tools_module):
+        result = geo_tools_module.distance_along_curve(lons, lats)
+        np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)

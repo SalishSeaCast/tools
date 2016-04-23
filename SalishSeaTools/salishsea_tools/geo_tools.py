@@ -15,4 +15,27 @@
 
 """Functions for working with geographical data and model results.
 """
+import numpy as np
 
+import tidetools
+
+
+def distance_along_curve(lons, lats):
+    """Calculate cumulative distance in km between points in lons, lats
+
+    :arg lons: 1D array of longitude points.
+    :type lons: :py:class:`numpy.ndarray`
+
+    :arg lats: 1D array of latitude points.
+    :type lats: :py:class:`numpy.ndarray`
+
+    :returns: Cummulative point-by-point distance along track in km.
+    :rtype: :py:class:`numpy.ndarray`
+    """
+    dist = [0]
+    for i in np.arange(1, lons.shape[0]):
+        newdist = dist[i-1] + tidetools.haversine(lons[i], lats[i],
+                                                  lons[i-1], lats[i-1])
+        dist.append(newdist)
+    dist = np.array(dist)
+    return dist
