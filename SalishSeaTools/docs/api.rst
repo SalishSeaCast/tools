@@ -33,6 +33,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.geo_tools:
+
+:py:mod:`geo_tools` Module
+==========================
+
+.. automodule:: salishsea_tools.geo_tools
+    :members:
+
+
 .. _salishsea_tools.hg_commands:
 
 :py:mod:`hg_commands` Module
@@ -63,7 +72,7 @@ These API docs provide function signatures and docstrings derived directly from 
 .. _salishsea_tools.places:
 
 :py:mod:`places` Module
-=========================
+=======================
 
 .. automodule:: salishsea_tools.places
     :members:
