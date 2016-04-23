@@ -6,46 +6,52 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
+* ##[blast a river.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/blast a river.ipynb)  
     
-* ##[Thalweg Work.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
-    
-    Determine the Thalweg in more Detail and Channelize it  
-
-* ##[Bathymetry inside NEMO.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry inside NEMO.ipynb)  
-    
-    Notebook to look at the Bathymetry that NEMO actually uses after it does its processing  
-
-* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
-    
-* ##[Smooth, preserving thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Smooth, preserving thalweg.ipynb)  
-    
-    Smooth around the Thalweg  
-
-* ##[bathyImage.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathyImage.ipynb)  
-    
-    This notebook creates an image of the bathymetry and coastlines. Includes:  
-      
-    1. Bathymetry  
-    2. Location of Rivers  
-    3. Storm Surge points  
-      
-    Other important points?  
-
-* ##[bathy_for_jie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathy_for_jie.ipynb)  
+* ##[Deepen by Grid Thickness.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Deepen by Grid Thickness.ipynb)  
     
 * ##[More Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
     Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
     We show below that this makes the Thalweg more rugged as it pulls shallow areas from the sides across the channel.  
 
-* ##[Bathymetry in Boundary Pass.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry in Boundary Pass.ipynb)  
+* ##[Smooth, preserving thalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Smooth, preserving thalweg.ipynb)  
     
-    Comparison between original bathy and smoothed bathy  
+    Smooth around the Thalweg  
 
+* ##[NEMOBathymetryfromMeshMask.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMOBathymetryfromMeshMask.ipynb)  
+    
+    Notebook to create a Nemo Bathymetry file for the ERDDAP server    
+    Based on:     
+    Nancy/NEMO depths vs bathymetry file.ipynb  
+
+* ##[LongRiver.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/LongRiver.ipynb)  
+    
+    **Look at Bathymetry 6 ****  
+    and decide on river input points, and annotate the River with local landmarks  
+
+* ##[Deepen Haro Boundary Region.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Deepen Haro Boundary Region.ipynb)  
+    
+* ##[BathyZeroTobaetc.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
+    
 * ##[SmoothMouthJdF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
     
     This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
+
+* ##[mesh_mask_SalishSea2_metadata.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/mesh_mask_SalishSea2_metadata.ipynb)  
+    
+    **`mesh_mask_SalishSea2.nc` Metadata**  
+      
+    Add metadata to the NEMO-generated mesh mask file for the SalishSea2 bathymetry  
+    so that a well-defined ERDDAP dataset can be produced from it.  
+
+* ##[SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
+    
+    **Salish Sea NEMO Bathymetry**  
+      
+    This notebook documents the bathymetry used for the Salish Sea NEMO runs.  
+      
+    The first part of the notebook explores and plots the bathymetry.  
 
 * ##[SalishSeaSubdomainBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)  
     
@@ -60,15 +66,44 @@ Descriptions below the links are from the first cell of the notebooks
     The second part records the manual smoothing that was done to  
     get the JPP M2 tidal forcing case to run.  
 
+* ##[Thalweg Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Smoothing.ipynb)  
+    
+    Smooth the Thalweg  
+
+* ##[TowardSmoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
+    
+* ##[Bathymetry in Boundary Pass.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry in Boundary Pass.ipynb)  
+    
+    Comparison between original bathy and smoothed bathy  
+
+* ##[netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
+    
+    **Explore Changing Bathymetry Data Format**  
+    **netCDF4 Instead of netCDF3_CLASSIC**  
+
 * ##[Find TS for new Bathymetry.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Find TS for new Bathymetry.ipynb)  
     
-* ##[SalishSeaBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb)  
+    If topography is deepened, we need to extend Temp and Salinity Downward.  
+      
+    Also includes a cell to convert to Reference Salinity  
+
+* ##[Bathymetry inside NEMO.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Bathymetry inside NEMO.ipynb)  
     
-    **Salish Sea NEMO Bathymetry**  
+    Notebook to look at the Bathymetry that NEMO actually uses after it does its processing  
+
+* ##[Thalweg Work.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
+    
+    Determine the Thalweg in more Detail and Channelize it  
+
+* ##[bathyImage.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathyImage.ipynb)  
+    
+    This notebook creates an image of the bathymetry and coastlines. Includes:  
       
-    This notebook documents the bathymetry used for the Salish Sea NEMO runs.  
+    1. Bathymetry  
+    2. Location of Rivers  
+    3. Storm Surge points  
       
-    The first part of the notebook explores and plots the bathymetry.  
+    Other important points?  
 
 * ##[NEMO-GridBathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
     
@@ -82,19 +117,12 @@ Descriptions below the links are from the first cell of the notebooks
     and boundary conditions temperature and salinity values that do not  
     induce spurious transient flows at the topographic edges of the domain.  
 
-* ##[Thalweg Smoothing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Smoothing.ipynb)  
+* ##[bathy_for_jie.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathy_for_jie.ipynb)  
     
-    Smooth the Thalweg  
-
-* ##[netCDF4bathy.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb)  
-    
-    **Explore Changing Bathymetry Data Format**  
-    **netCDF4 Instead of netCDF3_CLASSIC**  
-
 
 ##License
 
-These notebooks and files are copyright 2013-2015
+These notebooks and files are copyright 2013-2016
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

@@ -16,11 +16,11 @@
 """Functions for common model visualisations
 """
 
-import matplotlib.pyplot as plt
 from matplotlib import patches
+import matplotlib.pyplot as plt
 import numpy as np
 
-from salishsea_tools import tidetools
+from salishsea_tools import geo_tools
 
 
 def contour_thalweg(
@@ -164,7 +164,7 @@ def load_thalweg(depths, var, lons, lats, thalweg_pts):
     lats_thal = lats[thalweg_pts[:, 0], thalweg_pts[:, 1]]
     var_thal = var[:, thalweg_pts[:, 0], thalweg_pts[:, 1]]
 
-    xx_thal = distance_along_curve(lons_thal, lats_thal)
+    xx_thal = geo_tools.distance_along_curve(lons_thal, lats_thal)
     xx_thal = xx_thal + np.zeros(var_thal.shape)
 
     if depths.ndim > 1:
@@ -197,23 +197,3 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     for i, level in enumerate(mbathy):
         newvar[level, i] = variable[level-1, i]
     return newvar
-
-
-def distance_along_curve(lons, lats):
-    """Calculate cumulative distance in km between points in lons, lats
-
-    :arg lons: longitude points
-    :type lons: 1D numpy array
-
-    :arg lats: latitude points
-    :type lats: 1D numpy array
-
-    :returns: numpy array with distance along track in km
-    """
-    dist = [0]
-    for i in np.arange(1, lons.shape[0]):
-        newdist = dist[i-1] + tidetools.haversine(lons[i], lats[i],
-                                                  lons[i-1], lats[i-1])
-        dist.append(newdist)
-    dist = np.array(dist)
-    return dist
