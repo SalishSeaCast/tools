@@ -49,7 +49,6 @@ Contents:
    netcdf4/index
    bathymetry/index
    I_ForcingFiles/index
-   results_server/index
    Marlin/index
    python_packaging/index
    nemo-tools/index
