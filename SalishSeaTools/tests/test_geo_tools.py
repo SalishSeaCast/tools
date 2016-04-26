@@ -58,6 +58,9 @@ class TestHaversine:
     @pytest.mark.parametrize('lon1, lat1, lon2, lat2, expected', [
         (0, 0, 0, 1, 60*KM_PER_NM),
         (-123, 50, -123.5, 50.5, 65.99),
+        (np.array([-123, -123]), np.array([49, 50]),
+         np.array([-123, -123.5]), np.array([50, 50.5]),
+         np.array([60*KM_PER_NM, 65.99])),
     ])
     def test_haversine(
         self, lon1, lat1, lon2, lat2, expected, geo_tools_module,
