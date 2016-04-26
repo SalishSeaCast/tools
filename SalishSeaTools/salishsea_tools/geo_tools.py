@@ -30,13 +30,8 @@ def distance_along_curve(lons, lats):
     :returns: Cummulative point-by-point distance along track in km.
     :rtype: :py:class:`numpy.ndarray`
     """
-    dist = [0]
-    for i in np.arange(1, lons.shape[0]):
-        newdist = dist[i-1] + haversine(lons[i], lats[i],
-                                        lons[i-1], lats[i-1])
-        dist.append(newdist)
-    dist = np.array(dist)
-    return dist
+    dist = np.cumsum(haversine(lons[1:], lats[1:], lons[:-1], lats[:-1]))
+    return np.insert(dist, 0, 0)
 
 
 def haversine(lon1, lat1, lon2, lat2):
@@ -58,7 +53,7 @@ def haversine(lon1, lat1, lon2, lat2):
     :type lat2: float or :py:class:`numpy.ndarray`
 
     :returns: Great-circle distance between two points in km
-    :rtype: float
+    :rtype: float or :py:class:`numpy.ndarray`
     """
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
     dlon = lon2 - lon1
