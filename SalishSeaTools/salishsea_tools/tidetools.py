@@ -20,23 +20,26 @@ Salish Sea NEMO model
 from __future__ import division
 
 import cmath
+import collections
 import csv
 import datetime
-from math import radians, sin, cos, asin, sqrt, pi
 import os
-import angles
-from dateutil import tz
+from math import radians, cos, sqrt, pi
 
+import angles
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-import collections
 import netCDF4 as NC
 import numpy as np
 import pandas as pd
 import pytz
 import requests
+from dateutil import tz
+from scipy.optimize import curve_fit
 
-from salishsea_tools import (namelist, viz_tools)
+from salishsea_tools import (
+    namelist,
+    viz_tools,
+)
 
 # Tide correction for amplitude and phase set to September 10th 2014 by nowcast
 # Values for there and other constituents can be found in:
@@ -876,35 +879,16 @@ def calc_diffs_meas_mod(runname, loc, grid):
 
 
 def haversine(lon1, lat1, lon2, lat2):
-    """Calculate the distance between two points (from haversine on SO)
-    e.g. dist = haversine(-125.1, 49.1, -125.12, 49.5)
+    """Calculate the great-circle distance between two points on a sphere
+    from their longitudes and latitudes.
 
-    :arg lon1: longitude of point 1
-    :type lon1: float
+    .. note::
 
-    :arg lat1: latitude of point 1
-    :type lat1: float
-
-    :arg lon2: longitude of point 2
-    :type lon2: float
-
-    :arg lat2: latitude of point 2
-    :type lat2: float
-
-    :returns: distance between two points in km
+        This function is deprecated.
+        Use :py:func:`geo_tools.haversine` instead.
     """
-    # convert decimal degrees to radians
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    # haversine formula
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    km = 6367 * c
-    # print(
-        # 'Observation site and model grid point are '
-        # + str(round(km, 3))+'km apart')
-    return km
+    raise DeprecationWarning(
+        'tidetools.haversine() has been replaced by goe_tools.haversine()')
 
 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
