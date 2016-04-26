@@ -24,14 +24,12 @@ import os
 import subprocess
 
 import arrow
-import matplotlib
+import matplotlib.figure
 import netCDF4 as nc
 import numpy as np
 
-from nowcast import (
-    figures,
-    lib,
-)
+from nowcast import lib
+from nowcast.figures import figures
 from nowcast.nowcast_worker import (
     NowcastWorker,
     WorkerError,
