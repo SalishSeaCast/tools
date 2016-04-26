@@ -47,6 +47,7 @@ Contents:
    SalishSeaNowcast/index
    SOGTools/index
    netcdf4/index
+   erddap/ERDDAP_datasets.ipynb
    bathymetry/index
    I_ForcingFiles/index
    Marlin/index
