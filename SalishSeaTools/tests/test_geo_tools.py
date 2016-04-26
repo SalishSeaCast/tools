@@ -31,7 +31,7 @@ class TestDistanceAlongCurve:
     KM_PER_NM = 1.852
     # The distance_along_curve() function uses the haversine formula which
     # has a typical error of up to 0.3% due to the Earth not being a perfect
-    # spere.
+    # sphere.
     # See http://www.movable-type.co.uk/scripts/latlong.html
     HAVERSINE_RTOL = 0.003
 
@@ -43,4 +43,24 @@ class TestDistanceAlongCurve:
     ])
     def test_distance_along_curve(self, lons, lats, expected, geo_tools_module):
         result = geo_tools_module.distance_along_curve(lons, lats)
+        np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)
+
+
+class TestHaversine:
+    """Unit tests for haversine() function.
+    """
+    KM_PER_NM = 1.852
+    # The haversine formula which has a typical error of up to 0.3% due to the
+    # Earth not being a perfect sphere.
+    # See http://www.movable-type.co.uk/scripts/latlong.html
+    HAVERSINE_RTOL = 0.003
+
+    @pytest.mark.parametrize('lon1, lat1, lon2, lat2, expected', [
+        (0, 0, 0, 1, 60*KM_PER_NM),
+        (-123, 50, -123.5, 50.5, 65.99),
+    ])
+    def test_haversine(
+        self, lon1, lat1, lon2, lat2, expected, geo_tools_module,
+    ):
+        result = geo_tools_module.haversine(lon1, lat1, lon2, lat2)
         np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)
