@@ -120,6 +120,30 @@ PLACES = {
     'Strait of Georgia': {
         'lon lat': (-123.8, 49.3),
     },
+
+    # VENUS
+    'East node': {
+        'lon lat': (-123.3176, 49.0419),
+        # depth in m, taken from ONC website
+        'depth': 170,
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (416, 283),
+    },
+    'Central node': {
+        'lon lat': (-123.4261, 49.0401),
+        'depth': 300,
+        'NEMO grid ji': (424, 266),
+    },
+    'DDL node': {
+        'lon lat': (-123.3400617, 49.0807167),
+        'depth': 150,
+        'NEMO grid ji': (425, 284)
+    },
+    # Weather buoys
+    'Sandheads': {
+        'lon lat': (-123.30, 49.10)
+    }
+
 }
 
 
