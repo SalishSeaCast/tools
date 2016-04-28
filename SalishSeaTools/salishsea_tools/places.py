@@ -46,7 +46,7 @@ PLACES = {
         # m above chart datum
         'hist max sea lvl': 5.35,
         # indices of nearest weather forcing grid point
-        # j is the longitude direction, i is the latitude direction
+        # j is the latitude (y) direction, i is the longitude (x) direction
         'wind grid ji': (190, 102),
     },
     'Cherry Point': {
@@ -139,6 +139,7 @@ PLACES = {
         'depth': 150,
         'NEMO grid ji': (425, 284)
     },
+
     # Weather buoys
     'Sandheads': {
         'lon lat': (-123.30, 49.10)
