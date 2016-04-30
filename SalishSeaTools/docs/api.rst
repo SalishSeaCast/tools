@@ -78,6 +78,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.psu_tools:
+
+:py:mod:`psu_tools` Module
+=======================
+
+.. automodule:: salishsea_tools.psu_tools
+    :members:
+
+
 .. _salishsea_tools.rivertools:
 
 :py:mod:`rivertools` Module
