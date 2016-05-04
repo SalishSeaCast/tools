@@ -18,11 +18,7 @@
 import numpy as np
 import pytest
 
-
-@pytest.fixture(scope='module')
-def geo_tools_module():
-    from salishsea_tools import geo_tools
-    return geo_tools
+from salishsea_tools import geo_tools
 
 
 class TestDistanceAlongCurve:
@@ -41,8 +37,8 @@ class TestDistanceAlongCurve:
         (np.array([-123, -123, -123.5]), np.array([49, 50, 50.5]),
          np.array([0, 60*KM_PER_NM, 60*KM_PER_NM + 65.99])),
     ])
-    def test_distance_along_curve(self, lons, lats, expected, geo_tools_module):
-        result = geo_tools_module.distance_along_curve(lons, lats)
+    def test_distance_along_curve(self, lons, lats, expected):
+        result = geo_tools.distance_along_curve(lons, lats)
         np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)
 
 
@@ -62,8 +58,6 @@ class TestHaversine:
          np.array([-123, -123.5]), np.array([50, 50.5]),
          np.array([60*KM_PER_NM, 65.99])),
     ])
-    def test_haversine(
-        self, lon1, lat1, lon2, lat2, expected, geo_tools_module,
-    ):
-        result = geo_tools_module.haversine(lon1, lat1, lon2, lat2)
+    def test_haversine(self, lon1, lat1, lon2, lat2, expected):
+        result = geo_tools.haversine(lon1, lat1, lon2, lat2)
         np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)
