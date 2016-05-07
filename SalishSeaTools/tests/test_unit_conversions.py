@@ -21,42 +21,34 @@ import arrow
 import numpy as np
 import pytest
 
-
-@pytest.fixture
-def unit_conversions_module():
-    from salishsea_tools import unit_conversions
-    return unit_conversions
+from salishsea_tools import unit_conversions
 
 
-def test_M_PER_S__KM_PER_HR_constant_value(unit_conversions_module):
+def test_M_PER_S__KM_PER_HR_constant_value():
     expected = 3600 / 1000
-    np.testing.assert_allclose(
-        unit_conversions_module.M_PER_S__KM_PER_HR, expected)
+    np.testing.assert_allclose(unit_conversions.M_PER_S__KM_PER_HR, expected)
 
 
-def test_M_PER_S__KNOTS_constant_value(unit_conversions_module):
+def test_M_PER_S__KNOTS_constant_value():
     expected = 3600 / 1852
-    np.testing.assert_allclose(
-        unit_conversions_module.M_PER_S__KNOTS, expected)
+    np.testing.assert_allclose(unit_conversions.M_PER_S__KNOTS, expected)
 
 
-def test_KNOTS__M_PER_S_constant_value(unit_conversions_module):
+def test_KNOTS__M_PER_S_constant_value():
     expected = 1852 / 3600
-    np.testing.assert_allclose(
-        unit_conversions_module.KNOTS__M_PER_S, expected)
+    np.testing.assert_allclose(unit_conversions.KNOTS__M_PER_S, expected)
 
 
 @pytest.mark.parametrize('m_per_s, expected', [
     (0, 0),
     (1, 3.6),
 ])
-def test_mps_kph(m_per_s, expected, unit_conversions_module):
-    np.testing.assert_allclose(
-        unit_conversions_module.mps_kph(m_per_s), expected)
+def test_mps_kph(m_per_s, expected) np.testing.assert_allclose(
+        unit_conversions.mps_kph(m_per_s), expected)
 
 
-def test_mps_kph_ndarray(unit_conversions_module):
-    kph = unit_conversions_module.mps_kph(np.array([0, 1]))
+def test_mps_kph_ndarray():
+    kph = unit_conversions.mps_kph(np.array([0, 1]))
     np.testing.assert_allclose(kph, np.array([0, 3.6]))
 
 
@@ -64,13 +56,12 @@ def test_mps_kph_ndarray(unit_conversions_module):
     (0, 0),
     (1, 1.94384),
 ])
-def test_mps_knots(m_per_s, expected, unit_conversions_module):
-    np.testing.assert_allclose(
-        unit_conversions_module.mps_knots(m_per_s), expected, rtol=1e-05)
+def test_mps_knots(m_per_s, expected) np.testing.assert_allclose(
+        unit_conversions.mps_knots(m_per_s), expected, rtol=1e-05)
 
 
-def test_mps_knots_ndarray(unit_conversions_module):
-    knots = unit_conversions_module.mps_knots(np.array([0, 1]))
+def test_mps_knots_ndarray():
+    knots = unit_conversions.mps_knots(np.array([0, 1]))
     np.testing.assert_allclose(knots, np.array([0, 1.94384]), rtol=1e-05)
 
 
@@ -78,13 +69,12 @@ def test_mps_knots_ndarray(unit_conversions_module):
     (0, 0),
     (1, 0.514444),
 ])
-def test_knots_mps(knots, expected, unit_conversions_module):
-    np.testing.assert_allclose(
-        unit_conversions_module.knots_mps(knots), expected, rtol=1e-05)
+def test_knots_mps(knots, expected) np.testing.assert_allclose(
+        unit_conversions.knots_mps(knots), expected, rtol=1e-05)
 
 
-def test_knots_mps_ndarray(unit_conversions_module):
-    knots = unit_conversions_module.knots_mps(np.array([0, 1]))
+def test_knots_mps_ndarray():
+    knots = unit_conversions.knots_mps(np.array([0, 1]))
     np.testing.assert_allclose(knots, np.array([0, 0.514444]), rtol=1e-05)
 
 
@@ -94,17 +84,14 @@ def test_knots_mps_ndarray(unit_conversions_module):
     (180, 90),
     (270, 0),
     (359, 271),
-])
-def test_wind_to_from(wind_to, expected, unit_conversions_module):
-    np.testing.assert_allclose(
-        unit_conversions_module.wind_to_from(wind_to), expected)
+]) def test_wind_to_from(wind_to, expected) np.testing.assert_allclose(
+        unit_conversions.wind_to_from(wind_to), expected)
 
 
-def test_wind_to_from_ndarray(unit_conversions_module):
-    wind_from = unit_conversions_module.wind_to_from(
+def test_wind_to_from_ndarray():
+    wind_from = unit_conversions.wind_to_from(
         np.array([0, 90, 180, 270, 359]))
-    np.testing.assert_allclose
-    (wind_from, np.array([270, 180, 90, 0, 271]))
+    np.testing.assert_allclose(wind_from, np.array([270, 180, 90, 0, 271]))
 
 
 class TestBearingHeading(object):
@@ -115,10 +102,8 @@ class TestBearingHeading(object):
         (27, 'NNE'),
         (359, 'N'),
     ])
-    def test_default_16_points(
-        self, bearing, expected, unit_conversions_module,
-    ):
-        heading = unit_conversions_module.bearing_heading(bearing)
+    def test_default_16_points(self, bearing, expected):
+        heading = unit_conversions.bearing_heading(bearing)
         assert heading == expected
 
     @pytest.mark.parametrize('bearing, expected', [
@@ -126,10 +111,8 @@ class TestBearingHeading(object):
         (27, 'NE'),
         (359, 'N'),
     ])
-    def test_8_points(
-        self, bearing, expected, unit_conversions_module,
-    ):
-        heading = unit_conversions_module.bearing_heading(
+    def test_8_points(self, bearing, expected):
+        heading = unit_conversions.bearing_heading(
             bearing,
             headings=['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
         assert heading == expected
@@ -161,8 +144,6 @@ class TestHumanizeTimeOfDay(object):
         (arrow.get('2015-12-27 23:43:43'), 'late Sunday evening'),
         (arrow.get('2015-12-27 23:59:59'), 'late Sunday evening'),
     ])
-    def test_humanize_time_of_day(
-        self, date_time, expected, unit_conversions_module,
-    ):
-        result = unit_conversions_module.humanize_time_of_day(date_time)
+    def test_humanize_time_of_day(self, date_time, expected):
+        result = unit_conversions.humanize_time_of_day(date_time)
         assert result == expected
