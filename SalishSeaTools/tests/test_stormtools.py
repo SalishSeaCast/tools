@@ -19,28 +19,24 @@ from unittest.mock import Mock
 
 import pytest
 
-
-@pytest.fixture
-def stormtools_module():
-    from salishsea_tools import stormtools
-    return stormtools
+from salishsea_tools import stormtools
 
 
 class TestStormSurgeRiskLevel(object):
     """Unit tests for storm_surge_risk_level() function.
     """
-    def test_places_key_error(self, stormtools_module):
+    def test_places_key_error(self):
         m_ttide = Mock(name='ttide', pred_all=[42])
         with pytest.raises(KeyError):
-            stormtools_module.storm_surge_risk_level('foo', 42.24, m_ttide)
+            stormtools.storm_surge_risk_level('foo', 42.24, m_ttide)
 
     @pytest.mark.parametrize('max_ssh, expected', [
         (4.9, None),
         (5.1, 'moderate risk'),
         (5.4, 'extreme risk'),
     ])
-    def test_risk_level(self, max_ssh, expected, stormtools_module):
+    def test_risk_level(self, max_ssh, expected):
         m_ttide = Mock(name='ttide', pred_all=[2])
-        risk_level = stormtools_module.storm_surge_risk_level(
+        risk_level = stormtools.storm_surge_risk_level(
             'Point Atkinson', max_ssh, m_ttide)
         assert risk_level == expected
