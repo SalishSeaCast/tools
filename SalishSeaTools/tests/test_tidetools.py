@@ -22,16 +22,11 @@ from unittest.mock import (
     patch,
 )
 import numpy as np
-import pytest
+
+from salishsea_tools import tidetools
 
 
-@pytest.fixture
-def tidetools_module():
-    import salishsea_tools.tidetools
-    return salishsea_tools.tidetools
-
-
-def test_get_run_length(tidetools_module):
+def test_get_run_length():
     m_open = mock_open()
     m_open().__iter__.return_value = '''
 !! Run timing control
@@ -98,5 +93,5 @@ def test_get_run_length(tidetools_module):
 &end
         '''.splitlines()
     with patch('salishsea_tools.tidetools.namelist.open', m_open, create=True):
-        run_length = tidetools_module.get_run_length('foo', 'bar')
+        run_length = tidetools.get_run_length('foo', 'bar')
     np.testing.assert_almost_equal(run_length, 2)

@@ -25,11 +25,7 @@ import netCDF4 as nc
 import numpy as np
 import pytest
 
-
-@pytest.fixture
-def wind_tools_module():
-    from salishsea_tools import wind_tools
-    return wind_tools
+from salishsea_tools import wind_tools
 
 
 @pytest.fixture
@@ -67,16 +63,16 @@ class TestWindSpeedDir(object):
         (1, -0.001, 1, 359.942704),
     ])
     def test_scalar_uv_values(
-        self, u_wind, v_wind, exp_speed, exp_dir, wind_tools_module,
+        self, u_wind, v_wind, exp_speed, exp_dir,
     ):
-        wind = wind_tools_module.wind_speed_dir(u_wind, v_wind)
+        wind = wind_tools.wind_speed_dir(u_wind, v_wind)
         np.testing.assert_allclose(wind.speed, exp_speed, rtol=1e-05)
         np.testing.assert_allclose(wind.dir, exp_dir, rtol=1e-05)
 
-    def test_ndarray_uv_values(self, wind_tools_module):
+    def test_ndarray_uv_values(self):
         u_wind = np.array([0, 1, 1, 3, 0, -1, -1, -1, 0, 1, 1])
         v_wind = np.array([0, 0, 1, 4, 1, 1, 0, -1, -1, -1, -0.001])
-        wind = wind_tools_module.wind_speed_dir(u_wind, v_wind)
+        wind = wind_tools.wind_speed_dir(u_wind, v_wind)
         exp_speed = np.array([
             0, 1, 1.414214, 5, 1, 1.414214, 1, 1.414214, 1, 1.414214, 1])
         np.testing.assert_allclose(wind.speed, exp_speed, rtol=1e-05)
@@ -88,37 +84,37 @@ class TestWindSpeedDir(object):
 class TestCalcWindAvgAtPoint(object):
     """Unit tests for calc_wind_avg_at_point() function.
     """
-    @patch.object(wind_tools_module().nc_tools, 'dataset_from_path')
-    def test_ops_wind(self, m_dfp, wind_tools_module, wind_dataset, tmpdir):
+    @patch.object(wind_tools.nc_tools, 'dataset_from_path')
+    def test_ops_wind(self, m_dfp, wind_dataset, tmpdir):
         tmp_weather_path = tmpdir.ensure_dir('operational')
         m_dfp.side_effect = (wind_dataset,)
-        wind_avg = wind_tools_module.calc_wind_avg_at_point(
+        wind_avg = wind_tools.calc_wind_avg_at_point(
             arrow.get('2016-02-02 04:25'), str(tmp_weather_path), (0, 0))
         np.testing.assert_allclose(wind_avg.u, 2.5)
         np.testing.assert_allclose(wind_avg.v, -2.5)
 
-    @patch.object(wind_tools_module().nc_tools, 'dataset_from_path')
-    def test_2h_avg(self, m_dfp, wind_tools_module, wind_dataset, tmpdir):
+    @patch.object(wind_tools.nc_tools, 'dataset_from_path')
+    def test_2h_avg(self, m_dfp, wind_dataset, tmpdir):
         tmp_weather_path = tmpdir.ensure_dir('operational')
         m_dfp.side_effect = (wind_dataset,)
-        wind_avg = wind_tools_module.calc_wind_avg_at_point(
+        wind_avg = wind_tools.calc_wind_avg_at_point(
             arrow.get('2016-02-02 04:25'), str(tmp_weather_path), (0, 0),
             avg_hrs=-2)
         np.testing.assert_allclose(wind_avg.u, 3.5)
         np.testing.assert_allclose(wind_avg.v, -3.5)
 
-    @patch.object(wind_tools_module().nc_tools, 'dataset_from_path')
-    def test_fcst_wind(self, m_dfp, wind_tools_module, wind_dataset, tmpdir):
+    @patch.object(wind_tools.nc_tools, 'dataset_from_path')
+    def test_fcst_wind(self, m_dfp, wind_dataset, tmpdir):
         tmp_weather_path = tmpdir.ensure_dir('operational')
         m_dfp.side_effect = (IOError, wind_dataset)
-        wind_avg = wind_tools_module.calc_wind_avg_at_point(
+        wind_avg = wind_tools.calc_wind_avg_at_point(
             arrow.get('2016-02-02 04:25'), str(tmp_weather_path), (0, 0))
         np.testing.assert_allclose(wind_avg.u, 2.5)
         np.testing.assert_allclose(wind_avg.v, -2.5)
 
-    @patch.object(wind_tools_module().nc_tools, 'dataset_from_path')
+    @patch.object(wind_tools.nc_tools, 'dataset_from_path')
     def test_prepend_previous_day(
-        self, m_dfp, wind_tools_module, wind_dataset, tmpdir,
+        self, m_dfp, wind_dataset, tmpdir,
     ):
         tmp_weather_path = tmpdir.ensure_dir('operational')
         wind_prev_day = nc.Dataset('wind_prev_day', 'w')
@@ -136,7 +132,7 @@ class TestCalcWindAvgAtPoint(object):
         time_counter.time_origin = '2016-FEB-01 00:00:00'
         time_counter[:] = np.arange(19, 24) * 60*60
         m_dfp.side_effect = (wind_dataset, wind_prev_day)
-        wind_avg = wind_tools_module.calc_wind_avg_at_point(
+        wind_avg = wind_tools.calc_wind_avg_at_point(
             arrow.get('2016-02-02 01:25'), str(tmp_weather_path), (0, 0))
         wind_prev_day.close()
         os.remove('wind_prev_day')

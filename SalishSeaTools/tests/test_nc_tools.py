@@ -1,22 +1,22 @@
+# Copyright 2013-2016 The Salish Sea MEOPAR contributors
+# and The University of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Unit tests for nc_tools.
 """
 from __future__ import division
-"""
-Copyright 2013-2016 The Salish Sea MEOPAR contributors
-and The University of British Columbia
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
 import datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -29,12 +29,6 @@ import pytest
 from salishsea_tools import nc_tools
 
 
-@pytest.fixture
-def nc_tools_module():
-    from salishsea_tools import nc_tools
-    return nc_tools
-
-
 @pytest.mark.parametrize('path, args, kwargs, expected', [
     ('foo/bar.nc', [], {}, 'foo/bar.nc'),
     ('foo/bar.nc', ['w'], {}, 'foo/bar.nc'),
@@ -43,11 +37,11 @@ def nc_tools_module():
     (Path('foo/bar.nc'), ['w'], {}, 'foo/bar.nc'),
     (Path('foo/bar.nc'), ['w'], {'format': 'NETCDF4_CLASSIC'}, 'foo/bar.nc'),
 ])
-def test_dataset_from_path(path, args, kwargs, expected, nc_tools_module):
+def test_dataset_from_path(path, args, kwargs, expected):
     """dataset_from_path calls netCDF4.Dataset w/ path as str, args & kwargs
     """
-    with patch.object(nc_tools_module.nc, 'Dataset') as m_Dataset:
-        dataset = nc_tools_module.dataset_from_path(path, *args, **kwargs)
+    with patch.object(nc_tools.nc, 'Dataset') as m_Dataset:
+        dataset = nc_tools.dataset_from_path(path, *args, **kwargs)
     assert dataset == m_Dataset(expected, *args, **kwargs)
 
 
