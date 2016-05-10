@@ -19,6 +19,12 @@ Descriptions under the links below are from the first cell of the notebooks
     Notebook to take our SalishSea2 bathymetry which was smoothed to dh/hbar = 0.8 and smooth it more to 0.33.  
     We show below that this makes the Thalweg more rugged as it pulls shallow areas from the sides across the channel.  
 
+* ##[ExploringBagFiles.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/ExploringBagFiles.ipynb)  
+    
+    **Exploring `.bag` Bathymetry Data Files**  
+      
+    An exploration of data and metadata in Bathymetric Attributed Grid (BAG) files.  
+
 * ##[Deepen by Grid Thickness.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Deepen by Grid Thickness.ipynb)  
     
 * ##[NEMO-GridBathy.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/NEMO-GridBathy.ipynb)  
