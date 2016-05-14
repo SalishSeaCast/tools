@@ -324,7 +324,7 @@ def get_EC_observations(station, start_day, end_day):
     PST = tz.tzoffset("PST", -28800)
 
     wind_spd, wind_dir, temp = [], [], []
-    url = 'http://climate.weather.gc.ca/climateData/bulkdata_e.html'
+    url = 'http://climate.weather.gc.ca/climate_data/bulk_data_e.html'
     query = {
         'timeframe': 1,
         'stationID': station_ids[station],
