@@ -15,13 +15,18 @@
 
 """Functions for loading and processing observational data
 """
-import numpy as np
 import datetime as dtm
+import os
+
 import dateutil.parser as dparser
-import scipy.io as sio
+import numpy as np
+import scipy.io
 
 
-def load_ADCP(daterange, station='central'):
+def load_ADCP(
+        daterange, station='central',
+        adcp_data_dir='/ocean/dlatorne/MEOPAR/ONC_ADCP/',
+):
     """Returns the ONC ADCP velocity profiles at a given station
     over a specified daterange.
     
@@ -35,32 +40,23 @@ def load_ADCP(daterange, station='central'):
         zonal and meridional velocity
     :rtype: :py:class:`Numpy.array` and :py:class:`Numpy.ma.MaskedArray`
     """
-
-    # Parse datein
     startdate = dparser.parse(daterange[0])
     enddate = dparser.parse(daterange[1])
-
-    # Load ONC matfile
-    grid = sio.loadmat(
-        '/ocean/dlatorne/MEOPAR/ONC_ADCP/ADCP{}.mat'.format(station))
-
+    grid = scipy.io.loadmat(
+        os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))
     # Generate datetime array
     mtimes = grid['mtime'][0]
     datetimes = np.array([dtm.datetime.fromordinal(int(mtime)) +
                           dtm.timedelta(days=mtime % 1) -
                           dtm.timedelta(days=366) for mtime in mtimes])
-
     # Find daterange indices
     indexstart = abs(datetimes - startdate).argmin()
     indexend = abs(datetimes - enddate).argmin()
-
     # Extract time, depth, and velocity vectors
     datetime = datetimes[indexstart:indexend + 1]
     u0 = grid['utrue'][:, indexstart:indexend + 1] / 100  # to m/s
     v0 = grid['vtrue'][:, indexstart:indexend + 1] / 100  # to m/s
     depth = grid['chartdepth'][0]
-
     u = np.ma.masked_invalid(u0)
     v = np.ma.masked_invalid(v0)
-
     return datetime, depth, u, v
