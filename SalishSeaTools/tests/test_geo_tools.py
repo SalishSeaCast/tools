@@ -17,9 +17,10 @@
 """
 import numpy as np
 import pytest
+import netCDF4 as nc
 
 from salishsea_tools import geo_tools
-
+from salishsea_tools import tidetools
 
 class TestDistanceAlongCurve:
     """Unit tests for distance_along_curve() function.
@@ -61,3 +62,25 @@ class TestHaversine:
     def test_haversine(self, lon1, lat1, lon2, lat2, expected):
         result = geo_tools.haversine(lon1, lat1, lon2, lat2)
         np.testing.assert_allclose(result, expected, rtol=self.HAVERSINE_RTOL)
+
+
+class TestFindClosestModelPoint:
+    """ Unit tests for find_closest_model_point() function
+    """
+
+    grid_B = nc.Dataset('/data/nsoontie/MEOPAR/NEMO-forcing/grid/bathy_meter_SalishSea2.nc')
+    bathy, model_lons, model_lats = tidetools.get_bathy_data(grid_B)
+
+    def raises_value_error(self, model_lons, model_lats):
+        with pytest.raises(ValueError):
+            geo_tools.find_closest_model_point(0, 0, model_lons, model_lats)
+
+    @pytest.mark.parametrize('lon, lat, expected', [
+        (-122, 47.6, (248, 69)),
+        (-124, 48.9, (205, 437)),
+        (-123.515, 48.905, (237, 404)),
+        (-123.50, 48.905, (239, 403))
+    ])
+    def test_find_closest_model_point(self, lon, lat, expected):
+        j, i = geo_tools.find_closest_model_point(lon, lat, self.model_lons, self.model_lats, land_mask = self.bathy.mask)
+        assert j == expected[0] and i == expected[1]
