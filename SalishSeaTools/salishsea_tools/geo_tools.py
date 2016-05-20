@@ -75,7 +75,7 @@ def find_closest_model_point(
     water point.
 
     e.g.
-    j, i = find_closest_model_point(-125.5,49.2,model_lons,model_lats,bathy)
+    j, i = find_closest_model_point(-125.5,49.2,model_lons,model_lats,land_mask=bathy.mask)
     where bathy, model_lons and model_lats are returned from get_bathy_data(grid).
     j is the y-index(latitude), i is the x-index(longitude)
 
@@ -85,16 +85,16 @@ def find_closest_model_point(
     :arg lat: specified latitude
     :type lat: float
 
-    :arg model_lons: specified model longitude
+    :arg model_lons: specified model longitude grid
     :type model_lons: numpy array
 
-    :arg model_lats: specified model latitude
+    :arg model_lats: specified model latitude grid
     :type model_lats: numpy array
 
     :arg grid: specify which default lon/lat tolerances
     :type grid: string
 
-    :arg land_mask: describes which grid co-ordinates are land
+    :arg land_mask: describes which grid coordinates are land
     :type land_mask: numpy array
 
     :arg tols: stored default tols for different grid types
