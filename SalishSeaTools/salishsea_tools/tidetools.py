@@ -39,6 +39,7 @@ from scipy.optimize import curve_fit
 from salishsea_tools import (
     namelist,
     viz_tools,
+    geo_tools,
 )
 
 # Tide correction for amplitude and phase set to September 10th 2014 by nowcast
@@ -749,8 +750,9 @@ def calc_diffs_meas_mod(runname, loc, grid):
             'K1 Difference Foreman', 'K1 Difference Masson',
         ])
         for t in np.arange(0, len(meas_wl_harm.Lat)):
-            x1, y1 = find_closest_model_point(
-                -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t], X, Y, bathy)
+            x1, y1 = geo_tools.find_closest_model_point(
+                -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
+                X, Y, land_mask=bathy.mask)
             if x1:
                 # Observed constituents
                 Ao_M2 = meas_wl_harm.M2_amp[t]/100  # [m]
