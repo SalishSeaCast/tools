@@ -70,9 +70,9 @@ def find_closest_model_point(
         'NEMO': {'tol_lon': 0.0104, 'tol_lat': 0.00388},
         'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.011},
         }):
-    """Returns the grid co-ordinates of the closest model point
+    """Returns the grid coordinates of the closest model point
     to a specified lon/lat. If land_mask is provided, returns the closest
-    non-land point.
+    water point.
 
     e.g.
     j, i = find_closest_model_point(-125.5,49.2,model_lons,model_lats,bathy)
