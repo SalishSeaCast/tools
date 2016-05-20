@@ -15,6 +15,7 @@
 
 """Functions for loading and processing observational data
 """
+from collections import namedtuple
 import datetime as dtm
 import os
 
@@ -36,9 +37,13 @@ def load_ADCP(
 
     :arg str station: Requested profile location ('central', 'east', or 'ddl')
 
-    :returns: Arrays of :py:class:`Datetime` and depth and masked arrays of
-        zonal and meridional velocity
-    :rtype: :py:class:`Numpy.array` and :py:class:`Numpy.ma.MaskedArray`
+    :returns: :py:attr:`datetime` attribute holds a :py:class:`numpy.ndarray`
+              of data datatime stamps,
+              :py:attr:`depth` holds the depth at which the ADCP sensor is
+              deployed,
+              :py:attr:`u` and :py:attr:`v` hold :py:class:`numpy.ndarray`
+              of the zonal and meridional velocity profiles at each datetime.
+    :rtype: 4 element :py:class:`collections.namedtuple`
     """
     startdate = dparser.parse(daterange[0])
     enddate = dparser.parse(daterange[1])
@@ -59,4 +64,5 @@ def load_ADCP(
     depth = grid['chartdepth'][0]
     u = np.ma.masked_invalid(u0)
     v = np.ma.masked_invalid(v0)
-    return datetime, depth, u, v
+    adcp_data = namedtuple('ADCP_data', 'datetime, depth, u, v')
+    return adcp_data(datetime, depth, u, v)
