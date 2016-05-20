@@ -132,9 +132,9 @@ def find_closest_model_point(
         jmax, imax = land_mask.shape
         max_search_dist = int(model_lats.shape[1]/4)  # Limit on size of grid search
         closest_point = None
-        j_s, i_s = j, i  # starting points are i,j
+        j_s, i_s = j, i  # starting points is j, i
         dj, di = 0, -1
-        # move j_s, i_s in a square spiral centred at i,j
+        # move j_s, i_s in a square spiral centred at j, i
         while (i_s-i) <= max_search_dist:
             if ((j_s-j) == (i_s-i)
                 or ((j_s-j) < 0 and (j_s-j) == -(i_s-i))
@@ -142,11 +142,10 @@ def find_closest_model_point(
             ):
                 # Hit the corner of the spiral- change direction
                 dj, di = -di, dj
-            i_s, j_s = i_s+di, j_s+dj
+            i_s, j_s = i_s+di, j_s+dj  # Take a step to next square
             if i_s >= 0 and i_s < imax and j_s >= 0 and j_s < jmax and not land_mask[j_s, i_s]:
                 # Found a water point, how close is it?
                 actual_dist = haversine(lon, lat, model_lons[j_s, i_s], model_lats[j_s, i_s])
-                grid_dist = int(((i_s-i)**2 + (j_s-j)**2)**0.5)
                 if closest_point is None:
                     min_dist = actual_dist
                     closest_point = (j_s, i_s)
@@ -154,6 +153,9 @@ def find_closest_model_point(
                     # Keep record of closest point
                     min_dist = actual_dist
                     closest_point = (j_s, i_s)
+                # Assumes grids are square- reduces search radius to only
+                # check grids that could potentially be closer than this
+                grid_dist = int(((i_s-i)**2 + (j_s-j)**2)**0.5)
                 if (grid_dist + 1) < max_search_dist:
                     # Reduce stopping distance for spiral-
                     # just need to check that no points closer than this one
@@ -161,7 +163,7 @@ def find_closest_model_point(
 
         if closest_point is None:
             raise ValueError(
-                'No model point found on water'
+                "Only found land points near that coordinate. If land points are OK don't pass in a land_mask."
             )
         else:
             j, i = closest_point
