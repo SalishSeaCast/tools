@@ -73,6 +73,7 @@ class TestFindClosestModelPoint:
 
     def raises_value_error(self, model_lons, model_lats):
         with pytest.raises(ValueError):
+            # lat and lon values that aren't on this grid (0, 0)
             geo_tools.find_closest_model_point(0, 0, model_lons, model_lats)
 
     @pytest.mark.parametrize('lon, lat, expected', [
