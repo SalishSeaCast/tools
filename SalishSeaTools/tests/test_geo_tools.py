@@ -76,10 +76,10 @@ class TestFindClosestModelPoint:
             geo_tools.find_closest_model_point(0, 0, model_lons, model_lats)
 
     @pytest.mark.parametrize('lon, lat, expected', [
-        (-122, 47.6, (248, 69)),
-        (-124, 48.9, (205, 437)),
-        (-123.515, 48.905, (237, 404)),
-        (-123.50, 48.905, (239, 403))
+        (-122, 47.6, (69, 248)),
+        (-124, 48.9, (437, 205)),
+        (-123.515, 48.905, (404, 237)),
+        (-123.50, 48.905, (403, 239))
     ])
     def test_find_closest_model_point(self, lon, lat, expected):
         j, i = geo_tools.find_closest_model_point(lon, lat, self.model_lons, self.model_lats, land_mask = self.bathy.mask)
