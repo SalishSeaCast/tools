@@ -105,7 +105,7 @@ def find_closest_model_point(
 
     # Search for a grid point with longitude or latitude within
     # tolerance of measured location
-    i_list, j_list = np.where(
+    j_list, i_list = np.where(
         np.logical_and(
             (np.logical_and(model_lons > lon - tols[grid]['tol_lon'], model_lons < lon + tols[grid]['tol_lon'])),
             (np.logical_and(model_lats > lat - tols[grid]['tol_lat'], model_lats < lat + tols[grid]['tol_lat']))))
@@ -113,14 +113,14 @@ def find_closest_model_point(
         # several points within tol, calculate distance for all of them and pick closest
         min_dist = float('Inf')
         for n in range(len(i_list)):
-            dist = haversine(lon,lat, model_lons[i_list[n],j_list[n]], model_lats[i_list[n],j_list[n]])
+            dist = haversine(lon, lat, model_lons[j_list[n], i_list[n]], model_lats[j_list[n], i_list[n]])
             if dist < min_dist:
-                closest_point = (i_list[n],j_list[n])
+                closest_point = (j_list[n], i_list[n])
                 min_dist = dist
-        i, j = closest_point
+        j, i = closest_point
     elif not j_list or not i_list:
         raise ValueError(
-            'No model point found. tol_lon/tol_lat toozzz small or '
+            'No model point found. tol_lon/tol_lat too small or '
             'lon/lat outside of domain.'
         )
     else:
@@ -128,31 +128,32 @@ def find_closest_model_point(
         j = j_list
 
     # If point is on land and land mask is provided, try to find closest water point
-    if land_mask is not None and land_mask[i,j]:
-        xmax, ymax = land_mask.shape
-        max_search_dist = int(model_lats.shape[1]/4) # Limit on size of grid search
+    if land_mask is not None and land_mask[j, i]:
+        jmax, imax = land_mask.shape
+        max_search_dist = int(model_lats.shape[1]/4)  # Limit on size of grid search
         closest_point = None
-        i_s, j_s = i, j # starting points are i,j
-        di, dj = 0, -1
-        # move i_s,j_s in a square spiral centred at i,j
+        j_s, i_s = j, i  # starting points are i,j
+        dj, di = 0, -1
+        # move j_s, i_s in a square spiral centred at i,j
         while (i_s-i) <= max_search_dist:
-            if ((i_s-i) == (j_s-j)
-                or (i_s < i and (i_s-i) == -(j_s-j))
-                or (i_s > i and (i_s-i) == 1-(j_s-j))):
+            if ((j_s-j) == (i_s-i)
+                or ((j_s-j) < 0 and (j_s-j) == -(i_s-i))
+                or ((j_s-j) > 0 and (j_s-j) == 1-(i_s-i))
+            ):
                 # Hit the corner of the spiral- change direction
-                di, dj = -dj, di
+                dj, di = -di, dj
             i_s, j_s = i_s+di, j_s+dj
-            if i_s >= 0 and i_s < xmax and j_s >= 0 and j_s < ymax and not land_mask[i_s,j_s]:
+            if i_s >= 0 and i_s < imax and j_s >= 0 and j_s < jmax and not land_mask[j_s, i_s]:
                 # Found a water point, how close is it?
-                actual_dist = haversine(lon,lat, model_lons[i_s,j_s], model_lats[i_s,j_s])
+                actual_dist = haversine(lon, lat, model_lons[j_s, i_s], model_lats[j_s, i_s])
                 grid_dist = int(((i_s-i)**2 + (j_s-j)**2)**0.5)
                 if closest_point is None:
                     min_dist = actual_dist
-                    closest_point = (i_s,j_s)
+                    closest_point = (j_s, i_s)
                 elif actual_dist < min_dist:
                     # Keep record of closest point
                     min_dist = actual_dist
-                    closest_point = (i_s,j_s)
+                    closest_point = (j_s, i_s)
                 if (grid_dist + 1) < max_search_dist:
                     # Reduce stopping distance for spiral-
                     # just need to check that no points closer than this one
@@ -163,5 +164,5 @@ def find_closest_model_point(
                 'No model point found on water'
             )
         else:
-            i,j = closest_point
-    return j,i
+            j, i = closest_point
+    return j, i
