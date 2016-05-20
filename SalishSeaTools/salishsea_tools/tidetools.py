@@ -447,76 +447,14 @@ def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
     """Returns the grid co-ordinates of the closest non-land model point
     to a specified lon/lat.
 
-    e.g. yind, xind = find_closest_model_point(-125.5,49.2,X,Y,bathy)
-    where bathy, X and Y are returned from get_bathy_data(grid).
-    yind is the y-index(latitude), xind is the x-index(longitude)
+    .. note::
 
-    :arg lon: specified longitude
-    :type lon: float
-
-    :arg lat: specified latitude
-    :type lat: float
-
-    :arg X: specified model longitude
-    :type X: numpy array
-
-    :arg Y: specified model latitude
-    :type Y: numpy array
-
-    :arg bathy: model bathymetry
-    :type bathy: numpy array
-
-    :arg lon_tol: tolerance value for seaching in longitude
-    :type lon_tol: float
-
-    :arg lat_tol: tolerance value for searching in latitude
-    :type lat_tol: float
-
-    :arg allow_land: whether code should return a land point or closest
-                     water point
-    :type allow_land: boolean
-
-    :returns: yind, xind
+        This function is deprecated.
+        Use :py:func:`geo_tools.find_closest_model_point` instead.
     """
-    # Tolerance for searching for grid points
-    # (default is approx. distances between adjacent grid points)
-    tol1 = lon_tol   # lon
-    tol2 = lat_tol   # lat
+    raise DeprecationWarning(
+        'tidetools.find_closest_model_point() has been replaced by geo_tools.find_closest_model_point()')
 
-    # Search for a grid point with lon/lat within tolerance of
-    # measured location
-    x1, y1 = np.where(
-        np.logical_and(
-            (np.logical_and(X > lon-tol1, X < lon+tol1)),
-            (np.logical_and(Y > lat-tol2, Y < lat+tol2))))
-
-    # check size of arrays so we don't go out of bounds in our search
-    xmax, ymax = bathy.shape
-    if np.size(x1) != 0:
-        x1 = x1[0]
-        y1 = y1[0]
-        # What if more than one point is returned from this search?
-        # Just take the first one...
-        #
-        # If x1,y1 is masked, search 3x3 grid around.
-        # If all those points are masked, search 4x4 grid around, etc.
-        for ii in np.arange(1, 100):
-            if bathy.mask[x1, y1] and not allow_land:
-                for i in np.arange(max(0, x1-ii), min(xmax, x1+ii+1)):
-                    for j in np.arange(max(0, y1-ii), min(ymax, y1+ii+1)):
-                        if not bathy.mask[i, j]:
-                            break
-                    if not bathy.mask[i, j]:
-                        break
-                if not bathy.mask[i, j]:
-                    break
-            else:
-                i = x1
-                j = y1
-    else:
-            i = []
-            j = []
-    return i, j
 
 
 def plot_amp_map(X, Y, grid, amp, constituent_name, figsize=(9, 9)):
