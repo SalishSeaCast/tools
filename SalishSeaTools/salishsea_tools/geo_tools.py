@@ -181,9 +181,15 @@ def find_closest_model_point(
     except ValueError:
         # Several points within tolerance
         # Calculate distances for all and choose the closest
+
+        # Avoiding array indexing because some functions
+        # pass in model_lons and model_lats as netcdf4 objects
+        # (which treat 'model_lons[j_list, i_list]' differently)
+        lons = [model_lons[j_list[n], i_list[n]] for n in range(len(j_list))]
+        lats = [model_lats[j_list[n], i_list[n]] for n in range(len(j_list))]
         dists = haversine(
             np.array([lon] * i_list.size), np.array([lat] * j_list.size),
-            model_lons[j_list, i_list], model_lats[j_list, i_list])
+            lons, lats)
         n = dists.argmin()
         j, i = map(np.asscalar, (j_list[n], i_list[n]))
 
