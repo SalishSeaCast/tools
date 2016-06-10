@@ -217,11 +217,11 @@ def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
     :arg grid_T: Tracer results dataset from NEMO.
     :type grid_T: :py:class:`netCDF4.Dataset`
 
-    :arg int j: j-direction (longitude) index of grid point to get wind
-                components at.
+    :arg int j: j-direction (longitude) index of grid point to get sea surface
+                height at.
 
-    :arg int i: i-direction (latitude) index of grid point to get wind
-                components at.
+    :arg int i: i-direction (latitude) index of grid point to get sea surface
+                height at.
 
     :arg boolean datetimes: Return time counter values as
                             :py:class:`datetime.datetime` objects if
