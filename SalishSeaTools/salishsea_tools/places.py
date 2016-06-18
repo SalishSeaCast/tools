@@ -48,6 +48,9 @@ PLACES = {
         # indices of nearest weather forcing grid point
         # j is the latitude (y) direction, i is the longitude (x) direction
         'wind grid ji': (190, 102),
+        # indices of nearest NEMO model grid point
+        # j is the latitude (y) direction, i is the longitude (x) direction
+        'NEMO grid ji': (747, 125),
     },
     'Cherry Point': {
         'lon lat': (-122.766667, 48.866667),
@@ -55,12 +58,14 @@ PLACES = {
         'mean sea lvl': 3.543,
         'hist max sea lvl': 5.846,
         'wind grid ji': (122, 166),
+        'NEMO grid ji': (343, 341),
     },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
         'mean sea lvl': 3.08,
         'hist max sea lvl': 5.47,
         'wind grid ji': (142, 133),
+        'NEMO grid ji': (484, 208),
     },
     'Point Atkinson': {
         'lon lat': (-123.25, 49.33),
@@ -68,6 +73,7 @@ PLACES = {
         'mean sea lvl': 3.09,
         'hist max sea lvl': 5.61,
         'wind grid ji': (146, 155),
+        'NEMO grid ji': (468, 329),
     },
     'Victoria': {
         'lon lat': (-123.36, 48.41),
@@ -75,6 +81,7 @@ PLACES = {
         'mean sea lvl': 1.8810,
         'hist max sea lvl': 3.76,
         'wind grid ji': (104, 144),
+        'NEMO grid ji': (297, 197),
     },
 
     # Ferry terminals
@@ -142,7 +149,8 @@ PLACES = {
 
     # Weather buoys
     'Sandheads': {
-        'lon lat': (-123.30, 49.10)
+        'lon lat': (-123.30, 49.10),
+        'NEMO grid ji': (426, 292),
     }
 
 }
