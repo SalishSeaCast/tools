@@ -390,6 +390,8 @@ the first is easier to understand when our future selves read our code.
 Module-Specific Best Practices
 ==============================
 
+.. _LibraryCodeSalishSeaToolsPlaces:
+
 :py:mod:`salishsea_tools.places`
 --------------------------------
 
