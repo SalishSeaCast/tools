@@ -21,6 +21,7 @@ import os
 
 import dateutil.parser as dparser
 import numpy as np
+import scipy.interpolate
 import scipy.io
 
 
@@ -66,3 +67,54 @@ def load_ADCP(
     v = np.ma.masked_invalid(v0)
     adcp_data = namedtuple('ADCP_data', 'datetime, depth, u, v')
     return adcp_data(datetime, depth, u, v)
+
+
+def interpolate_to_depth(
+    var, var_depths, interp_depths, var_mask=0, var_depth_mask=0,
+):
+    """Calculate the interpolated value of var at interp_depth using linear
+    interpolation.
+
+    :arg var: Depth profile of a model variable or data quantity.
+    :type var: :py:class:`numpy.ndarray`
+
+    :arg var_depths: Depths at which the model variable or data quantity has
+                     values.
+    :type var_depths: :py:class:`numpy.ndarray`
+
+    :arg interp_depths: Depth(s) at which to calculate the interpolated value
+                        of the model variable or data quantity.
+    :type var_mask: :py:class:`numpy.ndarray` or number
+
+    :arg var_mask: Mask to use for the model variable or data quantity.
+                   For model results it is best to use the a 1D slice of the
+                   appropriate mesh mask array;
+                   e.g. :py:attr:`tmask` for tracers.
+                   Masking the model variable or data quantity increases the
+                   accuracy of the interpolation.
+                   If var_mask is not provided the model variable or data
+                   quantity is zero-masked.
+    :type var_mask: :py:class:`numpy.ndarray` or number
+
+    :arg var_depth_mask: Mask to use for the depths.
+                         For model results it is best to use the a 1D slice
+                         of the appropriate mesh mask array;
+                         e.g. :py:attr:`tmask` for tracers.
+                         Masking the depths array increases the accuracy of
+                         the interpolation.
+                         If var_depth_mask is not provided the depths array
+                         is zero-masked.
+    :type var_mask: :py:class:`numpy.ndarray` or number
+
+    :returns: Value(s) of var linearly interpolated to interp_depths.
+    :rtype: :py:class:`numpy.ndarray` or number
+    """
+    var_mask = (
+        var_mask if hasattr(var_mask, 'shape') else var_mask == var_mask)
+    var_depth_mask = (
+        var_depth_mask if hasattr(var_depth_mask, 'shape')
+        else var_depth_mask == var_depth_mask)
+    depth_interp = scipy.interpolate.interp1d(
+        np.ma.array(var_depths, mask=var_depth_mask),
+        np.ma.array(var, mask=var_mask))
+    return depth_interp(interp_depths)
