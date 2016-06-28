@@ -19,6 +19,7 @@ from collections import namedtuple
 import datetime as dtm
 import os
 
+import arrow
 import dateutil.parser as dparser
 import numpy as np
 import scipy.interpolate
@@ -118,3 +119,25 @@ def interpolate_to_depth(
         np.ma.array(var_depths, mask=var_depth_mask),
         np.ma.array(var, mask=var_mask))
     return depth_interp(interp_depths)
+
+
+def onc_datetime(date_time, timezone='Canada/Pacific'):
+    """Return a string representation of a date/time in the particular
+    ISO-8601 extended format required by the Ocean Networks Canada (ONC)
+    data web services API.
+
+    :arg date_time: Date/time to transform into format required by
+                    ONC data web services API.
+    :type date_time: str
+                     or :py:class:`datetime.datetime`
+                     or :py:class:`arrow.Arrow`
+
+    :arg str timezone: Timezone of date_time.
+
+    :returns: UTC date/time formatted as :kbd:`YYYY-MM-DDTHH:mm:ss.SSSZ`
+    :rtype: str
+    """
+    d = arrow.get(date_time)
+    d_tz = arrow.get(d.datetime, timezone)
+    d_utc = d_tz.to('utc')
+    return '{}Z'.format(d_utc.format('YYYY-MM-DDTHH:mm:ss.SSS'))
