@@ -18,12 +18,26 @@
 from collections import namedtuple
 import datetime as dtm
 import os
+try:
+    from urllib.parse import (
+        quote,
+        urlencode,
+    )
+except ImportError:
+    # Python 2.7
+    from urllib import (
+        quote,
+        urlencode,
+    )
 
 import arrow
 import dateutil.parser as dparser
 import numpy as np
+import requests
+from retrying import retry
 import scipy.interpolate
 import scipy.io
+import xarray
 
 
 def load_ADCP(
@@ -110,14 +124,20 @@ def interpolate_to_depth(
     :returns: Value(s) of var linearly interpolated to interp_depths.
     :rtype: :py:class:`numpy.ndarray` or number
     """
-    var_mask = (
-        var_mask if hasattr(var_mask, 'shape') else var_mask == var_mask)
-    var_depth_mask = (
-        var_depth_mask if hasattr(var_depth_mask, 'shape')
-        else var_depth_mask == var_depth_mask)
+    # var_mask = (
+    #     np.logical_not(var_mask) if hasattr(var_mask, 'shape')
+    #     else var_mask == var_mask)
+    # print(var_depths)
+    # print(var_depths[var_depth_mask == True])
+    # var_depth_mask = (
+    #     np.logical_not(var_depth_mask) if hasattr(var_depth_mask, 'shape')
+    #     else var_depth_mask == var_depth_mask)
     depth_interp = scipy.interpolate.interp1d(
-        np.ma.array(var_depths, mask=var_depth_mask),
-        np.ma.array(var, mask=var_mask))
+        var_depths[var_depth_mask == True], var[var_mask == True],
+        # np.ma.array(var_depths, mask=var_depth_mask),
+        # np.ma.array(var, mask=var_mask),
+        fill_value='extrapolate',
+        assume_sorted=True)
     return depth_interp(interp_depths)
 
 
@@ -141,3 +161,95 @@ def onc_datetime(date_time, timezone='Canada/Pacific'):
     d_tz = arrow.get(d.datetime, timezone)
     d_utc = d_tz.to('utc')
     return '{}Z'.format(d_utc.format('YYYY-MM-DDTHH:mm:ss.SSS'))
+
+
+def get_onc_data(
+    endpoint, method, token,
+    retry_args={
+        'wait_exponential_multiplier': 1000,
+        'wait_exponential_max': 30000,
+    },
+    **query_params):
+    """Request data from one of the Ocean Networks Canada (ONC) web services.
+
+    See https://wiki.oceannetworks.ca/display/help/API for documentation
+    of the ONC data web services API.
+    See the `ONC-DataWebServices notebook`_ for example of use of the API
+    and of this function.
+
+    _ ONC-DataWebServices notebook:http://nbviewer.jupyter.org/urls/bitbucket
+    .org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
+
+    :arg dict retry_args: Key/value pair arguments to control how the request
+                          is retried should it fail the first time.
+                          The defaults provide a 2^x * 1 second exponential
+                          back-off between each retry, up to 30 seconds,
+                          then 30 seconds afterwards
+                          See https://pypi.python.org/pypi/retrying for a full
+                          discussion of the parameters available to control
+                          retrying.
+
+    :arg str endpoint: ONC web service end-point; e.g. :kbd:`scalardata`.
+                       See https://wiki.oceannetworks.ca/display/help/API
+                       for available web service end-points.
+
+    :arg str method: ONC web service method; e.g. :kbd:`getByStation`.
+                     See https://wiki.oceannetworks.ca/display/help/API
+                     and the pages linked from it for the method available
+                     on each of the web service end-points.
+
+    :arg str token: ONC web services API token generated on the
+                    :guilabel:`Web Services API` tab of
+                    http://dmas.uvic.ca/Profile
+
+    :arg dict query_params: Query parameters expressed as key/value pairs.
+
+    :returns: Mapping created from the JSON content of the response from the
+              data web service
+    :rtype: dict
+    """
+    url_tmpl = 'http://dmas.uvic.ca/api/{endpoint}?{query}'
+    query = {'method': method, 'token': token}
+    query.update(query_params)
+    data_url = url_tmpl.format(
+        endpoint=endpoint,
+        query=urlencode(query, quote_via=quote, safe='/:'))
+    @retry(**retry_args)
+    def requests_get(data_url):
+        return requests.get(data_url)
+    response = requests_get(data_url)
+    response.raise_for_status()
+    return response.json()
+
+
+def onc_json_to_dataset(onc_json):
+    """Return an :py:class:`xarray.Dataset` object containing the data and
+    metadata obtained from an Ocean Networks Canada (ONC) data web service API
+    request.
+
+    :arg dict onc_json: Data structure returned from an ONC data web service
+                        API request.
+                        Typically produces by calling the :py:meth:`json`
+                        method on the :py:class:`~requests.Response` object
+                        produced by calling :py:meth:`requests.get`.
+
+    :returns: Data structure containing data and metadata
+    :rtype: :py:class:`xarray.Dataset`
+    """
+    data_vars = {}
+    for sensor in onc_json['sensorData']:
+        data_vars[sensor['sensor']] = xarray.DataArray(
+            name=sensor['sensor'],
+            data=[d['value'] for d in sensor['data']],
+            coords={
+                'sampleTime': [arrow.get(d['sampleTime']).datetime
+                               for d in sensor['data']],
+            },
+            attrs={
+                'qaqcFlag': [d['qaqcFlag'] for d in sensor['data']],
+                'sensorName': sensor['sensorName'],
+                'unitOfMeasure': sensor['unitOfMeasure'],
+                'actualSamples': sensor['actualSamples'],
+            }
+        )
+    return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
