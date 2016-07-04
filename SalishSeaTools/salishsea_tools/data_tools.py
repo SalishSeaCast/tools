@@ -99,7 +99,7 @@ def interpolate_to_depth(
 
     :arg interp_depths: Depth(s) at which to calculate the interpolated value
                         of the model variable or data quantity.
-    :type var_mask: :py:class:`numpy.ndarray` or number
+    :type interp_depths: :py:class:`numpy.ndarray` or number
 
     :arg var_mask: Mask to use for the model variable or data quantity.
                    For model results it is best to use the a 1D slice of the
@@ -124,6 +124,12 @@ def interpolate_to_depth(
     :returns: Value(s) of var linearly interpolated to interp_depths.
     :rtype: :py:class:`numpy.ndarray` or number
     """
+    raise NotImplementedError(
+        'Implementation of this function turns out to be complicated that '
+        'expected, especially for variables other than tracers. Please see '
+        'nowcast.figures.interpolate_depth or '
+        'nowcast.figures.shared.interpolate_tracer_to_depths.'
+    )
     # var_mask = (
     #     np.logical_not(var_mask) if hasattr(var_mask, 'shape')
     #     else var_mask == var_mask)
