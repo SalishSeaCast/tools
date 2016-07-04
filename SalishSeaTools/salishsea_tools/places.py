@@ -145,8 +145,9 @@ PLACES = {
         'ONC stationCode': 'SCVIP',
     },
     'DDL node': {
+        # ONC's description is "Delta/Lower Slope/Bottom Boundary Layer"
         'lon lat': (-123.3400617, 49.0807167),
-        'depth': 150,
+        'depth': 143,
         'NEMO grid ji': (425, 284),
         'ONC stationCode': 'LSBBL',
     },
