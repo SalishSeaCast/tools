@@ -135,16 +135,20 @@ PLACES = {
         'depth': 170,
         # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (416, 283),
+        # Ocean Networks Canada (ONC) data web services API station code
+        'ONC stationCode': 'SEVIP',
     },
     'Central node': {
         'lon lat': (-123.4261, 49.0401),
         'depth': 300,
         'NEMO grid ji': (424, 266),
+        'ONC stationCode': 'SCVIP',
     },
     'DDL node': {
         'lon lat': (-123.3400617, 49.0807167),
         'depth': 150,
-        'NEMO grid ji': (425, 284)
+        'NEMO grid ji': (425, 284),
+        'ONC stationCode': 'LSBBL',
     },
 
     # Weather buoys
