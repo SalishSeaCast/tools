@@ -34,7 +34,9 @@ from datetime import (
 import os
 
 import arrow
+import dateutil.parser as dparser
 import netCDF4 as nc
+import xarray as xr
 import numpy as np
 
 from salishsea_tools import hg_commands as hg
@@ -46,7 +48,10 @@ __all__ = [
     'dataset_from_path',
     'generate_pressure_file',
     'generate_pressure_file_ops',
+    'get_datetimes',
     'init_dataset_attrs',
+    'load_ERDDAP_GEM',
+    'load_ERDDAP_NEMO',
     'show_dataset_attrs',
     'show_dimensions',
     'show_variables',
@@ -56,6 +61,84 @@ __all__ = [
     'timestamp',
     'uv_wind_timeseries_at_point',
 ]
+
+def load_ERDDAP_GEM(
+        timerange, window=[0, 637500, 0, 662500],
+        fields=['u_wind', 'v_wind'],
+        path='https://salishsea.eos.ubc.ca/erddap/griddap',
+):
+    """Load GEM results from ERDDAP using xarray
+    """
+    
+    # Intialize storage dictionary
+    GEM = {}
+    
+    # Create timeslice
+    timeslice = slice(timerange[0], timerange[1])
+    xslice    = slice(window[0],    window[1])
+    yslice    = slice(window[2],    window[3])
+    
+    # Load GEM grid
+    grid = xr.open_dataset(os.path.join(path, 'ubcSSaAtmosphereGridV1'))
+    data = xr.open_dataset(os.path.join(path, 'ubcSSaSurfaceAtmosphereFieldsV1'))
+    GEM['lon'] = grid.longitude.sel(gridX=xslice, gridY=yslice)-360
+    GEM['lat'] = grid.latitude.sel( gridX=xslice, gridY=yslice)
+    
+    # Load GEM data
+    for field in fields:
+        GEM[field] = data[field].sel(time=timeslice, gridX=xslice, gridY=yslice)
+    
+    return GEM
+
+
+def load_ERDDAP_NEMO(
+        timerange, depth=0, window=[0, 398, 0, 898],
+        fields=['salinity', 'temperature', 'u', 'v'],
+        path='https://salishsea.eos.ubc.ca/erddap/griddap'
+):
+    """Load Nowcast results from ERDDAP using xarray
+    """
+    
+    # Intialize storage dictionary
+    NEMO = {}
+    
+    # Create timeslice
+    timeslice = slice(timerange[0], timerange[1])
+    xslice    = slice(window[0],    window[1])
+    yslice    = slice(window[2],    window[3])
+
+    # Load NEMO grid
+    grid = xr.open_dataset(os.path.join(path, 'ubcSSnBathymetry2V1'))
+    NEMO['lon'] = grid.longitude.sel(gridX=xslice, gridY=yslice)
+    NEMO['lat'] = grid.latitude.sel( gridX=xslice, gridY=yslice)
+    
+    # u velocity
+    if 'u' in fields:
+        u = xr.open_dataset(os.path.join(path, 'ubcSSn3DuVelocity1hV1'))
+        NEMO['u'] = u.uVelocity.sel(time=timeslice, gridX=xslice, gridY=yslice
+                                   ).sel(depth=depth, method='nearest')
+    
+    # v velocity
+    if 'v' in fields:
+        v = xr.open_dataset(os.path.join(path, 'ubcSSn3DvVelocity1hV1'))
+        NEMO['v'] = v.vVelocity.sel(time=timeslice, gridX=xslice, gridY=yslice
+                                   ).sel(depth=depth, method='nearest')
+    
+    # Tracers
+    if 'salinity' in fields or 'temperature' in fields:
+        trc = xr.open_dataset(os.path.join(path, 'ubcSSn3DTracerFields1hV1'))
+        # Salinity
+        if 'salinity' in fields:
+            NEMO['salinity'] = trc.salinity.sel(
+                                   time=timeslice, gridX=xslice, gridY=yslice
+                                   ).sel(depth=depth, method='nearest')
+        # Temperature
+        if 'temperature' in fields:
+            NEMO['temperature'] = trc.temperature.sel(
+                                   time=timeslice, gridX=xslice, gridY=yslice
+                                   ).sel(depth=depth, method='nearest')
+    
+    return NEMO
 
 
 def dataset_from_path(path, *args, **kwargs):
@@ -208,6 +291,34 @@ def timestamp(dataset, tindex, time_var='time_counter'):
         return results
     else:
         return results[0]
+
+
+def get_datetimes(dataset, time_var='time_counter'):
+    """Return the datetime array for a dataset
+    
+    This is a wrapper around nc_tools.timestamp that automatically
+    handles all timesteps and converts the arrow objects to a numpy
+    datetime object array.
+    
+    :arg dataset: netcdf dataset object.
+    :type dataset: :py:class:`netCDF4.Dataset`
+    
+    :arg time_var: name of time variable.
+    :type time_var: str
+    
+    :returns: datetime values at each timestep in the dataset.
+    :rtype: :py:class:`Numpy` array of :py:class:`Datetime` instances
+    """
+    
+    # Get arrow objects
+    time_stamps = timestamp(dataset,
+                    np.arange(dataset.variables['time_counter'].shape[0]),
+                    time_var=time_var)
+    
+    # Get datetime.datetime objects
+    datetimes = np.array([time_stamp.datetime for time_stamp in time_stamps])
+    
+    return datetimes
 
 
 def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):

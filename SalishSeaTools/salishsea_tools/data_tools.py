@@ -47,11 +47,18 @@ def load_ADCP(
         adcp_data_dir='/ocean/dlatorne/MEOPAR/ONC_ADCP/',
 ):
     """Returns the ONC ADCP velocity profiles at a given station
-    over a specified daterange.
-
-    :arg sequence daterange: Start and end datetimes for the requested data
-                             range
-                             (e.g. ['yyyy mmm dd', 'yyyy mmm dd']).
+    over a specified datetime range.
+    
+    This function uses the nearest neighbor to the specified datetime
+    bounds. ONC ADCP data is returned at approximately 15 and 45 minutes
+    past the hour, so choose datetime bounds accordingly.
+    
+    :arg daterange: start and end datetimes for the requested data range.
+        (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
+    :type daterange: list or tuple of str
+    
+    :arg adcp_path: ADCP file storage location
+    :type adcp_path: str
 
     :arg str station: Requested profile location ('central', 'east', or 'ddl')
 

@@ -22,7 +22,11 @@ import netCDF4 as nc
 import numpy as np
 
 
-__all__ = ['calc_abs_max', 'plot_coastline', 'set_aspect']
+__all__ = ['calc_abs_max',
+           'plot_coastline',
+           'rotate_vel',
+           'set_aspect',
+           'unstagger']
 
 
 def calc_abs_max(array):
@@ -45,6 +49,7 @@ def plot_coastline(
     xslice=None,
     yslice=None,
     color='black',
+    zorder=2,
 ):
     """Plot the coastline contour line from bathymetry on the axes.
 
@@ -106,19 +111,20 @@ def plot_coastline(
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
                 np.array(lons), np.array(lats), np.array(depths), 
-                [isobath], colors=color)
+                [isobath], colors=color, zorder=zorder)
         else:
             contour_lines = axes.contour(
                 lons[yslice, xslice], lats[yslice, xslice],
-                depths[yslice, xslice].data, [isobath], colors=color)
+                depths[yslice, xslice].data, [isobath], colors=color,
+                zorder=zorder)
     else:
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
-                np.array(depths), [isobath], colors=color)
+                np.array(depths), [isobath], colors=color, zorder=zorder)
         else:
             contour_lines = axes.contour(
                 xslice, yslice, depths[yslice, xslice].data,
-                [isobath], colors=color)
+                [isobath], colors=color, zorder=zorder)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_lines
@@ -132,6 +138,7 @@ def plot_land_mask(
     xslice=None,
     yslice=None,
     color='black',
+    zorder=1
 ):
     """Plot land areas from bathymetry as solid colour ploygons on the axes.
 
@@ -194,19 +201,21 @@ def plot_land_mask(
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(
                 np.array(lons), np.array(lats), np.array(depths), 
-                contour_interval, colors=color)
+                contour_interval, colors=color, zorder=zorder)
         else:
             contour_fills = axes.contourf(
                 lons[yslice, xslice], lats[yslice, xslice],
-                depths[yslice, xslice].data, contour_interval, colors=color)
+                depths[yslice, xslice].data, contour_interval, colors=color,
+                zorder=zorder)
     else:
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(np.array(depths), 
-                                          contour_interval, colors=color)
+                                          contour_interval, colors=color,
+                                          zorder=zorder)
         else:
             contour_fills = axes.contourf(
                 xslice, yslice, depths[yslice, xslice].data,
-                contour_interval, colors=color)
+                contour_interval, colors=color, zorder=zorder)
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_fills
@@ -282,3 +291,37 @@ def unstagger(ugrid, vgrid):
     u = np.add(ugrid[..., :-1], ugrid[..., 1:]) / 2
     v = np.add(vgrid[..., :-1, :], vgrid[..., 1:, :]) / 2
     return u[..., 1:, :], v[..., 1:]
+
+
+def rotate_vel(u_in, v_in, origin='grid'):
+    """Rotate u and v component values to either N-S or model grid.
+
+    The origin argument sets the input coordinates ('grid' or 'map')
+
+    :arg u_in: u velocity component values
+    :type u_in: :py:class:`numpy.ndarray`
+
+    :arg v_in: v velocity component values
+    :type v_in: :py:class:`numpy.ndarray`
+    
+    :arg origin: Input coordinate system
+    (either 'grid' or 'map', output will be the other)
+    :type origin: str
+
+    :returns u_out, v_out: rotated u and v component values
+    :rtype: :py:class:`numpy.ndarray`
+    """
+    
+    # Determine rotation direction
+    if   origin is 'grid': fac =  1
+    elif origin is 'map' : fac = -1
+    else: raise ValueError('Invalid origin value: {origin}'.format(
+            origin=origin))
+
+    # Rotate velocities
+    theta_rad = 29 * np.pi / 180
+    
+    u_out = u_in * np.cos(theta_rad) - fac * v_in * np.sin(theta_rad)
+    v_out = u_in * np.sin(theta_rad) * fac + v_in * np.cos(theta_rad)
+    
+    return u_out, v_out
