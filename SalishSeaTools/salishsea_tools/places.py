@@ -129,27 +129,35 @@ PLACES = {
     },
 
     # VENUS
-    'East node': {
-        'lon lat': (-123.3176, 49.0419),
-        # depth in m, taken from ONC website
-        'depth': 170,
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (416, 283),
-        # Ocean Networks Canada (ONC) data web services API station code
-        'ONC stationCode': 'SEVIP',
-    },
     'Central node': {
-        'lon lat': (-123.4261, 49.0401),
-        'depth': 300,
+        # location from Ocean Networks Canada (ONC) website
+        'lon lat': (-123.425825, 49.040066666),
+        # depth in metres from ONC website
+        'depth': 294,
+        # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (424, 266),
+        # ONC data web services API station code
         'ONC stationCode': 'SCVIP',
     },
-    'DDL node': {
+    'Delta BBL node': {
         # ONC's description is "Delta/Lower Slope/Bottom Boundary Layer"
-        'lon lat': (-123.3400617, 49.0807167),
+        'lon lat': (-123.339633, 49.074766),
         'depth': 143,
-        'NEMO grid ji': (425, 284),
+        'NEMO grid ji': (424, 283),
         'ONC stationCode': 'LSBBL',
+    },
+    'Delta DDL node': {
+        # ONC's description is "Delta/Upper Slope/Delta Dynamics Laboratory"
+        'lon lat': (-123.32972, 49.08495),
+        'depth': 107,
+        'NEMO grid ji': (426, 286),
+        'ONC stationCode': 'USDDL',
+    },
+    'East node': {
+        'lon lat': (-123.316836666, 49.04316),
+        'depth': 164,
+        'NEMO grid ji': (417, 283),
+        'ONC stationCode': 'SEVIP',
     },
 
     # Weather buoys
