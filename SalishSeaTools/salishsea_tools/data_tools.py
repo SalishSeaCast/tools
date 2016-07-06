@@ -183,7 +183,7 @@ def get_onc_data(
     See the `ONC-DataWebServices notebook`_ for example of use of the API
     and of this function.
 
-    _ ONC-DataWebServices notebook:http://nbviewer.jupyter.org/urls/bitbucket
+    _ONC-DataWebServices notebook: http://nbviewer.jupyter.org/urls/bitbucket
     .org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
 
     :arg dict retry_args: Key/value pair arguments to control how the request
