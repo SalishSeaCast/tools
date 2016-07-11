@@ -263,7 +263,7 @@ def onc_json_to_dataset(onc_json, psu_to_teos=True):
                                for d in sensor['data']],
             },
             attrs={
-                'qaqcFlag': [d['qaqcFlag'] for d in sensor['data']],
+                'qaqcFlag': np.array([d['qaqcFlag'] for d in sensor['data']]),
                 'sensorName': sensor['sensorName'],
                 'unitOfMeasure': sensor['unitOfMeasure'],
                 'actualSamples': sensor['actualSamples'],
