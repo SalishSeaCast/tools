@@ -21,6 +21,8 @@ See http://www.teos-10.org/.
 """
 from __future__ import division
 
+import numpy as np
+
 
 #: Conversion factor from practical salinity units (psu)
 #: to TEOS-10 reference salinity
@@ -35,18 +37,32 @@ def psu_teos(psu):
     reference salinity in g/kg.
 
     :arg psu: Practical salinity units (psu) value to convert.
+    :type psu: float, :py:class:`numpy.ndarray`, list, or tuple
 
     :returns: TEOS-10 reference salinity in g/kg.
+    :rtype: float or :py:class:`numpy.ndarray`
     """
-    return psu * PSU_TEOS
+    try:
+        return psu * PSU_TEOS
+    except TypeError:
+        # psu is probably a Python type that cannot be multiplied by a float
+        # so convert it to a Numpy array.
+        return np.array(psu) * PSU_TEOS
 
 
 def teos_psu(teos):
     """Convert TEOS-10 reference salinity in g/kg to salinity in
     practical salinity units (psu).
 
-    :arg psu: TEOS-10 reference salinity value [g/kg] to convert.
+    :arg teos: TEOS-10 reference salinity value [g/kg] to convert.
+    :type teos: float, :py:class:`numpy.ndarray`, list, or tuple
 
     :returns: Practical salinity units (psu) value.
+    :rtype: float or :py:class:`numpy.ndarray`
     """
-    return teos * TEOS_PSU
+    try:
+        return teos * TEOS_PSU
+    except TypeError:
+        # teos is probably a Python type that cannot be multiplied by a float
+        # so convert it to a Numpy array.
+        return np.array(teos) * TEOS_PSU
