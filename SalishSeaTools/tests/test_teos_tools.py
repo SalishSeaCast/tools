@@ -43,10 +43,13 @@ def test_psu_teos(psu, expected):
     np.testing.assert_allclose(teos_tools.psu_teos(psu), expected)
 
 
-def test_psu_teos_ndarray():
-    psu = np.array([0, 30, 35, 70])
+@pytest.mark.parametrize('psu, expected', [
+    (np.array([0, 30, 35, 70]), np.array([0, 30.14146, 35.16504, 70.33008])),
+    ([0, 30, 35, 70], np.array([0, 30.14146, 35.16504, 70.33008])),
+    ((0, 30, 35, 70), np.array([0, 30.14146, 35.16504, 70.33008])),
+])
+def test_psu_teos_polymorphic_sequence(psu, expected):
     teos = teos_tools.psu_teos(psu)
-    expected = np.array([0, 30.14146, 35.16504, 70.33008])
     np.testing.assert_allclose(teos, expected)
 
 
@@ -59,9 +62,11 @@ def test_psu_teos_ndarray():
 def test_teos_psu(teos, expected):
     np.testing.assert_allclose(teos_tools.teos_psu(teos), expected)
 
-
-def test_teos_psu_ndarray():
-    teos = np.array([0, 30.14146, 35.16504, 70.33008])
+@pytest.mark.parametrize('teos, expected', [
+    (np.array([0, 30.14146, 35.16504, 70.33008]), np.array([0, 30, 35, 70])),
+    ([0, 30.14146, 35.16504, 70.33008], np.array([0, 30, 35, 70])),
+    ((0, 30.14146, 35.16504, 70.33008), np.array([0, 30, 35, 70])),
+])
+def test_teos_psu_polymorphic_sequence(teos, expected):
     psu = teos_tools.teos_psu(teos)
-    expected = np.array([0, 30, 35, 70])
     np.testing.assert_allclose(psu, expected)
