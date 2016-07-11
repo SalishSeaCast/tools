@@ -39,6 +39,8 @@ import scipy.interpolate
 import scipy.io
 import xarray
 
+from salishsea_tools import teos_tools
+
 
 def load_ADCP(
         daterange, station='central',
@@ -228,7 +230,7 @@ def get_onc_data(
     return response.json()
 
 
-def onc_json_to_dataset(onc_json):
+def onc_json_to_dataset(onc_json, psu_to_teos=True):
     """Return an :py:class:`xarray.Dataset` object containing the data and
     metadata obtained from an Ocean Networks Canada (ONC) data web service API
     request.
@@ -239,14 +241,23 @@ def onc_json_to_dataset(onc_json):
                         method on the :py:class:`~requests.Response` object
                         produced by calling :py:meth:`requests.get`.
 
+    :arg boolean psu_to_teos: Convert salinity data from PSU
+                              (Practical Salinity Units) to TEOS-10 reference
+                              salinity in g/kg.
+                              Defaults to :py:obj:`True`.
+
     :returns: Data structure containing data and metadata
     :rtype: :py:class:`xarray.Dataset`
     """
     data_vars = {}
     for sensor in onc_json['sensorData']:
+        if sensor == 'salinity' and psu_to_teos:
+            data = teos_tools.psu_teos([d['value'] for d in sensor['data']])
+        else:
+            data = [d['value'] for d in sensor['data']]
         data_vars[sensor['sensor']] = xarray.DataArray(
             name=sensor['sensor'],
-            data=[d['value'] for d in sensor['data']],
+            data=data,
             coords={
                 'sampleTime': [arrow.get(d['sampleTime']).datetime
                                for d in sensor['data']],
