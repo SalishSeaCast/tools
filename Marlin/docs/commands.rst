@@ -21,28 +21,26 @@ Marlin Commands
 The main purpose of the :py:obj:`Marlin` package is to automate the process of incorporating Subversion revisions from the NEMO master repository into our Mercurial repository.
 See :ref:`PullChangesFromNEMOsvn` for details of how the :command:`marlin` command is used.
 
-Use :kbd:`marlin --help` to see the available options and sub-commands:
+Use :kbd:`marlin --help` to see the available options and sub-commands::
 
-.. code-block:: bash
+  (marlin)$ marlin --help
+  usage: marlin [--version] [-v] [--log-file LOG_FILE] [-q] [-h] [--debug]
 
-    (marlin)$ marlin --help
-    usage: marlin [--version] [-v] [--log-file LOG_FILE] [-q] [-h] [--debug]
+  Salish Sea NEMO svn-hg Maintenance Tool
 
-    Salish Sea NEMO svn-hg Maintenance Tool
+  optional arguments:
+    --version            show program's version number and exit
+    -v, --verbose        Increase verbosity of output. Can be repeated.
+    --log-file LOG_FILE  Specify a file to log output. Disabled by default.
+    -q, --quiet          suppress output except warnings and errors
+    -h, --help           show this help message and exit
+    --debug              show tracebacks on errors
 
-    optional arguments:
-      --version            show program's version number and exit
-      -v, --verbose        Increase verbosity of output. Can be repeated.
-      --log-file LOG_FILE  Specify a file to log output. Disabled by default.
-      -q, --quiet          suppress output except warnings and errors
-      -h, --help           show this help message and exit
-      --debug              show tracebacks on errors
-
-    Commands:
-      complete       print bash completion command
-      help           print detailed help for another command
-      incoming       Display SVN log of revisions that have not yet been brought in
-      update         Apply SVN updates from upstream repo & commit them to Mercurial
+  Commands:
+    complete       print bash completion command
+    help           print detailed help for another command
+    incoming       Display SVN log of revisions that have not yet been brought in
+    update         Apply SVN updates from upstream repo & commit them to Mercurial
 
 
 :kbd:`incoming`
