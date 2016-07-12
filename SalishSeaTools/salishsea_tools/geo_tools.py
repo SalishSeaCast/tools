@@ -127,8 +127,9 @@ def find_closest_model_point(
     Example:
 
     .. code-block:: python
-    j, i = find_closest_model_point(
-        -125.5,49.2,model_lons,model_lats,land_mask=bathy.mask)
+
+        j, i = find_closest_model_point(
+                   -125.5,49.2,model_lons,model_lats,land_mask=bathy.mask)
 
     where bathy, model_lons and model_lats are returned from
     :py:func:`salishsea_tools.tidetools.get_bathy_data`.
@@ -158,8 +159,9 @@ def find_closest_model_point(
     """
 
     if grid not in tols:
-        raise KeyError('The provided grid type is not in tols.\
-                        Use another grid type or add your grid type to tols.')
+        raise KeyError(
+            'The provided grid type is not in tols. '
+            'Use another grid type or add your grid type to tols.')
 
     # Search for a grid point with longitude and latitude within
     # tolerance of measured location
