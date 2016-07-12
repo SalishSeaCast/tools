@@ -127,7 +127,7 @@ do one more :command:`hg merge` to capture the branch closure commit:
 
     $ hg merge refactor-nowcast-figures
 
-It is possible to avoid an explicit branch closure commit by including the :option:`--close-branch` option on the final commit before you merge a named branch into :kbd:`default`,
+It is possible to avoid an explicit branch closure commit by including the :kbd:`--close-branch` option on the final commit before you merge a named branch into :kbd:`default`,
 but that requires rare prescience.
 
 You can re-open a closed branch by updating to it:
