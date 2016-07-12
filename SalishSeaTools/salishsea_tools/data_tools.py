@@ -48,7 +48,7 @@ def load_ADCP(
 ):
     """Returns the ONC ADCP velocity profiles at a given station
     over a specified daterange.
-    
+
     :arg sequence daterange: Start and end datetimes for the requested data
                              range
                              (e.g. ['yyyy mmm dd', 'yyyy mmm dd']).
@@ -185,8 +185,7 @@ def get_onc_data(
     See the `ONC-DataWebServices notebook`_ for example of use of the API
     and of this function.
 
-    _ONC-DataWebServices notebook: http://nbviewer.jupyter.org/urls/bitbucket
-    .org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
+    .. _ONC-DataWebServices notebook: http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
 
     :arg dict retry_args: Key/value pair arguments to control how the request
                           is retried should it fail the first time.
