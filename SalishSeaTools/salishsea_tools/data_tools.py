@@ -16,6 +16,7 @@
 """Functions for loading and processing observational data
 """
 from collections import namedtuple
+from collections import OrderedDict
 import datetime as dtm
 import os
 try:
@@ -62,35 +63,36 @@ def load_ADCP(
 
     :arg str station: Requested profile location ('central', 'east', or 'ddl')
 
-    :returns: :py:attr:`datetime` attribute holds a :py:class:`numpy.ndarray`
-              of data datatime stamps,
-              :py:attr:`depth` holds the depth at which the ADCP sensor is
-              deployed,
-              :py:attr:`u` and :py:attr:`v` hold :py:class:`numpy.ndarray`
-              of the zonal and meridional velocity profiles at each datetime.
-    :rtype: 4 element :py:class:`collections.namedtuple`
+    :returns: :py:class:`xarray.Dataset` of zonal u and meridional v velocity
+        with time and depth dimensions.
+    :rtype: 2-D, 2 element :py:class:`xarray.Dataset` object
     """
-    startdate = dparser.parse(daterange[0])
-    enddate = dparser.parse(daterange[1])
+
+    # Load ADCP data
     grid = scipy.io.loadmat(
-        os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))
+                 os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))
+    
     # Generate datetime array
     mtimes = grid['mtime'][0]
     datetimes = np.array([dtm.datetime.fromordinal(int(mtime)) +
                           dtm.timedelta(days=mtime % 1) -
                           dtm.timedelta(days=366) for mtime in mtimes])
+    
     # Find daterange indices
-    indexstart = abs(datetimes - startdate).argmin()
-    indexend = abs(datetimes - enddate).argmin()
-    # Extract time, depth, and velocity vectors
-    datetime = datetimes[indexstart:indexend + 1]
-    u0 = grid['utrue'][:, indexstart:indexend + 1] / 100  # to m/s
-    v0 = grid['vtrue'][:, indexstart:indexend + 1] / 100  # to m/s
-    depth = grid['chartdepth'][0]
-    u = np.ma.masked_invalid(u0)
-    v = np.ma.masked_invalid(v0)
-    adcp_data = namedtuple('ADCP_data', 'datetime, depth, u, v')
-    return adcp_data(datetime, depth, u, v)
+    index = [abs(datetimes - dparser.parse(date)).argmin() for date in daterange]
+    
+    # Create xarray output object
+    ADCP = xarray.Dataset({
+        'u': (['time', 'depth'],
+              np.ma.masked_invalid(
+                  grid['utrue'][:, index[0]:index[1] + 1] / 100).transpose()),
+        'v': (['time', 'depth'],
+              np.ma.masked_invalid(
+                  grid['vtrue'][:, index[0]:index[1] + 1] / 100).transpose())},
+        coords={'time': datetimes[index[0]:index[1] + 1],
+                'depth': grid['chartdepth'][0]})
+    
+    return ADCP
 
 
 def interpolate_to_depth(
@@ -276,3 +278,56 @@ def onc_json_to_dataset(onc_json, teos=True):
             }
         )
     return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
+
+
+def load_drifters(prefix='driftersPositions',
+                  path='/ocean/bmoorema/research/MEOPAR/analysis-ben/data'):
+    """
+    """
+    
+    # Initialize drifter storage dictionary
+    drifters = OrderedDict()
+    
+    # Drifter IDs
+    drifterids = OrderedDict()
+    drifterids['1'] = [1, 2, 3, 4, 5, 6, 311, 312, 313]
+    drifterids['2'] = [21, 22]
+    drifterids['3'] = [23, 24, 25, 31, 32, 33, 34, 35, 36, 381, 382, 388]
+    
+    for deployment in drifterids.keys():
+        # Construct filename
+        filename = prefix + deployment + '.mat'
+        
+        # Load drifter matfile
+        driftermat = scipy.io.loadmat(os.path.join(path, filename))
+        
+        # Iterate through drifters
+        for drifterid in drifterids[deployment]:
+            
+            # Construct time list and convert to datetime
+            times = driftermat['drifters'][0][drifterid-1][4]
+            if isinstance(times[0][0], float):
+                pytime = [dtm.datetime.fromordinal(int(t[0])) +
+                          dtm.timedelta(days = t[0]%1) -
+                          dtm.timedelta(days = 366) - dtm.timedelta(hours=1)
+                          for t in times]
+            elif isinstance(times[0][0], str):
+                pytime = [dparser.parse(t) for t in times]
+            else:
+                raise ValueError(
+                    'Unknown time type: {}'.format(type(times[0][0])))
+            
+            # Store drifter lon and lat as xarray DataArray objects
+            lons = xarray.DataArray(
+                [lon[0] for lon in driftermat['drifters'][0][drifterid-1][3]],
+                coords=[pytime], dims=['time'])
+            lats = xarray.DataArray(
+                [lat[0] for lat in driftermat['drifters'][0][drifterid-1][2]],
+                coords=[pytime], dims=['time'])
+            
+            # Sort lon/lat by increasing datetime and store in dictionary
+            drifters[driftermat['drifters'][0][drifterid-1][0][0]] = {
+                'lon': lons[lons.time.argsort()],
+                'lat': lats[lats.time.argsort()]}
+
+    return drifters

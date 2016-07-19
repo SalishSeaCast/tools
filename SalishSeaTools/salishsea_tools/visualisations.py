@@ -197,3 +197,90 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     for i, level in enumerate(mbathy):
         newvar[level, i] = variable[level-1, i]
     return newvar
+
+
+def plot_tracers(time_ind, ax, cmap, clim, qty, NEMO, zorder=0):
+    """
+    """
+    
+    # NEMO horizontal tracers
+    C = ax.contourf(NEMO['lon'], NEMO['lat'],
+        np.ma.masked_values(NEMO[qty].sel(time=time_ind, method='nearest'), 0),
+        range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
+    
+    return C
+
+
+def plot_currents(time_ind, ax, spacing, NEMO, zorder=5):
+    """
+    """
+    
+    # NEMO horizontal currents
+    Q = ax.quiver(
+        NEMO['lon'][1::spacing, 1::spacing],
+        NEMO['lat'][1::spacing, 1::spacing],
+        np.ma.masked_values(
+            NEMO['u'].sel(time=time_ind, method='nearest'), 0),
+        np.ma.masked_values(
+            NEMO['v'].sel(time=time_ind, method='nearest'), 0),
+        scale=10, zorder=zorder)
+    
+    return Q
+
+
+def plot_wind(time_ind, ax, spacing, GEM, zorder=10, processed=False,
+              color='gray'):
+    """
+    """
+    
+    # Determine whether to space vectors
+    spc = spacing
+    if processed: spc = 1
+    
+    # GEM winds
+    Q = ax.quiver(
+        GEM['lon'][::spacing, ::spacing]-360,
+        GEM['lat'][::spacing, ::spacing],
+        GEM['u_wind'].sel(time_counter=time_ind, method='nearest')[::spc, ::spc],
+        GEM['v_wind'].sel(time_counter=time_ind, method='nearest')[::spc, ::spc],
+        color=color, edgecolor='k', scale=40,
+        linewidth=0.5, headwidth=4, zorder=zorder)
+    
+    return Q
+
+
+def plot_drifters(time_ind, ax, drifters, zorder=15):
+    """
+    """
+    
+    # Define color palette
+    palette = ['blue', 'teal', 'cyan', 'green', 'lime', 'darkred', 'red',
+               'orange', 'magenta', 'purple', 'black', 'dimgray', 'saddlebrown',
+               'blue', 'teal', 'cyan', 'green', 'lime', 'darkred', 'red',
+               'orange', 'magenta', 'purple', 'black', 'dimgray', 'saddlebrown']
+    
+    # Plot drifters
+    L = collections.OrderedDict()
+    P = collections.OrderedDict()
+    for i, drifter in enumerate(drifters.keys()):
+        # Compare timestep with available drifter data
+        dtime = [pd.Timestamp(t.to_pandas()).to_datetime() - time_ind
+                 for t in drifters[drifter].time[[0, -1]]]
+        # Show drifter track if data is within time threshold
+        if (dtime[0].total_seconds() < 3600 and   # 1 hour before deployment
+            dtime[1].total_seconds() > -86400):   # 24 hours after failure
+            L[drifter] = ax.plot(
+                drifters[drifter].lon.sel(time=time_ind, method='nearest'),
+                drifters[drifter].lat.sel(time=time_ind, method='nearest'),
+                '-', linewidth=2, color=palette[i], zorder=zorder)
+            P[drifter] = ax.plot(
+                drifters[drifter].lon.sel(time=time_ind, method='nearest'),
+                drifters[drifter].lat.sel(time=time_ind, method='nearest'),
+                'o', color=palette[i], zorder=zorder+1)
+        else: # Hide if outside time threshold
+            L[drifter] = ax.plot(
+                [], [], '-', linewidth=2, color=palette[i], zorder=zorder)
+            P[drifter] = ax.plot(
+                [], [], 'o', color=palette[i], zorder=zorder+1)
+    
+    return L, P

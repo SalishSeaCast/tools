@@ -24,6 +24,7 @@ import collections
 import csv
 import datetime
 import os
+import copy
 from math import radians, cos, sqrt, pi
 
 import angles

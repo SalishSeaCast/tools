@@ -70,9 +70,6 @@ def load_ERDDAP_GEM(
     """Load GEM results from ERDDAP using xarray
     """
     
-    # Intialize storage dictionary
-    GEM = {}
-    
     # Create timeslice
     timeslice = slice(timerange[0], timerange[1])
     xslice    = slice(window[0],    window[1])
@@ -81,12 +78,14 @@ def load_ERDDAP_GEM(
     # Load GEM grid
     grid = xr.open_dataset(os.path.join(path, 'ubcSSaAtmosphereGridV1'))
     data = xr.open_dataset(os.path.join(path, 'ubcSSaSurfaceAtmosphereFieldsV1'))
-    GEM['lon'] = grid.longitude.sel(gridX=xslice, gridY=yslice)-360
-    GEM['lat'] = grid.latitude.sel( gridX=xslice, gridY=yslice)
+    
+    GEM = xr.Dataset({'lon': grid.longitude.sel(gridX=xslice, gridY=yslice)-360,
+                      'lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
     
     # Load GEM data
     for field in fields:
-        GEM[field] = data[field].sel(time=timeslice, gridX=xslice, gridY=yslice)
+        GEM = GEM.merge({field: data[field].sel(
+                        time=timeslice, gridX=xslice, gridY=yslice)})
     
     return GEM
 
@@ -99,9 +98,6 @@ def load_ERDDAP_NEMO(
     """Load Nowcast results from ERDDAP using xarray
     """
     
-    # Intialize storage dictionary
-    NEMO = {}
-    
     # Create timeslice
     timeslice = slice(timerange[0], timerange[1])
     xslice    = slice(window[0],    window[1])
@@ -109,34 +105,36 @@ def load_ERDDAP_NEMO(
 
     # Load NEMO grid
     grid = xr.open_dataset(os.path.join(path, 'ubcSSnBathymetry2V1'))
-    NEMO['lon'] = grid.longitude.sel(gridX=xslice, gridY=yslice)
-    NEMO['lat'] = grid.latitude.sel( gridX=xslice, gridY=yslice)
+    NEMO = xr.Dataset({'lon': grid.longitude.sel(gridX=xslice, gridY=yslice),
+                       'lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
     
     # u velocity
     if 'u' in fields:
         u = xr.open_dataset(os.path.join(path, 'ubcSSn3DuVelocity1hV1'))
-        NEMO['u'] = u.uVelocity.sel(time=timeslice, gridX=xslice, gridY=yslice
-                                   ).sel(depth=depth, method='nearest')
+        NEMO = NEMO.merge({'u': u.uVelocity.sel(
+                          time=timeslice, gridX=xslice, gridY=yslice).sel(
+                              depth=depth, method='nearest')})
     
     # v velocity
     if 'v' in fields:
         v = xr.open_dataset(os.path.join(path, 'ubcSSn3DvVelocity1hV1'))
-        NEMO['v'] = v.vVelocity.sel(time=timeslice, gridX=xslice, gridY=yslice
-                                   ).sel(depth=depth, method='nearest')
+        NEMO = NEMO.merge({'v': v.vVelocity.sel(
+                          time=timeslice, gridX=xslice, gridY=yslice).sel(
+                              depth=depth, method='nearest')})
     
     # Tracers
     if 'salinity' in fields or 'temperature' in fields:
         trc = xr.open_dataset(os.path.join(path, 'ubcSSn3DTracerFields1hV1'))
         # Salinity
         if 'salinity' in fields:
-            NEMO['salinity'] = trc.salinity.sel(
-                                   time=timeslice, gridX=xslice, gridY=yslice
-                                   ).sel(depth=depth, method='nearest')
+            NEMO = NEMO.merge({'salinity': trc.salinity.sel(
+                              time=timeslice, gridX=xslice, gridY=yslice).sel(
+                                  depth=depth, method='nearest')})
         # Temperature
         if 'temperature' in fields:
-            NEMO['temperature'] = trc.temperature.sel(
-                                   time=timeslice, gridX=xslice, gridY=yslice
-                                   ).sel(depth=depth, method='nearest')
+            NEMO = NEMO.merge({'temperature': trc.temperature.sel(
+                              time=timeslice, gridX=xslice, gridY=yslice).sel(
+                                  depth=depth, method='nearest')})
     
     return NEMO
 
