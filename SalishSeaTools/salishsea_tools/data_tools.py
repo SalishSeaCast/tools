@@ -15,10 +15,7 @@
 
 """Functions for loading and processing observational data
 """
-from collections import (
-    namedtuple,
-    OrderedDict,
-)
+from collections import OrderedDict
 import datetime as dtm
 import ftplib
 import json
