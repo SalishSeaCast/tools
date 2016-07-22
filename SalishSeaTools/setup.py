@@ -42,16 +42,20 @@ try:
 except IOError:
     long_description = ''
 install_requires = [
-    # see environment.yaml for versions most recently used in development
+    # see requirements.pip for versions most recently used in development
     'angles',
     'arrow',
+    'bottleneck',
     'matplotlib',
     'netCDF4',
     'numpy',
     'pandas',
+    'python-dateutil',
     'pytz',
     'requests',
+    'retrying',
     'scipy',
+    'xarray',
 ]
 
 setup(
