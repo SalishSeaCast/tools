@@ -36,6 +36,7 @@ except ImportError:
 
 import arrow
 import dateutil.parser as dparser
+from dateutil import tz
 import numpy as np
 import requests
 from retrying import retry
@@ -365,7 +366,8 @@ def get_onc_sog_adcp_mat(date, node, dest_path, userid, userno):
     FTP_PATH_TMPL = (
         'pub/user{userno}/searchHeader{searchHdrId}/'
         '{data_date.year}/{data_date.month:02d}')
-    data_date = arrow.get(date).to('Canada/Pacific')
+    data_date = arrow.get(
+        *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
     query = _build_adcp_query(data_date, node, userid)
     @retry(wait_exponential_multiplier=1*1000, wait_exponential_max=30*1000)
     def _requests_get():
