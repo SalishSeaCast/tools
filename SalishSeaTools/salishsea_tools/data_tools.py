@@ -336,8 +336,8 @@ def load_drifters(prefix='driftersPositions',
     return drifters
 
 
-def get_onc_sog_adcp_mat(date, node, dest_path, userid, userno):
-    """Request and download a :kdb:`.mat` file of ADCP data for 1 day from an
+def request_onc_sog_adcp(date, node, userid):
+    """Request a :kdb:`.mat` file of ADCP data for 1 day from an
     Ocean Networks Canada (ONC) node in the Strait of Georgia.
 
     This function relies on a soon-to-be-deprecated ONC web service.
@@ -353,19 +353,13 @@ def get_onc_sog_adcp_mat(date, node, dest_path, userid, userno):
                    :py:obj:`salishsea_tools.onc_sog_adcps.deployments`
                    (e.g. "Central node").
 
-    :arg str dest_path: Path at which to store the downloaded :kbd:`.mat` file.
-
     :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
 
-    :arg str userno: User number with an ONC dmas.uvic.ca account.
-
-    :rtype: str
+    :returns: Search info data provided by the ONC data service;
+              contains search header id.
+    :rtype: dict
     """
     SERVICE_URL = 'http://dmas.uvic.ca/VSearchByInstrumentServiceAjax'
-    FTP_SERVER = 'ftp.neptunecanada.ca'
-    FTP_PATH_TMPL = (
-        'pub/user{userno}/searchHeader{searchHdrId}/'
-        '{data_date.year}/{data_date.month:02d}')
     data_date = arrow.get(
         *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
     query = _build_adcp_query(data_date, node, userid)
@@ -375,16 +369,7 @@ def get_onc_sog_adcp_mat(date, node, dest_path, userid, userno):
     response = _requests_get()
     response.raise_for_status()
     search_info = json.loads(response.text.lstrip('(').rstrip().rstrip(')'))
-    ftp_path = FTP_PATH_TMPL.format(
-        data_date=data_date, userno=userno,
-        searchHdrId=search_info['searchHdrId'])
-    with ftplib.FTP(FTP_SERVER) as ftp:
-        ftp.login()
-        _poll_onc_ftp_path(ftp, ftp_path)
-        filepath = _get_onc_adcp_matfile_name(ftp, ftp_path)
-        downloaded_file = _get_onc_sog_adcp_matfile(
-            ftp, filepath, Path(dest_path))
-    return str(downloaded_file)
+    return search_info
 
 
 def _build_adcp_query(data_date, node, userid):
@@ -443,6 +428,77 @@ def _build_adcp_query(data_date, node, userid):
         'params': '{"qc":"1","avg":"0","rotVar":"0"}',
     }
     return query
+
+
+def get_onc_sog_adcp_search_status(search_hdr_id, userid):
+    """Return a JSON blob containing information about the status of a search
+    for ADCP data from an Ocean Networks Canada (ONC) node in the Strait of
+    Georgia.
+
+    :arg int search_hdr_id: ONC search header id.
+
+    :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
+
+    This function relies on a soon-to-be-deprecated ONC web service.
+    It is based on a Matlab script provided by Marlene Jefferies of ONC.
+    It is primarily intended for debugging requests produced by
+    :py:func:`~salishsea_tools.data_tools.get_onc_sog_adcp_mat`.
+    """
+    SERVICE_URL = 'http://dmas.uvic.ca/VSearchByInstrumentServiceAjax'
+    OPERATION = 1  # getSearchResult()
+    query = {
+        'operation': OPERATION,
+        'userid': userid,
+        'searchHdrId': search_hdr_id,
+    }
+    @retry(wait_exponential_multiplier=1*1000, wait_exponential_max=30*1000)
+    def _requests_get():
+        return requests.get(SERVICE_URL, query)
+    response = _requests_get()
+    response.raise_for_status()
+    search_info = json.loads(response.text.lstrip('(').rstrip().rstrip(')'))
+    return search_info
+
+
+def get_onc_sog_adcp_mat(date, search_info, dest_path, userno):
+    """Download a :kdb:`.mat` file of ADCP data for 1 day from an
+    Ocean Networks Canada (ONC) node in the Strait of Georgia.
+
+    This function relies on a soon-to-be-deprecated ONC web service.
+    It is based on a Matlab script provided by Marlene Jefferies of ONC.
+    It is primarily intended for use in an automation pipeline that also
+    includes ADCP data processing Matlab scripts developed by Rich Pawlowicz
+     of UBC EOAS.
+
+    :arg str data_date: Date for which to request the ADCP data.
+
+    :arg str node: Strait of Georgia node for which to request the ONC data;
+                   must be a key in
+                   :py:obj:`salishsea_tools.onc_sog_adcps.deployments`
+                   (e.g. "Central node").
+
+    :arg str dest_path: Path at which to store the downloaded :kbd:`.mat` file.
+
+    :arg str userno: User number with an ONC dmas.uvic.ca account.
+
+    :rtype: str
+    """
+    FTP_SERVER = 'ftp.neptunecanada.ca'
+    FTP_PATH_TMPL = (
+        'pub/user{userno}/searchHeader{searchHdrId}/'
+        '{data_date.year}/{data_date.month:02d}')
+    data_date = arrow.get(
+        *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
+    ftp_path = FTP_PATH_TMPL.format(
+        data_date=data_date, userno=userno,
+        searchHdrId=search_info['searchHdrId'])
+    with ftplib.FTP(FTP_SERVER) as ftp:
+        ftp.login()
+        _poll_onc_ftp_path(ftp, ftp_path)
+        filepath = _get_onc_adcp_matfile_name(ftp, ftp_path)
+        downloaded_file = _get_onc_sog_adcp_matfile(
+            ftp, filepath, Path(dest_path))
+    return str(downloaded_file)
 
 
 def _retry_if_not_matfile(mlsd):
@@ -526,33 +582,3 @@ def _get_onc_sog_adcp_matfile(ftp, filepath, dest):
     dest_path = dest/filepath.name
     ftp.retrbinary('RETR {}'.format(filepath), dest_path.open('wb').write)
     return dest_path
-
-
-def get_onc_sog_adcp_search_status(search_hdr_id, userid):
-    """Return a JSON blob containing information about the status of a search
-    for ADCP data from an Ocean Networks Canada (ONC) node in the Strait of
-    Georgia.
-
-    :arg int search_hdr_id: ONC search header id.
-
-    :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
-
-    This function relies on a soon-to-be-deprecated ONC web service.
-    It is based on a Matlab script provided by Marlene Jefferies of ONC.
-    It is primarily intended for debugging requests produced by
-    :py:func:`~salishsea_tools.data_tools.get_onc_sog_adcp_mat`.
-    """
-    SERVICE_URL = 'http://dmas.uvic.ca/VSearchByInstrumentServiceAjax'
-    OPERATION = 1  # getSearchResult()
-    query = {
-        'operation': OPERATION,
-        'userid': userid,
-        'searchHdrId': search_hdr_id,
-    }
-    @retry(wait_exponential_multiplier=1*1000, wait_exponential_max=30*1000)
-    def _requests_get():
-        return requests.get(SERVICE_URL, query)
-    response = _requests_get()
-    response.raise_for_status()
-    search_info = json.loads(response.text.lstrip('(').rstrip().rstrip(')'))
-    return search_info
