@@ -56,24 +56,26 @@ def load_ADCP(
 ):
     """Returns the ONC ADCP velocity profiles at a given station
     over a specified datetime range.
-
+    
     This function uses the nearest neighbor to the specified datetime
     bounds. ONC ADCP data is returned at approximately 15 and 45 minutes
     past the hour, so choose datetime bounds accordingly.
-
+    
     :arg daterange: start and end datetimes for the requested data range.
         (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
     :type daterange: list or tuple of str
-
-    :arg adcp_path: ADCP file storage location
-    :type adcp_path: str
-
-    :arg str station: Requested profile location ('central', 'east', or 'ddl')
-
+    
+    :arg station: Requested profile location ('central', 'east', or 'ddl')
+    :type station: str
+    
+    :arg adcp_data_dir: ADCP file storage location
+    :type adcp_data_dir: str
+    
     :returns: :py:class:`xarray.Dataset` of zonal u and meridional v velocity
         with time and depth dimensions.
-    :rtype: 2-D, 2 element :py:class:`xarray.Dataset` object
+    :rtype: 2-D, 2 element :py:class:`xarray.Dataset`
     """
+    
     # Load ADCP data
     grid = scipy.io.loadmat(
                  os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))

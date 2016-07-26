@@ -67,7 +67,30 @@ def load_ERDDAP_GEM(
         fields=['u_wind', 'v_wind'],
         path='https://salishsea.eos.ubc.ca/erddap/griddap',
 ):
-    """Load GEM results from ERDDAP using xarray
+    """Returns surface atmospheric variables from the Environment
+    Canada GEM 2.5 km HRDPS atmospheric model, accessed through the
+    ERDDAP server.
+    
+    *This function could be generalized in the following ways:*
+    1. non_ERDDAP flexibility (keyword args for filenames, coords, timevar)
+    
+    :arg timerange: Start and end datetimes for the requested data range.
+        (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
+    :type timerange: list or tuple of str
+    
+    :arg window: Model domain slice bounds.
+        (ex. [x_min, x_max, y_min, y_max])
+    :type window: list or tuple of integers
+    
+    :arg fields: Requested variables (*must match netCDF fields in file*)
+    :type fields: list or tuple of str
+    
+    :arg path: Location of ERDDAP server
+    :type path: str
+    
+    :returns: :py:class:`xarray.Dataset` of lat/lon coordinates and
+        model variables
+    :rtype: :py:class:`xarray.Dataset`
     """
     
     # Create timeslice
@@ -92,10 +115,37 @@ def load_ERDDAP_GEM(
 
 def load_ERDDAP_NEMO(
         timerange, depth=0, window=[0, 398, 0, 898],
-        fields=['salinity', 'temperature', 'u', 'v'],
+        fields=['salinity', 'temperature', 'u_vel', 'v_vel'],
         path='https://salishsea.eos.ubc.ca/erddap/griddap'
 ):
-    """Load Nowcast results from ERDDAP using xarray
+    """Returns vector and tracer variables from the Salish Sea
+    NEMO model, accessed through the ERDDAP server.
+    
+    *This function could be generalized in the following ways:*
+    1. non_ERDDAP flexibility (keyword args for filenames, coords, timevar)
+    2. Depth could be specified as a range similar to window
+    
+    :arg timerange: Start and end datetimes for the requested data range.
+        (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
+    :type timerange: list or tuple of str
+    
+    :arg depth: Horizontal depth slice.
+    :type depth: integer
+    
+    :arg window: Model domain slice bounds.
+        (ex. [x_min, x_max, y_min, y_max])
+    :type window: list or tuple of integers
+    
+    :arg fields: Requested variables
+        (one of 'u_vel', 'v_vel', 'salinity', 'temperature')
+    :type fields: list or tuple of str
+    
+    :arg path: Location of ERDDAP server
+    :type path: str
+    
+    :returns: :py:class:`xarray.Dataset` of lat/lon coordinates and
+        model variables
+    :rtype: :py:class:`xarray.Dataset`
     """
     
     # Create timeslice
@@ -109,16 +159,16 @@ def load_ERDDAP_NEMO(
                        'lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
     
     # u velocity
-    if 'u' in fields:
+    if 'u_vel' in fields:
         u = xr.open_dataset(os.path.join(path, 'ubcSSn3DuVelocity1hV1'))
-        NEMO = NEMO.merge({'u': u.uVelocity.sel(
+        NEMO = NEMO.merge({'u_vel': u.uVelocity.sel(
                           time=timeslice, gridX=xslice, gridY=yslice).sel(
                               depth=depth, method='nearest')})
     
     # v velocity
-    if 'v' in fields:
+    if 'v_vel' in fields:
         v = xr.open_dataset(os.path.join(path, 'ubcSSn3DvVelocity1hV1'))
-        NEMO = NEMO.merge({'v': v.vVelocity.sel(
+        NEMO = NEMO.merge({'v_vel': v.vVelocity.sel(
                           time=timeslice, gridX=xslice, gridY=yslice).sel(
                               depth=depth, method='nearest')})
     

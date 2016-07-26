@@ -91,6 +91,9 @@ def plot_coastline(
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
+    
+    :arg zorder: Plotting layer specifier
+    :type zorder: integer
 
     :returns: Contour line set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
@@ -180,7 +183,10 @@ def plot_land_mask(
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
-
+    
+    :arg zorder: Plotting layer specifier
+    :type zorder: integer
+    
     :returns: Contour ploygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
