@@ -262,8 +262,10 @@ def onc_json_to_dataset(onc_json, teos=True):
     """
     data_vars = {}
     for sensor in onc_json['sensorData']:
-        if sensor == 'salinity' and teos:
+        if sensor['sensorName'] == 'Practical Salinity' and teos:
             data = teos_tools.psu_teos([d['value'] for d in sensor['data']])
+            sensor['sensorName'] = 'Reference Salinity'
+            sensor['unitOfMeasure'] = 'g/kg'
         else:
             data = [d['value'] for d in sensor['data']]
         data_vars[sensor['sensor']] = xarray.DataArray(
