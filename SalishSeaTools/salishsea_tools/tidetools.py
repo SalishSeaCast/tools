@@ -24,7 +24,6 @@ import collections
 import csv
 import datetime
 import os
-import copy
 from math import radians, cos, sqrt, pi
 
 import angles
@@ -829,7 +828,7 @@ def haversine(lon1, lat1, lon2, lat2):
         Use :py:func:`geo_tools.haversine` instead.
     """
     raise DeprecationWarning(
-        'tidetools.haversine() has been replaced by goe_tools.haversine()')
+        'tidetools.haversine() has been replaced by geo_tools.haversine()')
 
 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
@@ -1743,11 +1742,14 @@ def filter_timeseries(record, winlen=39, method='box'):
     """Filter a timeseries.
     
     Developed for wind and tidal filtering, but can be modified for use
-    with a variety of timeseries data. This function can only operate
-    along the 0 axis. Please modify to include an axis argument in the
-    future.
+    with a variety of timeseries data. The data record should be at least
+    half a window length longer at either end than the period of interest
+    to accommodate window length shrinking near the array edges.
+
+    *This function can only operate along the 0 axis. Please modify to include
+    an axis argument in the future.*
     
-    Types of filters (please add to these):
+    Types of filters (*please add to these*):
     * **box**: simple running mean
     * **doodson**: Doodson bandpass filter (39 winlen required)
     
@@ -1766,7 +1768,7 @@ def filter_timeseries(record, winlen=39, method='box'):
     """
     
     # Preallocate filtered record
-    filtered = copy.deepcopy(record)
+    filtered = record.copy()
     
     # Length along time axis
     record_length = record.shape[0]

@@ -199,52 +199,121 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     return newvar
 
 
-def plot_tracers(time_ind, ax, cmap, clim, qty, NEMO, zorder=0):
-    """
+def plot_tracers(time_ind, ax, qty, DATA, clim=[0, 35, 1], cmap='jet', zorder=0):
+    """Plot a horizontal slice of NEMO tracers as filled contours.
+    
+    *This function could be generalized in the following ways:*
+    1. vertical/horizontal cross-sections
+    2. grid/map coordinates
+    3. contourf/pcolormesh
+    4. non-ERDDAP flexibility
+    
+    :arg time_ind: Time index to plot from timeseries
+        (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
+    :type time_ind: str
+    
+    :arg ax: Axis object
+    :type ax: :py:class:`matplotlib.pyplot.axes`
+    
+    :arg qty: Tracer quantity to be plotted (one of 'salinity', 'temperature')
+    :type qty: str
+    
+    :arg DATA: NEMO model results dataset
+    :type DATA: :py:class:`xarray.Dataset`
+    
+    :arg clim: Contour limits and spacing (ex. [min, max, spacing])
+    :type clim: list or tuple of float
+    
+    :arg cmap: Colormap
+    :type cmap: str
+    
+    :arg zorder: Plotting layer specifier
+    :type zorder: integer
+    
+    :returns: Filled contour object
+    :rtype: :py:class:`matplotlib.pyplot.contourf`
     """
     
     # NEMO horizontal tracers
-    C = ax.contourf(NEMO['lon'], NEMO['lat'],
-        np.ma.masked_values(NEMO[qty].sel(time=time_ind, method='nearest'), 0),
+    C = ax.contourf(DATA['lon'], DATA['lat'],
+        np.ma.masked_values(DATA[qty].sel(time=time_ind, method='nearest'), 0),
         range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
     
     return C
 
 
-def plot_currents(time_ind, ax, spacing, NEMO, zorder=5):
-    """
-    """
+def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
+        processed=False, color='black', scale=10, headwidth=1, zorder=5):
+    """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
+    Accepts subsampled u and v fields via the **processed** keyword
+    argument.
     
-    # NEMO horizontal currents
-    Q = ax.quiver(
-        NEMO['lon'][1::spacing, 1::spacing],
-        NEMO['lat'][1::spacing, 1::spacing],
-        np.ma.masked_values(
-            NEMO['u'].sel(time=time_ind, method='nearest'), 0),
-        np.ma.masked_values(
-            NEMO['v'].sel(time=time_ind, method='nearest'), 0),
-        scale=10, zorder=zorder)
+    *This function could be generalized in the following ways:*
+    1. vertical/horizontal cross-sections
+    2. grid/map coordinates
+    3. quiver/streamfunction
+    4. non_ERDDAP flexibility
     
-    return Q
-
-
-def plot_wind(time_ind, ax, spacing, GEM, zorder=10, processed=False,
-              color='gray'):
-    """
+    :arg time_ind: Time index to plot from timeseries
+        (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
+    :type time_ind: str
+    
+    :arg ax: Axis object
+    :type ax: :py:class:`matplotlib.pyplot.axes`
+    
+    :arg DATA: Model results dataset
+    :type DATA: :py:class:`xarray.Dataset`
+    
+    :arg model: Specify model (either NEMO or GEM)
+    :type model: str
+    
+    :arg spacing: Vector spacing
+    :type spacing: integer
+    
+    :arg processed: If True, only coordinate variables will be spaced
+    :type processed: bool
+    
+    :arg color: Vector face color
+    :type color: str
+    
+    :arg scale: Vector length (factor of 1/scale)
+    :type scale: integer
+    
+    :arg headwidth: Vector width
+    :type headwidth: integer
+    
+    :arg zorder: Plotting layer specifier
+    :type zorder: integer
+    
+    :returns: Matplotlib quiver object
+    :rtype: :py:class:`matplotlib.pyplot.quiver`
     """
     
     # Determine whether to space vectors
     spc = spacing
     if processed: spc = 1
     
-    # GEM winds
+    if model is 'NEMO':
+        u = 'u_vel'
+        v = 'v_vel'
+        start = 1
+    elif model is 'GEM':
+        u = 'u_wind'
+        v = 'v_wind'
+        start = 0
+    else:
+        raise ValueError('Unknown model type: {}'.format(model))
+    
+    # NEMO horizontal currents
     Q = ax.quiver(
-        GEM['lon'][::spacing, ::spacing]-360,
-        GEM['lat'][::spacing, ::spacing],
-        GEM['u_wind'].sel(time_counter=time_ind, method='nearest')[::spc, ::spc],
-        GEM['v_wind'].sel(time_counter=time_ind, method='nearest')[::spc, ::spc],
-        color=color, edgecolor='k', scale=40,
-        linewidth=0.5, headwidth=4, zorder=zorder)
+        DATA['lon'][start::spacing, start::spacing],
+        DATA['lat'][start::spacing, start::spacing],
+        np.ma.masked_values(
+            DATA[u].sel(time=time_ind, method='nearest'), 0)[::spc, ::spc],
+        np.ma.masked_values(
+            DATA[v].sel(time=time_ind, method='nearest'), 0)[::spc, ::spc],
+        color=color, edgecolor='k', scale=scale, linewidth=0.5,
+        headwidth=headwidth, zorder=zorder)
     
     return Q
 
