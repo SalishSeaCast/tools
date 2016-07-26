@@ -70,11 +70,11 @@ deployments = {
                 id='BBL-SG-05',
                 start=arrow.get(2016, 5, 1),
                 end=arrow.now().to('Canada/Pacific'),
-                serial_no=17955, site_id=1000664),
+                serial_no=17955, site_id=1000668),
             deployment(
                 id='BBL-SG-04',
                 start=arrow.get(2015, 8, 30), end=arrow.get(2016, 5, 1),
-                serial_no=17955, site_id=1000510),
+                serial_no=17955, site_id=1000474),
         ]
     },
 }
