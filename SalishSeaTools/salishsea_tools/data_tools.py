@@ -50,6 +50,66 @@ from salishsea_tools import (
 )
 
 
+def load_drifters(
+        deployments=range(1, 9),
+        filename='driftersPositions.geojson',
+        drifterpath='/ocean/rcostanz/Drifters/data'
+):
+    """Loads drifter coordinates and times from the ODL Drifters Project.
+    
+    UBC Ocean Dynamics Laboratory Drifters Project
+    http://drifters.eoas.ubc.ca/
+    Contact Rich Pawlowicz: rich@eos.ubc.ca
+    Contact Romain Costanz: rcostanz@eos.ubc.ca
+    
+    :arg deployments: python iterable containing requested deployment numbers
+        (ex. [1, 2, 5], range(1, 9), etc...)
+    :type deployments: python iterable of integers
+    
+    :arg filename: Filename
+    :type filename: str
+    
+    :arg drifterpath: Drifter data storage directory
+    :type drifterpath: str
+    
+    :returns: Nested ordered dictionaries of xarray dataset objects.
+    :rtype: :py:class:`collections.OrderedDict` >
+            :py:class:`collections.OrderedDict` >
+            :py:class:`xarray.Dataset`
+    """
+    
+    # Preallocate output dictionary
+    drifters = OrderedDict()
+    
+    # Iterate through deployment directories
+    for deployment_num in deployments:
+        
+        # Deployment ID
+        deployment = 'deployment{}'.format(deployment_num)
+        
+        # Preallocate deployment dictionary
+        drifters[deployment] = OrderedDict()
+        
+        # Open deployment file
+        filepath = os.path.join(drifterpath, deployment, filename)
+        with open(filepath) as data_file:    
+            data = json.load(data_file)
+        
+        # Iterate through drifters in deployment
+        for drifter in data['features']:
+            
+            # Extract lon/lat values
+            lon, lat = zip(*drifter['geometry']['coordinates'])
+            
+            # Store each drifter as an xarray Dataset
+            drifters[deployment][drifter['properties']['title']] = xarray.Dataset({
+                'lon': ('time', list(lon)),
+                'lat': ('time', list(lat))},      
+                coords={'time': drifter['properties']['dateTime']})
+    
+    return drifters
+
+
 def load_ADCP(
         daterange, station='central',
         adcp_data_dir='/ocean/dlatorne/MEOPAR/ONC_ADCP/',
@@ -285,59 +345,6 @@ def onc_json_to_dataset(onc_json, teos=True):
             }
         )
     return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
-
-
-def load_drifters(prefix='driftersPositions',
-                  path='/ocean/bmoorema/research/MEOPAR/analysis-ben/data'):
-    """
-    """
-
-    # Initialize drifter storage dictionary
-    drifters = OrderedDict()
-
-    # Drifter IDs
-    drifterids = OrderedDict()
-    drifterids['1'] = [1, 2, 3, 4, 5, 6, 311, 312, 313]
-    drifterids['2'] = [21, 22]
-    drifterids['3'] = [23, 24, 25, 31, 32, 33, 34, 35, 36, 381, 382, 388]
-
-    for deployment in drifterids.keys():
-        # Construct filename
-        filename = prefix + deployment + '.mat'
-
-        # Load drifter matfile
-        driftermat = scipy.io.loadmat(os.path.join(path, filename))
-
-        # Iterate through drifters
-        for drifterid in drifterids[deployment]:
-
-            # Construct time list and convert to datetime
-            times = driftermat['drifters'][0][drifterid-1][4]
-            if isinstance(times[0][0], float):
-                pytime = [dtm.datetime.fromordinal(int(t[0])) +
-                          dtm.timedelta(days = t[0]%1) -
-                          dtm.timedelta(days = 366) - dtm.timedelta(hours=1)
-                          for t in times]
-            elif isinstance(times[0][0], str):
-                pytime = [dparser.parse(t) for t in times]
-            else:
-                raise ValueError(
-                    'Unknown time type: {}'.format(type(times[0][0])))
-
-            # Store drifter lon and lat as xarray DataArray objects
-            lons = xarray.DataArray(
-                [lon[0] for lon in driftermat['drifters'][0][drifterid-1][3]],
-                coords=[pytime], dims=['time'])
-            lats = xarray.DataArray(
-                [lat[0] for lat in driftermat['drifters'][0][drifterid-1][2]],
-                coords=[pytime], dims=['time'])
-
-            # Sort lon/lat by increasing datetime and store in dictionary
-            drifters[driftermat['drifters'][0][drifterid-1][0][0]] = {
-                'lon': lons[lons.time.argsort()],
-                'lat': lats[lats.time.argsort()]}
-
-    return drifters
 
 
 def request_onc_sog_adcp(date, node, userid):
