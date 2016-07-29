@@ -102,8 +102,8 @@ def load_ERDDAP_GEM(
     grid = xr.open_dataset(os.path.join(path, 'ubcSSaAtmosphereGridV1'))
     data = xr.open_dataset(os.path.join(path, 'ubcSSaSurfaceAtmosphereFieldsV1'))
     
-    GEM = xr.Dataset({'lon': grid.longitude.sel(gridX=xslice, gridY=yslice)-360,
-                      'lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
+    GEM = xr.Dataset({'nav_lon': grid.longitude.sel(gridX=xslice, gridY=yslice)-360,
+                      'nav_lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
     
     # Load GEM data
     for field in fields:
@@ -154,9 +154,12 @@ def load_ERDDAP_NEMO(
     yslice    = slice(window[2],    window[3])
 
     # Load NEMO grid
-    grid = xr.open_dataset(os.path.join(path, 'ubcSSnBathymetry2V1'))
-    NEMO = xr.Dataset({'lon': grid.longitude.sel(gridX=xslice, gridY=yslice),
-                       'lat': grid.latitude.sel( gridX=xslice, gridY=yslice)})
+    grid = xr.open_dataset(os.path.join(path, 'ubcSSnBathymetry2V1'),
+                           mask_and_scale=False)
+    NEMO = xr.Dataset({
+               'nav_lon'   : grid.longitude.sel( gridX=xslice, gridY=yslice),
+               'nav_lat'   : grid.latitude.sel(  gridX=xslice, gridY=yslice),
+               'Bathymetry': grid.bathymetry.sel(gridX=xslice, gridY=yslice)})
     
     # u velocity
     if 'u_vel' in fields:

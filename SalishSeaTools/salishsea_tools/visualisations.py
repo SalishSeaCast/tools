@@ -19,6 +19,9 @@
 from matplotlib import patches
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import datetime
+import dateutil.parser as dparser
 
 from salishsea_tools import geo_tools
 
@@ -210,7 +213,7 @@ def plot_tracers(time_ind, ax, qty, DATA, clim=[0, 35, 1], cmap='jet', zorder=0)
     
     :arg time_ind: Time index to plot from timeseries
         (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
-    :type time_ind: str
+    :type time_ind: str or :py:class:`datetime.datetime`
     
     :arg ax: Axis object
     :type ax: :py:class:`matplotlib.pyplot.axes`
@@ -231,11 +234,11 @@ def plot_tracers(time_ind, ax, qty, DATA, clim=[0, 35, 1], cmap='jet', zorder=0)
     :type zorder: integer
     
     :returns: Filled contour object
-    :rtype: :py:class:`matplotlib.pyplot.contourf`
+    :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
     
     # NEMO horizontal tracers
-    C = ax.contourf(DATA['lon'], DATA['lat'],
+    C = ax.contourf(DATA['nav_lon'], DATA['nav_lat'],
         np.ma.masked_values(DATA[qty].sel(time=time_ind, method='nearest'), 0),
         range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
     
@@ -256,7 +259,7 @@ def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
     
     :arg time_ind: Time index to plot from timeseries
         (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
-    :type time_ind: str
+    :type time_ind: str or :py:class:`datetime.datetime`
     
     :arg ax: Axis object
     :type ax: :py:class:`matplotlib.pyplot.axes`
@@ -286,7 +289,7 @@ def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
     :type zorder: integer
     
     :returns: Matplotlib quiver object
-    :rtype: :py:class:`matplotlib.pyplot.quiver`
+    :rtype: :py:class:`matplotlib.quiver.Quiver`
     """
     
     # Determine whether to space vectors
@@ -306,8 +309,8 @@ def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
     
     # NEMO horizontal currents
     Q = ax.quiver(
-        DATA['lon'][start::spacing, start::spacing],
-        DATA['lat'][start::spacing, start::spacing],
+        DATA['nav_lon'][start::spacing, start::spacing],
+        DATA['nav_lat'][start::spacing, start::spacing],
         np.ma.masked_values(
             DATA[u].sel(time=time_ind, method='nearest'), 0)[::spc, ::spc],
         np.ma.masked_values(
@@ -318,38 +321,58 @@ def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
     return Q
 
 
-def plot_drifters(time_ind, ax, drifters, zorder=15):
+def plot_drifters(time_ind, ax, DATA, color='red', cutoff=24, zorder=15):
+    """Plot a drifter track from ODL Drifter observations.
+    
+    :arg time_ind: Time index (current drifter position, track will be visible
+        up until this point, ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
+    :type time_ind: str or :py:class:`datetime.datetime`
+    
+    :arg ax: Axis object
+    :type ax: :py:class:`matplotlib.pyplot.axes`
+    
+    :arg DATA: Drifter track dataset
+    :type DATA: :py:class:`xarray.Dataset`
+    
+    :arg color: Drifter track color
+    :type color: str
+    
+    :arg cutoff: Time threshold for color plotting (hours)
+    :type cutoff: integer
+    
+    :arg zorder: Plotting layer specifier
+    :type zorder: integer
+    
+    :returns: Dictionary of line objects
+    :rtype: dict > :py:class:`matplotlib.lines.Line2D`
     """
-    """
     
-    # Define color palette
-    palette = ['blue', 'teal', 'cyan', 'green', 'lime', 'darkred', 'red',
-               'orange', 'magenta', 'purple', 'black', 'dimgray', 'saddlebrown',
-               'blue', 'teal', 'cyan', 'green', 'lime', 'darkred', 'red',
-               'orange', 'magenta', 'purple', 'black', 'dimgray', 'saddlebrown']
+    # Make sure time indices are datetime objects
+    if not isinstance(time_ind, datetime.datetime):
+        time_ind = dparser.parse(time_ind)
+    starttime = pd.Timestamp(DATA.time[0].to_pandas()).to_datetime()
     
-    # Plot drifters
-    L = collections.OrderedDict()
-    P = collections.OrderedDict()
-    for i, drifter in enumerate(drifters.keys()):
-        # Compare timestep with available drifter data
-        dtime = [pd.Timestamp(t.to_pandas()).to_datetime() - time_ind
-                 for t in drifters[drifter].time[[0, -1]]]
-        # Show drifter track if data is within time threshold
-        if (dtime[0].total_seconds() < 3600 and   # 1 hour before deployment
-            dtime[1].total_seconds() > -86400):   # 24 hours after failure
-            L[drifter] = ax.plot(
-                drifters[drifter].lon.sel(time=time_ind, method='nearest'),
-                drifters[drifter].lat.sel(time=time_ind, method='nearest'),
-                '-', linewidth=2, color=palette[i], zorder=zorder)
-            P[drifter] = ax.plot(
-                drifters[drifter].lon.sel(time=time_ind, method='nearest'),
-                drifters[drifter].lat.sel(time=time_ind, method='nearest'),
-                'o', color=palette[i], zorder=zorder+1)
-        else: # Hide if outside time threshold
-            L[drifter] = ax.plot(
-                [], [], '-', linewidth=2, color=palette[i], zorder=zorder)
-            P[drifter] = ax.plot(
-                [], [], 'o', color=palette[i], zorder=zorder+1)
+    # Color plot cutoff
+    time_cutoff = time_ind - datetime.timedelta(hours=cutoff)
     
-    return L, P
+    # Plot drifter track (gray)
+    L_old  = ax.plot(
+                DATA.lon.sel(time=slice(starttime, time_cutoff)),
+                DATA.lat.sel(time=slice(starttime, time_cutoff)),
+                '-', linewidth=2, color='gray', zorder=zorder)
+    
+    # Plot drifter track (color)
+    L_new  = ax.plot(
+                DATA.lon.sel(time=slice(time_cutoff, time_ind)),
+                DATA.lat.sel(time=slice(time_cutoff, time_ind)),
+                '-', linewidth=2, color=color, zorder=zorder+1)
+    
+    # Plot drifter position
+    P      = ax.plot(
+                DATA.lon.sel(time=time_ind, method='nearest'),
+                DATA.lat.sel(time=time_ind, method='nearest'),
+                'o', color=color, zorder=zorder+2)
+    
+    DRIFT_OBJS = {'L_old': L_old, 'L_new': L_new, 'P': P}
+    
+    return DRIFT_OBJS
