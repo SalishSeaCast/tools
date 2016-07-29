@@ -101,11 +101,22 @@ def load_drifters(
             # Extract lon/lat values
             lon, lat = zip(*drifter['geometry']['coordinates'])
             
-            # Store each drifter as an xarray Dataset
-            drifters[deployment][drifter['properties']['title']] = xarray.Dataset({
+            # Parse date strings into python datetime
+            pytime = [dparser.parse(t) for t in drifter['properties']['dateTime']]
+            
+            # Combine lon/lat/time into xarray Dataset
+            unsorted = xarray.Dataset({
                 'lon': ('time', list(lon)),
                 'lat': ('time', list(lat))},      
-                coords={'time': drifter['properties']['dateTime']})
+                coords={'time': pytime})
+            
+            # Get time-sorted indices
+            index = unsorted.time.argsort()
+            
+            # Make a new sorted Dataset for each drifter
+            drifters[deployment][drifter['properties']['title']] = xarray.Dataset({
+                'lon': unsorted.lon[index],
+                'lat': unsorted.lat[index]})
     
     return drifters
 
