@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def mean_tracer_at_depth(grid_t, tracer_name):
+def mean_tracer_at_depth(grid_t, tracer_name, min_depth = 150, max_depth = None):
     t = np.array([float(x) for x in grid_t.time_centered.values])
     days = (t[:] - t[0])/10**9/3600/24
     min_day_index = np.argmax(days > 30)
@@ -9,8 +9,11 @@ def mean_tracer_at_depth(grid_t, tracer_name):
 
     grid_heights = grid_t.deptht_bounds.values[:, 1] - grid_t.deptht_bounds.values[:, 0]
     depths = grid_t.deptht.values
-    min_depth_index = np.argmax(depths > 150)
-    max_depth_index = len(depths)
+    min_depth_index = np.argmax(depths > min_depth)
+    if(max_depth and max_depth < max(depths)):
+        max_depth_index = np.argmax(depths > max_depth)
+    else:
+        max_depth_index = len(depths)
 
     tracer_quantity_array = ((grid_t[tracer_name].values)*(grid_heights.reshape((1, 40, 1, 1))))
     total_tracer_at_depth = tracer_quantity_array[min_day_index:max_day_index, min_depth_index:max_depth_index, :, :].sum()
@@ -26,6 +29,8 @@ def mean_NH4_at_depth(grid_t):
 def mean_NO3_at_depth(grid_t):
     return(mean_tracer_at_depth(grid_t, "NO3"))
 
+def mean_NO3_at_20m(grid_t):
+    return(mean_tracer_at_depth(grid_t, "NO3", 15, 25))
 
 def mean_DON_at_depth(grid_t):
     return(mean_tracer_at_depth(grid_t, "DOC"))
