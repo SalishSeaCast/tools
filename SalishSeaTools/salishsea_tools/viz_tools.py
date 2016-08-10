@@ -49,6 +49,7 @@ def plot_coastline(
     xslice=None,
     yslice=None,
     color='black',
+    server='local',
     zorder=2,
 ):
     """Plot the coastline contour line from bathymetry on the axes.
@@ -98,6 +99,19 @@ def plot_coastline(
     :returns: Contour line set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
+    
+    # Index names based on results server
+    if server is 'local':
+        lon_name   = 'nav_lon'
+        lat_name   = 'nav_lat'
+        bathy_name = 'Bathymetry'
+    elif server is 'ERDDAP':
+        lon_name   = 'longitude'
+        lat_name   = 'latitude'
+        bathy_name = 'bathymetry'
+    else:
+        raise ValueError('Unknown results server name: {}'.format(server))
+    
     if any((
         xslice is None and yslice is not None,
         xslice is not None and yslice is None,
@@ -107,10 +121,10 @@ def plot_coastline(
         bathy = nc.Dataset(bathymetry)
     else:
         bathy = bathymetry
-    depths = bathy.variables['Bathymetry']
+    depths = bathy.variables[bathy_name]
     if coords == 'map':
-        lats = bathy.variables['nav_lat']
-        lons = bathy.variables['nav_lon']
+        lats = bathy.variables[lat_name]
+        lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
                 np.array(lons), np.array(lats), np.array(depths), 
@@ -141,6 +155,7 @@ def plot_land_mask(
     xslice=None,
     yslice=None,
     color='black',
+    server='local',
     zorder=1
 ):
     """Plot land areas from bathymetry as solid colour ploygons on the axes.
@@ -190,6 +205,19 @@ def plot_land_mask(
     :returns: Contour ploygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
+    
+    # Index names based on results server
+    if server is 'local':
+        lon_name   = 'nav_lon'
+        lat_name   = 'nav_lat'
+        bathy_name = 'Bathymetry'
+    elif server is 'ERDDAP':
+        lon_name   = 'longitude'
+        lat_name   = 'latitude'
+        bathy_name = 'bathymetry'
+    else:
+        raise ValueError('Unknown results server name: {}'.format(server))
+    
     if any((
         xslice is None and yslice is not None,
         xslice is not None and yslice is None,
@@ -199,11 +227,11 @@ def plot_land_mask(
         bathy = nc.Dataset(bathymetry)
     else:
         bathy = bathymetry
-    depths = bathy.variables['Bathymetry']
+    depths = bathy.variables[bathy_name]
     contour_interval = [-0.01, isobath + 0.01]
     if coords == 'map':
-        lats = bathy.variables['nav_lat']
-        lons = bathy.variables['nav_lon']
+        lats = bathy.variables[lat_name]
+        lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(
                 np.array(lons), np.array(lats), np.array(depths), 
@@ -225,6 +253,29 @@ def plot_land_mask(
     if not hasattr(bathymetry, 'variables'):
         bathy.close()
     return contour_fills
+
+
+def plot_boundary(ax, DATA, coords='map', color='burlywood', zorder=5):
+    """
+    """
+    
+    # Determine coordinate system
+    if   coords is 'map' : x, y = 'longitude', 'latitude'
+    elif coords is 'grid': x, y = 'gridX'    , 'gridY'
+    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
+    
+    # Determine orientation based on indexing
+    if   not DATA.gridY.shape: horz, vert = x, 'depth'
+    elif not DATA.gridX.shape: horz, vert = y, 'depth'
+    else:                      horz, vert = x, y
+    
+    # Plot landmask and boundary contour
+    patch    = ax.contourf(DATA[horz], DATA[vert], DATA.mask, [-0.01, 0.01],
+                           colors=color, zorder=zorder)
+    boundary = ax.contour( DATA[horz], DATA[vert], DATA.mask, [0], colors='k',
+                           zorder=zorder+1)
+    
+    return patch, boundary
 
 
 def set_aspect(
@@ -297,6 +348,27 @@ def unstagger(ugrid, vgrid):
     u = np.add(ugrid[..., :-1], ugrid[..., 1:]) / 2
     v = np.add(vgrid[..., :-1, :], vgrid[..., 1:, :]) / 2
     return u[..., 1:, :], v[..., 1:]
+
+
+def unstagger_xarray(qty, index):
+    """Interpolate u, v, or w component values to values at grid cell centres.
+    
+    Named indexing requires that input arrays are XArray DataArrays.
+
+    :arg qty: u, v, or w component values
+    :type qty: :py:class:`xarray.DataArray`
+    
+    :arg index: index name along which to centre
+        (generally one of 'gridX', 'gridY', or 'depth')
+    :type index: str
+
+    :returns qty: u, v, or w component values at grid cell centres
+    :rtype: :py:class:`xarray.DataArray`
+    """
+    
+    qty = (qty + qty.shift(**{index: 1})) / 2
+    
+    return qty
 
 
 def rotate_vel(u_in, v_in, origin='grid'):

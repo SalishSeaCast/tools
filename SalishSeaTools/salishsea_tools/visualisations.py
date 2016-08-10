@@ -202,14 +202,9 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     return newvar
 
 
-def plot_tracers(time_ind, ax, qty, DATA, clim=[0, 35, 1], cmap='jet', zorder=0):
+def plot_tracers(ax, qty, DATA, coords='map', clim=[0, 35, 1], cmap='jet',
+                 zorder=0):
     """Plot a horizontal slice of NEMO tracers as filled contours.
-    
-    *This function could be generalized in the following ways:*
-    1. vertical/horizontal cross-sections
-    2. grid/map coordinates
-    3. contourf/pcolormesh
-    4. non-ERDDAP flexibility
     
     :arg time_ind: Time index to plot from timeseries
         (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
@@ -237,25 +232,30 @@ def plot_tracers(time_ind, ax, qty, DATA, clim=[0, 35, 1], cmap='jet', zorder=0)
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
     
+    # Determine coordinate system
+    if   coords is 'map' : x, y = 'longitude', 'latitude'
+    elif coords is 'grid': x, y = 'gridX'    , 'gridY'
+    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
+    
+    # Determine orientation based on indexing
+    if   not DATA.gridY.shape: horz, vert = x, 'depth'
+    elif not DATA.gridX.shape: horz, vert = y, 'depth'
+    else:                      horz, vert = x, y
+    
     # NEMO horizontal tracers
-    C = ax.contourf(DATA['nav_lon'], DATA['nav_lat'],
-        np.ma.masked_values(DATA[qty].sel(time=time_ind, method='nearest'), 0),
-        range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
+    C = ax.contourf(DATA[horz], DATA[vert], DATA[qty].where(DATA.mask),
+                    range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
     
     return C
 
 
-def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
-        processed=False, color='black', scale=10, headwidth=1, zorder=5):
+def plot_velocity(
+        ax, model, DATA, coords='map', processed=False, spacing=5, mask=True,
+        color='black', scale=10, headwidth=3, linewidth=0, zorder=5
+):
     """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
     Accepts subsampled u and v fields via the **processed** keyword
     argument.
-    
-    *This function could be generalized in the following ways:*
-    1. vertical/horizontal cross-sections
-    2. grid/map coordinates
-    3. quiver/streamfunction
-    4. non_ERDDAP flexibility
     
     :arg time_ind: Time index to plot from timeseries
         (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
@@ -296,32 +296,38 @@ def plot_velocity(time_ind, ax, DATA, model='NEMO', spacing=5,
     spc = spacing
     if processed: spc = 1
     
+    # Determine coordinate system
+    if coords is 'map' :
+        x = DATA.longitude[::spacing, ::spacing]
+        y = DATA.latitude[ ::spacing, ::spacing]
+    elif coords is 'grid':
+        x, y = DATA.gridX[::spacing], DATA.gridY[::spacing]
+    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
+    
+    # Mask and space velocity arrays
     if model is 'NEMO':
-        u = 'u_vel'
-        v = 'v_vel'
-        start = 1
+        if mask:
+            u = DATA.u_vel.where(DATA.mask)[::spc, ::spc]
+            v = DATA.v_vel.where(DATA.mask)[::spc, ::spc]
+        else:
+            u, v = DATA.u_vel[::spc, ::spc], DATA.v_vel[::spc, ::spc]
     elif model is 'GEM':
-        u = 'u_wind'
-        v = 'v_wind'
-        start = 0
+        if mask:
+            u = DATA.u_wind.where(DATA.mask)[::spc, ::spc]
+            v = DATA.v_wind.where(DATA.mask)[::spc, ::spc]
+        else:
+            u, v = DATA.u_wind[::spc, ::spc], DATA.v_wind[::spc, ::spc]
     else:
         raise ValueError('Unknown model type: {}'.format(model))
     
-    # NEMO horizontal currents
-    Q = ax.quiver(
-        DATA['nav_lon'][start::spacing, start::spacing],
-        DATA['nav_lat'][start::spacing, start::spacing],
-        np.ma.masked_values(
-            DATA[u].sel(time=time_ind, method='nearest'), 0)[::spc, ::spc],
-        np.ma.masked_values(
-            DATA[v].sel(time=time_ind, method='nearest'), 0)[::spc, ::spc],
-        color=color, edgecolor='k', scale=scale, linewidth=0.5,
-        headwidth=headwidth, zorder=zorder)
+    # Plot velocity quiver
+    Q = ax.quiver(x, y, u, v, color=color, edgecolor='k', scale=scale,
+                  linewidth=linewidth, headwidth=headwidth, zorder=zorder)
     
     return Q
 
 
-def plot_drifters(time_ind, ax, DATA, color='red', cutoff=24, zorder=15):
+def plot_drifters(ax, DATA, color='red', cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
     
     :arg time_ind: Time index (current drifter position, track will be visible
@@ -348,9 +354,10 @@ def plot_drifters(time_ind, ax, DATA, color='red', cutoff=24, zorder=15):
     """
     
     # Make sure time indices are datetime objects
-    if not isinstance(time_ind, datetime.datetime):
-        time_ind = dparser.parse(time_ind)
-    starttime = pd.Timestamp(DATA.time[0].to_pandas()).to_datetime()
+    #if not isinstance(time_ind, datetime.datetime):
+    #    time_ind = dparser.parse(time_ind)
+    starttime = pd.Timestamp(DATA.time[ 0].to_pandas()).to_datetime()
+    time_ind  = pd.Timestamp(DATA.time[-1].to_pandas()).to_datetime()
     
     # Color plot cutoff
     time_cutoff = time_ind - datetime.timedelta(hours=cutoff)
