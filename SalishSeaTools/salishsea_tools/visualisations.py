@@ -23,7 +23,7 @@ import pandas as pd
 import datetime
 import dateutil.parser as dparser
 
-from salishsea_tools import geo_tools
+from salishsea_tools import geo_tools, nc_tools
 
 
 def contour_thalweg(
@@ -202,8 +202,8 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     return newvar
 
 
-def plot_tracers(ax, qty, DATA, coords='map', clim=[0, 35, 1], cmap='jet',
-                 zorder=0):
+def plot_tracers(ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1],
+                 cmap='jet', zorder=0):
     """Plot a horizontal slice of NEMO tracers as filled contours.
     
     :arg time_ind: Time index to plot from timeseries
@@ -242,6 +242,10 @@ def plot_tracers(ax, qty, DATA, coords='map', clim=[0, 35, 1], cmap='jet',
     elif not DATA.gridX.shape: horz, vert = y, 'depth'
     else:                      horz, vert = x, y
     
+    # Clear previous salinity contours
+    if C is not None:
+        for C_obj in C.collections: C_obj.remove()
+    
     # NEMO horizontal tracers
     C = ax.contourf(DATA[horz], DATA[vert], DATA[qty].where(DATA.mask),
                     range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
@@ -250,8 +254,8 @@ def plot_tracers(ax, qty, DATA, coords='map', clim=[0, 35, 1], cmap='jet',
 
 
 def plot_velocity(
-        ax, model, DATA, coords='map', processed=False, spacing=5, mask=True,
-        color='black', scale=10, headwidth=3, linewidth=0, zorder=5
+        ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
+        mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
 ):
     """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
     Accepts subsampled u and v fields via the **processed** keyword
@@ -296,14 +300,6 @@ def plot_velocity(
     spc = spacing
     if processed: spc = 1
     
-    # Determine coordinate system
-    if coords is 'map' :
-        x = DATA.longitude[::spacing, ::spacing]
-        y = DATA.latitude[ ::spacing, ::spacing]
-    elif coords is 'grid':
-        x, y = DATA.gridX[::spacing], DATA.gridY[::spacing]
-    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
-    
     # Mask and space velocity arrays
     if model is 'NEMO':
         if mask:
@@ -320,14 +316,29 @@ def plot_velocity(
     else:
         raise ValueError('Unknown model type: {}'.format(model))
     
-    # Plot velocity quiver
-    Q = ax.quiver(x, y, u, v, color=color, edgecolor='k', scale=scale,
-                  linewidth=linewidth, headwidth=headwidth, zorder=zorder)
+    if Q is not None: # --- Update vectors only
+        
+        # Update velocity vectors
+        Q.set_UVC(u, v)
+    
+    else: # --------------- Plot new vector instances
+        
+        # Determine coordinate system
+        if coords is 'map' :
+            x = DATA.longitude[::spacing, ::spacing]
+            y = DATA.latitude[ ::spacing, ::spacing]
+        elif coords is 'grid':
+            x, y = DATA.gridX[::spacing], DATA.gridY[::spacing]
+        else: raise ValueError('Unknown coordinate system: {}'.format(coords))
+        
+        # Plot velocity quiver
+        Q = ax.quiver(x, y, u, v, color=color, edgecolor='k', scale=scale,
+                      linewidth=linewidth, headwidth=headwidth, zorder=zorder)
     
     return Q
 
 
-def plot_drifters(ax, DATA, color='red', cutoff=24, zorder=15):
+def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
     
     :arg time_ind: Time index (current drifter position, track will be visible
@@ -353,33 +364,51 @@ def plot_drifters(ax, DATA, color='red', cutoff=24, zorder=15):
     :rtype: dict > :py:class:`matplotlib.lines.Line2D`
     """
     
-    # Make sure time indices are datetime objects
-    #if not isinstance(time_ind, datetime.datetime):
-    #    time_ind = dparser.parse(time_ind)
-    starttime = pd.Timestamp(DATA.time[ 0].to_pandas()).to_datetime()
-    time_ind  = pd.Timestamp(DATA.time[-1].to_pandas()).to_datetime()
+    # Convert time boundaries to datetime.datetime to allow operations/slicing
+    starttime = nc_tools.xarraytime_to_datetime(DATA.time[ 0])
+    endtime   = nc_tools.xarraytime_to_datetime(DATA.time[-1])
     
     # Color plot cutoff
-    time_cutoff = time_ind - datetime.timedelta(hours=cutoff)
+    time_cutoff = endtime - datetime.timedelta(hours=cutoff)
     
-    # Plot drifter track (gray)
-    L_old  = ax.plot(
-                DATA.lon.sel(time=slice(starttime, time_cutoff)),
-                DATA.lat.sel(time=slice(starttime, time_cutoff)),
-                '-', linewidth=2, color='gray', zorder=zorder)
+    if DRIFT_OBJS is not None: # --- Update line objects only
+        
+        # Plot drifter track (gray)
+        DRIFT_OBJS['L_old'][0].set_data(
+            DATA.lon.sel(time=slice(starttime, time_cutoff)),
+            DATA.lat.sel(time=slice(starttime, time_cutoff)))
     
-    # Plot drifter track (color)
-    L_new  = ax.plot(
-                DATA.lon.sel(time=slice(time_cutoff, time_ind)),
-                DATA.lat.sel(time=slice(time_cutoff, time_ind)),
-                '-', linewidth=2, color=color, zorder=zorder+1)
+        # Plot drifter track (color)
+        DRIFT_OBJS['L_new'][0].set_data(
+            DATA.lon.sel(time=slice(time_cutoff, endtime)),
+            DATA.lat.sel(time=slice(time_cutoff, endtime)))
     
-    # Plot drifter position
-    P      = ax.plot(
-                DATA.lon.sel(time=time_ind, method='nearest'),
-                DATA.lat.sel(time=time_ind, method='nearest'),
-                'o', color=color, zorder=zorder+2)
+        # Plot drifter position
+        DRIFT_OBJS['P'][0].set_data(
+            DATA.lon.sel(time=endtime, method='nearest'),
+            DATA.lat.sel(time=endtime, method='nearest'))
     
-    DRIFT_OBJS = {'L_old': L_old, 'L_new': L_new, 'P': P}
+    else: # ------------------------ Plot new line objects instances
+        
+        # Define drifter objects dict
+        DRIFT_OBJS = {}
+    
+        # Plot drifter track (gray)
+        DRIFT_OBJS['L_old'] = ax.plot(
+            DATA.lon.sel(time=slice(starttime, time_cutoff)),
+            DATA.lat.sel(time=slice(starttime, time_cutoff)),
+            '-', linewidth=2, color='gray', zorder=zorder)
+        
+        # Plot drifter track (color)
+        DRIFT_OBJS['L_new'] = ax.plot(
+            DATA.lon.sel(time=slice(time_cutoff, endtime)),
+            DATA.lat.sel(time=slice(time_cutoff, endtime)),
+            '-', linewidth=2, color=color, zorder=zorder+1)
+        
+        # Plot drifter position
+        DRIFT_OBJS['P'] = ax.plot(
+            DATA.lon.sel(time=endtime, method='nearest'),
+            DATA.lat.sel(time=endtime, method='nearest'),
+            'o', color=color, zorder=zorder+2)
     
     return DRIFT_OBJS
