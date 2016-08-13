@@ -36,8 +36,9 @@ import os
 import arrow
 import dateutil.parser as dparser
 import netCDF4 as nc
-import xarray as xr
-import numpy as np
+import xarray  as xr
+import pandas  as pd
+import numpy   as np
 from nco import Nco
 
 from salishsea_tools import hg_commands as hg
@@ -571,6 +572,15 @@ def get_datetimes(dataset, time_var='time_counter'):
     datetimes = np.array([time_stamp.datetime for time_stamp in time_stamps])
     
     return datetimes
+
+
+def xarraytime_to_datetime(xarraytime):
+    """
+    """
+    
+    datetime_obj = pd.Timestamp(xarraytime.to_pandas()).to_datetime()
+    
+    return datetime_obj
 
 
 def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
