@@ -19,6 +19,7 @@ from collections import OrderedDict
 import datetime as dtm
 import ftplib
 import json
+import re
 import os
 from pathlib import Path
 
@@ -43,6 +44,8 @@ from retrying import retry
 import scipy.interpolate
 import scipy.io
 import xarray
+import pandas as pd
+import functools
 
 from salishsea_tools import (
     onc_sog_adcps,
@@ -604,3 +607,110 @@ def _get_onc_sog_adcp_matfile(ftp, filepath, dest):
     dest_path = dest/filepath.name
     ftp.retrbinary('RETR {}'.format(filepath), dest_path.open('wb').write)
     return dest_path
+
+
+def load_nowcast_station_tracers(tracers,
+                                 stations,
+                                 months,
+                                 hours,
+                                 depth_indices,
+                                 file_ending = "ptrc_T.nc",
+                                 nowcast_dir="/results/SalishSea/nowcast-green/",
+                                 save_path=None,
+                                 verbose = True
+):
+    # Iterate through nowcast results directory, return tracer data that matches request in pandas dataframe
+    # Example:
+    """
+    station_phy2 = load_nowcast_station_tracers(tracers = ["PHY2"],
+                                                stations = {'BS1': (636, 126),'BS11': (605, 125)},
+                                                months = ['apr'],
+                                                hours = [0,6,12,18],
+                                                depth_indices = range(20),
+    )
+    """
+    # Returns pandas dataframe with this format:
+    """
+    STATION  HOUR      DEPTH      PHY2       DATE  MONTH
+    0      BS11     0   0.500000  3.903608 2016-04-06      4
+    1      BS11     0   1.500003  4.114840 2016-04-06      4
+    2      BS11     0   2.500011  5.080880 2016-04-06      4
+    3      BS11     0   3.500031  5.082539 2016-04-06      4
+    4      BS11     0   4.500071  5.076756 2016-04-06      4
+    5      BS11     0   5.500151  5.030882 2016-04-06      4
+    6      BS11     0   6.500310  4.975801 2016-04-06      4
+    """
+    month_num = {"jan": "01","feb": "02", "mar": "03", "apr": "04",
+                 "may": "05", "jun": "06", "jul": "07", "aug": "08",
+                 "sep": "09", "oct": "10", "nov": "11", "dec": "12" }
+    station_names = list(stations.keys())
+    station_points = stations.values()
+    model_js = [x[0] for x in station_points] 
+    model_is = [x[1] for x in station_points] 
+    
+    mixed_format_dates = os.listdir(nowcast_dir)
+    number_format_dates = ["20" + x[5:7] + month_num[x[2:5]] + x[0:2] for x in mixed_format_dates]
+    sorted_dirs = [mixed_format_date for (number_format_date, mixed_format_date) in sorted(zip(number_format_dates,mixed_format_dates))]
+    
+    dataframe_list = []
+    num_files = 0
+    start_time = dtm.datetime.now()
+    
+    for subdir in sorted_dirs:
+        if os.path.isdir(nowcast_dir + '/' + subdir) and re.match("[0-9]{2}[a-z]{3}[0-9]{2}", subdir):
+            month_str = subdir[2:5]
+            date_str = "20" + subdir[5:7] + month_num[month_str] + subdir[0:2]
+            tracer_file = "SalishSea_1h_" + date_str + "_" + date_str + "_" + file_ending
+            tracer_path = nowcast_dir + "/" + subdir + "/" + tracer_file
+            if os.path.isfile(tracer_path) and month_str in months:
+                grid_t = xarray.open_dataset(tracer_path)
+                result_hours = pd.DatetimeIndex(grid_t.time_centered.values).hour
+                time_indices = np.where([(x in hours) for x in result_hours])
+                
+                J, T, Z = np.meshgrid(model_js,time_indices,depth_indices, indexing = 'ij')
+                I, T, Z = np.meshgrid(model_is,time_indices,depth_indices, indexing = 'ij')
+                
+                tracer_dataframes = []
+                for trc in tracers:
+                    station_slice = grid_t[trc].values[T,Z,J,I]
+                    slice_xarray = xarray.DataArray(station_slice,
+                                     [station_names,result_hours[time_indices], grid_t.deptht.values[depth_indices]],
+                                     ["STATION", "HOUR", "DEPTH"], 
+                                     trc)
+                    slice_dataframe = slice_xarray.to_dataframe()
+                    slice_dataframe.reset_index(inplace = True)
+                    tracer_dataframes.append(slice_dataframe)
+                merged_tracers = functools.reduce(lambda left,right: pd.merge(left,right,on=["STATION", "HOUR", "DEPTH"]), tracer_dataframes)
+                merged_tracers["DATE"] =  pd.to_datetime(date_str, infer_datetime_format=True)
+                merged_tracers["MONTH"] = int(month_num[month_str])
+                dataframe_list.append(merged_tracers)
+            
+                num_files = num_files + 1
+                if verbose:
+                    run_time = dtm.datetime.now() - start_time
+                    print("Files loaded:" + str(num_files))
+                    print("Date of most recent nowcast load: " + date_str)
+                    print("Time loading: ")
+                    print(run_time)
+    if verbose:
+        print("Files loaded:" + str(num_files))
+
+    nowcast_df = pd.concat(dataframe_list)
+    
+    if save_path is not None:
+        nowcast_df.to_pickle(save_path)
+        if verbose:
+            print("Done, dataframe saved to: " + save_path)
+    return(nowcast_df)
+
+
+
+
+
+
+
+
+
+
+
+
