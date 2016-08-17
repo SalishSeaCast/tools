@@ -302,10 +302,11 @@ def get_variables(fU, fV, fT, timestamp, depth):
 
 
 def get_EC_observations(station, start_day, end_day):
-    """Gather Environment Canada weather observations for the station and
-    dates indicated.
+    """Gather hourly Environment Canada (EC) weather observations for the
+    station and dates indicated.
 
-    The dates should span one month because of how EC data is collected.
+    The hourly EC data is stored in monthly files, so only a single month can
+    be downloaded at a time.
 
     :arg station: Station name (no spaces). e.g. 'PointAtkinson'
     :type station: str
@@ -322,9 +323,11 @@ def get_EC_observations(station, start_day, end_day):
               counterclockwise from East
               temperature is in Kelvin
               time is UTC
-              Also latitude and longitude of the station.
+              Also returns latitude and longitude of the station.
 
     """
+    # These ids have been identified as interesting locations in the SoG.
+    # It is not necessarily a complete list.
     station_ids = {
         'PamRocks': 6817,
         'SistersIsland': 6813,
@@ -336,7 +339,8 @@ def get_EC_observations(station, start_day, end_day):
         'PointAtkinson': 844,
         'Victoria': 10944,
         'CampbellRiver': 145,
-        'PatriciaBay': 11007,  # not exactly at Patricia Bay
+        # NOTE: not exactly Patricia Bay. The EC name is Victoria Hartland CS
+        'PatriciaBay': 11007,
         'Esquimalt': 52
     }
 
