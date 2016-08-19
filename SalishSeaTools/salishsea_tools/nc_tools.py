@@ -36,9 +36,9 @@ import os
 import arrow
 import dateutil.parser as dparser
 import netCDF4 as nc
-import xarray  as xr
-import pandas  as pd
-import numpy   as np
+import xarray as xr
+import pandas as pd
+import numpy as np
 from nco import Nco
 
 from salishsea_tools import hg_commands as hg
@@ -46,73 +46,58 @@ from salishsea_tools import hg_commands as hg
 nco = Nco()
 
 
-__all__ = [
-    'check_dataset_attrs',
-    'combine_subdomain',
-    'dataset_from_path',
-    'generate_pressure_file',
-    'generate_pressure_file_ops',
-    'get_datetimes',
-    'init_dataset_attrs',
-    'load_GEM_from_erddap',
-    'load_GEM_from_path',
-    'load_NEMO_from_erddap',
-    'load_NEMO_from_path',
-    'show_dataset_attrs',
-    'show_dimensions',
-    'show_variables',
-    'show_variable_attrs',
-    'ssh_timeseries_at_point',
-    'time_origin',
-    'timestamp',
-    'uv_wind_timeseries_at_point',
-]
-
 def load_GEM_from_erddap(
-        timerange, window=[None, None, None, None], fields=['u_wind', 'v_wind'],
-        path='https://salishsea.eos.ubc.ca/erddap/griddap',
+        timerange, window=[None, None, None, None],
+        fields=['u_wind', 'v_wind'],
+        gridpath=(
+            'https://salishsea.eos.ubc.ca/erddap/'
+            'griddap/ubcSSaAtmosphereGridV1'),
+        datapath=(
+            'https://salishsea.eos.ubc.ca/erddap/'
+            'griddap/ubcSSaSurfaceAtmosphereFieldsV1'),
 ):
     """Returns surface atmospheric variables from the Environment
     Canada GEM 2.5 km HRDPS atmospheric model, accessed through the
     ERDDAP server.
-    
+
     :arg timerange: Start and end datetimes for the requested data range.
-        (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
+                    (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
     :type timerange: list or tuple of str
-    
+
     :arg window: Model domain slice bounds.
-        (ex. [x_min, x_max, y_min, y_max])
+                 (ex. [x_min, x_max, y_min, y_max])
     :type window: list or tuple of integers
-    
+
     :arg fields: Requested variables (*must match netCDF fields in file*)
     :type fields: list or tuple of str
-    
-    :arg path: Location of ERDDAP server
-    :type path: str
-    
+
+    :arg str gridpath: Location of grid information on ERDDAP server
+
+    :arg str datapath: Location of data on ERDDAP server
+
     :returns: :py:class:`xarray.Dataset` of lat/lon coordinates and
-        model variables
+              model variables
     :rtype: :py:class:`xarray.Dataset`
     """
-    
+
     # Create slices
     starttime, endtime = map(dparser.parse, timerange)
     timeslice = slice(starttime, endtime)
-    xslice    = slice(window[0], window[1])
-    yslice    = slice(window[2], window[3])
-    
+    xslice = slice(window[0], window[1])
+    yslice = slice(window[2], window[3])
+
     # Load GEM grid
-    grid = xr.open_dataset(os.path.join(path, 'ubcSSaAtmosphereGridV1'))
-    data = xr.open_dataset(os.path.join(path, 'ubcSSaSurfaceAtmosphereFieldsV1'))
-    GEM  = xr.Dataset({
+    grid = xr.open_dataset(gridpath)
+    data = xr.open_dataset(datapath)
+    GEM = xr.Dataset({
               'longitude': grid.longitude.sel(gridX=xslice, gridY=yslice)-360,
-              'latitude' : grid.latitude.sel( gridX=xslice, gridY=yslice)})
-    
+              'latitude': grid.latitude.sel(gridX=xslice, gridY=yslice)})
+
     # Load GEM variables
     for field in fields:
         GEM = GEM.merge({field: data[field].sel(
                         time=timeslice, gridX=xslice, gridY=yslice)})
-    
+
     return GEM
 
 
