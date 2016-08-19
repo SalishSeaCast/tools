@@ -22,13 +22,6 @@ import netCDF4 as nc
 import numpy as np
 
 
-__all__ = ['calc_abs_max',
-           'plot_coastline',
-           'rotate_vel',
-           'set_aspect',
-           'unstagger']
-
-
 def calc_abs_max(array):
     """Return the maximum absolute value in the array.
 
@@ -92,26 +85,26 @@ def plot_coastline(
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
-    
+
     :arg zorder: Plotting layer specifier
     :type zorder: integer
 
     :returns: Contour line set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    
+
     # Index names based on results server
     if server is 'local':
-        lon_name   = 'nav_lon'
-        lat_name   = 'nav_lat'
+        lon_name = 'nav_lon'
+        lat_name = 'nav_lat'
         bathy_name = 'Bathymetry'
     elif server is 'ERDDAP':
-        lon_name   = 'longitude'
-        lat_name   = 'latitude'
+        lon_name = 'longitude'
+        lat_name = 'latitude'
         bathy_name = 'bathymetry'
     else:
         raise ValueError('Unknown results server name: {}'.format(server))
-    
+
     if any((
         xslice is None and yslice is not None,
         xslice is not None and yslice is None,
@@ -127,7 +120,7 @@ def plot_coastline(
         lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
-                np.array(lons), np.array(lats), np.array(depths), 
+                np.array(lons), np.array(lats), np.array(depths),
                 [isobath], colors=color, zorder=zorder)
         else:
             contour_lines = axes.contour(
@@ -198,14 +191,14 @@ def plot_land_mask(
 
     :arg color: Matplotlib colour argument
     :type color: str, float, rgb or rgba tuple
-    
+
     :arg zorder: Plotting layer specifier
     :type zorder: integer
-    
+
     :returns: Contour ploygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    
+
     # Index names based on results server
     if server is 'local':
         lon_name   = 'nav_lon'
@@ -217,7 +210,7 @@ def plot_land_mask(
         bathy_name = 'bathymetry'
     else:
         raise ValueError('Unknown results server name: {}'.format(server))
-    
+
     if any((
         xslice is None and yslice is not None,
         xslice is not None and yslice is None,
@@ -257,24 +250,33 @@ def plot_land_mask(
 
 def plot_boundary(ax, DATA, coords='map', color='burlywood', zorder=5):
     """
+    can this replace plot_coastline?
+    add separate mask
+    what about different depths? (maybe a prep function that then calls this?)
     """
-    
+
     # Determine coordinate system
-    if   coords is 'map' : x, y = 'longitude', 'latitude'
-    elif coords is 'grid': x, y = 'gridX'    , 'gridY'
-    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
-    
+    if coords is 'map':
+        x, y = 'longitude', 'latitude'
+    elif coords is 'grid':
+        x, y = 'gridX', 'gridY'
+    else:
+        raise ValueError('Unknown coordinate system: {}'.format(coords))
+
     # Determine orientation based on indexing
-    if   not DATA.gridY.shape: horz, vert = x, 'depth'
-    elif not DATA.gridX.shape: horz, vert = y, 'depth'
-    else:                      horz, vert = x, y
-    
+    if not DATA.gridY.shape:
+        horz, vert = x, 'depth'
+    elif not DATA.gridX.shape:
+        horz, vert = y, 'depth'
+    else:
+        horz, vert = x, y
+
     # Plot landmask and boundary contour
-    patch    = ax.contourf(DATA[horz], DATA[vert], DATA.mask, [-0.01, 0.01],
-                           colors=color, zorder=zorder)
-    boundary = ax.contour( DATA[horz], DATA[vert], DATA.mask, [0], colors='k',
-                           zorder=zorder+1)
-    
+    patch = ax.contourf(DATA[horz], DATA[vert], DATA.mask, [-0.01, 0.01],
+                        colors=color, zorder=zorder)
+    boundary = ax.contour(DATA[horz], DATA[vert], DATA.mask, [0], colors='k',
+                          zorder=zorder+1)
+
     return patch, boundary
 
 
