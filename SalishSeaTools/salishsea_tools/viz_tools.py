@@ -385,7 +385,7 @@ def rotate_vel(u_in, v_in, origin='grid'):
     :type v_in: :py:class:`numpy.ndarray`
     
     :arg origin: Input coordinate system
-    (either 'grid' or 'map', output will be the other)
+                 (either 'grid' or 'map', output will be the other)
     :type origin: str
 
     :returns u_out, v_out: rotated u and v component values

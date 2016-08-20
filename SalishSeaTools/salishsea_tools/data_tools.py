@@ -362,14 +362,14 @@ def onc_json_to_dataset(onc_json, teos=True):
 
 
 def request_onc_sog_adcp(date, node, userid):
-    """Request a :kdb:`.mat` file of ADCP data for 1 day from an
+    """Request a :kbd:`.mat` file of ADCP data for 1 day from an
     Ocean Networks Canada (ONC) node in the Strait of Georgia.
 
     This function relies on a soon-to-be-deprecated ONC web service.
     It is based on a Matlab script provided by Marlene Jefferies of ONC.
     It is primarily intended for use in an automation pipeline that also
     includes ADCP data processing Matlab scripts developed by Rich Pawlowicz
-     of UBC EOAS.
+    of UBC EOAS.
 
     :arg str date: Date for which to request the ADCP data.
 
@@ -486,14 +486,14 @@ def get_onc_sog_adcp_search_status(search_hdr_id, userid):
 
 
 def get_onc_sog_adcp_mat(date, search_info, dest_path, userno):
-    """Download a :kdb:`.mat` file of ADCP data for 1 day from an
+    """Download a :kbd:`.mat` file of ADCP data for 1 day from an
     Ocean Networks Canada (ONC) node in the Strait of Georgia.
 
     This function relies on a soon-to-be-deprecated ONC web service.
     It is based on a Matlab script provided by Marlene Jefferies of ONC.
     It is primarily intended for use in an automation pipeline that also
     includes ADCP data processing Matlab scripts developed by Rich Pawlowicz
-     of UBC EOAS.
+    of UBC EOAS.
 
     :arg str data_date: Date for which to request the ADCP data.
 
@@ -609,36 +609,42 @@ def _get_onc_sog_adcp_matfile(ftp, filepath, dest):
     return dest_path
 
 
-def load_nowcast_station_tracers(tracers,
-                                 stations,
-                                 months,
-                                 hours,
-                                 depth_indices,
-                                 file_ending = "ptrc_T.nc",
-                                 nowcast_dir="/results/SalishSea/nowcast-green/",
-                                 save_path=None,
-                                 verbose = True
+def load_nowcast_station_tracers(
+    tracers,
+    stations,
+    months,
+    hours,
+    depth_indices,
+    file_ending = "ptrc_T.nc",
+    nowcast_dir="/results/SalishSea/nowcast-green/",
+    save_path=None,
+    verbose = True,
 ):
-    # Iterate through nowcast results directory, return tracer data that matches request in pandas dataframe
-    # Example:
-    """
-    station_phy2 = load_nowcast_station_tracers(tracers = ["PHY2"],
-                                                stations = {'BS1': (636, 126),'BS11': (605, 125)},
-                                                months = ['apr'],
-                                                hours = [0,6,12,18],
-                                                depth_indices = range(20),
-    )
-    """
-    # Returns pandas dataframe with this format:
-    """
-    STATION  HOUR      DEPTH      PHY2       DATE  MONTH
-    0      BS11     0   0.500000  3.903608 2016-04-06      4
-    1      BS11     0   1.500003  4.114840 2016-04-06      4
-    2      BS11     0   2.500011  5.080880 2016-04-06      4
-    3      BS11     0   3.500031  5.082539 2016-04-06      4
-    4      BS11     0   4.500071  5.076756 2016-04-06      4
-    5      BS11     0   5.500151  5.030882 2016-04-06      4
-    6      BS11     0   6.500310  4.975801 2016-04-06      4
+    """Iterate through nowcast results directory, return tracer data that
+    matches request in pandas dataframe.
+
+    Example:
+
+    .. code-block:: python
+
+        station_phy2 = load_nowcast_station_tracers(
+            tracers = ["PHY2"],
+            stations = {'BS1': (636, 126),'BS11': (605, 125)},
+            months = ['apr'],
+            hours = [0,6,12,18],
+            depth_indices = range(20),
+        )
+
+    Returns pandas dataframe with this format::
+
+        STATION  HOUR      DEPTH      PHY2       DATE  MONTH
+        0      BS11     0   0.500000  3.903608 2016-04-06      4
+        1      BS11     0   1.500003  4.114840 2016-04-06      4
+        2      BS11     0   2.500011  5.080880 2016-04-06      4
+        3      BS11     0   3.500031  5.082539 2016-04-06      4
+        4      BS11     0   4.500071  5.076756 2016-04-06      4
+        5      BS11     0   5.500151  5.030882 2016-04-06      4
+        6      BS11     0   6.500310  4.975801 2016-04-06      4
     """
     month_num = {"jan": "01","feb": "02", "mar": "03", "apr": "04",
                  "may": "05", "jun": "06", "jul": "07", "aug": "08",

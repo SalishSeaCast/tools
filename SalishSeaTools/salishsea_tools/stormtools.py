@@ -409,20 +409,16 @@ def get_EC_observations(station, start_day, end_day):
 
 
 def get_SSH_forcing(boundary, date):
-    """
-    A function that returns the ssh forcing for the month of the date and
+    """A function that returns the ssh forcing for the month of the date and
     boundary indicated.
 
-    :arg boundary: A string naming the boundary. e.g 'north' or 'west'
-    :type boundary: str
+    :arg str boundary: A string naming the boundary. e.g 'north' or 'west'
 
-    :arg date: A string indicating the date of interest. e.g. '01-Dec-2006'.
-    The day needs to be the first day of the month.
-    :type date: str
+    :arg str  date: A string indicating the date of interest. e.g. '01-Dec-2006'.
+                    The day needs to be the first day of the month.
 
     :returns: ssh_forc, time_ssh: arrays of the ssh forcing values and
-    corresponding times
-
+              corresponding times
     """
     date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
     year = date_arr.year
@@ -510,12 +506,11 @@ def load_observations(start, end, location):
 
     :arg location: a string representing the location for observations
     :type location: a string from the following - PointAtkinson, Victoria,
-    PatriciaBay, CampbellRiver
+                    PatriciaBay, CampbellRiver
 
     :returns: wlev_meas: a dict object with the water level measurements
-    reference to Chart Datum
+                         reference to Chart Datum
     """
-
     stations = {'PointAtkinson': 7795, 'Victoria': 7120, 'PatriciaBay': 7277,
                 'CampbellRiver': 8074}
     statID_PA = stations[location]
@@ -525,7 +520,6 @@ def load_observations(start, end, location):
                             date_parser=dateParserMeasured)
     wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time',
                                           'SLEV(metres)': 'slev'})
-
     return wlev_meas
 
 
@@ -564,12 +558,12 @@ def modelled_anomaly(sshs, location):
     simulation with all forcing and a simulation with tides only.
 
     :arg sshs: A struc object with ssh data from all_forcing and tidesonly
-     model runs
+               model runs
     :type sshs: struc with dimensions 'all_forcing' and 'tidesonly'
 
     :arg location: string defining the desired location
     :type location: string either "PointAtkinson", "Victoria", "PatriciaBay",
-    "CampbellRiver"
+                    "CampbellRiver"
 
     :returns: anom: the difference between all_forcing and tidesonly
     """
@@ -732,6 +726,7 @@ def rebase_obs(data, time):
     Rebases the observations so that they are given on the half hour instead
     of hour.
     Half hour outputs caclulated by averaging between two hourly outputs.
+
     :arg data: data to be rebased
     :type data: array
 
@@ -739,7 +734,7 @@ def rebase_obs(data, time):
     :type time: array
 
     :returns: rebase_data, rebase_time, the data and times shifted by half an
-    hour
+              hour
     """
     rebase_data = 0.5*(data[1:]+data[:-1])
     rebase_time = []
@@ -828,17 +823,14 @@ def get_NOAA_predictions(station_no, start_date, end_date):
     """Download tide predictions from NOAA site for one NOAA station
     for specified period.
 
-    :arg station_no: Station number e.g. 9443090.
-    :type station_no: int
+    :arg int station_no: Station number e.g. 9443090.
 
-    :arg start_date: Start date; e.g. '01-JAN-2010'.
-    :type start_date: str
+    :arg str start_date: Start date; e.g. '01-JAN-2010'.
 
-    :arg end_date: End date; e.g. '31-JAN-2010'
-    :type end_date: str
+    :arg str end_date: End date; e.g. '31-JAN-2010'
 
     :returns: Saves text file with predictions in meters at one station.
-    Time zone is UTC
+              Time zone is UTC
     """
     # Name the output file
     outfile = ('predictions_' + str(station_no) + '_' + str(start_date) + '_'
