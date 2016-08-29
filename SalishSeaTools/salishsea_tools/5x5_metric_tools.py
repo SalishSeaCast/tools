@@ -64,12 +64,16 @@ def time_surface_NO3_drops_below_4(grid_t):
 def peak_3_day_biomass(grid_t):
     t = np.array([float(x) for x in grid_t.time_centered.values])
     days = (t[:] - t[0])/10**9/3600/24
+    grid_heights = grid_t.deptht_bounds.values[:, 1] - grid_t.deptht_bounds.values[:, 0]
+    reshaped_grid_heights = grid_heights.reshape((1, 40, 1, 1))
     N = np.argmax(days > 3)  # time steps for 3 days
-
+    
+    
+    
     primary_producers = ["PHY", "PHY2", "MYRI"]
     depth_integrated = np.zeros(grid_t.dims['time_counter'])
     for tracer in primary_producers:
-        depth_integrated = depth_integrated + np.sum(grid_t[tracer].values, axis = (1, 2, 3))
+        depth_integrated = depth_integrated + np.sum((grid_t[tracer].values)*reshaped_grid_heights, axis = (1, 2, 3))
 
     time_averaged = np.convolve(depth_integrated, np.ones((N,))/N, mode='valid')
     return(time_averaged.max())
