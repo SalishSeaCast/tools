@@ -51,6 +51,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.grid_tools:
+
+:py:mod:`grid_tools` Module
+==========================
+
+.. automodule:: salishsea_tools.grid_tools
+    :members:
+
+
 .. _salishsea_tools.hg_commands:
 
 :py:mod:`hg_commands` Module
