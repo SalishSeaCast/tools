@@ -219,99 +219,97 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 # - depth data
 
 
-def create_tide_netcdf(tidevar,constituent,depth,number,code,CFactors):
+def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     import netCDF4 as NC
     import numpy
 
-    #get the data from the csv file
-    Z1, Z2, I, boundlen = get_data_from_csv(tidevar,constituent,depth,CFactors)
+    # get the data from the csv file
+    Z1, Z2, I, boundlen = get_data_from_csv(
+        tidevar, constituent, depth, CFactors)
 
-    nemo = NC.Dataset('SalishSea'+number+'_'+code+'_west_tide_'+constituent+'_grid_'+tidevar+'.nc','w')
+    if len(number) == 1:
+        name = 'SalishSea' + number
+    else:
+        name = number
+    nemo = NC.Dataset(
+         name+'_'+code+'_west_tide_'+constituent+'_grid_'+tidevar+'.nc',
+         'w')
     nemo.description = 'Tide data from WebTide - K1 phase shifted'
 
     # give the netcdf some dimensions
     nemo.createDimension('xb', boundlen+10)
     nemo.createDimension('yb', 1)
 
-    # add in the counter around the boundary (taken from Susan's code in Prepare Tide Files)
-    xb = nemo.createVariable('xb', 'int32', ('xb',),zlib=True)
+    # add in the counter around the boundary
+    # (taken from Susan's code in Prepare Tide Files)
+    xb = nemo.createVariable('xb', 'int32', ('xb',), zlib=True)
     xb.units = 'non dim'
     xb.longname = 'counter around boundary'
-    yb = nemo.createVariable('yb', 'int32', ('yb',),zlib=True)
+    yb = nemo.createVariable('yb', 'int32', ('yb',), zlib=True)
     yb.units = 'non dim'
-    xb[:] = numpy.arange(I[0][0]-5,I[0][-1]+6)
+    xb[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
     yb[0] = 1
 
     # create i and j grid position
-    nbidta = nemo.createVariable('nbidta', 'int32' , ('yb','xb'),zlib=True)
+    nbidta = nemo.createVariable('nbidta', 'int32', ('yb', 'xb'), zlib=True)
     nbidta.units = 'non dim'
     nbidta.longname = 'i grid position'
-    nbjdta = nemo.createVariable('nbjdta', 'int32' , ('yb','xb'),zlib=True)
+    nbjdta = nemo.createVariable('nbjdta', 'int32', ('yb', 'xb'), zlib=True)
     nbjdta.units = 'non dim'
     nbjdta.longname = 'j grid position'
-    nbrdta = nemo.createVariable('nbrdta', 'int32' , ('yb','xb'),zlib=True)
+    nbrdta = nemo.createVariable('nbrdta', 'int32', ('yb', 'xb'), zlib=True)
     nbrdta.units = 'non dim'
 
     # give values for West Boundary (this is where the webtide points go)
     nbidta[:] = 1
-    nbjdta[:] = numpy.arange(I[0][0]-5,I[0][-1]+6)
+    nbjdta[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
 
     # give values for the corner
     nbrdta[:] = 1
 
-    # give values for North Boundary (nothing here at the moment)
-    #nbidta[0,a:] = numpy.arange(1,b+1)
-    #nbjdta[0,a:] = a
-
-    if tidevar=='T':
-        z1 = nemo.createVariable('z1','float32',('yb','xb'),zlib=True)
+    if tidevar == 'T':
+        z1 = nemo.createVariable('z1', 'float32', ('yb', 'xb'), zlib=True)
         z1.units = 'm'
         z1.longname = 'tidal elevation: cosine'
-        z2 = nemo.createVariable('z2','float32',('yb','xb'),zlib=True)
+        z2 = nemo.createVariable('z2', 'float32', ('yb', 'xb'), zlib=True)
         z2.units = 'm'
         z2.longname = 'tidal elevation: sine'
-        z1[0,0:boundlen+10] = Z1[:,0]
-        z2[0,0:boundlen+10] = Z2[:,0]
+        z1[0, 0:boundlen+10] = Z1[:, 0]
+        z2[0, 0:boundlen+10] = Z2[:, 0]
         print(Z1.size)
         print(z1.size)
         print(z2.size)
-        #z1[0,a:] = 0.
-        #z2[0,a:] = 0.
 
-    if tidevar=='U':
-        u1 = nemo.createVariable('u1','float32',('yb','xb'),zlib=True)
+    if tidevar == 'U':
+        u1 = nemo.createVariable('u1', 'float32', ('yb', 'xb'), zlib=True)
         u1.units = 'm'
         u1.longname = 'tidal x-velocity: cosine'
-        u2 = nemo.createVariable('u2','float32',('yb','xb'),zlib=True)
+        u2 = nemo.createVariable('u2', 'float32', ('yb', 'xb'), zlib=True)
         u2.units = 'm'
         u2.longname = 'tidal x-velocity: sine'
-        u1[0,0:boundlen+10] = Z1[:,0]
-        u2[0,0:boundlen+10] = Z2[:,0]
-        #u1[0,a:] = 0.
-        #u2[0,a:] = 0.
+        u1[0, 0:boundlen+10] = Z1[:, 0]
+        u2[0, 0:boundlen+10] = Z2[:, 0]
 
-    if tidevar=='V':
-        v1 = nemo.createVariable('v1','float32',('yb','xb'),zlib=True)
+    if tidevar == 'V':
+        v1 = nemo.createVariable('v1', 'float32', ('yb', 'xb'), zlib=True)
         v1.units = 'm'
         v1.longname = 'tidal y-velocity: cosine'
-        v2 = nemo.createVariable('v2','float32',('yb','xb'),zlib=True)
+        v2 = nemo.createVariable('v2', 'float32', ('yb', 'xb'), zlib=True)
         v2.units = 'm'
         v2.longname = 'tidal y-velocity: sine'
-        v1[0,0:boundlen+10] = Z1[:,0]
-        v2[0,0:boundlen+10] = Z2[:,0]
-        #v1[0,a:] = 0.
-        #v2[0,a:] = 0.
+        v1[0, 0:boundlen+10] = Z1[:, 0]
+        v2[0, 0:boundlen+10] = Z2[:, 0]
 
     return Z1, Z2
     nemo.close()
 
 
-def create_northern_tides(Z1,Z2,tidevar,constituent,code):
+def create_northern_tides(Z1,Z2,tidevar,constituent,code, name='SalishSea2'):
     import netCDF4 as NC
     import numpy as np
     from salishsea_tools import nc_tools
 
-    nemo = NC.Dataset('SalishSea2_'+code+'_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
+    nemo = NC.Dataset(name+'_'+code+'_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
 
     #start and end points
     starti = 32
@@ -391,12 +389,12 @@ def create_northern_tides(Z1,Z2,tidevar,constituent,code):
     nc_tools.check_dataset_attrs(nemo)
     nemo.close()
 
-def create_northern_tides_contd(Z1,Z2,tidevar,constituent,code):
+def create_northern_tides_contd(Z1,Z2,tidevar,constituent,code, name='SalishSea2'):
     import netCDF4 as NC
     import numpy as np
     from salishsea_tools import nc_tools
 
-    nemo = NC.Dataset('SalishSea2_'+code+'_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
+    nemo = NC.Dataset(name+'_'+code+'_North_tide_'+constituent+'_grid_'+tidevar+'.nc', 'w', zlib=True)
 
     #start and end points
     starti = 32
