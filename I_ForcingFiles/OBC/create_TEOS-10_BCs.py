@@ -68,9 +68,9 @@ def create_BCs(infile, outfile, title, dS_is_zero=True):
 
     source = F.source
     F.source = source + ("\n https://bitbucket.org/salishsea/"
-                         "analysis-nancy/src/tip/notebooks/teos-10/"
+                         "tools/src/tip/I_ForcingFiles/OBC/"
                          "Temperature to conservative temperature in"
-                         "boundary conditions.ipynb"
+                         " boundary conditions.ipynb"
                          "\n https://bitbucket.org/salishsea/"
                          "tools/I_ForcingFiles/OBC/"
                          "create_TEOS-10_BCs.py")
