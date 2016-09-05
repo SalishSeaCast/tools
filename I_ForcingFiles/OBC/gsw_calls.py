@@ -23,8 +23,8 @@ def call_p_from_z(z, lat):
     cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
     sp.call(cmd)
     pressure = np.loadtxt(fname[1:-1], delimiter=',')
-    for f in [fname[1:-1], zfile[1:-1], latfile[1:-1]]:
-        os.remove(f)
+    for f in [fname, zfile, latfile]:
+        os.remove(f[1:-1])
     return pressure.reshape(shape)
 
 
@@ -41,8 +41,8 @@ def call_SR_from_SP(SP):
     cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
     sp.call(cmd)
     sal_ref = np.loadtxt(fname[1:-1], delimiter=',')
-    for f in [fname[1:-1], SPfile[1:-1], ]:
-        os.remove(f)
+    for f in [fname, SPfile, ]:
+        os.remove(f[1:-1])
     return sal_ref.reshape(shape)
 
 
@@ -67,9 +67,9 @@ def call_SA_from_SP(SP, p, long, lat):
     sp.call(cmd)
     SA = np.loadtxt(fname[1:-1], delimiter=',')
 
-    for f in [fname[1:-1], SPfile[1:-1], pfile[1:-1],
-              longfile[1:-1], latfile[1:-1]]:
-        os.remove(f)
+    for f in [fname, SPfile, pfile,
+              longfile, latfile]:
+        os.remove(f[1:-1])
 
     return SA.reshape(shape)
 
@@ -91,7 +91,7 @@ def call_CT_from_PT(SA, PT):
     sp.call(cmd)
     CT = np.loadtxt(fname[1:-1], delimiter=',')
 
-    for f in [fname[1:-1], SAfile[1:-1], PTfile[1:-1]]:
-        os.remove(f)
+    for f in [fname, SAfile, PTfile]:
+        os.remove(f[1:-1])
 
     return CT.reshape(shape)
