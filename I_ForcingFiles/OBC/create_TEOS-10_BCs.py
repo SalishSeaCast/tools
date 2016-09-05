@@ -2,6 +2,7 @@
 # boundary conditions.
 # Usage: python create_TEOS-10_BCs.py input.nc output.nc title
 # title is a string for the output file's title metadata
+# At the moment, this only work consistently with python 2.7.
 import netCDF4 as nc
 import numpy as np
 
@@ -28,7 +29,10 @@ def create_BCs(infile, outfile, title, dS_is_zero=True):
                      SA = SR + dS, so dS = 0 means SA = SR.
     :type dS_is_zero: boolean
     """
-    shutil.copy(infile, outfile)
+    try:
+        shutil.copy(infile, outfile)
+    except shutil.Error:
+        print("Variables in {} will be overwritten.".format(infile))
     F = nc.Dataset(outfile, 'r+')
     # Load variables
     sal = F.variables['vosaline']
@@ -75,7 +79,9 @@ def create_BCs(infile, outfile, title, dS_is_zero=True):
                 " Conservative Temperature and {}".format(sal_title)
 
     F.references = "https://bitbucket.org/salishsea/nemo-forcing/src/tip/"\
-                   "open_boundaries/west/{}".format(os.path.basename(outfile))
+                   "open_boundaries/{}/{}".format(os.path.basename(
+                                                  os.path.split(outfile)[0]),
+                                                  os.path.basename(outfile))
 
     history = F.history
     F.history = history + \
