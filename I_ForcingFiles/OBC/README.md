@@ -13,6 +13,12 @@ Descriptions below the links are from the first cell of the notebooks
 * ##[TEOSfromPracticalOBC.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/TEOSfromPracticalOBC.ipynb)  
     
     Convert practical salinity open boundary files to TEOS-10 reference salinity open boundary files  
+      
+    2016-03-12 : Couldn't get the ncatted to work (segmentation fault).  Went back to the PrepareSimpleTS-Johnstone and added TEOS10 calculation at the bottom of the that (made new file from scratch)  
+
+* ##[Temperature to conservative temperature in boundary conditions.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/Temperature to conservative temperature in boundary conditions.ipynb)  
+    
+    This notebook is used to convert Potential Temperature to Conservative Temperature in our boundary conditions. It makes use of the MATLAB gsw library.  
 
 * ##[TS_OBC_Softstart.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/TS_OBC_Softstart.ipynb)  
     
@@ -33,6 +39,7 @@ Descriptions below the links are from the first cell of the notebooks
     Notebook to prepare simple OBC files for T&S for Johnstone Strait from Thomson, 1981 (The book)  
       
     Corrected to Full Depth 2015-12-30  
+    Corrected to Make Depth levels uniform 2016-03-12 (this ignores partial steps)  
 
 * ##[SSH_Tofino.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/OBC/SSH_Tofino.ipynb)  
     
