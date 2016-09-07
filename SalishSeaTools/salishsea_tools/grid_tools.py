@@ -85,7 +85,7 @@ def calculate_vertical_grids(
     :arg tmask: T-grid mask. Dimensions: (depth, y, x)
     :type tmask: numpy array
 
-    :arg ssh: the model sea surface height. Dimensions: (time, depth, y, x)
+    :arg ssh: the model sea surface height. Dimensions: (time, y, x)
     :type ssh: numpy array
 
     :arg return_vars: List of scale factors and depth variables to return.
