@@ -14,6 +14,8 @@
 # limitations under the License.
 
 """ Functions for calculating time-dependent scale factors and depth in NEMO.
+Functions developed/tested in this notebook:
+http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb
  NKS nsoontie@eos.ubc.ca 08-2016
 """
 
