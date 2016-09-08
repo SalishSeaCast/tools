@@ -29,7 +29,7 @@ def calculate_mu(e3t0, tmask):
 
     :arg e3t0: initial vertical scale factors on T-grid.
                Dimensions: (depth, y, x).
-    :type e3t0: numpy array
+    :type e3t0: :py:class:`numpy.ndarray`
 
     :arg tmask: T-grid mask. Dimensions: (depth, y, x)
     :type tmask: numpy array
@@ -37,23 +37,22 @@ def calculate_mu(e3t0, tmask):
     :returns: the mu correction factor with dimensions (depth, y, x)
 
     """
-    # Iterate over k to find v and inner sum
+    # Iterate over vertical index k to find v
     vn = 0
-    sum_matrix = np.zeros(e3t0.shape)
-    for k in np.arange(e3t0.shape[0]):
-        inner_sum = 0
-        for n in np.arange(k, e3t0.shape[0]):
-            inner_sum = inner_sum + e3t0[n, ...]*tmask[n, ...]
-        sum_matrix[k, ...] = inner_sum
-        vn = vn + e3t0[k, ...]*inner_sum*tmask[k, ...]
+    sum_matrix = np.zeros_like(e3t0)
+    for k in range(e3t0.shape[0]):
+        for n in range(k, e3t0.shape[0]):
+            sum_matrix[k, ...] += e3t0[n, ...] * tmask[n, ...]
+        vn += e3t0[k, ...] * sum_matrix[k, ...] * tmask[k, ...]
 
-    mu = sum_matrix/vn
+    with np.errstate(divide="ignore"):
+        mu = sum_matrix/vn
     mu = np.nan_to_num(mu)  # turn nans to zeros
     return mu
 
 
 def calculate_adjustment_factor(mu, ssh):
-    """Calculate the time=dependent adjustment factor for variable volume in
+    """Calculate the time-dependent adjustment factor for variable volume in
     NEMO. adj = (1+ssh*mu) and e3t_t = e3t_0*adj
     See NEMO vvl manual appendix A.1 for details.
 
@@ -66,7 +65,7 @@ def calculate_adjustment_factor(mu, ssh):
     :returns: the adjustment factor with dimensions (time, depth, y, x)
     """
     ssh = np.expand_dims(ssh, axis=1)   # Give ssh a depth dimension
-    adj = (1 + ssh*mu)
+    adj = (1 + ssh * mu)
 
     return adj
 
@@ -103,17 +102,18 @@ def calculate_vertical_grids(
     mu = calculate_mu(e3t0, tmask)
     adj = calculate_adjustment_factor(mu, ssh)
     # scale factors
-    e3t_t = e3t0*adj
+    e3t_t = e3t0 * adj
     # intiliaize for k=0
-    e3w_t = np.copy(e3t_t)
+    e3w_t = np.empty_like(e3t_t)
+    e3w_t[:, 0, ...] = e3t_t[:, 0, ...]
     # overwrite k>0
-    e3w_t[:, 1:, ...] = 0.5*(e3t_t[:, 1:, ...] + e3t_t[:, 0:-1, ...])
+    e3w_t[:, 1:, ...] = 0.5 * (e3t_t[:, 1:, ...] + e3t_t[:, 0:-1, ...])
     # depths
     # initialize for k=0
-    gdept_t = 0.5*e3t_t
-    gdepw_t = np.zeros(gdept_t.shape)
+    gdept_t = 0.5 * e3t_t
+    gdepw_t = np.zeros_like(gdept_t)
     # overwrite k>0
-    for k in np.arange(1, gdept_t.shape[1]):
+    for k in range(1, gdept_t.shape[1]):
         gdept_t[:, k, ...] = gdept_t[:, k-1, ...] + e3w_t[:, k, ...]
         gdepw_t[:, k, ...] = gdepw_t[:, k-1, ...] + e3t_t[:, k-1, ...]
     # Create dictionary to return
@@ -122,7 +122,7 @@ def calculate_vertical_grids(
                 'gdept_t': gdept_t,
                 'gdepw_t': gdepw_t
                 }
-    for var in list(all_vars.keys()):
+    for var in all_vars:
         if var not in return_vars:
             del all_vars[var]
 
