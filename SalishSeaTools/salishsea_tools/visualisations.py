@@ -23,7 +23,7 @@ import pandas as pd
 import datetime
 import dateutil.parser as dparser
 
-from salishsea_tools import geo_tools, nc_tools
+from salishsea_tools import geo_tools, nc_tools, viz_tools
 
 
 def contour_thalweg(
@@ -370,51 +370,109 @@ def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     :rtype: dict > :py:class:`matplotlib.lines.Line2D`
     """
     
-    # Convert time boundaries to datetime.datetime to allow operations/slicing
-    starttime = nc_tools.xarraytime_to_datetime(DATA.time[ 0])
-    endtime   = nc_tools.xarraytime_to_datetime(DATA.time[-1])
-    
-    # Color plot cutoff
-    time_cutoff = endtime - datetime.timedelta(hours=cutoff)
-    
-    if DRIFT_OBJS is not None: # --- Update line objects only
+    if DATA.time.shape[0] > 0:
         
-        # Plot drifter track (gray)
-        DRIFT_OBJS['L_old'][0].set_data(
-            DATA.lon.sel(time=slice(starttime, time_cutoff)),
-            DATA.lat.sel(time=slice(starttime, time_cutoff)))
-    
-        # Plot drifter track (color)
-        DRIFT_OBJS['L_new'][0].set_data(
-            DATA.lon.sel(time=slice(time_cutoff, endtime)),
-            DATA.lat.sel(time=slice(time_cutoff, endtime)))
-    
-        # Plot drifter position
-        DRIFT_OBJS['P'][0].set_data(
-            DATA.lon.sel(time=endtime, method='nearest'),
-            DATA.lat.sel(time=endtime, method='nearest'))
-    
-    else: # ------------------------ Plot new line objects instances
+        # Convert time boundaries to datetime.datetime to allow operations/slicing
+        starttime = nc_tools.xarraytime_to_datetime(DATA.time[ 0])
+        endtime   = nc_tools.xarraytime_to_datetime(DATA.time[-1])
         
-        # Define drifter objects dict
-        DRIFT_OBJS = {}
+        # Color plot cutoff
+        time_cutoff = endtime - datetime.timedelta(hours=cutoff)
+        
+        if DRIFT_OBJS is not None: # --- Update line objects only
+            
+            # Plot drifter track (gray)
+            DRIFT_OBJS['L_old'][0].set_data(
+                DATA.lon.sel(time=slice(starttime, time_cutoff)),
+                DATA.lat.sel(time=slice(starttime, time_cutoff)))
+            
+            # Plot drifter track (color)
+            DRIFT_OBJS['L_new'][0].set_data(
+                DATA.lon.sel(time=slice(time_cutoff, endtime)),
+                DATA.lat.sel(time=slice(time_cutoff, endtime)))
+            
+            # Plot drifter position
+            DRIFT_OBJS['P'][0].set_data(
+                DATA.lon.sel(time=endtime, method='nearest'),
+                DATA.lat.sel(time=endtime, method='nearest'))
+        
+        else: # ------------------------ Plot new line objects instances
+            
+            # Define drifter objects dict
+            DRIFT_OBJS = {}
+            
+            # Plot drifter track (gray)
+            DRIFT_OBJS['L_old'] = ax.plot(
+                DATA.lon.sel(time=slice(starttime, time_cutoff)),
+                DATA.lat.sel(time=slice(starttime, time_cutoff)),
+                '-', linewidth=2, color='gray', zorder=zorder)
+            
+            # Plot drifter track (color)
+            DRIFT_OBJS['L_new'] = ax.plot(
+                DATA.lon.sel(time=slice(time_cutoff, endtime)),
+                DATA.lat.sel(time=slice(time_cutoff, endtime)),
+                '-', linewidth=2, color=color, zorder=zorder+1)
+            
+            # Plot drifter position
+            DRIFT_OBJS['P'] = ax.plot(
+                DATA.lon.sel(time=endtime, method='nearest'),
+                DATA.lat.sel(time=endtime, method='nearest'),
+                'o', color=color, zorder=zorder+2)
     
-        # Plot drifter track (gray)
-        DRIFT_OBJS['L_old'] = ax.plot(
-            DATA.lon.sel(time=slice(starttime, time_cutoff)),
-            DATA.lat.sel(time=slice(starttime, time_cutoff)),
-            '-', linewidth=2, color='gray', zorder=zorder)
+    else:
         
-        # Plot drifter track (color)
-        DRIFT_OBJS['L_new'] = ax.plot(
-            DATA.lon.sel(time=slice(time_cutoff, endtime)),
-            DATA.lat.sel(time=slice(time_cutoff, endtime)),
-            '-', linewidth=2, color=color, zorder=zorder+1)
+        if DRIFT_OBJS is not None: # --- Update line objects only
+            
+            # Update drifter tracks
+            DRIFT_OBJS['L_old'][0].set_data([], []) # gray
+            DRIFT_OBJS['L_new'][0].set_data([], []) # color
+            DRIFT_OBJS['P'    ][0].set_data([], []) # position
+            
+        else:
         
-        # Plot drifter position
-        DRIFT_OBJS['P'] = ax.plot(
-            DATA.lon.sel(time=endtime, method='nearest'),
-            DATA.lat.sel(time=endtime, method='nearest'),
-            'o', color=color, zorder=zorder+2)
+            DRIFT_OBJS = {}
+            DRIFT_OBJS['L_old'] = ax.plot([], [], '-',
+                linewidth=2, color='gray', zorder=zorder)
+        
+            # Plot drifter track (color)
+            DRIFT_OBJS['L_new'] = ax.plot([], [], '-',
+                linewidth=2, color=color, zorder=zorder+1)
+        
+            # Plot drifter position
+            DRIFT_OBJS['P'] = ax.plot([], [], 'o', color=color, zorder=zorder+2)
     
     return DRIFT_OBJS
+
+
+def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
+    """
+    """
+    # Determine coordinate system
+    if   coords is 'map' : x, y = 'Longitude', 'Latitude'
+    elif coords is 'grid': x, y = 'GridX'    , 'GridY'
+    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
+    
+    # Determine orientation based on indexing
+    if   not DATA.gridY.shape: # Cross-strait slice
+        viz_tools.plot_boundary(ax, DATA, coords=coords)
+        ax.set_xlabel(x)
+        ax.set_ylabel('Depth [m]')
+    
+    elif not DATA.gridX.shape: # Along-strait slice
+        viz_tools.plot_boundary(ax, DATA, coords=coords)
+        ax.set_xlabel(y)
+        ax.set_ylabel('Depth [m]')
+    
+    else: # Plan view
+        viz_tools.plot_land_mask(ax, DATA, coords=coords, color='burlywood', server='ERDDAP')
+        viz_tools.plot_coastline(ax, DATA, coords=coords, server='ERDDAP')
+        viz_tools.set_aspect(ax)
+        ax.set_xlabel(x)
+        ax.set_ylabel(y)
+        ax.grid()
+    
+    # Axis limits
+    ax.set_xlim(window[0:2])
+    ax.set_ylim(window[2:4])
+    
+    return

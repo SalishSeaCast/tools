@@ -117,7 +117,7 @@ def find_closest_model_point(
     lon, lat, model_lons, model_lats, grid='NEMO', land_mask=None,
     tols={
         'NEMO': {'tol_lon': 0.0104, 'tol_lat': 0.00388},
-        'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.011},
+        'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.012},
         }
 ):
     """Returns the grid coordinates of the closest model point
