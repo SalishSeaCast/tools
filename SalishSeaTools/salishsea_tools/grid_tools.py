@@ -13,10 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Functions for calculating time-dependent scale factors and depth in NEMO.
+""" Functions for calculating time-dependent scale factors and depth in
+NEMO 3.4. Please note that NEMO 3.6 uses a very different formulation where it
+distributes the water column expansion over evenly over each grid cell.
+
 Functions developed/tested in this notebook:
 http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb
- NKS nsoontie@eos.ubc.ca 08-2016
+
+Examples of plotting with output:
+http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Plotting%20with%20time%20dependent%20depths.ipynb
+
+NKS nsoontie@eos.ubc.ca 08-2016
 """
 
 import numpy as np
@@ -32,7 +39,7 @@ def calculate_mu(e3t0, tmask):
     :type e3t0: :py:class:`numpy.ndarray`
 
     :arg tmask: T-grid mask. Dimensions: (depth, y, x)
-    :type tmask: numpy array
+    :type tmask: :py:class:`numpy.ndarray`
 
     :returns: the mu correction factor with dimensions (depth, y, x)
 
@@ -45,7 +52,7 @@ def calculate_mu(e3t0, tmask):
             sum_matrix[k, ...] += e3t0[n, ...] * tmask[n, ...]
         vn += e3t0[k, ...] * sum_matrix[k, ...] * tmask[k, ...]
 
-    with np.errstate(divide="ignore"):
+    with np.errstate(divide="ignore", invalid="ignore"):
         mu = sum_matrix/vn
     mu = np.nan_to_num(mu)  # turn nans to zeros
     return mu
@@ -57,10 +64,10 @@ def calculate_adjustment_factor(mu, ssh):
     See NEMO vvl manual appendix A.1 for details.
 
     :arg mu: mu correction factor. Dimension: (depth, y, x)
-    :type mu: numpy array
+    :type mu: :py:class:`numpy.array`
 
     :arg ssh: the model sea surface height. Dimensions: (time, y, x)
-    :type ssh: numpy array
+    :type ssh: :py:class:`numpy.ndarray`
 
     :returns: the adjustment factor with dimensions (time, depth, y, x)
     """
@@ -81,13 +88,13 @@ def calculate_vertical_grids(
 
     :arg e3t0: initial vertical scale factors on T-grid.
                Dimensions: (depth, y, x).
-    :type e3t0: numpy array
+    :type e3t0: :py:class:`numpy.ndarray`
 
     :arg tmask: T-grid mask. Dimensions: (depth, y, x)
-    :type tmask: numpy array
+    :type tmask: :py:class:`numpy.ndarray`
 
     :arg ssh: the model sea surface height. Dimensions: (time, y, x)
-    :type ssh: numpy array
+    :type ssh: :py:class:`numpy.ndarray`
 
     :arg return_vars: List of scale factors and depth variables to return.
                       Options are gdept_t, gdepw_t, e3t_t, e3w_t. Default is
@@ -113,10 +120,12 @@ def calculate_vertical_grids(
     gdept_t = np.empty_like(e3t_t)
     gdept_t[:, 0, ...] = 0.5 * e3t_t[:, 0, ...]
     gdepw_t = np.zeros_like(gdept_t)
-    if 'gdept_t' in return_vars or 'gdepw_t' in return_vars:
-        # overwrite k>0
+    # overwrite for k>0
+    if 'gdept_t' in return_vars:
         for k in range(1, gdept_t.shape[1]):
             gdept_t[:, k, ...] = gdept_t[:, k-1, ...] + e3w_t[:, k, ...]
+    if 'gdepw_t' in return_vars:
+        for k in range(1, gdepw_t.shape[1]):
             gdepw_t[:, k, ...] = gdepw_t[:, k-1, ...] + e3t_t[:, k-1, ...]
     # Create dictionary to return
     all_vars = {'e3t_t': e3t_t,
@@ -124,7 +133,7 @@ def calculate_vertical_grids(
                 'gdept_t': gdept_t,
                 'gdepw_t': gdepw_t
                 }
-    for var in all_vars:
+    for var in list(all_vars.keys()):  # note: all_vars can change size
         if var not in return_vars:
             del all_vars[var]
 
