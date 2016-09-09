@@ -36,14 +36,11 @@ import os
 import arrow
 import dateutil.parser as dparser
 import netCDF4 as nc
-import xarray as xr
-import pandas as pd
-import numpy as np
-from nco import Nco
+import xarray  as xr
+import pandas  as pd
+import numpy   as np
 
 from salishsea_tools import hg_commands as hg
-
-nco = Nco()
 
 
 def load_GEM_from_erddap(
@@ -153,7 +150,7 @@ def load_GEM_from_path(
         date = date + timedelta(days=1)
     
     # Concatenate files using NCO and load using xarray
-    data = xr.open_dataset(nco.ncrcat(filenames)).rename({
+    data = xr.open_mfdataset(filenames).rename({
               'time_counter': 'time' ,
               'x'           : 'gridX',
               'y'           : 'gridY'})
@@ -171,7 +168,7 @@ def load_GEM_from_path(
 
 def load_NEMO_from_erddap(
         timerange, depth=[None, None], window=[None, None, None, None],
-        fields=['salinity', 'temperature', 'u_vel', 'v_vel', 'w_vel'],
+        fields=['salinity', 'temperature', 'u_vel', 'v_vel'],
         path='https://salishsea.eos.ubc.ca/erddap/griddap'
 ):
     """Returns vector and tracer variables from the Salish Sea
@@ -251,9 +248,12 @@ def load_NEMO_from_erddap(
     
     # Load and merge mesh mask (replace gridZ with NEMO.depth)
     mask = xr.open_dataset(os.path.join(path, 'ubcSSn3DMeshMask2V1'))
-    NEMO = NEMO.merge({'mask': mask.isel(time=0).merge(
-                      {'depth': ('gridZ', NEMO.depth)}).swap_dims(
-                      {'gridZ': 'depth'}).drop(('gridZ', 'time')).tmask})
+    NEMO = NEMO.merge({
+        'mask': mask.merge(
+            {'depth': ('gridZ', mask.gdept.isel(time=0, gridX=0, gridY=0))}
+                ).swap_dims({'gridZ': 'depth'}).isel(time=0).drop(
+                    ('time', 'gridZ')).sel(
+                        depth=depthslice, gridX=xslice, gridY=yslice).tmask})
 
     return NEMO
 
@@ -328,7 +328,7 @@ def load_NEMO_from_path(
             
     # Load NEMO grid variables
     grid = xr.open_dataset(
-                 os.path.join(path, model, datestr, 'bathy_meter.nc'),
+                 '/results/SalishSea/nowcast/01aug16/bathy_meter.nc',
                  mask_and_scale=False)
     NEMO = xr.Dataset({
               'longitude' : grid.nav_lon.sel(    x=xslice, y=yslice),
@@ -337,28 +337,28 @@ def load_NEMO_from_path(
     
     # Load u velocity
     if 'u_vel' in fields:
-        u = xr.open_dataset(nco.ncrcat(filenames_U)).drop((
+        u = xr.open_mfdataset(filenames_U).drop((
             'nav_lon', 'nav_lat', 'tbnds')).rename({'depthu': 'depth'})
         NEMO = NEMO.merge({'u_vel': u.vozocrtx.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load v velocity
     if 'v_vel' in fields:
-        v = xr.open_dataset(nco.ncrcat(filenames_V)).drop((
+        v = xr.open_mfdataset(filenames_V).drop((
             'nav_lon', 'nav_lat', 'tbnds')).rename({'depthv': 'depth'})
         NEMO = NEMO.merge({'v_vel': v.vomecrty.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load w velocity
     if 'w_vel' in fields:
-        w = xr.open_dataset(nco.ncrcat(filenames_W)).drop((
+        w = xr.open_mfdataset(filenames_W).drop((
             'nav_lon', 'nav_lat', 'tbnds')).rename({'depthw': 'depth'})
         NEMO = NEMO.merge({'w_vel': w.vovecrtz.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load tracers
     if 'salinity' in fields or 'temperature' in fields:
-        trc = xr.open_dataset(nco.ncrcat(filenames_T)).drop((
+        trc = xr.open_mfdataset(filenames_T).drop((
             'nav_lon', 'nav_lat', 'tbnds')).rename({'deptht': 'depth'})
         
         # Salinity
