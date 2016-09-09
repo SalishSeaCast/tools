@@ -110,12 +110,14 @@ def calculate_vertical_grids(
     e3w_t[:, 1:, ...] = 0.5 * (e3t_t[:, 1:, ...] + e3t_t[:, 0:-1, ...])
     # depths
     # initialize for k=0
-    gdept_t = 0.5 * e3t_t
+    gdept_t = np.empty_like(e3t_t)
+    gdept_t[:, 0, ...] = 0.5 * e3t_t[:, 0, ...]
     gdepw_t = np.zeros_like(gdept_t)
-    # overwrite k>0
-    for k in range(1, gdept_t.shape[1]):
-        gdept_t[:, k, ...] = gdept_t[:, k-1, ...] + e3w_t[:, k, ...]
-        gdepw_t[:, k, ...] = gdepw_t[:, k-1, ...] + e3t_t[:, k-1, ...]
+    if 'gdept_t' in return_vars or 'gdepw_t' in return_vars:
+        # overwrite k>0
+        for k in range(1, gdept_t.shape[1]):
+            gdept_t[:, k, ...] = gdept_t[:, k-1, ...] + e3w_t[:, k, ...]
+            gdepw_t[:, k, ...] = gdepw_t[:, k-1, ...] + e3t_t[:, k-1, ...]
     # Create dictionary to return
     all_vars = {'e3t_t': e3t_t,
                 'e3w_t': e3w_t,
