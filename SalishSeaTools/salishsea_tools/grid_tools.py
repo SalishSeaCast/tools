@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Functions for calculating time-dependent scale factors and depth in
-NEMO 3.4. Please note that NEMO 3.6 uses a very different formulation where it
-distributes the water column expansion over evenly over each grid cell.
+""" Functions for calculating time-dependent scale factors and depth.
 
 Functions developed/tested in this notebook:
 http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb
@@ -29,10 +27,8 @@ NKS nsoontie@eos.ubc.ca 08-2016
 import numpy as np
 
 
-def calculate_mu(e3t0, tmask):
-    """Calculate the mu correction factor for variable volume in NEMO.
-    e3t0 and tmask must be the same shape.
-    See NEMO vvl manual appendix A.1 for details.
+def calculate_H(e3t0, tmask):
+    """Calculate the initial water column thickness (H).
 
     :arg e3t0: initial vertical scale factors on T-grid.
                Dimensions: (depth, y, x).
@@ -41,50 +37,42 @@ def calculate_mu(e3t0, tmask):
     :arg tmask: T-grid mask. Dimensions: (depth, y, x)
     :type tmask: :py:class:`numpy.ndarray`
 
-    :returns: the mu correction factor with dimensions (depth, y, x)
+    :returns: the initial water column thickness. Dimensions: (y, x)
 
     """
-    # Iterate over vertical index k to find v
-    vn = 0
-    sum_matrix = np.zeros_like(e3t0)
-    for k in range(e3t0.shape[0]):
-        for n in range(k, e3t0.shape[0]):
-            sum_matrix[k, ...] += e3t0[n, ...] * tmask[n, ...]
-        vn += e3t0[k, ...] * sum_matrix[k, ...] * tmask[k, ...]
 
-    with np.errstate(divide="ignore", invalid="ignore"):
-        mu = sum_matrix/vn
-    mu = np.nan_to_num(mu)  # turn nans to zeros
-    return mu
+    H = np.sum(e3t0*tmask, axis=0)
+
+    return H
 
 
-def calculate_adjustment_factor(mu, ssh):
+def calculate_adjustment_factor(H, ssh):
     """Calculate the time-dependent adjustment factor for variable volume in
-    NEMO. adj = (1+ssh*mu) and e3t_t = e3t_0*adj
-    See NEMO vvl manual appendix A.1 for details.
+    NEMO. adj = (1+ssh/H) and e3t_t = e3t_0*adj
 
-    :arg mu: mu correction factor. Dimension: (depth, y, x)
-    :type mu: :py:class:`numpy.array`
+    :arg H:  Water column thicnkess. Dimension: (y, x)
+    :type H: :py:class:`numpy.array`
 
     :arg ssh: the model sea surface height. Dimensions: (time, y, x)
     :type ssh: :py:class:`numpy.ndarray`
 
-    :returns: the adjustment factor with dimensions (time, depth, y, x)
+    :returns: the adjustment factor with dimensions (time, y, x)
     """
-    ssh = np.expand_dims(ssh, axis=1)   # Give ssh a depth dimension
-    adj = (1 + ssh * mu)
-
+    with np.errstate(divide='ignore', invalid='ignore'):
+        one_over_H = 1 / H
+    one_over_H = np.nan_to_num(one_over_H)
+    adj = (1 + ssh * one_over_H)
     return adj
 
 
-def calculate_vertical_grids(
+def calculate_time_dependent_grid(
     e3t0,
     tmask,
     ssh,
-    return_vars=['e3t_t', 'e3w_t', 'gdept_t', 'gdepw_t']
+    input_vars,
 ):
     """ Calculate the time dependent vertical grids and scale factors for
-    variable volume in NEMO. See NEMO vvl manual appendix A.1 for details.
+    variable volume in NEMO.
 
     :arg e3t0: initial vertical scale factors on T-grid.
                Dimensions: (depth, y, x).
@@ -96,9 +84,12 @@ def calculate_vertical_grids(
     :arg ssh: the model sea surface height. Dimensions: (time, y, x)
     :type ssh: :py:class:`numpy.ndarray`
 
-    :arg return_vars: List of scale factors and depth variables to return.
-                      Options are gdept_t, gdepw_t, e3t_t, e3w_t. Default is
-                      all of these.
+    :arg input_vars: A dictionary of the initial grids/scale factors to be
+                     translated into time_dependent. Example keys can be
+                     'e3t_0', 'gdept_0', 'e3w_0', 'gdepw_0'. A dictionary with
+                     corresponding time-dependent grids is returned, where the
+                     keys are now 'e3t_t', 'gdept_t', 'e3w_0', 'gdepw_0'.
+    :typ input_vars: dictionary
     :type return_vars: list of strings
 
     :returns: A dictionary containing the desired time dependent vertical
@@ -106,35 +97,147 @@ def calculate_vertical_grids(
               Dimensions of each: (time, depth, y, x)
     """
     # adjustment factors
-    mu = calculate_mu(e3t0, tmask)
-    adj = calculate_adjustment_factor(mu, ssh)
-    # scale factors
-    e3t_t = e3t0 * adj
-    # intiliaize for k=0
-    e3w_t = np.empty_like(e3t_t)
-    e3w_t[:, 0, ...] = e3t_t[:, 0, ...]
-    # overwrite k>0
-    e3w_t[:, 1:, ...] = 0.5 * (e3t_t[:, 1:, ...] + e3t_t[:, 0:-1, ...])
-    # depths
-    # initialize for k=0
-    gdept_t = np.empty_like(e3t_t)
-    gdept_t[:, 0, ...] = 0.5 * e3t_t[:, 0, ...]
-    gdepw_t = np.zeros_like(gdept_t)
-    # overwrite for k>0
-    if 'gdept_t' in return_vars:
-        for k in range(1, gdept_t.shape[1]):
-            gdept_t[:, k, ...] = gdept_t[:, k-1, ...] + e3w_t[:, k, ...]
-    if 'gdepw_t' in return_vars:
-        for k in range(1, gdepw_t.shape[1]):
-            gdepw_t[:, k, ...] = gdepw_t[:, k-1, ...] + e3t_t[:, k-1, ...]
-    # Create dictionary to return
-    all_vars = {'e3t_t': e3t_t,
-                'e3w_t': e3w_t,
-                'gdept_t': gdept_t,
-                'gdepw_t': gdepw_t
-                }
-    for var in list(all_vars.keys()):  # note: all_vars can change size
-        if var not in return_vars:
-            del all_vars[var]
+    H = calculate_H(e3t0, tmask)
+    adj = calculate_adjustment_factor(H, ssh)
+    adj = np.expand_dims(adj, axis=1)  # expand to give depth dimension
+    # Time-dependent grids
+    return_vars = {}
+    for key in input_vars:
+        return_key = '{}t'.format(key[0:-1])
+        return_vars[return_key] = input_vars[key] * adj
 
-    return all_vars
+    return return_vars
+
+
+def time_dependent_grid_U(e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars,
+                          return_ssh=False):
+    """Calculate time-dependent vertical grid spacing and depths on U-grid for
+    variabe volume in NEMO.
+
+    :arg e3u0: initial vertical scale factors on U-grid.
+               Dimensions: (depth, y, x).
+    :type e3u0: :py:class:`numpy.ndarray`
+
+    :arg e1u: x-direction scale factors on U-grid.
+              Dimensions: (y, x).
+    :type e1u: :py:class:`numpy.ndarray`
+
+    :arg e2u: y-direction scale factors on U-grid.
+              Dimensions: (y, x).
+    :type e2u: :py:class:`numpy.ndarray`
+
+    :arg e1t: x-direction scale factors on T-grid.
+              Dimensions: (y, x).
+    :type e1t: :py:class:`numpy.ndarray`
+
+    :arg e2t: y-direction scale factors on T-grid.
+               Dimensions: (y, x).
+    :type e2t: :py:class:`numpy.ndarray`
+
+    :arg umask: U-grid mask. Dimensions: (depth, y, x)
+    :type umask: :py:class:`numpy.ndarray`
+
+    :arg ssh: the model sea surface height on T-grid. Dimensions: (time, y, x)
+    :type ssh: :py:class:`numpy.ndarray`
+
+    :arg input_vars: A dictionary of the initial grids/scale factors to be
+                     translated into time-dependent. Example keys can be
+                     'e3u_0', 'gdepu_0'. A dictionary with
+                     corresponding time-dependent grids is returned, where the
+                     keys are now 'e3u_t', 'gdepu_t'.
+    :type input_vars: dictionary
+
+    :arg return_ssh: Specifies whether the ssh interpolated to the U-grid
+                     should be returned (ssh_u)
+    :type return_ssh: boolean
+
+    :returns: A dictionary containing the desired time dependent vertical
+              scale factors on depths on u grid.
+              Dimensions of each: (time, depth, y, x).
+              If returned, ssh_u has dimensions (time, y, x)"""
+    ssh_u = np.zeros_like(ssh)
+    e1e2u = e1u * e2u
+    e1e2t = e1t * e2t
+    # Interpolate ssh to u grid
+    ssh_u[:, :, 0:-1] = 0.5 * umask[0, :, 0:-1] / e1e2u[:, 0:-1] * (
+        e1e2t[:, 0:-1] * ssh[:, :, 0:-1] + e1e2t[:, 1:] * ssh[:, :, 1:]
+        )
+    H = calculate_H(e3u0, umask)
+    adj = calculate_adjustment_factor(H, ssh_u)
+    adj = np.expand_dims(adj, axis=1)
+    # Time-dependent grids
+    return_vars = {}
+    for key in input_vars:
+        return_key = '{}t'.format(key[0:-1])
+        return_vars[return_key] = input_vars[key] * adj
+    if return_ssh:
+        return_vars['ssh_u'] = ssh_u
+    return return_vars
+
+
+def time_dependent_grid_V(e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars,
+                          return_ssh=False):
+    """Calculate time-dependent vertical grid spacing and depths on V-grid for
+    variabe volume in NEMO.
+
+    :arg e3v0: initial vertical scale factors on V-grid.
+               Dimensions: (depth, y, x).
+    :type e3v0: :py:class:`numpy.ndarray`
+
+    :arg e1v: x-direction scale factors on V-grid.
+              Dimensions: (y, x).
+    :type e1v: :py:class:`numpy.ndarray`
+
+    :arg e2v: y-direction scale factors on V-grid.
+              Dimensions: (y, x).
+    :type e2v: :py:class:`numpy.ndarray`
+
+    :arg e1t: x-direction scale factors on T-grid.
+              Dimensions: (y, x).
+    :type e1t: :py:class:`numpy.ndarray`
+
+    :arg e2t: y-direction scale factors on T-grid.
+               Dimensions: (y, x).
+    :type e2t: :py:class:`numpy.ndarray`
+
+    :arg vmask: V-grid mask. Dimensions: (depth, y, x)
+    :type vmask: :py:class:`numpy.ndarray`
+
+    :arg ssh: the model sea surface height on T-grid. Dimensions: (time, y, x)
+    :type ssh: :py:class:`numpy.ndarray`
+
+    :arg input_vars: A dictionary of the initial grids/scale factors to be
+                     translated into time_dependent. Example keys can be
+                     'e3v_0', 'gdepv_0'. A dictionary with
+                     corresponding time-dependent grids is returned, where the
+                     keys are now 'e3v_t', 'gdepv_t'.
+    :type input_vars: dictionary
+
+    :arg return_ssh: Specifies whether the ssh interpolated to the V-grid
+                     should be returned (ssh_v)
+    :type return_ssh: boolean
+
+    :returns: A dictionary containing the desired time dependent vertical
+              scale factors and depths on v grid.
+              Dimensions of each: (time, depth, y, x).
+              If returned, ssh_uvhas dimensions (time, y, x)"""
+    ssh_v = np.zeros_like(ssh)
+    e1e2v = e1v * e2v
+    e1e2t = e1t * e2t
+    # Interpolate ssh to V-grid
+    ssh_v[:, 0:-1, :] = 0.5 * vmask[0, 0:-1, :] / e1e2v[0:-1, :] * (
+        e1e2t[0:-1, :] * ssh[:, 0:-1, :] +
+        e1e2t[1:, :] * ssh[:, 1:, :]
+        )
+    H = calculate_H(e3v0, vmask)
+    adj = calculate_adjustment_factor(H, ssh_v)
+    adj = np.expand_dims(adj, axis=1)
+    # Time-dependent grids
+    return_vars = {}
+    for key in input_vars:
+        return_key = '{}t'.format(key[0:-1])
+        return_vars[return_key] = input_vars[key] * adj
+    if return_ssh:
+        return_vars['ssh_v'] = ssh_v
+
+    return return_vars
