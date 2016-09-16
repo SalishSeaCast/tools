@@ -495,7 +495,7 @@ def get_onc_sog_adcp_mat(date, search_info, dest_path, userno):
     includes ADCP data processing Matlab scripts developed by Rich Pawlowicz
     of UBC EOAS.
 
-    :arg str data_date: Date for which to request the ADCP data.
+    :arg str date: Date for which to request the ADCP data.
 
     :arg str node: Strait of Georgia node for which to request the ONC data;
                    must be a key in
