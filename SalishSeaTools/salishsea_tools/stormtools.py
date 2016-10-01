@@ -19,7 +19,7 @@ from __future__ import division
 
 import csv
 import datetime
-from io import StringIO
+from io import BytesIO
 from xml.etree import cElementTree as ElementTree
 
 import arrow
@@ -359,7 +359,7 @@ def get_EC_observations(station, start_day, end_day):
         'Day': 1,
     }
     response = requests.get(url, params=query)
-    tree = ElementTree.parse(StringIO(response.text))
+    tree = ElementTree.parse(BytesIO(response.content))
     root = tree.getroot()
     # read lat and lon
     for raw_info in root.findall('stationinformation'):
