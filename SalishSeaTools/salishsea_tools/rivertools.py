@@ -406,7 +406,17 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
                      'Kelsey': {'prop': 7 / totalarea, 'i': 878, 'j': 59, 'di': 1, 'dj': 1, 'depth': 3},
                      'unmarked': {'prop': 7 / totalarea, 'i': 884, 'j': 54, 'di': 1, 'dj': 1, 'depth': 3},
                      'Newcastle': {'prop': 34 / totalarea, 'i': 890, 'j': 47, 'di': 1, 'dj': 1, 'depth': 3},
-                     'Windy': {'prop': 10 / totalarea, 'i': 893, 'j': 42, 'di': 1, 'dj': 1, 'depth': 3}}
+                     'Windy': {'prop': 10 / totalarea, 'i': 893, 'j': 42,
+                               'di': 1, 'dj': 1, 'depth': 3}}
+        if Fraser_River == 'long':   # fix windy too
+            # fix the Windy River in Johnstone Pass too
+            prop_dict['Windy'] = {'prop': 10 / totalarea, 'i': 891, 'j': 45,
+                                  'di': 1, 'dj': 1, 'depth': 3}
+            prop_dict['Zero2'] = {'prop': 0., 'i': 893, 'j': 42,
+                                  'di': 1, 'dj': 1, 'depth': 3}
+        elif Fraser_River != 'short':
+            print ('Problem: Fraser Length specified badly')
+
 
     if watershedname == 'jervis':
         # Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis
