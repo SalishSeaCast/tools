@@ -64,14 +64,14 @@ Add the following files to the :file:`/results/nowcast-sys/nowcast-env` environm
 
     $ cd /results/nowcast-sys/nowcast-env
     $ mkdir -p etc/conda/activate.d
-    $ echo export ONC_USER_TOKEN=a_valid_ONC_data_API_user_token > envvars.sh
+    $ echo export ONC_USER_TOKEN=a_valid_ONC_data_API_user_token > etc/conda/activate.d/envvars.sh
 
 and :command:`unset` them when it is deactivated.
 
 .. code-block:: bash
 
     $ mkdir -p etc/conda/deactivate.d
-    $ echo unset ONC_USER_TOKEN > envvars.sh
+    $ echo unset ONC_USER_TOKEN > etc/conda/deactivate.d/envvars.sh
 
 
 Nowcast Manager Directory
