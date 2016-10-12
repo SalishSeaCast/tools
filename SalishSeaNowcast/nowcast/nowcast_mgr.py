@@ -317,7 +317,8 @@ class NowcastManager:
                             ['grib_to_netcdf', ['forecast2']]),
                     ])
                 actions['success 06'].extend([
-                    (self._launch_worker, ['get_onc_ctd', ['SCVIP']]),
+                    # TODO: Re-enable when SCVIP comes back on-line
+                    # (self._launch_worker, ['get_onc_ctd', ['SCVIP']]),
                     (self._launch_worker, ['get_onc_ctd', ['SEVIP']]),
                 ])
             if all((

@@ -448,8 +448,9 @@ class TestAfterDownloadWeather:
     @pytest.mark.parametrize('index, worker, worker_args', [
         (2, 'get_NeahBay_ssh', 'forecast2'),
         (3, 'grib_to_netcdf', 'forecast2'),
-        (4, 'get_onc_ctd', 'SCVIP'),
-        (5, 'get_onc_ctd', 'SEVIP'),
+        # TODO: Re-enable when SCVIP comes back on-line
+        # (4, 'get_onc_ctd', 'SCVIP'),
+        (4, 'get_onc_ctd', 'SEVIP'),
     ])
     def test_success_06_launch_workers(self, index, worker, worker_args, mgr):
         mgr.config = {'run_types': {'forecast2': 'SalishSea'}}
