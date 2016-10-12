@@ -322,14 +322,18 @@ def _make_comparisons_plots(
     node_names = (
         'East node', 'Central node', 'Delta BBL node', 'Delta DDL node')
     for node_name in node_names:
-        fig = compare_venus_ctd.compare_venus_ctd(
-            node_name, grid_T_hr, dev_grid_T_hr, timezone, mesh_mask,
-            dev_mesh_mask)
-        filename = os.path.join(
-            plots_dir, 'Compare_VENUS_{node}_{date}.svg'
-            .format(node=node_name.rstrip(' node').replace(' ', '_'), date=dmy))
-        fig.savefig(filename, facecolor=fig.get_facecolor())
-        logger.debug('{} saved'.format(filename))
+        try:
+            fig = compare_venus_ctd.compare_venus_ctd(
+                node_name, grid_T_hr, dev_grid_T_hr, timezone, mesh_mask,
+                dev_mesh_mask)
+            filename = os.path.join(
+                plots_dir, 'Compare_VENUS_{node}_{date}.svg'
+                .format(node=node_name.rstrip(' node').replace(' ', '_'), date=dmy))
+            fig.savefig(filename, facecolor=fig.get_facecolor())
+            logger.debug('{} saved'.format(filename))
+        except TypeError:
+            # Observations missing, so abort plot creation
+            pass
 
 
 def _future_comparison_plots(
