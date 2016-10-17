@@ -11,7 +11,7 @@ import os
 import datetime
 import sys
 
-import gsw_calls
+from salishsea_tools import gsw_calls
 
 
 def create_BCs(infile, outfile, title, dS_is_zero=True):
@@ -45,16 +45,19 @@ def create_BCs(infile, outfile, title, dS_is_zero=True):
     long = F.variables['nav_lon'][:] + np.zeros(sal[:].shape)
     lat = F.variables['nav_lat'][:] + np.zeros(sal[:].shape)
     # Create TEOS-10 stuff
-    p = gsw_calls.call_p_from_z(-dep, lat)
+    p = gsw_calls.generic_gsw_caller('mw_gsw_p_from_z.m', [-dep, lat])
     sal_pract = np.copy(sal[:])
     if dS_is_zero:
-        sal_abs = gsw_calls.call_SR_from_SP(sal_pract)
+        sal_abs = gsw_calls.generic_gsw_caller('mw_gsw_SR_from_SP.m',
+                                               [sal_pract, ])
         sal_title = 'Reference Salinity'
     else:
-        sal_abs = gsw_calls.call_SA_from_SP(sal_pract, p, long, lat)
+        sal_abs = gsw_calls.generic_gsw_caller('mw_gsw_SA_from_SP.m',
+                                               [sal_pract, p, long, lat])
         sal_title = 'Absolute Salinity'
     temp_pot = np.copy(temp[:])
-    temp_cons = gsw_calls.call_CT_from_PT(sal_abs, temp_pot)
+    temp_cons = gsw_calls.generic_gsw_caller('mw_gsw_CT_from_pt.m',
+                                             [sal_abs, temp_pot])
     # Write into netcdf file
     sal[:] = sal_abs
     temp[:] = temp_cons
