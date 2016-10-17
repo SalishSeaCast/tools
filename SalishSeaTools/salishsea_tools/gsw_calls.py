@@ -12,7 +12,8 @@ import subprocess as sp
 
 def generic_gsw_caller(matlab_wrapper_name, input_vars,
                        matlab_wrapper_dir=('/data/nsoontie/MEOPAR/tools/'
-                                           'I_ForcingFiles/OBC/')):
+                                           'SalishSeaTools/salishsea_tools/'
+                                           'teos-10_matlab_wrappers')):
     """ A generic function for calling matlab wrappers of gsw functions.
 
     :arg str matlab_wrapper_name: The name of the matlab wrapper.
