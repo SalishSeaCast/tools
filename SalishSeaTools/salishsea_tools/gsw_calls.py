@@ -10,37 +10,34 @@ import os
 import subprocess as sp
 
 
-def generic_gsw_caller(matlab_wrapper_name, input_vars,
-                       matlab_wrapper_dir=('/data/nsoontie/MEOPAR/tools/'
-                                           'SalishSeaTools/salishsea_tools/'
-                                           'teos-10_matlab_wrappers')):
+def generic_gsw_caller(gsw_function_name, input_vars,
+                       matlab_gsw_dir='/ocean/rich/home/matlab/gsw3'):
     """ A generic function for calling matlab wrappers of gsw functions.
 
-    :arg str matlab_wrapper_name: The name of the matlab wrapper.
-                                  e.g. mw_gsw_p_from_z.m
+    :arg str gsw_function_name: The name of the matlab gsw function.
+                                e.g. p_from_z.m
     :arg input_vars: A list of the input variables in the same order as
                      expected from the gsw matlab function.
     :type input_vars: list of numpy arrays
 
-    :arg str matlab_wrapper_dir: The directory where the matlab wrappers are
-                                 saved. Also a script called startup.m, which
-                                 adds the gsw paths to the matlab path, must be
-                                 in this directory.
-    :returns: A numpy array containing the output from cliing the gsw function.
+    :arg str matlab_gsw_dir: The directory where the matlab gsw scripts are
+                             stored.
+    :returns: A numpy array containing the output from call to gsw function.
     """
-    # link matlab wrapper script and startup script
-    os.symlink(os.path.join(matlab_wrapper_dir, 'startup.m'), 'startup.m')
-    os.symlink(os.path.join(matlab_wrapper_dir, matlab_wrapper_name),
-               matlab_wrapper_name)
     # save inputs to a file for reading into matlab
     tmp_files = []
     for count, var_data in enumerate(input_vars):
-        tmp_fname = 'input{}.txt'.format(count)
+        tmp_fname = 'input{}'.format(count)
         tmp_files.append(tmp_fname)
         np.savetxt(tmp_fname, var_data.flatten(), delimiter=',')
     shape = input_vars[0].shape
-    # create string of input arguments
+    # create matlab wrapper
     output = 'output_file'
+    matlab_wrapper_name = create_matlab_wrapper(gsw_function_name,
+                                                output,
+                                                tmp_files,
+                                                matlab_gsw_dir)
+    # create string of input arguments
     arg_strings = "('{}'".format(output)
     for tmp_fname in tmp_files:
         arg_strings += ",'{}'".format(tmp_fname)
@@ -55,10 +52,33 @@ def generic_gsw_caller(matlab_wrapper_name, input_vars,
     for f in tmp_files:
         os.remove(f)
     os.remove(output)
-    # remove symbolic links
-    os.unlink('startup.m')
-    os.unlink(matlab_wrapper_name)
+    os.remove(matlab_wrapper_name)
     return output_data.reshape(shape)
+
+
+def create_matlab_wrapper(gsw_function_name, outfile,
+                          input_files, matlab_gsw_dir):
+    # Create a matlab wrapper file
+    wrapper_file_name = 'mw_{}'.format(gsw_function_name)
+    f = open(wrapper_file_name, 'w')
+    header = 'function [] = {}({},'.format(wrapper_file_name[:-2], outfile)
+    for input_file in input_files:
+        header += "{},".format(input_file)
+    header = header[:-1] + ')\n'
+    f.write(header)
+    # Add directories to matlab path
+    f.write('addpath {}\n'.format(matlab_gsw_dir))
+    for subdir in ['html', 'library', 'thermodynamics_from_t', 'pdf']:
+        f.write('addpath {}\n'.format(os.path.join(matlab_gsw_dir, subdir)))
+    # reading input files
+    input_args = ''
+    for count, input_file in enumerate(input_files):
+        f.write("in{} = dlmread({},',');\n".format(count, input_file))
+        input_args += 'in{},'.format(count)
+    # call matlab gsw function
+    f.write('y = {}({});\n'.format(gsw_function_name[:-2], input_args[:-1]))
+    f.write("dlmwrite({},y,',');\n".format(outfile))
+    return wrapper_file_name
 
 
 def call_p_from_z(z, lat):
