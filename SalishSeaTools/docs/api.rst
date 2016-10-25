@@ -60,6 +60,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.gsw_calls:
+
+:py:mod:`gsw_calls` Module
+===========================
+
+.. automodule:: salishsea_tools.gsw_calls
+    :members:
+
+
 .. _salishsea_tools.hg_commands:
 
 :py:mod:`hg_commands` Module
