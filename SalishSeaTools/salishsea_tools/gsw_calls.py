@@ -1,8 +1,7 @@
-# Module to call matlab gsw functions from python.
-# You need to have a matlab gsw wrappers for each function.
-# These functions and wrappers are all so similar. Auto-create?
-# The function generic_gsw_caller can handle calling any of the matlab
-# wrappers. This function replaces the call_... python functions.
+# Module to call matlab gsw functions from python..
+# The function generic_gsw_caller can handle calling any single variable output
+# gsw functions.
+# The _call_... python functions have been replaced by generic_gsw_caller()
 
 import numpy as np
 
@@ -12,10 +11,11 @@ import subprocess as sp
 
 def generic_gsw_caller(gsw_function_name, input_vars,
                        matlab_gsw_dir='/ocean/rich/home/matlab/gsw3'):
-    """ A generic function for calling matlab wrappers of gsw functions.
+    """ A generic function for calling matlab gsw functions. Only works with
+    gsw functions that have a single variable as output.
 
     :arg str gsw_function_name: The name of the matlab gsw function.
-                                e.g. p_from_z.m
+                                e.g. gsw_p_from_z.m
     :arg input_vars: A list of the input variables in the same order as
                      expected from the gsw matlab function.
     :type input_vars: list of numpy arrays
@@ -33,10 +33,10 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     shape = input_vars[0].shape
     # create matlab wrapper
     output = 'output_file'
-    matlab_wrapper_name = create_matlab_wrapper(gsw_function_name,
-                                                output,
-                                                tmp_files,
-                                                matlab_gsw_dir)
+    matlab_wrapper_name = _create_matlab_wrapper(gsw_function_name,
+                                                 output,
+                                                 tmp_files,
+                                                 matlab_gsw_dir)
     # create string of input arguments
     arg_strings = "('{}'".format(output)
     for tmp_fname in tmp_files:
@@ -56,8 +56,8 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     return output_data.reshape(shape)
 
 
-def create_matlab_wrapper(gsw_function_name, outfile,
-                          input_files, matlab_gsw_dir):
+def _create_matlab_wrapper(gsw_function_name, outfile,
+                           input_files, matlab_gsw_dir):
     # Create a matlab wrapper file
     wrapper_file_name = 'mw_{}'.format(gsw_function_name)
     f = open(wrapper_file_name, 'w')
@@ -81,7 +81,7 @@ def create_matlab_wrapper(gsw_function_name, outfile,
     return wrapper_file_name
 
 
-def call_p_from_z(z, lat):
+def _call_p_from_z(z, lat):
 
     fname = "'pout'"
     zfile = "'zfile'"
@@ -101,7 +101,7 @@ def call_p_from_z(z, lat):
     return pressure.reshape(shape)
 
 
-def call_SR_from_SP(SP):
+def _call_SR_from_SP(SP):
 
     fname = "'SRout'"
     SPfile = "'SPfile'"
@@ -119,7 +119,7 @@ def call_SR_from_SP(SP):
     return sal_ref.reshape(shape)
 
 
-def call_SA_from_SP(SP, p, long, lat):
+def _call_SA_from_SP(SP, p, long, lat):
 
     fname = "'SAout'"
     SPfile = "'SPfile'"
@@ -147,7 +147,7 @@ def call_SA_from_SP(SP, p, long, lat):
     return SA.reshape(shape)
 
 
-def call_CT_from_PT(SA, PT):
+def _call_CT_from_PT(SA, PT):
 
     fname = "'CTout'"
     SAfile = "'SAfile'"
