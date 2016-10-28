@@ -487,7 +487,7 @@ def load_tidal_predictions(filename):
         filename, skiprows=3, parse_dates=[0], date_parser=dateParserMeasured2)
     ttide = ttide.rename(
         columns={
-            'Time_Local ': 'time',
+            'time ': 'time',
             ' pred_8 ': 'pred_8',
             ' pred_all ': 'pred_all',
         })
