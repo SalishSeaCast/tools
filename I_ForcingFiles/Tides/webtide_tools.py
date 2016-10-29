@@ -205,10 +205,10 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         #allocate the z1 and z2 I calculated from Webtide to the boundary cells
         #along western boundary, etaZ1 and etaZ2 are 0 in masked cells
         #(CHECK: Are these allocated in the right order?)
-        Z1 = numpy.zeros((boundlen+10,1))
-        Z2 = numpy.zeros((boundlen+10,1))
-        Z1[5:boundlen+5,0] = vZ1
-        Z2[5:boundlen+5,0] = vZ2
+        Z1 = numpy.zeros((boundlen+9,1))
+        Z2 = numpy.zeros((boundlen+9,1))
+        Z1[4:boundlen+4,0] = vZ1
+        Z2[4:boundlen+4,0] = vZ2
 
     return Z1, Z2, I, boundlen
 
@@ -226,6 +226,7 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     # get the data from the csv file
     Z1, Z2, I, boundlen = get_data_from_csv(
         tidevar, constituent, depth, CFactors)
+    print (boundlen, tidevar, I[0][0])
 
     if len(number) == 1:
         name = 'SalishSea' + number
@@ -237,7 +238,12 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     nemo.description = 'Tide data from WebTide - K1 phase shifted'
 
     # give the netcdf some dimensions
-    nemo.createDimension('xb', boundlen+10)
+    # note that the real boundary extends on more grid point to the south
+    # in v than for ssh or u
+    if tidevar == 'V':
+        nemo.createDimension('xb', boundlen+9)
+    else:
+        nemo.createDimension('xb', boundlen+10)
     nemo.createDimension('yb', 1)
 
     # add in the counter around the boundary
@@ -247,8 +253,12 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     xb.longname = 'counter around boundary'
     yb = nemo.createVariable('yb', 'int32', ('yb',), zlib=True)
     yb.units = 'non dim'
-    xb[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
+    if tidevar == 'V':
+        xb[:] = numpy.arange(I[0][0]-4, I[0][-1]+6)
+    else:
+        xb[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
     yb[0] = 1
+    print (xb.shape)
 
     # create i and j grid position
     nbidta = nemo.createVariable('nbidta', 'int32', ('yb', 'xb'), zlib=True)
@@ -262,7 +272,10 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
 
     # give values for West Boundary (this is where the webtide points go)
     nbidta[:] = 1
-    nbjdta[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
+    if tidevar == 'V':
+        nbjdta[:] = numpy.arange(I[0][0]-4, I[0][-1]+6)
+    else:
+        nbjdta[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
 
     # give values for the corner
     nbrdta[:] = 1
@@ -297,8 +310,10 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
         v2 = nemo.createVariable('v2', 'float32', ('yb', 'xb'), zlib=True)
         v2.units = 'm'
         v2.longname = 'tidal y-velocity: sine'
-        v1[0, 0:boundlen+10] = Z1[:, 0]
-        v2[0, 0:boundlen+10] = Z2[:, 0]
+        print (v1.shape, v2.shape)
+        print (Z1.shape)
+        v1[0, 0:boundlen+9] = Z1[:, 0]
+        v2[0, 0:boundlen+9] = Z2[:, 0]
 
     return Z1, Z2
     nemo.close()
