@@ -42,7 +42,7 @@ def reshape_BCs(infile, outfile):
             print("Skipping {} ...".format(v.name))
             continue
         # Create variables
-        fout.createVariable(v.name, v.datatype, v.dimensions)
+        fout.createVariable(v.name, v.datatype, v.dimensions, zlib=True, complevel=4, shuffle=False)
         # Copy data (reshape implicit here)
         fout.variables[v.name][:] = fin.variables[v.name][:]
         # Copy attributes
@@ -53,8 +53,8 @@ def reshape_BCs(infile, outfile):
     fout.source += ("\n https://bitbucket.org/salishsea/"
                     "tools/I_ForcingFiles/OBC/reshape_BCs.py")
 
-    fout.history += ("\n [{}] Reshaped to structured format and "
-                     " drop variables nbidta, nbjdta, and nbrdta."
+    fout.history += ("\n [{}] Reshaped to structured format and drop "
+                     "variables nbidta, nbjdta, and nbrdta, with compression."
                      .format(datetime.datetime.today().strftime('%Y-%m-%d')))
 
     fin.close()
