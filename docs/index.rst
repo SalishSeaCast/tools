@@ -50,10 +50,10 @@ Contents:
    erddap/ERDDAP_datasets.ipynb
    bathymetry/index
    I_ForcingFiles/index
+   LiveOcean/index
    Marlin/index
    python_packaging/index
    nemo-tools/index
    legacy_docs/index
-   LiveOcean/index
 
 .. include:: license_description.txt
