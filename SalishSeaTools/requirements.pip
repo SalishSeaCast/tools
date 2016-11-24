@@ -4,6 +4,7 @@ alabaster==0.7.8
 angles==2.0
 arrow==0.7.0
 Babel==2.3.3
+basemap==1.0.7
 Bottleneck==1.1.0
 cliff==2.0.0
 cmd2==0.6.8

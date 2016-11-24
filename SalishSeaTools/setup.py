@@ -45,6 +45,7 @@ install_requires = [
     # see requirements.pip for versions most recently used in development
     'angles',
     'arrow',
+    'basemap',
     'bottleneck',
     'matplotlib',
     'netCDF4',
