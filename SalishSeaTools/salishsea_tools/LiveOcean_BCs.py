@@ -72,7 +72,7 @@ def load_SalishSea_boundary_grid(
 def load_LiveOcean(files, resample_interval='1H'):
     """Load a time series of Live Ocean results represented by a list of files.
     Time series is resampled by averaging over resample_interval.
-     Default is 1 hour.
+    Default is 1 hour.
 
     :arg files: Live Ocean filenames
     :type files: list of strings
@@ -302,13 +302,15 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
 
     :arg str file_frequency: The frequency by which the files will be saved.
                              Options are:
+
                              * 'yearly' files that contain a year of data and
-                               look like *_yYYYY.nc
+                               look like :file:`*_yYYYY.nc`
                              * 'monthly' for files that contain a month of
-                               data and look like *_yYYYYmMM.nc
+                               data and look like :file:`*_yYYYYmMM.nc`
                              * 'daily' for files that contain a day of data and
-                               look like *_yYYYYmMMdDD.nc
-                             where * is the basename.
+                               look like :file:`*_yYYYYmMMdDD.nc`
+
+                             where :kbd:`*` is the basename.
 
     :arg nowcast: Specifies that the boundary data is to be generated for the
                   nowcast framework. If true, the files are from a single
