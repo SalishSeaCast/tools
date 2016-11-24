@@ -81,7 +81,16 @@ These API docs provide function signatures and docstrings derived directly from 
 Modules for Working with `Live Ocean`_ Model Products
 =====================================================
 
-.. _Live Ocean:
+.. _Live Ocean: http://faculty.washington.edu/pmacc/LO/LiveOcean.html
+
+.. automodule:: salishsea_tools.LiveOcean_BCs
+    :members:
+
+.. automodule:: salishsea_tools.LiveOcean_grid
+    :members:
+
+.. automodule:: salishsea_tools.UBC_subdomain
+    :members:
 
 
 .. _salishsea_tools.namelist:
