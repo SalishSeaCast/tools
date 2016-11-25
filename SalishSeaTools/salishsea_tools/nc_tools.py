@@ -305,6 +305,11 @@ def load_NEMO_from_path(
     depthslice = slice(depth[0] , depth[1])
     xslice     = slice(window[0], window[1])
     yslice     = slice(window[2], window[3])
+    
+    if model == 'nowcast-green':
+        extra_inds = ('nav_lon', 'nav_lat', 'time_centered', 'axis_nbounds', 'nvertex')
+    else:
+        extra_inds = ('nav_lon', 'nav_lat', 'tbnds')
         
     # Create lists of sequential filenames to load
     date = starttime
@@ -337,29 +342,26 @@ def load_NEMO_from_path(
     
     # Load u velocity
     if 'u_vel' in fields:
-        u = xr.open_mfdataset(filenames_U).drop((
-            'nav_lon', 'nav_lat', 'tbnds')).rename({'depthu': 'depth'})
+        u = xr.open_mfdataset(filenames_U)
+        u = u.drop(extra_inds).rename({'depthu': 'depth'})
         NEMO = NEMO.merge({'u_vel': u.vozocrtx.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load v velocity
     if 'v_vel' in fields:
-        v = xr.open_mfdataset(filenames_V).drop((
-            'nav_lon', 'nav_lat', 'tbnds')).rename({'depthv': 'depth'})
+        v = xr.open_mfdataset(filenames_V).drop(extra_inds).rename({'depthv': 'depth'})
         NEMO = NEMO.merge({'v_vel': v.vomecrty.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load w velocity
     if 'w_vel' in fields:
-        w = xr.open_mfdataset(filenames_W).drop((
-            'nav_lon', 'nav_lat', 'tbnds')).rename({'depthw': 'depth'})
+        w = xr.open_mfdataset(filenames_W).drop(extra_inds).rename({'depthw': 'depth'})
         NEMO = NEMO.merge({'w_vel': w.vovecrtz.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
     
     # Load tracers
     if 'salinity' in fields or 'temperature' in fields:
-        trc = xr.open_mfdataset(filenames_T).drop((
-            'nav_lon', 'nav_lat', 'tbnds')).rename({'deptht': 'depth'})
+        trc = xr.open_mfdataset(filenames_T).drop(extra_inds).rename({'deptht': 'depth'})
         
         # Salinity
         if 'salinity' in fields:
@@ -375,6 +377,15 @@ def load_NEMO_from_path(
     NEMO = NEMO.rename({'time_counter': 'time' ,
                         'x'           : 'gridX',
                         'y'           : 'gridY'})
+
+    # Load and merge mesh mask (replace gridZ with NEMO.depth)
+    mask = xr.open_dataset('https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSn3DMeshMask2V1')
+    NEMO = NEMO.merge({
+        'mask': mask.merge(
+            {'depth': ('gridZ', mask.gdept.isel(time=0, gridX=0, gridY=0))}
+                ).swap_dims({'gridZ': 'depth'}).isel(time=0).drop(
+                    ('time', 'gridZ')).sel(
+                        depth=depthslice, gridX=xslice, gridY=yslice).tmask})
         
     return NEMO
 
