@@ -48,6 +48,7 @@ Contents:
    SOGTools/index
    netcdf4/index
    erddap/ERDDAP_datasets.ipynb
+   visualisation/visualization_workflows_xarray.ipynb
    bathymetry/index
    I_ForcingFiles/index
    LiveOcean/index
