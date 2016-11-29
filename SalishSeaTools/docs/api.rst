@@ -107,14 +107,8 @@ Modules for Working with `Live Ocean`_ Model Products
 :py:mod:`nc_tools` Module
 =========================
 
-Autodoc build for :py:mod:`salishsea_tools.nc_tools` is temporarily diabled as of 20-Aug-2016 due to a `build issue`_ on readthedocs.
-Please :ref:`build the docs locally <BuildingAndPreviewingDocumentation>`,
-or read the docstrings in the module.
-
-.. _build issue: https://github.com/rtfd/readthedocs.org/issues/1902
-
-.. .. automodule:: salishsea_tools.nc_tools
-..    :members:
+.. automodule:: salishsea_tools.nc_tools
+    :members:
 
 
 .. _salishsea_tools.places:
