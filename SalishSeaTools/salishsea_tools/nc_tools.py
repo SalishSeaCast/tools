@@ -261,7 +261,7 @@ def load_NEMO_from_erddap(
 def load_NEMO_from_path(
         timerange, depth=[None, None], window=[None, None, None, None],
         model='nowcast', resolution='h', path='/results/SalishSea',
-        fields=['salinity', 'temperature', 'u_vel', 'v_vel', 'w_vel']
+        fields=['salinity', 'temperature', 'u_vel', 'v_vel']
 ):
     """Returns vector and tracer variables from the Salish Sea
     NEMO model, accessed through the local filesystem.
