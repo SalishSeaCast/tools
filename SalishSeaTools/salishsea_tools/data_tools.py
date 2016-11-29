@@ -54,7 +54,7 @@ from salishsea_tools import (
 
 
 def load_drifters(
-        deployments=range(1, 9),
+        deployments=range(1, 10),
         filename='driftersPositions.geojson',
         drifterpath='/ocean/rcostanz/Drifters/data'
 ):
