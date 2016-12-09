@@ -169,83 +169,91 @@ def load_GEM_from_path(
 def load_NEMO_from_erddap(
         timerange, depth=[None, None], window=[None, None, None, None],
         fields=['salinity', 'temperature', 'u_vel', 'v_vel'],
-        path='https://salishsea.eos.ubc.ca/erddap/griddap'
+        path='https://salishsea.eos.ubc.ca/erddap/griddap',
+        bathy_dataset='ubcSSnBathymetry2V1',
 ):
     """Returns vector and tracer variables from the Salish Sea
     NEMO model, accessed through the ERDDAP server.
-    
+
     :arg timerange: Start and end datetimes for the requested data range.
         (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
     :type timerange: list or tuple of str
-    
+
     :arg depth: Horizontal depth slice.
     :type depth: integer
-    
+
     :arg window: Model domain slice bounds.
         (ex. [x_min, x_max, y_min, y_max])
     :type window: list or tuple of integers
-    
+
     :arg fields: Requested variables
         (one of 'u_vel', 'v_vel', 'w_vel', 'salinity', 'temperature')
     :type fields: list or tuple of str
-    
+
     :arg path: Location of ERDDAP server
     :type path: str
-    
+
+    :arg path: Bathymetry Dataset on ERDDAP server
+    :type path: str
+
     :returns: :py:class:`xarray.Dataset` of lat/lon coordinates and
         model variables
     :rtype: :py:class:`xarray.Dataset`
     """
-    
+
     # Create slices
     starttime, endtime = map(dparser.parse, timerange)
-    timeslice  = slice(starttime, endtime)
-    depthslice = slice(depth[0] , depth[1])
-    xslice     = slice(window[0], window[1])
-    yslice     = slice(window[2], window[3])
-        
+    timeslice = slice(starttime, endtime)
+    depthslice = slice(depth[0], depth[1])
+    xslice = slice(window[0], window[1])
+    yslice = slice(window[2], window[3])
+
     # Load NEMO grid variables
-    grid = xr.open_dataset(os.path.join(path, 'ubcSSnBathymetry2V1'),
+    grid = xr.open_dataset(os.path.join(path, bathy_dataset),
                            mask_and_scale=False)
     NEMO = xr.Dataset({
-              'longitude' : grid.longitude.sel(  gridX=xslice, gridY=yslice),
-              'latitude'  : grid.latitude.sel(   gridX=xslice, gridY=yslice),
-              'bathymetry': grid.bathymetry.sel( gridX=xslice, gridY=yslice)})
+              'longitude': grid.longitude.sel(gridX=xslice, gridY=yslice),
+              'latitude': grid.latitude.sel(gridX=xslice, gridY=yslice),
+              'bathymetry': grid.bathymetry.sel(gridX=xslice, gridY=yslice)})
 
     # Load u velocity
     if 'u_vel' in fields:
         u = xr.open_dataset(os.path.join(path, 'ubcSSn3DuVelocity1hV1'))
         NEMO = NEMO.merge({'u_vel': u.uVelocity.sel(
-                 time=timeslice, depth=depthslice, gridX=xslice, gridY=yslice)})
-            
+                 time=timeslice, depth=depthslice,
+                 gridX=xslice, gridY=yslice)})
+
     # Load v velocity
     if 'v_vel' in fields:
         v = xr.open_dataset(os.path.join(path, 'ubcSSn3DvVelocity1hV1'))
         NEMO = NEMO.merge({'v_vel': v.vVelocity.sel(
-                 time=timeslice, depth=depthslice, gridX=xslice, gridY=yslice)})
+                 time=timeslice, depth=depthslice,
+                 gridX=xslice, gridY=yslice)})
 
     # Load w velocity (reindex to centered depths, unstagger before use)
     if 'w_vel' in fields:
         w = xr.open_dataset(os.path.join(path, 'ubcSSn3DwVelocity1hV1'))
         NEMO = NEMO.merge({'w_vel': xr.DataArray(w.wVelocity.sel(
                  time=timeslice, depth=depthslice, gridX=xslice, gridY=yslice),
-                 {'time' : NEMO.time,  'depth': NEMO.depth,
+                 {'time': NEMO.time,  'depth': NEMO.depth,
                   'gridY': NEMO.gridY, 'gridX': NEMO.gridX})})
 
     # Load tracers
     if 'salinity' in fields or 'temperature' in fields:
         trc = xr.open_dataset(os.path.join(path, 'ubcSSn3DTracerFields1hV1'))
-        
+
         # Salinity
         if 'salinity' in fields:
             NEMO = NEMO.merge({'salinity': trc.salinity.sel(
-                 time=timeslice, depth=depthslice, gridX=xslice, gridY=yslice)})
-        
+                 time=timeslice, depth=depthslice,
+                 gridX=xslice, gridY=yslice)})
+
         # Temperature
         if 'temperature' in fields:
             NEMO = NEMO.merge({'temperature': trc.temperature.sel(
-                 time=timeslice, depth=depthslice, gridX=xslice, gridY=yslice)})
-    
+                 time=timeslice, depth=depthslice,
+                 gridX=xslice, gridY=yslice)})
+
     # Load and merge mesh mask (replace gridZ with NEMO.depth)
     mask = xr.open_dataset(os.path.join(path, 'ubcSSn3DMeshMask2V1'))
     NEMO = NEMO.merge({
@@ -261,56 +269,61 @@ def load_NEMO_from_erddap(
 def load_NEMO_from_path(
         timerange, depth=[None, None], window=[None, None, None, None],
         model='nowcast', resolution='h', path='/results/SalishSea',
+        bathy_meter='/results/SalishSea/nowcast/01aug16/bathy_meter.nc',
         fields=['salinity', 'temperature', 'u_vel', 'v_vel']
 ):
     """Returns vector and tracer variables from the Salish Sea
     NEMO model, accessed through the local filesystem.
-    
+
     This function uses the Python NCO package, and is super slow. If we can
     speed this up somehow that would be awesome!
-    
+
     :arg timerange: Start and end datetimes for the requested data range.
         (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
     :type timerange: list or tuple of str
-    
+
     :arg depth: Horizontal depth slice.
     :type depth: integer
-    
+
     :arg window: Model domain slice bounds.
         (ex. [x_min, x_max, y_min, y_max])
     :type window: list or tuple of integers
-    
+
     :arg model: Model run type
         (one of 'forecast', 'forecast2', 'nowcast', 'nowcast-green')
     :type model: str
-    
+
     :arg resolution: Time resolution ('h' for hourly, 'd' for daily avg)
     :type resolution: str
-    
+
     :arg path: Location of local results server
     :type path: str
-    
+
+    :arg path: Location of bathymetry file
+    :type path: str
+
     :arg fields: Requested variables
         (one of 'u_vel', 'v_vel', w_vel, 'salinity', 'temperature')
     :type fields: list or tuple of str
-    
+
     :returns: :py:class:`xarray.Dataset` of lat/lon coordinates and
         model variables
     :rtype: :py:class:`xarray.Dataset`
     """
-    
+
     # Create slices
     starttime, endtime = map(dparser.parse, timerange)
-    timeslice  = slice(starttime, endtime)
-    depthslice = slice(depth[0] , depth[1])
-    xslice     = slice(window[0], window[1])
-    yslice     = slice(window[2], window[3])
-    
+    timeslice = slice(starttime, endtime)
+    depthslice = slice(depth[0], depth[1])
+    xslice = slice(window[0], window[1])
+    yslice = slice(window[2], window[3])
+
     if model == 'nowcast-green':
-        extra_inds = ('nav_lon', 'nav_lat', 'time_centered', 'axis_nbounds', 'nvertex')
+        extra_inds = ('nav_lon', 'nav_lat', 'time_centered',
+                      'axis_nbounds', 'nvertex')
     else:
         extra_inds = ('nav_lon', 'nav_lat', 'tbnds')
-        
+
     # Create lists of sequential filenames to load
     date = starttime
     filenames_T = []
@@ -330,53 +343,53 @@ def load_NEMO_from_path(
         filenames_W.append(os.path.join(
                 path, model, datestr, '{}W.nc'.format(prefix)))
         date = date + timedelta(days=1)
-            
+
     # Load NEMO grid variables
     grid = xr.open_dataset(
-                 '/results/SalishSea/nowcast/01aug16/bathy_meter.nc',
+                 bathy_meter,
                  mask_and_scale=False)
     NEMO = xr.Dataset({
-              'longitude' : grid.nav_lon.sel(    x=xslice, y=yslice),
-              'latitude'  : grid.nav_lat.sel(    x=xslice, y=yslice),
-              'bathymetry': grid.Bathymetry.sel( x=xslice, y=yslice)})
-    
+              'longitude': grid.nav_lon.sel(x=xslice, y=yslice),
+              'latitude': grid.nav_lat.sel(x=xslice, y=yslice),
+              'bathymetry': grid.Bathymetry.sel(x=xslice, y=yslice)})
+
     # Load u velocity
     if 'u_vel' in fields:
         u = xr.open_mfdataset(filenames_U)
         u = u.drop(extra_inds).rename({'depthu': 'depth'})
         NEMO = NEMO.merge({'u_vel': u.vozocrtx.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
-    
+
     # Load v velocity
     if 'v_vel' in fields:
         v = xr.open_mfdataset(filenames_V).drop(extra_inds).rename({'depthv': 'depth'})
         NEMO = NEMO.merge({'v_vel': v.vomecrty.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
-    
+
     # Load w velocity
     if 'w_vel' in fields:
         w = xr.open_mfdataset(filenames_W).drop(extra_inds).rename({'depthw': 'depth'})
         NEMO = NEMO.merge({'w_vel': w.vovecrtz.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
-    
+
     # Load tracers
     if 'salinity' in fields or 'temperature' in fields:
         trc = xr.open_mfdataset(filenames_T).drop(extra_inds).rename({'deptht': 'depth'})
-        
+
         # Salinity
         if 'salinity' in fields:
             NEMO = NEMO.merge({'salinity': trc.vosaline.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
-        
+
         # Temperature
         if 'temperature' in fields:
             NEMO = NEMO.merge({'temperature': trc.votemper.sel(
                  time_counter=timeslice, depth=depthslice, x=xslice, y=yslice)})
-        
+
     # Rename indices to ERDDAP conventions
-    NEMO = NEMO.rename({'time_counter': 'time' ,
-                        'x'           : 'gridX',
-                        'y'           : 'gridY'})
+    NEMO = NEMO.rename({'time_counter': 'time',
+                        'x': 'gridX',
+                        'y': 'gridY'})
 
     # Load and merge mesh mask (replace gridZ with NEMO.depth)
     mask = xr.open_dataset('https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSn3DMeshMask2V1')
@@ -386,7 +399,7 @@ def load_NEMO_from_path(
                 ).swap_dims({'gridZ': 'depth'}).isel(time=0).drop(
                     ('time', 'gridZ')).sel(
                         depth=depthslice, gridX=xslice, gridY=yslice).tmask})
-        
+
     return NEMO
 
 
