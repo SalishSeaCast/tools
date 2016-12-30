@@ -381,6 +381,22 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
             prop_dict['Zero1'] = {
                 'prop': 0., 'i': 414, 'j': 334,
                 'di': 3, 'dj': 1, 'depth': 3}  # Remove original
+        elif Fraser_River == 'allArms':
+            prop_dict['Fraser1'] = {
+                'prop': Fraser, 'i':500, 'j': 395,
+                'di':1, 'dj':1, 'depth': 3}
+            prop_dict['Zero1'] = {
+                 'prop': 0., 'i': 414, 'j': 334,
+                'di': 3, 'dj': 1, 'depth': 3}
+            prop_dict['Zero2b'] = {
+                'prop':  0., 'i': 409, 'j': 315,
+                'di': 2, 'dj': 1, 'depth': 3}
+            prop_dict['Zero3'] = {
+                'prop': 0., 'i': 434, 'j': 318,
+                'di': 2, 'dj': 1, 'depth': 3}
+            prop_dict['Zero4'] = {
+                'prop': 0., 'i': 440, 'j': 323,
+                'di': 1, 'dj': 2, 'depth': 3}                
         elif Fraser_River != 'short':
             print ('Problem: Fraser Length specified badly')
 
@@ -410,11 +426,11 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
                                    'di': 1, 'dj': 1, 'depth': 3},
                      'Windy': {'prop': 10 / totalarea, 'i': 893, 'j': 42,
                                'di': 1, 'dj': 1, 'depth': 3}}
-        if Fraser_River == 'long':   # fix windy too
+        if Fraser_River == 'long' or Fraser_River == 'allArms':   # fix windy too
             # fix the Windy River in Johnstone Pass too
             prop_dict['Windy'] = {'prop': 10 / totalarea, 'i': 891, 'j': 45,
                                   'di': 1, 'dj': 1, 'depth': 3}
-            prop_dict['Zero2'] = {'prop': 0., 'i': 893, 'j': 42,
+            prop_dict['ZeroW'] = {'prop': 0., 'i': 893, 'j': 42,
                                   'di': 1, 'dj': 1, 'depth': 3}
         elif Fraser_River != 'short':
             print ('Problem: Fraser Length specified badly')
@@ -686,6 +702,14 @@ def get_watershed_prop_dict_long_fraser(watershedname):
     """
     prop_dict = get_watershed_prop_dict(watershedname, Fraser_River='long')
     return prop_dict
+
+
+def get_watershed_prop_dict_allArms_fraser(watershedname):
+    """get the proportion that each river occupies in the watershed.
+    """
+    prop_dict = get_watershed_prop_dict(watershedname, Fraser_River='allArms')
+    return prop_dict
+
 
 def init_runoff3_array(
     bathy='/ocean/jieliu/research/meopar/river-treatment/'
