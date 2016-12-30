@@ -1,9 +1,7 @@
 # File map for 27-Oct-2016 creation of NEMO-Cmd repo
 # from the SalishSeaCmd/ directory of the tools repo.
-# Done in preparation for migration of Salish Sea NEMO nowcast
-# system to be based on the NEMO_Nowcast framework package.
 #
-# The following command was used to create the SalishSeaCmd repo:
+# The following command was used to create the NEMO-Cmd repo:
 #    cd MEOPAR
 #    hg convert --filemap tools/NEMO-Cmd_filemap.txt tools NEMO-Cmd
 
@@ -12,7 +10,7 @@ include environment-rtd.yml
 include LICENSE
 include readthedocs.yml
 include SalishSeaCmd/
-include NEMOCmd_filemap.txt
+include NEMO-Cmd_filemap.txt
 
 rename SalishSeaCmd/docs docs
 rename SalishSeaCmd/salishsea_cmd nemo_cmd
