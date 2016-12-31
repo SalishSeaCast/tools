@@ -2,6 +2,12 @@
 Salish Sea NEMO Model Nowcast System
 ************************************
 
+**Note:** This package has been superseded by the standalone SalishSeaNowcast package:
+
+* repo: https://bitbucket.org/salishsea/salishseanowcast
+* docs: https://salishsea-nowcast.readthedocs.io/en/latest/
+
+
 The :py:obj:`SalishSeaNowcast` package is a collection of Python modules associated with running the Salish Sea NEMO model in a daily nowcast/forecast mode.
 The runs use as-recent-as-available
 (typically previous day)
