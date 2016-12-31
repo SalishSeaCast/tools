@@ -45,7 +45,6 @@ install_requires = [
     # see requirements.pip for versions most recently used in development
     'angles',
     'arrow',
-    'basemap',
     'bottleneck',
     'matplotlib',
     'netCDF4',
@@ -57,6 +56,12 @@ install_requires = [
     'retrying',
     'scipy',
     'xarray',
+
+    # 'basemap',
+    # basemap is required to use the LiveOcean_BCs module,
+    # but it is difficult to install on HPC systems like jasper, orcinus, et al.
+    # If you plan to use the LiveOcean_BCs module,
+    # please conda install basemap.
 ]
 
 setup(
