@@ -337,22 +337,28 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
         Fraser = 1 - WRIA1
         prop_dict = {
             'Dakota': {
-                'prop': WRIA1 * 0.06, 'i': 362, 'j': 357, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.06, 'i': 362, 'j': 357,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Terrel': {
-                'prop': WRIA1 * 0.04, 'i': 351, 'j': 345, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.04, 'i': 351, 'j': 345,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Nooksack': {
-                'prop': WRIA1 * 0.75, 'i': 321, 'j': 347, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.75, 'i': 321, 'j': 347,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Squallum': {
-                'prop': WRIA1 * 0.05, 'i': 305, 'j': 365, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.05, 'i': 305, 'j': 365,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Lakethingo': {
-                'prop': WRIA1 * 0.06, 'i': 302, 'j': 367, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.06, 'i': 302, 'j': 367,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Chuckanut': {
-                'prop': WRIA1 * 0.04, 'i': 298, 'j': 361, 'di': 1, 'dj': 1, 'depth': 3,
+                'prop': WRIA1 * 0.04, 'i': 298, 'j': 361,
+                'di': 1, 'dj': 1, 'depth': 3,
             },
             'Fraser1': {
                 'prop': Fraser * 0.75, 'i': 414, 'j': 334,
@@ -383,20 +389,20 @@ def get_watershed_prop_dict(watershedname, Fraser_River='short'):
                 'di': 3, 'dj': 1, 'depth': 3}  # Remove original
         elif Fraser_River == 'allArms':
             prop_dict['Fraser1'] = {
-                'prop': Fraser, 'i':500, 'j': 395,
-                'di':1, 'dj':1, 'depth': 3}
+                'prop': Fraser, 'i': 500, 'j': 395,
+                'di': 1, 'dj': 1, 'depth': 3}
             prop_dict['Zero1'] = {
-                 'prop': 0., 'i': 414, 'j': 334,
+                'prop': 0., 'i': 414, 'j': 334,
                 'di': 3, 'dj': 1, 'depth': 3}
-            prop_dict['Zero2b'] = {
+            prop_dict['Fraser2'] = {
                 'prop':  0., 'i': 409, 'j': 315,
                 'di': 2, 'dj': 1, 'depth': 3}
-            prop_dict['Zero3'] = {
+            prop_dict['Fraser3'] = {
                 'prop': 0., 'i': 434, 'j': 318,
                 'di': 2, 'dj': 1, 'depth': 3}
-            prop_dict['Zero4'] = {
+            prop_dict['Fraser4'] = {
                 'prop': 0., 'i': 440, 'j': 323,
-                'di': 1, 'dj': 2, 'depth': 3}                
+                'di': 1, 'dj': 2, 'depth': 3}
         elif Fraser_River != 'short':
             print ('Problem: Fraser Length specified badly')
 
