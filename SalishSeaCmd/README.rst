@@ -2,6 +2,12 @@
 Salish Sea NEMO Command Processor
 *********************************
 
+**Note:** This package has been superseded by the standalone SalishSeaCmd package:
+
+* repo: https://bitbucket.org/salishsea/salishseacmd
+* docs: https://salishseacmd.readthedocs.io/en/latest/
+
+
 The Salish Sea NEMO command processor, ``salishsea``, is a command line tool for doing various operations associated with the Salish Sea NEMO model.
 
 Use ``salishsea --help`` to get a list of the sub-commands available for doing things with and related to Salish Sea NEMO.
