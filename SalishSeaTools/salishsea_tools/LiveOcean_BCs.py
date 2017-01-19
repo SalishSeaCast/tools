@@ -3,7 +3,7 @@
 
 # Nancy Soontiens, August 2016
 # nsoontie@eos.ubc.ca
-
+import logging
 import netCDF4 as nc
 import xarray as xr
 import numpy as np
@@ -22,6 +22,9 @@ from salishsea_tools import gsw_calls
 
 # Special python module provided by Parker MacCready
 from salishsea_tools import LiveOcean_grid as grid
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 # -------Main function to generate boundary files from command line--------
@@ -359,8 +362,9 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
         files = _list_LO_time_series_files(start, end, LO_dir)
         save_dir = bc_dir
     else:
-        print('Preparing 72 hours of Live Ocean results.'
-              'Argument end = {} is ignored'.format(end))
+        logger.info(
+            'Preparing 72 hours of Live Ocean results. '
+            'Argument end = {} is ignored'.format(end))
         files = _list_LO_files_for_nowcast(start, LO_dir)
         save_dir = os.path.join(bc_dir, start)
         if not os.path.isdir(save_dir):
@@ -693,7 +697,7 @@ def _create_sub_file(date, time_unit, var_arrays, var_meta,
              .format(datetime.datetime.today().strftime('%Y-%m-%d')))
     }
     ds.to_netcdf(filename)
-    print('Saved {}'.format(filename))
+    logger.debug('Saved {}'.format(filename))
 
 
 def _convert_TS_to_TEOS10(var_meta, sal, temp):
@@ -726,5 +730,18 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
     return new_meta, sal_ref, temp_cons
 
 
+# Command-line interface to create boundary files from Live Ocean results
+# for use in nowcast, forecast and forecast2
+#
+# See the SalishSeaNowcast.nowcast.workers.make_live_ocean_files worker for
+# the nowcast automation code that does this job
 if __name__ == '__main__':
+    # Configure logging so that information messages appear on stderr
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     create_files_for_nowcast(sys.argv[1])
