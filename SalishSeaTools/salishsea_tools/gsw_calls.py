@@ -44,7 +44,7 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     arg_strings += ');exit'
     # create string for calling matlab
     functioncall = '{}{}'.format(matlab_wrapper_name[:-2], arg_strings)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
+    cmd = ["matlab", "-nodesktop", "-nodisplay", "-nojvm", "-r", functioncall]
     sp.call(cmd)
     # load output from matlab
     output_data = np.loadtxt(output, delimiter=',')
