@@ -2,11 +2,15 @@
 # The function generic_gsw_caller can handle calling any single variable output
 # gsw functions.
 # The _call_... python functions have been replaced by generic_gsw_caller()
+from copy import copy
+import os
+import shlex
+import subprocess as sp
 
 import numpy as np
 
-import os
-import subprocess as sp
+
+MATLAB_CMD = shlex.split('matlab -nodesktop -nodisplay -nojvm -r')
 
 
 def generic_gsw_caller(gsw_function_name, input_vars,
@@ -44,7 +48,8 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     arg_strings += ');exit'
     # create string for calling matlab
     functioncall = '{}{}'.format(matlab_wrapper_name[:-2], arg_strings)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-nojvm", "-r", functioncall]
+    cmd = copy(MATLAB_CMD)
+    cmd.append(functioncall)
     sp.call(cmd)
     # load output from matlab
     output_data = np.loadtxt(output, delimiter=',')
@@ -93,7 +98,8 @@ def _call_p_from_z(z, lat):
     functioncall = 'mw_gsw_p_from_z({},{},{});exit'.format(fname,
                                                            zfile,
                                                            latfile)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
+    cmd = copy(MATLAB_CMD)
+    cmd.append(functioncall)
     sp.call(cmd)
     pressure = np.loadtxt(fname[1:-1], delimiter=',')
     for f in [fname, zfile, latfile]:
@@ -111,7 +117,8 @@ def _call_SR_from_SP(SP):
 
     functioncall = 'mw_gsw_SR_from_SP({},{});exit'.format(fname,
                                                           SPfile,)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
+    cmd = copy(MATLAB_CMD)
+    cmd.append(functioncall)
     sp.call(cmd)
     sal_ref = np.loadtxt(fname[1:-1], delimiter=',')
     for f in [fname, SPfile, ]:
@@ -136,7 +143,8 @@ def _call_SA_from_SP(SP, p, long, lat):
                                                                    pfile,
                                                                    longfile,
                                                                    latfile)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
+    cmd = copy(MATLAB_CMD)
+    cmd.append(functioncall)
     sp.call(cmd)
     SA = np.loadtxt(fname[1:-1], delimiter=',')
 
@@ -160,7 +168,8 @@ def _call_CT_from_PT(SA, PT):
     functioncall = 'mw_gsw_CT_from_pt({},{},{});exit'.format(fname,
                                                              SAfile,
                                                              PTfile)
-    cmd = ["matlab", "-nodesktop", "-nodisplay", "-r", functioncall]
+    cmd = copy(MATLAB_CMD)
+    cmd.append(functioncall)
     sp.call(cmd)
     CT = np.loadtxt(fname[1:-1], delimiter=',')
 
