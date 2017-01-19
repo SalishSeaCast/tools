@@ -3,25 +3,22 @@
 
 # Nancy Soontiens, August 2016
 # nsoontie@eos.ubc.ca
-import logging
-import netCDF4 as nc
-import xarray as xr
-import numpy as np
 import datetime
-
-from scipy import interpolate
-import mpl_toolkits.basemap as Basemap
-
 import glob
+import logging
 import os
-import sys
 import re
 import subprocess as sp
+import sys
 
-from salishsea_tools import gsw_calls
-
-# Special python module provided by Parker MacCready
+import mpl_toolkits.basemap as Basemap
+import netCDF4 as nc
+import numpy as np
+import xarray as xr
 from salishsea_tools import LiveOcean_grid as grid
+from salishsea_tools import gsw_calls
+from scipy import interpolate
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -45,16 +42,14 @@ def create_files_for_nowcast(date, teos_10=True):
     save_dir = '/results/forcing/LiveOcean/boundary_conditions/'
     LO_dir = '/results/forcing/LiveOcean/downloaded/'
 
-    create_LiveOcean_TS_BCs(date, date, '1H', 'daily',
-                            nowcast=True,
-                            teos_10=teos_10,
-                            bc_dir=save_dir, LO_dir=LO_dir)
+    create_LiveOcean_TS_BCs(
+        date, date, '1H', 'daily', nowcast=True, teos_10=teos_10,
+        bc_dir=save_dir, LO_dir=LO_dir)
 
 
 # ---------------------- Interpolation functions ------------------------
 def load_SalishSea_boundary_grid(
-    fname=('/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/'
-           'SalishSea_west_TEOS10.nc'),
+    fname='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc',
 ):
     """Load the Salish Sea NEMO model boundary depth, latitudes and longitudes.
 
@@ -99,16 +94,17 @@ def load_LiveOcean(files, resample_interval='1H'):
         zeta = d.zeta.values[t, :, :]
         z_rho[t, :, :, :] = grid.get_z(G['h'], zeta, S)
     # Add z_rho to dataset
-    zrho_DA = xr.DataArray(z_rho, dims=['ocean_time', 's_rho',
-                                        'eta_rho', 'xi_rho'],
-                           coords={'ocean_time': d.ocean_time.values[:],
-                                   's_rho': d.s_rho.values[:],
-                                   'eta_rho': d.eta_rho.values[:],
-                                   'xi_rho': d.xi_rho.values[:]},
-                           attrs={'units': 'metres',
-                                  'positive': 'up',
-                                  'long_name': 'Depth at s-levels',
-                                  'field': 'z_rho ,scalar'})
+    zrho_DA = xr.DataArray(
+        z_rho,
+        dims=['ocean_time', 's_rho', 'eta_rho', 'xi_rho'],
+        coords={'ocean_time': d.ocean_time.values[:],
+                's_rho': d.s_rho.values[:],
+                'eta_rho': d.eta_rho.values[:],
+                'xi_rho': d.xi_rho.values[:]},
+        attrs={'units': 'metres',
+               'positive': 'up',
+               'long_name': 'Depth at s-levels',
+               'field': 'z_rho ,scalar'})
     d = d.assign(z_rho=zrho_DA)
     # Resample
     d = d.resample(resample_interval, 'ocean_time')
@@ -167,9 +163,8 @@ def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
                 for i in np.arange(var_interp.shape[3]):
                     LO_depths = dataset.z_rho.values[t, :, j, i]
                     var = dataset[var_name].values[t, :, j, i]
-                    var_interp[t, :, j, i] = np.interp(-NEMO_depths,
-                                                       LO_depths, var,
-                                                       left=np.nan)
+                    var_interp[t, :, j, i] = np.interp(
+                        -NEMO_depths, LO_depths, var, left=np.nan)
                     # NEMO depths are positive, LiveOcean are negative
         interps[var_name] = np.ma.masked_invalid(var_interp)
 
@@ -204,10 +199,11 @@ def fill_NaNs_with_nearest_neighbour(data, lons, lats):
                 filled[t, k, mask] = interpolate.griddata(
                     points, valid_data, (lons[mask], lats[mask]),
                     method='nearest'
-                    )
-            except ValueError:  # if the whole depth level is NaN,
-                                # set it equal to the level above
-                filled[t, k, :, :] = filled[t, k-1, :, :]
+                )
+            except ValueError:
+                # if the whole depth level is NaN,
+                # set it equal to the level above
+                filled[t, k, :, :] = filled[t, k - 1, :, :]
     return filled
 
 
@@ -250,21 +246,14 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
                 var_grid = var[t, k, :, :]
                 # First, interpolate with bilinear. The result is masked near
                 # and at grid points where var_grid is masked.
-                var_interp = Basemap.interp(var_grid,
-                                            lonsLO,
-                                            latsLO,
-                                            NEMOlon,
-                                            NEMOlat)
+                var_interp = Basemap.interp(
+                    var_grid, lonsLO, latsLO, NEMOlon, NEMOlat)
                 # Keep track of mask
                 mask[t, k, ...] = var_interp.mask
                 # Next, interpolate using nearest neighbour so that masked
                 # areas can be filled later.
-                interp_nearest[t, k, ...] = Basemap.interp(var_grid,
-                                                           lonsLO,
-                                                           latsLO,
-                                                           NEMOlon,
-                                                           NEMOlat,
-                                                           order=0)
+                interp_nearest[t, k, ...] = Basemap.interp(
+                    var_grid, lonsLO, latsLO, NEMOlon, NEMOlat, order=0)
                 # ave bilinear intepr in var_new
                 var_new[t, k, ...] = var_interp
         # Fill in masked values with nearest neighbour interpolant
@@ -272,9 +261,8 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
         var_new[inds_of_mask] = interp_nearest[inds_of_mask]
         # There are still some nans over pure land areas.
         # Fill those with nearest lateral neighbour or level above
-        interps[var_name] = fill_NaNs_with_nearest_neighbour(var_new,
-                                                             NEMOlon,
-                                                             NEMOlat)
+        interps[var_name] = fill_NaNs_with_nearest_neighbour(
+            var_new, NEMOlon, NEMOlat)
 
     return interps
 
@@ -283,15 +271,12 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
 
 
 def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
-                            nowcast=False, teos_10=True,
-                            basename='LO',
-                            bc_dir=('/results/forcing/LiveOcean/'
-                                    'boundary_condtions/'),
-                            LO_dir=('/results/forcing/LiveOcean/downloaded/'),
-                            NEMO_BC=('/data/nsoontie/MEOPAR/NEMO-forcing/'
-                                     'open_boundaries/west/'
-                                     'SalishSea_west_TEOS10.nc')
-                            ):
+    nowcast=False, teos_10=True,
+    basename='LO',
+    bc_dir='/results/forcing/LiveOcean/boundary_condtions/',
+    LO_dir='/results/forcing/LiveOcean/downloaded/',
+    NEMO_BC='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc'
+):
     """Create a series of Live Ocean boundary condition files in date range
     [start, end] for use in the NEMO model.
 
@@ -379,9 +364,8 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
     # convert to TEOS-10 if necessary
     if teos_10:
         var_meta, lateral_interps['salt'], lateral_interps['temp'] = \
-            _convert_TS_to_TEOS10(var_meta,
-                                  lateral_interps['salt'],
-                                  lateral_interps['temp'])
+            _convert_TS_to_TEOS10(
+                var_meta, lateral_interps['salt'], lateral_interps['temp'])
 
     # divide up data and save into separate files
     _separate_and_save_files(lateral_interps, avg_period, file_frequency,
@@ -419,15 +403,11 @@ def _relocate_files_for_nowcast(start_date, save_dir, basename, bc_dir):
     for d, subdir in zip([1, 2], ['', 'fcst']):
         next_date = rundate + datetime.timedelta(days=d)
         d_file = os.path.join(
-            save_dir, '{}_{}.nc'.format(basename,
-                                        next_date.strftime('y%Ym%md%d')
-                                        )
-            )
+            save_dir, '{}_{}.nc'.format(
+                basename, next_date.strftime('y%Ym%md%d')))
         if os.path.isfile(d_file):
-            os.rename(d_file,
-                      os.path.join(bc_dir,
-                                   subdir,
-                                   os.path.basename(d_file)))
+            os.rename(
+                d_file, os.path.join(bc_dir, subdir, os.path.basename(d_file)))
     if not os.listdir(save_dir):
         os.rmdir(save_dir)
 
@@ -462,7 +442,7 @@ def _list_LO_time_series_files(start, end, LO_dir):
 
     files = []
     for filename in allfiles:
-        if filename >= sstr and filename <= estr:
+        if sstr <= filename <= estr:
             files.append(filename)
 
     # remove files outside of first 24hours for each day
@@ -507,9 +487,10 @@ def _list_LO_files_for_nowcast(rundate, LO_dir):
     return files_return
 
 
-def _separate_and_save_files(interpolated_data, avg_period, file_frequency,
-                             basename, save_dir, LO_to_NEMO_var_map, var_meta,
-                             NEMO_var_arrays, NEMO_BC_file):
+def _separate_and_save_files(
+    interpolated_data, avg_period, file_frequency, basename, save_dir,
+    LO_to_NEMO_var_map, var_meta, NEMO_var_arrays, NEMO_BC_file,
+):
     """Separates and saves variables in interpolated_data into netCDF files
     given a desired file frequency.
 
@@ -566,11 +547,12 @@ def _separate_and_save_files(interpolated_data, avg_period, file_frequency,
     for counter, t in enumerate(interpolated_data['ocean_time']):
         date = datetime.datetime.strptime(str(t.values)[0:-3],
                                           '%Y-%m-%dT%H:%M:%S.%f')
-        conditions = {'yearly': date.year != first.year,
-                      'monthly': date.month != first.month,
-                      # above doesn't work if same months, different year...
-                      'daily':   date.date() != first.date()
-                      }
+        conditions = {
+            'yearly': date.year != first.year,
+            'monthly': date.month != first.month,
+            # above doesn't work if same months, different year...
+            'daily': date.date() != first.date()
+        }
         filenames = {
             'yearly': os.path.join(save_dir,
                                    '{}_y{}.nc'.format(basename, first.year)
@@ -586,27 +568,25 @@ def _separate_and_save_files(interpolated_data, avg_period, file_frequency,
                                                                    first.month,
                                                                    first.day)
                                   )
-            }
+        }
         if conditions[file_frequency]:
-                for LO_name, NEMO_name in LO_to_NEMO_var_map.items():
-                    NEMO_var_arrays[NEMO_name] = \
-                        interpolated_data[LO_name][index:counter, :, :, :]
-                _create_sub_file(first, time_units[avg_period],
-                                 NEMO_var_arrays, var_meta, NEMO_BC_file,
-                                 filenames[file_frequency])
-                first = date
-                index = counter
-        elif counter == interpolated_data['ocean_time'].values.shape[0]-1:
-                for LO_name, NEMO_name in LO_to_NEMO_var_map.items():
-                    NEMO_var_arrays[NEMO_name] = \
-                        interpolated_data[LO_name][index:, :, :, :]
-                _create_sub_file(first, time_units[avg_period],
-                                 NEMO_var_arrays, var_meta, NEMO_BC_file,
-                                 filenames[file_frequency])
+            for LO_name, NEMO_name in LO_to_NEMO_var_map.items():
+                NEMO_var_arrays[NEMO_name] = \
+                    interpolated_data[LO_name][index:counter, :, :, :]
+            _create_sub_file(
+                first, time_units[avg_period], NEMO_var_arrays, var_meta,
+                NEMO_BC_file, filenames[file_frequency])
+            first = date
+            index = counter
+        elif counter == interpolated_data['ocean_time'].values.shape[0] - 1:
+            for LO_name, NEMO_name in LO_to_NEMO_var_map.items():
+                NEMO_var_arrays[NEMO_name] = \
+                    interpolated_data[LO_name][index:, :, :, :]
+            _create_sub_file(first, time_units[avg_period], NEMO_var_arrays,
+                             var_meta, NEMO_BC_file, filenames[file_frequency])
 
 
-def _create_sub_file(date, time_unit, var_arrays, var_meta,
-                     NEMO_BC, filename):
+def _create_sub_file(date, time_unit, var_arrays, var_meta, NEMO_BC, filename):
     """Save a netCDF file for boundary data stored in var_arrays.
 
     :arg date: Date from which time in var_arrays is measured.
@@ -645,32 +625,31 @@ def _create_sub_file(date, time_unit, var_arrays, var_meta,
     # Now iterate through remaining variables in old BC file and add to dataset
     for key in keys:
         var = f.variables[key]
-        temp_array = xr.DataArray(var,
-                                  name=key,
-                                  dims=list(var.dimensions),
-                                  attrs={att: var.getncattr(att)
-                                         for att in var.ncattrs()}
-                                  )
+        temp_array = xr.DataArray(
+            var,
+            name=key,
+            dims=list(var.dimensions),
+            attrs={att: var.getncattr(att) for att in var.ncattrs()})
         ds = xr.merge([ds, temp_array])
     # Add better units information nbidta etc
     # for varname in ['nbidta', 'nbjdta', 'nbrdta']:
     #    ds[varname].attrs['units'] = 'index'
     # Now add the time-dependent model variables
     for var_name, var_array in var_arrays.items():
-        data_array = xr.DataArray(var_array,
-                                  name=var_name,
-                                  dims=['time_counter', 'deptht', 'yb', 'xbT'],
-                                  coords={'deptht': (['deptht'], depBC[:]),
-                                          'time_counter':
-                                          np.arange(var_array.shape[0])
-                                          },
-                                  attrs=var_meta[var_name]
-                                  )
+        data_array = xr.DataArray(
+            var_array,
+            name=var_name,
+            dims=['time_counter', 'deptht', 'yb', 'xbT'],
+            coords={
+                'deptht': (['deptht'], depBC[:]),
+                'time_counter': np.arange(var_array.shape[0])
+            },
+            attrs=var_meta[var_name])
         ds = xr.merge([ds, data_array])
     # Fix metadata on time_counter
-    ds['time_counter'].attrs['units'] =\
+    ds['time_counter'].attrs['units'] = \
         '{} since {}'.format(time_unit, date.strftime('%Y-%m-%d %H:%M:%S'))
-    ds['time_counter'].attrs['time_origin'] =\
+    ds['time_counter'].attrs['time_origin'] = \
         date.strftime('%Y-%m-%d %H:%M:%S')
     ds['time_counter'].attrs['long_name'] = 'Time axis'
     # Add metadata for deptht
