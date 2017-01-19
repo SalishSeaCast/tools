@@ -348,8 +348,8 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
         save_dir = bc_dir
     else:
         logger.info(
-            'Preparing 72 hours of Live Ocean results. '
-            'Argument end = {} is ignored'.format(end))
+            'Preparing 48 hours of Live Ocean results. '
+            'Argument end={} is ignored'.format(end))
         files = _list_LO_files_for_nowcast(start, LO_dir)
         save_dir = os.path.join(bc_dir, start)
         if not os.path.isdir(save_dir):
