@@ -2,7 +2,7 @@
 # The function generic_gsw_caller can handle calling any single variable output
 # gsw functions.
 # The _call_... python functions have been replaced by generic_gsw_caller()
-from copy import copy
+import logging
 import os
 import shlex
 import subprocess as sp
@@ -10,11 +10,14 @@ import subprocess as sp
 import numpy as np
 
 
-MATLAB_CMD = shlex.split('matlab -nodesktop -nodisplay -nojvm -r')
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
-def generic_gsw_caller(gsw_function_name, input_vars,
-                       matlab_gsw_dir='/ocean/rich/home/matlab/gsw3'):
+def generic_gsw_caller(
+    gsw_function_name, input_vars,
+    matlab_gsw_dir='/ocean/rich/home/matlab/gsw3',
+):
     """ A generic function for calling matlab gsw functions. Only works with
     gsw functions that have a single variable as output.
 
@@ -48,9 +51,7 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     arg_strings += ');exit'
     # create string for calling matlab
     functioncall = '{}{}'.format(matlab_wrapper_name[:-2], arg_strings)
-    cmd = copy(MATLAB_CMD)
-    cmd.append(functioncall)
-    sp.call(cmd)
+    _run_matlab(functioncall)
     # load output from matlab
     output_data = np.loadtxt(output, delimiter=',')
     # remove tmp files
@@ -61,8 +62,9 @@ def generic_gsw_caller(gsw_function_name, input_vars,
     return output_data.reshape(shape)
 
 
-def _create_matlab_wrapper(gsw_function_name, outfile,
-                           input_files, matlab_gsw_dir):
+def _create_matlab_wrapper(
+    gsw_function_name, outfile, input_files, matlab_gsw_dir,
+):
     # Create a matlab wrapper file
     wrapper_file_name = 'mw_{}'.format(gsw_function_name)
     f = open(wrapper_file_name, 'w')
@@ -86,8 +88,25 @@ def _create_matlab_wrapper(gsw_function_name, outfile,
     return wrapper_file_name
 
 
-def _call_p_from_z(z, lat):
+def _run_matlab(functioncall):
+    cmd = shlex.split('matlab -nosplash -nodesktop -nodisplay -nojvm -r')
+    cmd.append(functioncall)
+    logger.debug('executing {}'.format(cmd))
+    try:
+        cmd_output = sp.check_output(
+            cmd, stderr=sp.STDOUT, universal_newlines=True)
+    except sp.CalledProcessError as e:
+        logger.error(
+            'matlab command failed with return code {.returncode}'.format(e))
+        cmd_output = e.output
+    finally:
+        for line in cmd_output.splitlines():
+            line = line.strip()
+            if line:
+                logger.debug(line)
 
+
+def _call_p_from_z(z, lat):
     fname = "'pout'"
     zfile = "'zfile'"
     latfile = "'latfile'"
@@ -98,9 +117,7 @@ def _call_p_from_z(z, lat):
     functioncall = 'mw_gsw_p_from_z({},{},{});exit'.format(fname,
                                                            zfile,
                                                            latfile)
-    cmd = copy(MATLAB_CMD)
-    cmd.append(functioncall)
-    sp.call(cmd)
+    _run_matlab(functioncall)
     pressure = np.loadtxt(fname[1:-1], delimiter=',')
     for f in [fname, zfile, latfile]:
         os.remove(f[1:-1])
@@ -108,7 +125,6 @@ def _call_p_from_z(z, lat):
 
 
 def _call_SR_from_SP(SP):
-
     fname = "'SRout'"
     SPfile = "'SPfile'"
     for f, var in zip([SPfile, ], [SP, ]):
@@ -117,9 +133,7 @@ def _call_SR_from_SP(SP):
 
     functioncall = 'mw_gsw_SR_from_SP({},{});exit'.format(fname,
                                                           SPfile,)
-    cmd = copy(MATLAB_CMD)
-    cmd.append(functioncall)
-    sp.call(cmd)
+    _run_matlab(functioncall)
     sal_ref = np.loadtxt(fname[1:-1], delimiter=',')
     for f in [fname, SPfile, ]:
         os.remove(f[1:-1])
@@ -127,7 +141,6 @@ def _call_SR_from_SP(SP):
 
 
 def _call_SA_from_SP(SP, p, long, lat):
-
     fname = "'SAout'"
     SPfile = "'SPfile'"
     pfile = "'pfile'"
@@ -143,9 +156,7 @@ def _call_SA_from_SP(SP, p, long, lat):
                                                                    pfile,
                                                                    longfile,
                                                                    latfile)
-    cmd = copy(MATLAB_CMD)
-    cmd.append(functioncall)
-    sp.call(cmd)
+    _run_matlab(functioncall)
     SA = np.loadtxt(fname[1:-1], delimiter=',')
 
     for f in [fname, SPfile, pfile,
@@ -156,7 +167,6 @@ def _call_SA_from_SP(SP, p, long, lat):
 
 
 def _call_CT_from_PT(SA, PT):
-
     fname = "'CTout'"
     SAfile = "'SAfile'"
     PTfile = "'PTfile'"
@@ -168,9 +178,7 @@ def _call_CT_from_PT(SA, PT):
     functioncall = 'mw_gsw_CT_from_pt({},{},{});exit'.format(fname,
                                                              SAfile,
                                                              PTfile)
-    cmd = copy(MATLAB_CMD)
-    cmd.append(functioncall)
-    sp.call(cmd)
+    _run_matlab(functioncall)
     CT = np.loadtxt(fname[1:-1], delimiter=',')
 
     for f in [fname, SAfile, PTfile]:
