@@ -270,9 +270,9 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
 # ------------------ Creation of files ------------------------------
 
 
-def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
-    nowcast=False, teos_10=True,
-    basename='LO',
+def create_LiveOcean_TS_BCs(
+    start, end, avg_period, file_frequency,
+    nowcast=False, teos_10=True, basename='LO',
     bc_dir='/results/forcing/LiveOcean/boundary_condtions/',
     LO_dir='/results/forcing/LiveOcean/downloaded/',
     NEMO_BC='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc'
@@ -322,6 +322,9 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
 
     :arg str NEMO_BC: path to an example NEMO boundary condition file for
                       loading boundary info.
+
+    :returns: Boundary conditions files that were created.
+    :rtype: list
     """
     # Create metadeta for temperature and salinity
     var_meta = {'vosaline': {'grid': 'SalishSea2',
@@ -368,9 +371,9 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
                 var_meta, lateral_interps['salt'], lateral_interps['temp'])
 
     # divide up data and save into separate files
-    _separate_and_save_files(lateral_interps, avg_period, file_frequency,
-                             basename, save_dir, LO_to_NEMO_var_map, var_meta,
-                             NEMO_var_arrays, NEMO_BC)
+    _separate_and_save_files(
+        lateral_interps, avg_period, file_frequency, basename, save_dir,
+        LO_to_NEMO_var_map, var_meta, NEMO_var_arrays, NEMO_BC)
     # make time_counter the record dimension using ncks and compress
     files = glob.glob(os.path.join(save_dir, '*.nc'))
     for f in files:
@@ -380,12 +383,16 @@ def create_LiveOcean_TS_BCs(start, end, avg_period, file_frequency,
         sp.call(cmd)
     # move files around
     if nowcast:
-        _relocate_files_for_nowcast(start, save_dir, basename, bc_dir)
+        filepaths = _relocate_files_for_nowcast(
+            start, save_dir, basename, bc_dir)
+    else:
+        filepaths = files
+    return filepaths
 
 
 def _relocate_files_for_nowcast(start_date, save_dir, basename, bc_dir):
     """Organize the files for use in the nowcast framework.
-    Orginally, files are save in bc_dir/start/basename_y...nc
+    Originally, files are save in bc_dir/start/basename_y...nc
     For the nowcast system we want file start_date+1 in bc_dir and
     start_date+2 in bc_dir/fcst
 
@@ -398,7 +405,10 @@ def _relocate_files_for_nowcast(start_date, save_dir, basename, bc_dir):
 
     :arg str bc_dir: The directory to save the bc files.
 
+    :returns: Final file paths.
+    :rtype: list
     """
+    filepaths = []
     rundate = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     for d, subdir in zip([1, 2], ['', 'fcst']):
         next_date = rundate + datetime.timedelta(days=d)
@@ -406,10 +416,12 @@ def _relocate_files_for_nowcast(start_date, save_dir, basename, bc_dir):
             save_dir, '{}_{}.nc'.format(
                 basename, next_date.strftime('y%Ym%md%d')))
         if os.path.isfile(d_file):
-            os.rename(
-                d_file, os.path.join(bc_dir, subdir, os.path.basename(d_file)))
+            filepath = os.path.join(bc_dir, subdir, os.path.basename(d_file))
+            os.rename(d_file, filepath)
+            filepaths.append(filepath)
     if not os.listdir(save_dir):
         os.rmdir(save_dir)
+    return filepaths
 
 
 def _list_LO_time_series_files(start, end, LO_dir):
