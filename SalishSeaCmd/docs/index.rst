@@ -26,25 +26,3 @@ Salish Sea NEMO Command Processor
 
     * repo: https://bitbucket.org/salishsea/salishseacmd
     * docs: https://salishseacmd.readthedocs.io/en/latest/
-
-
-The Salish Sea NEMO command processor,
-:program:`salishsea`,
-is a command-line tool for doing various operations associated with the :ref:`SalishSeaNEMO` model.
-It is provided by the :kbd:`SalishSeaCmd` package in the :ref:`tools-repo` repository.
-
-The :kbd:`SalishSeaCmd` package is a Python 3 package.
-It is developed and tested under Python 3.5 and should work with that and later versions of Python.
-
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   installation
-   breaking_changes
-   subcommands
-   run_description_file
-   api
-   development
