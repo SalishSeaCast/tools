@@ -22,8 +22,13 @@ from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
+import datetime
+import glob
+import os
+import netCDF4 as nc
 
 from salishsea_tools import nc_tools
+from salishsea_tools import geo_tools
 
 # For convenience we import the wind speed conversion factors
 # and functions and wind direction manipulation functions so that they
@@ -43,7 +48,7 @@ __all__ = [
     'calc_wind_avg_at_point',
     'M_PER_S__KM_PER_HR', 'M_PER_S__KNOTS', 'mps_kph', 'mps_knots',
     'wind_to_from', 'bearing_heading',
-    'wind_speed_dir',
+    'wind_speed_dir', 'get_weather_filenames', 'get_model_winds',
 ]
 
 
@@ -129,3 +134,100 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
     wind_avg = namedtuple('wind_avg', 'u, v')
     return wind_avg(u_avg, v_avg)
+
+def get_weather_filenames(t_orig, t_final, weather_path):
+    """Gathers a list of "Operational" atmospheric model filenames in a
+    specifed date range.
+
+    :arg datetime t_orig: The beginning of the date range of interest.
+
+    :arg datetime t_final: The end of the date range of interest.
+
+    :arg str weather_path: The directory where the weather forcing files
+                           are stored.
+
+    :returns: list of files names (files) from the Operational model.
+    """
+    numdays = (t_final - t_orig).days
+    dates = [
+        t_orig + datetime.timedelta(days=num)
+        for num in range(0, numdays + 1)]
+    dates.sort()
+
+    allfiles = glob.glob(os.path.join(weather_path, 'ops_y*'))
+    sstr = os.path.join(weather_path, dates[0].strftime('ops_y%Ym%md%d.nc'))
+    estr = os.path.join(weather_path, dates[-1].strftime('ops_y%Ym%md%d.nc'))
+    files = []
+    for filename in allfiles:
+        if filename >= sstr:
+            if filename <= estr:
+                files.append(filename)
+    files.sort(key=os.path.basename)
+
+    return files
+
+
+def get_model_winds(lon, lat, t_orig, t_final, weather_path):
+    """Returns meteorological fields for the "Operational" model at a given
+    longitude and latitude over a date range.
+
+    :arg float lon: The specified longitude.
+
+    :arg float lat: The specified latitude.
+
+    :arg datetime t_orig: The beginning of the date range of interest.
+
+    :arg datetime t_final: The end of the date range of interest.
+
+    :arg str weather_path: The directory where the weather forcing files
+                           are stored.
+
+    :returns: wind speed (wind), wind direction (direc), time (t),
+              pressure (pr), temperature (tem), solar radiation (sol),
+              thermal radiation (the),humidity (qr), precipitation (pre).
+              wind speed: m/s (confirm this)
+              wind direction: direction wind is GOING, RELATIVE TO EAST,
+              WITH POSITIVE DIRECTION CCW
+    """
+
+    # Weather file names
+    files = get_weather_filenames(t_orig, t_final, weather_path)
+    weather = nc.Dataset(files[0])
+    Y = weather.variables['nav_lat'][:]
+    X = weather.variables['nav_lon'][:] - 360
+
+    [j, i] = geo_tools.find_closest_model_point(lon, lat, X, Y, grid="GEM2.5")
+
+    wind = np.array([])
+    direc = np.array([], 'double')
+    t = np.array([])
+    pr = np.array([])
+    sol = np.array([])
+    the = np.array([])
+    pre = np.array([])
+    tem = np.array([])
+    qr = np.array([])
+    for f in files:
+        G = nc.Dataset(f)
+        u = G.variables['u_wind'][:, j, i]
+        v = G.variables['v_wind'][:, j, i]
+        pr = np.append(pr, G.variables['atmpres'][:, j, i])
+        sol = np.append(sol, G.variables['solar'][:, j, i])
+        qr = np.append(qr, G.variables['qair'][:, j, i])
+        the = np.append(the, G.variables['therm_rad'][:, j, i])
+        pre = np.append(pre, G.variables['precip'][:, j, i])
+        tem = np.append(tem, G.variables['tair'][:, j, i])
+        speed = np.sqrt(u ** 2 + v ** 2)
+        wind = np.append(wind, speed)
+
+        d = np.arctan2(v, u)
+        d = np.rad2deg(d + (d < 0) * 2 * np.pi)
+        direc = np.append(direc, d)
+
+        ts = G.variables['time_counter']
+        # There is no time_origin attribute in OP files; this is hard coded.
+        torig = datetime.datetime(1970, 1, 1)
+        for ind in np.arange(ts.shape[0]):
+            t = np.append(t, torig + datetime.timedelta(seconds=ts[ind]))
+    return wind, direc, t, pr, tem, sol, the, qr, pre
+
