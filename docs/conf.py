@@ -20,7 +20,6 @@ import sys
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../SalishSeaNowcast'))
-sys.path.insert(0, os.path.abspath('../SalishSeaCmd'))
 sys.path.insert(0, os.path.abspath('../SalishSeaTools'))
 
 
@@ -44,10 +43,29 @@ intersphinx_mapping = {
     'docs':
         ('http://salishsea-meopar-docs.readthedocs.org/en/latest/', None),
     'salishseanowcast':
-        ('http://salishsea-nowcast.readthedocs.io/en/nemo_nowcast/', None),
+        ('http://salishsea-nowcast.readthedocs.io/en/latest/', None),
 }
 
 todo_include_todos = True
+
+autodoc_mock_imports = [
+    'angles',
+    'arrow',
+    'driftwood',
+    'driftwood.formatters',
+    'netCDF4',
+    'mpl_toolkits.basemap',
+    'pandas',
+    'paramiko',
+    'retrying',
+    'scipy',
+    'scipy.interpolate',
+    'scipy.io',
+    'scipy.optimize',
+    'xarray',
+    'yaml',
+    'zmq',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
