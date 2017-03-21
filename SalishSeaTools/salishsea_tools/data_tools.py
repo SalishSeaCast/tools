@@ -351,6 +351,7 @@ def onc_json_to_dataset(onc_json, teos=True):
                 'sampleTime': [arrow.get(d['sampleTime']).datetime
                                for d in sensor['data']],
             },
+            dims=('sampleTime',),
             attrs={
                 'qaqcFlag': np.array([d['qaqcFlag'] for d in sensor['data']]),
                 'sensorName': sensor['sensorName'],
