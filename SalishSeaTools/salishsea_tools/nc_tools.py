@@ -403,6 +403,26 @@ def load_NEMO_from_path(
     return NEMO
 
 
+def make_filename_list(timerange, qty, model='nowcast', resolution='h',
+                       path='/results/SalishSea'):
+    """
+    """
+
+    date, enddate = map(dparser.parse, timerange)
+
+    filenames = []
+
+    while date < enddate:
+        datestr1 = date.strftime('%d%b%y').lower()
+        datestr2 = date.strftime('%Y%m%d')
+        filename = 'SalishSea_1{}_{}_{}_grid_{}.nc'.format(
+            resolution, datestr2, datestr2, qty)
+        filenames.append(os.path.join(path, model, datestr1, filename))
+        date = date + timedelta(days=1)
+    
+    return filenames
+
+
 def dataset_from_path(path, *args, **kwargs):
     """Return a dataset constructed from the file given by :kbd:`path`.
 

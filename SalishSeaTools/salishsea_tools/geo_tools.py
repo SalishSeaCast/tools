@@ -175,6 +175,9 @@ def find_closest_model_point(
     )
 
     if len(j_list) == 0:
+        # Added by BMM March 2017
+        # If including points outside of domain:
+        # return np.nan, np.nan
         raise ValueError(
             'No model point found. tol_lon/tol_lat too small or '
             'lon/lat outside of domain.')
