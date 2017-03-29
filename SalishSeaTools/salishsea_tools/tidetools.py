@@ -1799,13 +1799,17 @@ def filter_timeseries(record, winlen=39, method='box'):
         W = min(i, w, record_length-i-1)
         Weight = weight[:W]
         Weight = np.append(Weight[::-1], np.append(centerval, Weight))
-        Weight = (Weight/sum(Weight, centerval))
+        if sum(Weight) != 0:
+            Weight = (Weight/sum(Weight))
         
         # Expand weight dims so it can operate on record window
         for dim in range(record.ndim - 1):
             Weight = Weight[:, np.newaxis]
         
         # Apply mean over window length
-        filtered[i, ...] = np.sum(record[i-W:i+W+1, ...] * Weight, axis=0)
+        if W > 0:
+            filtered[i, ...] = np.sum(record[i-W:i+W+1, ...] * Weight, axis=0)
+        else:
+            filtered[i, ...] = record[i, ...]
     
     return filtered
