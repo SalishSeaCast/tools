@@ -170,11 +170,13 @@ PLACES = {
     'Halibut Bank': {
         'lon lat': (-123.72, 49.34),
         'NEMO grid ji': (503, 261),
+        'GEM2.5 grid ji': (149, 141),
         'EC buoy number': 46146,
     },
     'Sentry Shoal': {
         'lon lat': (-125.0, 49.92),
         'NEMO grid ji': (707, 145),
+        'GEM2.5 grid ji': (183, 107),
         'EC buoy number': 46131,
     }
 }
