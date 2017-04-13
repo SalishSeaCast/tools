@@ -22,11 +22,14 @@ import numpy as np
 
 def put_watershed_into_runoff(
         rivertype, watershedname, flux, runoff, run_depth, run_temp,
-        Fraser_River='short'):
+        Fraser_River='short', use_prop_dict=False, prop_dict=None):
     """Fill the river file with the rivers of one watershed.
     """
     # Get the proportion that each river occupies in the watershed
-    pd = get_watershed_prop_dict(watershedname, Fraser_River=Fraser_River)
+    if not use_prop_dict:
+        pd = get_watershed_prop_dict(watershedname, Fraser_River=Fraser_River)
+    else:
+        pd = prop_dict
     for key in pd:
         river = pd[key]
         if rivertype == 'constant':
@@ -660,20 +663,19 @@ def check_sum(runoff_orig, runoff_new, flux):
     """Check that the runoff adds up to what it should.
 """
     e1t, e2t = get_bathy_cell_size()
-    print(
-        (np.sum(runoff_new) - runoff_orig.sum())
-        * e1t[0, 450, 200] * e2t[0, 450, 200] / 1000.,
-        flux)
+    new_flux = (np.sum(runoff_new * e1t * e2t)/1000.
+                -np.sum(runoff_orig * e1t * e2t)/1000.)
+    print (new_flux, flux, new_flux/flux)
 
 
 def check_sum_monthly(runoff_orig, runoff_new, flux):
     """Check that the runoff adds up per month to what it should.
     """
     e1t, e2t = get_bathy_cell_size()
-    print(
-        (np.sum(runoff_new) / 12 - runoff_orig.sum() / 12)
-        * e1t[0, 450, 200] * e2t[0, 450, 200] / 1000.,
-        np.mean(flux))
+    new_flux = (np.sum(runoff_new * e1t * e2t)/1000.
+                -np.sum(runoff_orig * e1t * e2t)/1000.)
+    print (new_flux/12., np.sum(flux)/12., new_flux/np.sum(flux))
+
 
 
 def rivertemp(month):
