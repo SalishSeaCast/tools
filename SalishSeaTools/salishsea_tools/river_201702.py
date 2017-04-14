@@ -391,7 +391,7 @@ prop_dict['evi_n'] = {
     'Creek3': {
         'prop': 23 / totalarea, 'i': 799, 'j': 127, 'di': 1, 'dj': 1, 'depth': 1},
     'Elk': {
-        'prop': 23 / totalarea, 'i': 806, 'j': 126, 'di': 1, 'dj': 1, 'depth': 1},
+        'prop': 23 / totalarea, 'i': 808, 'j': 126, 'di': 1, 'dj': 1, 'depth': 1},
     'Slab': {
         'prop': 12 / totalarea, 'i': 813, 'j': 128, 'di': 1, 'dj': 1, 'depth': 1},
     'Pye': {
