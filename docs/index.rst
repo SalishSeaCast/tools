@@ -42,10 +42,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   SalishSeaCmd/index
    SalishSeaTools/index
-   SalishSeaNowcast/index
    SOGTools/index
+   SalishSeaCmd/index
+   SalishSeaNowcast/index
    netcdf4/index
    erddap/ERDDAP_datasets.ipynb
    visualisation/visualization_workflows_xarray.ipynb
