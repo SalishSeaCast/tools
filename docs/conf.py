@@ -65,6 +65,7 @@ autodoc_mock_imports = [
     'xarray',
     'yaml',
     'zmq',
+    'zmq.eventloop',
     'zmq.utils',
 ]
 
