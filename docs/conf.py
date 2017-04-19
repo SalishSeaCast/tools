@@ -65,6 +65,7 @@ autodoc_mock_imports = [
     'xarray',
     'yaml',
     'zmq',
+    'zmq.utils',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
