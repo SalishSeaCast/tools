@@ -66,6 +66,7 @@ autodoc_mock_imports = [
     'yaml',
     'zmq',
     'zmq.eventloop',
+    'zmq.eventloop.ioloop',
     'zmq.utils',
 ]
 
