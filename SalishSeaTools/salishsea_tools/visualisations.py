@@ -112,6 +112,7 @@ def contour_thalweg(
         cbar = plt.colorbar(mesh, ax=axes)
     else:
         cbar = plt.colorbar(mesh, ax=axes, **cbar_args)
+    axes.invert_yaxis()
     axes.set_ylabel('Depth [m]')
     return cbar
 
