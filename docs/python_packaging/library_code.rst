@@ -40,9 +40,12 @@ See :ref:`PythonSourceCodeCheckingViaFlake8` for details of how to set that up f
 If you are looking for examples of the coding style preferred in Salish Sea project modules,
 checkout out the code in these packages:
 
-* :ref:`SalishSeaCmdProcessor`
-* :ref:`SalishSeaNowcastPackage`
+* `Salish Sea NEMO Command Processor`_
+* `SalishSeaNowcast Package`_
 * :ref:`Marlin`
+
+.. _Salish Sea NEMO Commandd Processor: https://bitbucket.org/salishsea/salishseacmd
+.. _SalishSeaNowcast Package: https://bitbucket.org/salishsea/salishseanowcast
 
 
 Python 3
@@ -70,7 +73,7 @@ Standard Copyright Header Block
 
 Every Python library module show start with our standard copyright notice::
 
-  # Copyright 2013-2016 The Salish Sea MEOPAR contributors
+  # Copyright 2013-2017 The Salish Sea MEOPAR contributors
   # and The University of British Columbia
 
   # Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,7 +100,7 @@ The :ref:`salishsea_tools.namelist` is a (rare) example of differently licensed 
 
 Sphinx documentation files in the :ref:`tools-repo` repo should also start with the same standard copyright notice::
 
-  .. Copyright 2013-2016 The Salish Sea MEOPAR conttributors
+  .. Copyright 2013-2017 The Salish Sea MEOPAR conttributors
   .. and The University of British Columbia
   ..
   .. Licensed under the Apache License, Version 2.0 (the "License");
