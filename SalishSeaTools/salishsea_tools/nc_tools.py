@@ -607,7 +607,7 @@ def xarraytime_to_datetime(xarraytime):
     """
     """
     
-    datetime_obj = pd.Timestamp(xarraytime.to_pandas()).to_datetime()
+    datetime_obj = pd.Timestamp(xarraytime.to_pandas()).to_pydatetime()
     
     return datetime_obj
 
