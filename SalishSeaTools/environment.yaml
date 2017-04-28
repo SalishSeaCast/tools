@@ -23,6 +23,7 @@ dependencies:
 - bottleneck
 - coverage
 - ipython
+- jupyter_client
 - matplotlib
 - netCDF4
 - numpy
@@ -44,3 +45,4 @@ dependencies:
   - ipdb
   - nbsphinx
   - retrying
+  - sphinx_rtd_theme
