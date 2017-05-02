@@ -209,142 +209,6 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
     return newvar
 
 
-def plot_tracers(ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1],
-                 cmap='jet', zorder=0):
-    """Plot a horizontal slice of NEMO tracers as filled contours.
-    
-    :arg time_ind: Time index to plot from timeseries
-        (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
-    :type time_ind: str or :py:class:`datetime.datetime`
-    
-    :arg ax: Axis object
-    :type ax: :py:class:`matplotlib.pyplot.axes`
-    
-    :arg qty: Tracer quantity to be plotted (one of 'salinity', 'temperature')
-    :type qty: str
-    
-    :arg DATA: NEMO model results dataset
-    :type DATA: :py:class:`xarray.Dataset`
-    
-    :arg clim: Contour limits and spacing (ex. [min, max, spacing])
-    :type clim: list or tuple of float
-    
-    :arg cmap: Colormap
-    :type cmap: str
-    
-    :arg zorder: Plotting layer specifier
-    :type zorder: integer
-    
-    :returns: Filled contour object
-    :rtype: :py:class:`matplotlib.contour.QuadContourSet`
-    """
-    
-    # Determine coordinate system
-    if   coords is 'map' : x, y = 'longitude', 'latitude'
-    elif coords is 'grid': x, y = 'gridX'    , 'gridY'
-    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
-    
-    # Determine orientation based on indexing
-    if   not DATA.gridY.shape: horz, vert = x, 'depth'
-    elif not DATA.gridX.shape: horz, vert = y, 'depth'
-    else:                      horz, vert = x, y
-    
-    # Clear previous salinity contours
-    if C is not None:
-        for C_obj in C.collections: C_obj.remove()
-    
-    # NEMO horizontal tracers
-    C = ax.contourf(DATA[horz], DATA[vert], DATA[qty].where(DATA.mask),
-                    range(clim[0], clim[1], clim[2]), cmap=cmap, zorder=zorder)
-    
-    return C
-
-
-def plot_velocity(
-        ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
-        mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
-):
-    """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
-    Accepts subsampled u and v fields via the **processed** keyword
-    argument.
-    
-    :arg time_ind: Time index to plot from timeseries
-        (ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
-    :type time_ind: str or :py:class:`datetime.datetime`
-    
-    :arg ax: Axis object
-    :type ax: :py:class:`matplotlib.pyplot.axes`
-    
-    :arg DATA: Model results dataset
-    :type DATA: :py:class:`xarray.Dataset`
-    
-    :arg model: Specify model (either NEMO or GEM)
-    :type model: str
-    
-    :arg spacing: Vector spacing
-    :type spacing: integer
-    
-    :arg processed: If True, only coordinate variables will be spaced
-    :type processed: bool
-    
-    :arg color: Vector face color
-    :type color: str
-    
-    :arg scale: Vector length (factor of 1/scale)
-    :type scale: integer
-    
-    :arg headwidth: Vector width
-    :type headwidth: integer
-    
-    :arg zorder: Plotting layer specifier
-    :type zorder: integer
-    
-    :returns: Matplotlib quiver object
-    :rtype: :py:class:`matplotlib.quiver.Quiver`
-    """
-    
-    # Determine whether to space vectors
-    spc = spacing
-    if processed: spc = 1
-    
-    # Mask and space velocity arrays
-    if model is 'NEMO':
-        if mask:
-            u = DATA.u_vel.where(DATA.mask)[::spc, ::spc]
-            v = DATA.v_vel.where(DATA.mask)[::spc, ::spc]
-        else:
-            u, v = DATA.u_vel[::spc, ::spc], DATA.v_vel[::spc, ::spc]
-    elif model is 'GEM':
-        if mask:
-            u = DATA.u_wind.where(DATA.mask)[::spc, ::spc]
-            v = DATA.v_wind.where(DATA.mask)[::spc, ::spc]
-        else:
-            u, v = DATA.u_wind[::spc, ::spc], DATA.v_wind[::spc, ::spc]
-    else:
-        raise ValueError('Unknown model type: {}'.format(model))
-    
-    if Q is not None: # --- Update vectors only
-        
-        # Update velocity vectors
-        Q.set_UVC(u, v)
-    
-    else: # --------------- Plot new vector instances
-        
-        # Determine coordinate system
-        if coords is 'map' :
-            x = DATA.longitude[::spacing, ::spacing]
-            y = DATA.latitude[ ::spacing, ::spacing]
-        elif coords is 'grid':
-            x, y = DATA.gridX[::spacing], DATA.gridY[::spacing]
-        else: raise ValueError('Unknown coordinate system: {}'.format(coords))
-        
-        # Plot velocity quiver
-        Q = ax.quiver(x, y, u, v, color=color, edgecolor='k', scale=scale,
-                      linewidth=linewidth, headwidth=headwidth, zorder=zorder)
-    
-    return Q
-
-
 def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
     
@@ -446,34 +310,68 @@ def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
 
 
 def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
+    """ Boilerplate figure code like coastline, aspect ratio, axis lims, etc.
+    
+    .. note::
+        
+        This function is deprecated.
+        Call plot formatting functions individually instead.
     """
+    
+    warnings.warn(
+        "create_figure has been deprecated. Call plot formatting functions"
+        + " individually instead.",
+        DeprecationWarning
+    )
+    
+    out = None
+    
+    return out
+
+
+def plot_tracers(ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1],
+                 cmap='jet', zorder=0):
+    """Plot a horizontal slice of NEMO tracers as filled contours.
+    
+    .. note::
+        
+        This function is deprecated.
+        Plot NEMO results directly using `matplotlib.pyplot.contourf` or
+        equivalent instead.
     """
-    # Determine coordinate system
-    if   coords is 'map' : x, y = 'Longitude', 'Latitude'
-    elif coords is 'grid': x, y = 'GridX'    , 'GridY'
-    else: raise ValueError('Unknown coordinate system: {}'.format(coords))
     
-    # Determine orientation based on indexing
-    if   not DATA.gridY.shape: # Cross-strait slice
-        viz_tools.plot_boundary(ax, DATA, coords=coords)
-        ax.set_xlabel(x)
-        ax.set_ylabel('Depth [m]')
+    warnings.warn(
+        "plot_tracers has been deprecated. Plot NEMO results directly using"
+        + " matplotlib.pyplot.contourf or equivalent instead.",
+        DeprecationWarning
+    )
     
-    elif not DATA.gridX.shape: # Along-strait slice
-        viz_tools.plot_boundary(ax, DATA, coords=coords)
-        ax.set_xlabel(y)
-        ax.set_ylabel('Depth [m]')
+    out = None
     
-    else: # Plan view
-        viz_tools.plot_land_mask(ax, DATA, coords=coords, color='burlywood', server='ERDDAP')
-        viz_tools.plot_coastline(ax, DATA, coords=coords, server='ERDDAP')
-        viz_tools.set_aspect(ax)
-        ax.set_xlabel(x)
-        ax.set_ylabel(y)
-        ax.grid()
+    return out
+
+
+def plot_velocity(
+        ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
+        mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
+):
+    """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
+    Accepts subsampled u and v fields via the **processed** keyword
+    argument.
     
-    # Axis limits
-    ax.set_xlim(window[0:2])
-    ax.set_ylim(window[2:4])
+    .. note::
+        
+        This function is deprecated.
+        Plot NEMO results directly using `matplotlib.pyplot.quiver` or
+        equivalent instead.
+    """
     
-    return
+    warnings.warn(
+        "plot_velocity has been deprecated. Plot NEMO results directly using"
+        + " matplotlib.pyplot.quiver or equivalent instead.",
+        DeprecationWarning
+    )
+    
+    out = None
+    
+    return out

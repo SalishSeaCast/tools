@@ -165,6 +165,15 @@ Modules for Working with `Live Ocean`_ Model Products
     :members:
 
 
+.. _salishsea_tools.timeseries_tools:
+
+:py:mod:`timeseries_tools` Module
+==========================
+
+.. automodule:: salishsea_tools.timeseries_tools
+    :members:
+
+
 .. _salishsea_tools.unit_conversions:
 
 :py:mod:`unit_conversions` Module
