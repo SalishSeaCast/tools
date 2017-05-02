@@ -304,43 +304,36 @@ it finds in the module.
 See the `Sphinx autodoc extension`_ docs for more details.
 
 
-.. _LibraryCodeReturnNamedtuplesFromFunctions:
+.. _LibraryCodeReturnSimpleNamespacesFromFunctions:
 
-Return :py:obj:`namedtuple` from Functions
-==========================================
+Return :py:obj:`SimpleNamespace` from Functions
+===============================================
 
 If you are writing a function that returns more than one value,
-consider returning the collection of values as a `namedtuple`_.
+consider returning the collection of values as a `SimpleNamespace`_.
 If your function returns more than 3 values,
-definitely return them as a :py:obj:`namedtuple`.
+definitely return them as a :py:obj:`SimpleNamespace`.
 
-.. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
+.. _SimpleNamespace: https://docs.python.org/3/library/types.html#types.SimpleNamespace
 
-:py:obj:`namedtuple` objects are tuple-like objects that have fields accessible by attribute lookup
-(dotted notation)
-as well as being indexable and iterable.
-They also have a helpful docstring (with typename and field_names) and a helpful string representation which lists the tuple contents in a name=value format.
+:py:obj:`SimpleNamespace` objects that have fields accessible by attribute lookup
+(dotted notation).
+They also have a helpful string representation which lists the namespace contents in a name=value format.
 
 .. code-block:: python
 
-    >>> Point = namedtuple('Point', ['x', 'y'])
-    >>> p = Point(11, y=22)     # instantiate with positional or keyword arguments
-    >>> p[0] + p[1]             # indexable like the plain tuple (11, 22)
-    33
-    >>> x, y = p                # unpack like a regular tuple
-    >>> x, y
-    (11, 22)
+    >>> p = SimpleNamespace(x=11, y=22)
     >>> p.x + p.y               # fields also accessible by name
     33
     >>> p                       # readable string representation with a name=value style
-    Point(x=11, y=22)
+    namespace(x=11, y=22)
 
 Using the :py:func:`salishsea_tools.data_tools.load_ADCP` function code as an example:
 
 .. code-block:: python
     :linenos:
 
-    from collections import namedtuple
+    from types import SimpleNamespace
 
 
     def load_ADCP(
@@ -356,38 +349,24 @@ Using the :py:func:`salishsea_tools.data_tools.load_ADCP` function code as an ex
                   deployed,
                   :py:attr:`u` and :py:attr:`v` hold :py:class:`numpy.ndarray`
                   of the zonal and meridional velocity profiles at each datetime.
-        :rtype: 4 element :py:class:`collections.namedtuple`
+        :rtype: 4 element :py:class:`types.SimpleNamespace`
         """
         ...
-        adcp_data = namedtuple('ADCP_data', 'datetime, depth, u, v')
-        return adcp_data(datetime, depth, u, v)
+        return SimpleNamespace(datetime=datetime, depth=depth, u=u, v=v)
 
-Returning a :py:obj:`namedtuple` gives us the flexibility to call :py:func:`load_ADCP` like:
-
-.. code-block:: python
-
-    datetime, depth, u, v = load_ADCP(('2016 05 01', '2016 05 31'))
-
-or like:
+Returning a :py:obj:`SimpleNamespace` lets us call :py:func:`load_ADCP` like:
 
 .. code-block:: python
 
     adcp_data = load_ADCP(('2016 05 01', '2016 05 31'))
 
-In the latter case we can access the depth that the sensor is located at as either:
+and we can access the depth that the sensor is located at as:
 
 .. code-block:: python
 
     adcp_data.depth
 
-or:
-
-.. code-block:: python
-
-    adcp_data[1]
-
-In most cases,
-the first is easier to understand when our future selves read our code.
+This compact and easy to understand when our future selves read our code.
 
 
 Module-Specific Best Practices
