@@ -248,34 +248,85 @@ def plot_land_mask(
     return contour_fills
 
 
-def plot_boundary(ax, DATA, coords='map', color='burlywood', zorder=5):
+def plot_boundary(
+        ax, grid, mask, dim='depth', index=0, coords='grid',
+        color='burlywood', zorder=10
+):
+    """Plot the land boundary for a given NEMO domain slice.
+    
+    :arg ax: axes object handle
+    :type ax: :py:class:`matplotlib.axes._subplots.AxesSubplot`
+    
+    :arg grid: NEMO grid variables
+    :type grid: :py:class:`xarray.DataSet`
+    
+    :arg mask: NEMO mask variables
+    :type mask: :py:class:`xarray.DataSet`
+    
+    :arg dim: dimension for slice (one of 'depth', 'x', or 'y')
+    :type dim: str
+    
+    :arg index: slice index (integer for 'x' or 'y', float for 'depth')
+    :type index: int or float
+    
+    :arg coords: 'map' or 'grid'
+    :type coords: str
+    
+    :arg color: land color
+    :type color: str
+    
+    :arg zorder: desired vertical plot layer
+    :type zorder: int
+    
+    :returns: land and coastline contour object handles
+    :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    can this replace plot_coastline?
-    add separate mask
-    what about different depths? (maybe a prep function that then calls this?)
-    """
-
-    # Determine coordinate system
-    if coords is 'map':
-        x, y = 'longitude', 'latitude'
-    elif coords is 'grid':
-        x, y = 'gridX', 'gridY'
+    
+    # Define depth array and slices
+    depth = mask.gdept_1d.isel(t=0)
+    dimslice = dim
+    indexslice = index
+    
+    # Determine coordinate system and orientation
+    if dim is 'depth':
+        dimslice = 'z'
+        indexslice = abs(depth.values - index).argmin()
+        if coords is 'map':
+            dim1, dim2 = grid.nav_lon, grid.nav_lat
+        elif coords is 'grid':
+            dim1, dim2 = grid.x, grid.y
+        else:
+            raise ValueError('Unknown coordinate system: {}'.format(coords))
+    elif dim is 'y':
+        if coords is 'map':
+            dim1, dim2 = grid.nav_lon.isel(**{dim: index}), depth
+        elif coords is 'grid':
+            dim1, dim2 = grid.x, depth
+        else:
+            raise ValueError('Unknown coordinate system: {}'.format(coords))
+    elif dim is 'x':
+        if coords is 'map':
+            dim1, dim2 = grid.nav_lat.isel(**{dim: index}), depth
+        elif coords is 'grid':
+            dim1, dim2 = grid.y, depth
+        else:
+            raise ValueError('Unknown coordinate system: {}'.format(coords))
     else:
-        raise ValueError('Unknown coordinate system: {}'.format(coords))
-
-    # Determine orientation based on indexing
-    if not DATA.gridY.shape:
-        horz, vert = x, 'depth'
-    elif not DATA.gridX.shape:
-        horz, vert = y, 'depth'
-    else:
-        horz, vert = x, y
+        raise ValueError('Unknown dimension: {}'.format(dim))
 
     # Plot landmask and boundary contour
-    patch = ax.contourf(DATA[horz], DATA[vert], DATA.mask, [-0.01, 0.01],
-                        colors=color, zorder=zorder)
-    boundary = ax.contour(DATA[horz], DATA[vert], DATA.mask, [0], colors='k',
-                          zorder=zorder+1)
+    patch = ax.contourf(
+        dim1, dim2, mask.tmask.isel(**{'t': 0, dimslice: indexslice}),
+        [-0.01, 0.01], colors=color, zorder=zorder
+    )
+    boundary = ax.contour(
+        dim1, dim2, mask.tmask.isel(**{'t': 0, dimslice: indexslice}),
+        [0], colors='k', zorder=zorder
+    )
+    
+    # Invert depth axis
+    if dim is 'x' or dim is 'y':
+        ax.invert_yaxis()
 
     return patch, boundary
 
@@ -393,9 +444,12 @@ def rotate_vel(u_in, v_in, origin='grid'):
     """
     
     # Determine rotation direction
-    if   origin is 'grid': fac =  1
-    elif origin is 'map' : fac = -1
-    else: raise ValueError('Invalid origin value: {origin}'.format(
+    if   origin is 'grid':
+        fac =  1
+    elif origin is 'map':
+        fac = -1
+    else:
+        raise ValueError('Invalid origin value: {origin}'.format(
             origin=origin))
 
     # Rotate velocities
@@ -405,3 +459,17 @@ def rotate_vel(u_in, v_in, origin='grid'):
     v_out = u_in * np.sin(theta_rad) * fac + v_in * np.cos(theta_rad)
     
     return u_out, v_out
+
+
+def clear_contours(C):
+    """Clear contours from an existing plot.
+    
+    :arg C: contour object handle
+    :type C: :py:class:`matplotlib.contour.QuadContourSet`
+    """
+    
+    # Clear previous contours
+    for C_obj in C.collections:
+        C_obj.remove()
+    
+    return
