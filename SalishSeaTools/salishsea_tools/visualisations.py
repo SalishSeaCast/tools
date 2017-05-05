@@ -27,8 +27,9 @@ from salishsea_tools import geo_tools, nc_tools, viz_tools
 
 
 def contour_thalweg(
-    axes, var, bathy, mesh_mask, mesh_mask_depth_var, clevels,
-    cmap='hsv', land_colour='burlywood', xcoord_distance=True,
+    axes, var, bathy, mesh_mask, clevels,
+    mesh_mask_depth_var='gdept_0', cmap='hsv', land_colour='burlywood',
+    xcoord_distance=True,
     thalweg_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
     cbar_args=None
 ):
@@ -46,9 +47,6 @@ def contour_thalweg(
     :arg mesh_mask: Salish Sea NEMO model mesh_mask dataset
     :type mesh_mask: :py:class:`netCDF4.Dataset`
 
-    :arg str mesh_mask_depth_var: name of depth variable in :kbd:`mesh_mask`
-                                  that is appropriate for :kbd:`var`.
-
     :arg clevels: argument for determining contour levels. Choices are
                   1. 'salinity' or 'temperature' for pre-determined levels
                   used in nowcast.
@@ -56,6 +54,11 @@ def contour_thalweg(
                   3. a sequence V of contour levels, which must be in
                   increasing order.
     :type clevels: str or int or iterable
+
+    :arg str mesh_mask_depth_var: name of depth variable in :kbd:`mesh_mask`
+                                  that is appropriate for :kbd:`var`;
+                                  defaults to :kbd:`gdept_0` for NEMO-3.6
+                                  tracer variables.
 
     :arg str cmap: matplotlib colormap
 
