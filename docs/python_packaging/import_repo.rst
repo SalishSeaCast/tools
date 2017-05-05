@@ -43,7 +43,7 @@ and add :kbd:`hgext.convert =` to the :kbd:`[extensions]` section:
     hgext.convert =
 
 
-.. _Convert Extension: http://mercurial.selenic.com/wiki/ConvertExtension
+.. _Convert Extension: https://www.mercurial-scm.org/wiki/ConvertExtension
 
 The most important step of importing files from another repo is the creation of a file map to filter and rename/relocate the files that are being imported.
 The `Convert Extension`_ docs explain the syntax and effect of the file map directives.
