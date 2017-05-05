@@ -15,15 +15,13 @@
 
 """Functions for common model visualisations
 """
+import datetime
 
 from matplotlib import patches
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import datetime
-import dateutil.parser as dparser
 
-from salishsea_tools import geo_tools, nc_tools, viz_tools
+from salishsea_tools import geo_tools, nc_tools
 
 
 def contour_thalweg(
