@@ -27,10 +27,10 @@ from salishsea_tools import geo_tools, nc_tools, viz_tools
 
 
 def contour_thalweg(
-    axes, var, bathy, lons, lats, mesh_mask, mesh_mask_depth_var, clevels,
+    axes, var, bathy, mesh_mask, mesh_mask_depth_var, clevels,
     cmap='hsv', land_colour='burlywood', xcoord_distance=True,
     thalweg_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-    cbar_args=None,
+    cbar_args=None
 ):
     """Contour the data stored in var along the domain thalweg.
 
@@ -40,16 +40,10 @@ def contour_thalweg(
     :arg var: Salish Sea NEMO model results variable to be contoured
     :type var: :py:class:`numpy.ndarray`
 
-    :arg bathy: Salish Sea NEMO model bathymetry data
-    :type bathy: :py:class:`numpy.ndarray`
+    :arg bathy: Salish Sea NEMO model bathymetry dataset
+    :type bathy: :py:class:`netCDF4.Dataset`
 
-    :arg lons: Salish Sea NEMO model longitude grid data
-    :type lons: :py:class:`numpy.ndarray`
-
-    :arg lats: Salish Sea NEMO model latitude grid data
-    :type lats: :py:class:`numpy.ndarray`
-
-    :arg mesh_mask: Salish Sea NEMO model mesh_mask data
+    :arg mesh_mask: Salish Sea NEMO model mesh_mask dataset
     :type mesh_mask: :py:class:`netCDF4.Dataset`
 
     :arg str mesh_mask_depth_var: name of depth variable in :kbd:`mesh_mask`
@@ -74,14 +68,16 @@ def contour_thalweg(
                            thalweg grid points from.
     :type thalweg_pts_file: str
 
-    :arg dict cbar_args: Additional arguments to be passed to the cbar function (fraction, pad, etc.)
+    :arg dict cbar_args: Additional arguments to be passed to the cbar 
+                         function (fraction, pad, etc.)
 
     :returns: matplotlib colorbar object
     """
     thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
     depth = mesh_mask.variables[mesh_mask_depth_var][:]
     dep_thal, distance, var_thal = load_thalweg(
-        depth[0, ...], var, lons, lats, thalweg_pts)
+        depth[0, ...], var, bathy['nav_lon'][:], bathy['nav_lat'][:],
+        thalweg_pts)
     if xcoord_distance:
         xx_thal = distance
         axes.set_xlabel('Distance along thalweg [km]')
@@ -107,8 +103,9 @@ def contour_thalweg(
     var_plot = _fill_in_bathy(var_thal, mesh_mask, thalweg_pts)
     mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
                          extend='both')
-    _add_bathy_patch(xx_thal, bathy, thalweg_pts, axes, color=land_colour)
-    if(cbar_args is None):
+    _add_bathy_patch(
+        xx_thal, bathy['Bathymetry'][:], thalweg_pts, axes, color=land_colour)
+    if cbar_args is None:
         cbar = plt.colorbar(mesh, ax=axes)
     else:
         cbar = plt.colorbar(mesh, ax=axes, **cbar_args)
