@@ -24,7 +24,9 @@ http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/
 NKS nsoontie@eos.ubc.ca 08-2016
 """
 
+from salishsea_tools import geo_tools
 import numpy as np
+import progressbar
 
 
 def calculate_H(e3t0, tmask):
@@ -241,3 +243,36 @@ def time_dependent_grid_V(e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars,
         return_vars['ssh_v'] = ssh_v
 
     return return_vars
+
+
+def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
+    """
+    """
+
+    # Preallocate
+    ngrid_GEM = grid_GEM['x'].shape[0] * grid_GEM['y'].shape[0]
+    mask_GEM = np.zeros(ngrid_GEM, dtype=int)
+
+    # Evaluate each point on GEM grid
+    with progressbar.ProgressBar(max_value=ngrid_GEM) as bar:
+        for index, coords in enumerate(zip(
+            grid_GEM['nav_lon'].values.reshape(ngrid_GEM) - 360,
+            grid_GEM['nav_lat'].values.reshape(ngrid_GEM)
+        )):
+
+            j, i = geo_tools.find_closest_model_point(
+                coords[0], coords[1],
+                grid_NEMO['nav_lon'], grid_NEMO['nav_lat'],
+            )
+            if j is np.nan or i is np.nan:
+                mask_GEM[index] = 0
+            else:
+                mask_GEM[index] = mask_NEMO[j, i].values
+
+            # Update progress bar
+            bar.update(index)
+
+    # Reshape
+    mask_GEM = mask_GEM.reshape(grid_GEM['nav_lon'].shape)
+
+    return mask_GEM
