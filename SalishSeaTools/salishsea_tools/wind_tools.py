@@ -22,7 +22,9 @@ from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
-
+import netCDF4 as nc
+import scipy.interpolate as spi
+import scipy.sparse as sp
 from salishsea_tools import nc_tools
 
 # For convenience we import the wind speed conversion factors
@@ -129,3 +131,51 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
     wind_avg = namedtuple('wind_avg', 'u, v')
     return wind_avg(u_avg, v_avg)
+
+
+def use_weights(weights,ops):
+    """Given a weights and operation file, return a NEMO shaped array with wind data interpolated.
+    
+    :arg weights: Path to weights file to be used interpolation.
+    :type weights: str
+    
+    :arg ops: Path to operational file to be used in interpolation.
+    :type ops: str
+    
+    :returns: NEMO-sized Numpy array containing interpolations of wind data"""
+    # Weights
+    #weightsfile = '/home/mdunphy/MEOPAR/NEMO-forcing/grid/weights-gem2.5-ops.nc'
+    with nc.Dataset(weights) as f:
+        s1 = f.variables['src01'][:]-1  # minus one for fortran-to-python indexing
+        s2 = f.variables['src02'][:]-1
+        s3 = f.variables['src03'][:]-1
+        s4 = f.variables['src04'][:]-1
+        w1 = f.variables['wgt01'][:]
+        w2 = f.variables['wgt02'][:]
+        w3 = f.variables['wgt03'][:]
+        w4 = f.variables['wgt04'][:]
+
+    # Operational data
+    #opsfile='/results/forcing/atmospheric/GEM2.5/operational/ops_y2017m04d29.nc'
+    with nc.Dataset(ops) as f:
+        odata = f.variables['tair'][0,...]   # Load a 2D field
+
+
+    NO = odata.size   # number of operational grid points
+    NN = s1.size      # number of NEMO grid points
+
+    # Build matrix
+    n = np.array([x for x in range(0,NN)])
+    M1 = sp.csr_matrix((w1.flatten(), (n, s1.flatten())), (NN,NO))
+    M2 = sp.csr_matrix((w2.flatten(), (n, s2.flatten())), (NN,NO))
+    M3 = sp.csr_matrix((w3.flatten(), (n, s3.flatten())), (NN,NO))
+    M4 = sp.csr_matrix((w4.flatten(), (n, s4.flatten())), (NN,NO))
+    M = M1+M2+M3+M4
+
+    # Interpolate by matrix multiply - quite fast
+    ndata = M*odata.flatten()
+
+    # Reshape to NEMO shaped array
+    ndata=ndata.reshape(s1.shape)
+    
+    return ndata
