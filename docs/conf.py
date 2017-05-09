@@ -41,7 +41,7 @@ extensions = [
 
 intersphinx_mapping = {
     'docs':
-        ('http://salishsea-meopar-docs.readthedocs.org/en/latest/', None),
+        ('http://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
     'salishseanowcast':
         ('http://salishsea-nowcast.readthedocs.io/en/latest/', None),
 }

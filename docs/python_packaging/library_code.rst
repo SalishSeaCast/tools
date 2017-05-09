@@ -44,7 +44,7 @@ checkout out the code in these packages:
 * `SalishSeaNowcast Package`_
 * :ref:`Marlin`
 
-.. _Salish Sea NEMO Commandd Processor: https://bitbucket.org/salishsea/salishseacmd
+.. _Salish Sea NEMO Command Processor: https://bitbucket.org/salishsea/salishseacmd
 .. _SalishSeaNowcast Package: https://bitbucket.org/salishsea/salishseanowcast
 
 
