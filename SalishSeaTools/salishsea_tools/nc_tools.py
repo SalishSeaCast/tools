@@ -693,7 +693,7 @@ def combine_subdomain(filenames, outfilename):
     bottom right, filenames[-1,0] is top left, filenames[-1,-1] is top right.
     For example,
     filenames =  [[sub_00.nc, sub_01.nc], [sub_02.nc, sub_03.nc]].
-    This can be improved. At some point it would be worthwhile to autmotically
+    This can be improved. At some point it would be worthwhile to automatically
     build the filenames array.
     Also, we might want to add netcdf attributes like history, units, etc.
 
