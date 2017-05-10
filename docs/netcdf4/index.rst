@@ -154,7 +154,7 @@ An appropriately sized and shaped NumPy array can be loaded into a dataset varia
 
     d[:] = np.arange(48, 51.1, 0.1)
 
-and values can be retrieved using most of the usualy NumPy indexing and slicing techniques.
+and values can be retrieved using most of the usually NumPy indexing and slicing techniques.
 
 There are differences between the NumPy and netCDF variable slicing rules;
 see the `netCDF4-python`_ docs for details.

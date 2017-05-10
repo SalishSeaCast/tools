@@ -147,7 +147,7 @@ def _add_bathy_patch(xcoord, bathy, thalweg_pts, ax, color, zmin=450):
 
 
 def load_thalweg(depths, var, lons, lats, thalweg_pts):
-    """Returns depths, cummulative distance and variable along thalweg.
+    """Returns depths, cumulative distance and variable along thalweg.
 
     :arg depths: depth array for variable. Can be 1D or 3D.
     :type depths: :py:class:`numpy.ndarray`

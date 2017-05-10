@@ -99,7 +99,7 @@ def parents(repo=None, rev=None, file=None, verbose=False):
 
     If verbose is True the :command:`hg parents -v` command is run.
 
-    Keyword argument can be used cummulatively;
+    Keyword argument can be used cumulatively;
     e.g. :kbd:`repo=foo, file=bar` will result in the
     :command:`hg parents -R foo bar` command being run.
 

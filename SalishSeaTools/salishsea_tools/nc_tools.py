@@ -689,7 +689,7 @@ def combine_subdomain(filenames, outfilename):
     """Recombine per-processor subdomain files into one single file.
 
     Note: filenames must be an array of files organized to reflect the
-    subdomain decompsition. filenames[0,0] is bottom left, filenames[0,-1] is
+    subdomain decomposition. filenames[0,0] is bottom left, filenames[0,-1] is
     bottom right, filenames[-1,0] is top left, filenames[-1,-1] is top right.
     For example,
     filenames =  [[sub_00.nc, sub_01.nc], [sub_02.nc, sub_03.nc]].

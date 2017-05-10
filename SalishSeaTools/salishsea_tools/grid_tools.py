@@ -52,7 +52,7 @@ def calculate_adjustment_factor(H, ssh):
     """Calculate the time-dependent adjustment factor for variable volume in
     NEMO. adj = (1+ssh/H) and e3t_t = e3t_0*adj
 
-    :arg H:  Water column thicnkess. Dimension: (y, x)
+    :arg H:  Water column thickness. Dimension: (y, x)
     :type H: :py:class:`numpy.array`
 
     :arg ssh: the model sea surface height. Dimensions: (time, y, x)
@@ -114,7 +114,7 @@ def calculate_time_dependent_grid(
 def time_dependent_grid_U(e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars,
                           return_ssh=False):
     """Calculate time-dependent vertical grid spacing and depths on U-grid for
-    variabe volume in NEMO.
+    variable volume in NEMO.
 
     :arg e3u0: initial vertical scale factors on U-grid.
                Dimensions: (depth, y, x).
@@ -180,7 +180,7 @@ def time_dependent_grid_U(e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars,
 def time_dependent_grid_V(e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars,
                           return_ssh=False):
     """Calculate time-dependent vertical grid spacing and depths on V-grid for
-    variabe volume in NEMO.
+    variable volume in NEMO.
 
     :arg e3v0: initial vertical scale factors on V-grid.
                Dimensions: (depth, y, x).
