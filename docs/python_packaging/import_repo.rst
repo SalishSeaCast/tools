@@ -21,7 +21,7 @@ Importing Files from Another Mercurial Repo
 
 Sometimes code and other files that we want to create a new Python package from start life in another Mercurial repo.
 That was the case with what is now the :kbd:`SOGTools` package,
-which was started in Ben Moore-Malley's `SOG_utils`_ repo.
+which was started in Ben Moore-Maley's `SOG_utils`_ repo.
 This section documents the example of how the files and repo history from there were imported into the :file:`tools` repo.
 
 .. _SOG_utils: https://bitbucket.org/bmoorema/sog_utils

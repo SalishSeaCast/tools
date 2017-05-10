@@ -153,7 +153,7 @@ def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
                     e.g ['salt', 'temp']
     :type var_names: list of str
 
-    :returns: dictionary continaing interpolated numpy arrays for each variable
+    :returns: dictionary containing interpolated numpy arrays for each variable
     """
     interps = {}
     for var_name in var_names:

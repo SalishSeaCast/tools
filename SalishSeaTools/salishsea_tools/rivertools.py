@@ -681,7 +681,7 @@ def check_sum_monthly(runoff_orig, runoff_new, flux):
 def rivertemp(month):
     """River temperature, based on Fraser River, see Allen and Wolfe (2013).
 
-    Temperature in NEMO is in Celcius.
+    Temperature in NEMO is in Celsius.
     """
     centerday = [
         15.5,
