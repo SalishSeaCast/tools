@@ -151,7 +151,7 @@ def plot_land_mask(
     server='local',
     zorder=1
 ):
-    """Plot land areas from bathymetry as solid colour ploygons on the axes.
+    """Plot land areas from bathymetry as solid colour polygons on the axes.
 
     The bathymetry data may be specified either as a file path/name,
     or as a :py:class:`netCDF4.Dataset` instance.
@@ -161,7 +161,7 @@ def plot_land_mask(
     it is best to provide it with a bathymetry dataset to avoid
     the overhead of repeated file reads.
 
-    :arg axes: Axes instance to plot the land mask ploygons on.
+    :arg axes: Axes instance to plot the land mask polygons on.
     :type axes: :py:class:`matplotlib.axes.Axes`
 
     :arg bathymetry: File path/name of a netCDF bathymetry data file
@@ -195,7 +195,7 @@ def plot_land_mask(
     :arg zorder: Plotting layer specifier
     :type zorder: integer
 
-    :returns: Contour ploygon set
+    :returns: Contour polygon set
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
 

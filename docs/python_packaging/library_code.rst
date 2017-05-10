@@ -56,7 +56,7 @@ Your should write and test your code using Python 3.
 See :ref:`AnacondaPythonDistro` for instructions on how to install a Python 3 working environment,
 or :ref:`Python3Enviro` if you want to set up a Python 3 environment within your Anaconda Python 2 installation.
 
-Because of the way that the module systems on :kbd:`jasper` and :kbd:`orcinus` work the :ref:`SalishSeaToolsPackage` and :ref:`SalishSeaCmdProcessor` (:kbd:`SalishSeaCmd` package) must retain backward compatibility to Pythion 2.7.
+Because of the way that the module systems on :kbd:`jasper` and :kbd:`orcinus` work the :ref:`SalishSeaToolsPackage` and :ref:`SalishSeaCmdProcessor` (:kbd:`SalishSeaCmd` package) must retain backward compatibility to Python 2.7.
 The primary implication of that is that modules that use the division operation should have:
 
 .. code-block:: python
@@ -93,7 +93,7 @@ The copyright notice is marked as comments with the :kbd:`#` character at the be
 The exception to using the above notice is if the module contains code that we have copied from somewhere.
 In that case the copyright ownership needs to be changed to make appropriate attribution.
 The license notice may also need to be changed if the code is released under a license other than Apache 2.0.
-If you have questions about the attirbution and licensing of a piece of code,
+If you have questions about the attribution and licensing of a piece of code,
 please talk to Doug.
 
 The :ref:`salishsea_tools.namelist` is a (rare) example of differently licensed code from another developer that we include in our libraries.
@@ -125,7 +125,7 @@ different.
 Imports
 =======
 
-* Only import thimgs that you are actually using in your module.
+* Only import things that you are actually using in your module.
   `flake8`_ will identify unused imports for you.
 
 * Never use:
@@ -149,7 +149,7 @@ Imports
 
   * Python standard library
   * Other installed libraries
-  * Other Salish Sea proecjt libraries
+  * Other Salish Sea project libraries
   * The library that the module is part of
 
   The groups should be separated by an empty line,

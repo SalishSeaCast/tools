@@ -45,7 +45,7 @@ __all__ = [
     'calc_wind_avg_at_point',
     'M_PER_S__KM_PER_HR', 'M_PER_S__KNOTS', 'mps_kph', 'mps_knots',
     'wind_to_from', 'bearing_heading',
-    'wind_speed_dir',
+    'wind_speed_dir', 'use_weights',
 ]
 
 
@@ -89,7 +89,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     :arg str weather_path: The directory where weather dataset files
                            are stored.
 
-    :arg 2-tuple windji: Indices of weather datasset grid point to
+    :arg 2-tuple windji: Indices of weather dataset grid point to
                          calculate the average at as
                          :kbd:`(lon_index, lat_index)`.
 

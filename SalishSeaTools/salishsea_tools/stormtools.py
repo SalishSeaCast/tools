@@ -527,7 +527,7 @@ def observed_anomaly(ttide, wlev_meas, msl):
     """
     Calculates the observed anomaly (water level obs - tidal predictions).
 
-    :arg ttide: A struc object that contains tidal precitions from
+    :arg ttide: A struc object that contains tidal predictions from
                 get_ttide_8.m
     :type ttide: struc with dimensions time, pred_all, pred_8
 
@@ -598,7 +598,7 @@ def correct_model(ssh, ttide, sdt, edt):
     difference = ttide.pred_all-ttide.pred_8
     difference = np.array(difference)
     # average correction over two times to shift to the model 1/2 outputs
-    # question: should I reconsider this caclulation by interpolating?
+    # question: should I reconsider this calculation by interpolating?
     corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
 
     corr_model = ssh+corr
@@ -725,7 +725,7 @@ def rebase_obs(data, time):
     """
     Rebases the observations so that they are given on the half hour instead
     of hour.
-    Half hour outputs caclulated by averaging between two hourly outputs.
+    Half hour outputs calculated by averaging between two hourly outputs.
 
     :arg data: data to be rebased
     :type data: array
@@ -757,7 +757,7 @@ def _find_max(data, time):
 
 
 def willmott_skill(obs, model):
-    """Caclulates the Willmott skill score of the model. See Willmott 1982.
+    """Calculates the Willmott skill score of the model. See Willmott 1982.
     :arg obs: observations data
     :type obs: array
 
