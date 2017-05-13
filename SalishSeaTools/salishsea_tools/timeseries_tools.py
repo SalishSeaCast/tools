@@ -17,10 +17,9 @@
 conserving memory.
 """
 
-from salishsea_tools import viz_tools
+from salishsea_tools import viz_tools, utilities
 from dateutil.parser import parse
 from datetime import timedelta
-import progressbar
 import xarray as xr
 import numpy as np
 import os
@@ -42,28 +41,22 @@ def load_NEMO_timeseries(
     data = np.empty((0, ngrid_water))
 
     # Loop through filenames
-    with progressbar.ProgressBar(max_value=len(filenames)) as bar:
-        for findex, filename in enumerate(filenames):
+    bar = utilities.statusbar(f'Loading {field}, {dim}={index}', width=90)
+    for findex, filename in enumerate(bar(filenames)):
+        # Open NEMO results and flatten (depth averages added here)
+        data_grid = xr.open_dataset(filename)[field].isel(**{dim: index})
 
-            # Open NEMO results and flatten (depth averages added here)
-            data_grid = xr.open_dataset(filename)[field].isel(**{dim: index})
+        # Unstagger if velocity field
+        if unstagger_dim is not None:
+            data_grid = viz_tools.unstagger_xarray(data_grid, unstagger_dim)
 
-            # Unstagger if velocity field
-            if unstagger_dim is not None:
-                data_grid = viz_tools.unstagger_xarray(
-                    data_grid, unstagger_dim
-                )
+        # Reshape field
+        data_trim = reshape_to_ts(
+            data_grid.values, tmask, ngrid, ngrid_water, spacing=spacing)
 
-            # Reshape field
-            data_trim = reshape_to_ts(
-                data_grid.values, tmask, ngrid, ngrid_water, spacing=spacing)
-
-            # Store trimmed arrays
-            date = np.concatenate([date, data_grid.time_counter.values])
-            data = np.concatenate([data, data_trim], axis=0)
-
-            # Update progress bar
-            bar.update(findex)
+        # Store trimmed arrays
+        date = np.concatenate([date, data_grid.time_counter.values])
+        data = np.concatenate([data, data_trim], axis=0)
 
     # Reshape to grid
     if shape is 'grid':
@@ -190,6 +183,28 @@ def reshape_coords(mask_in, dim_in, index=0, spacing=1):
     mask = mask.reshape(ngrid)
     coords['depth'] = coords['depth'].reshape(ngrid)[mask]
     coords['gridZ'] = coords['gridZ'].reshape(ngrid)[mask]
+    coords['gridY'] = coords['gridY'].reshape(ngrid)[mask]
+    coords['gridX'] = coords['gridX'].reshape(ngrid)[mask]
+
+    return mask, coords, ngrid, ngrid_water
+
+
+def reshape_coords_GEM(grid, mask_in):
+    """
+    """
+
+    coords = {}
+
+    # Create full gridded mask, grid and depth Numpy ndarrays
+    coords['gridY'], coords['gridX'] = np.meshgrid(
+        grid.y, grid.x, indexing='ij')
+
+    # Number of grid points
+    ngrid = mask_in.shape[0] * mask_in.shape[1]
+    ngrid_water = mask_in.sum()
+
+    # Reshape mask, grid, and depth
+    mask = mask_in.reshape(ngrid)
     coords['gridY'] = coords['gridY'].reshape(ngrid)[mask]
     coords['gridX'] = coords['gridX'].reshape(ngrid)[mask]
 
