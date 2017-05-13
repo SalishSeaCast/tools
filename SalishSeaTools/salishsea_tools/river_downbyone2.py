@@ -335,7 +335,7 @@ prop_dict['fraser'] = {
             },
     'Fraser1': {
         'prop': Fraser * 0.75, 'i': 500, 'j': 395,
-                'di': 1, 'dj': 1, 'depth': 3}
+                'di': 1, 'dj': 1, 'depth': 3,
             },              # Fraser1 is main arm
     'Fraser2': {
         'prop': Fraser * 0.05, 'i': 409, 'j': 315,
@@ -403,7 +403,7 @@ prop_dict['evi_n'] = {
 # Jervis Inlet only area = 1400km2 (Trites 1955) ==> 25% of Jervis
 # watershed
 Jervis = 0.25
-prop_dict = {
+prop_dict['jervis'] = {
     'SkwawkaLoquiltsPotatoDesertedStakawusCrabappleOsgood': {
         'prop': Jervis * 0.60, 'i': 650, 'j': 309, 'di': 1, 'dj': 1, 'depth': 3,
             },
