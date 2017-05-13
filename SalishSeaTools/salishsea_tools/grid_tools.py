@@ -26,17 +26,17 @@ NKS nsoontie@eos.ubc.ca 08-2016
 
 from salishsea_tools import geo_tools, utilities
 import numpy as np
-import progressbar
 import netCDF4 as nc
 import scipy.interpolate as spi
 import scipy.sparse as sp
 
 __all__ = [
     'calculate_H',
-    'calculate_adjustment_factor', 'calculate_time_dependent_grid', 'time_dependent_grid_U',
-    'time_dependent_grid_V', 'build_GEM_mask',
-    'build_matrix','use_matrix',
+    'calculate_adjustment_factor', 'calculate_time_dependent_grid',
+    'time_dependent_grid_U', 'time_dependent_grid_V', 'build_GEM_mask',
+    'build_matrix', 'use_matrix',
 ]
+
 
 def calculate_H(e3t0, tmask):
     """Calculate the initial water column thickness (H).
@@ -283,23 +283,25 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
 
     return mask_GEM
 
-def build_matrix(weights,ops,variable):
-    """Given a weights and operation file and a variable of the ops file, return matrix built with inputs    
-    
+
+def build_matrix(weights, ops, variable):
+    """Given a weights and operation file and a variable of the ops file,
+    return matrix built with inputs
+
     :arg weights: Path to weights file to be used interpolation.
     :type weights: str
-    
+
     :arg ops: Path to operational file to be used in interpolation.
     :type ops: str
-    
+
     :arg variable: Specified variable in ops file.
     :type variable: str
-    
+
     :returns: SciPy Compressed Sparse Row matrix
     :type :py:class 'scipy.sparse.csr_matrix' """
     # Weights
     with nc.Dataset(weights) as f:
-        s1 = f.variables['src01'][:]-1  # minus one for fortran-to-python indexing
+        s1 = f.variables['src01'][:]-1  # -1 for fortran-to-python indexing
         s2 = f.variables['src02'][:]-1
         s3 = f.variables['src03'][:]-1
         s4 = f.variables['src04'][:]-1
@@ -310,48 +312,49 @@ def build_matrix(weights,ops,variable):
 
     # Operational data
     with nc.Dataset(ops) as f:
-        odata = f.variables[variable][0,...]   # Load a 2D field
-
+        odata = f.variables[variable][0, ...]   # Load a 2D field
 
     NO = odata.size   # number of operational grid points
     NN = s1.size      # number of NEMO grid points
 
     # Build matrix
-    n = np.array([x for x in range(0,NN)])
-    M1 = sp.csr_matrix((w1.flatten(), (n, s1.flatten())), (NN,NO))
-    M2 = sp.csr_matrix((w2.flatten(), (n, s2.flatten())), (NN,NO))
-    M3 = sp.csr_matrix((w3.flatten(), (n, s3.flatten())), (NN,NO))
-    M4 = sp.csr_matrix((w4.flatten(), (n, s4.flatten())), (NN,NO))
+    n = np.array([x for x in range(0, NN)])
+    M1 = sp.csr_matrix((w1.flatten(), (n, s1.flatten())), (NN, NO))
+    M2 = sp.csr_matrix((w2.flatten(), (n, s2.flatten())), (NN, NO))
+    M3 = sp.csr_matrix((w3.flatten(), (n, s3.flatten())), (NN, NO))
+    M4 = sp.csr_matrix((w4.flatten(), (n, s4.flatten())), (NN, NO))
     M = M1+M2+M3+M4
     return M
 
 
-def use_matrix(weights,ops,matrix,variable):
-    """Given a weights file, opsfile, and a matrix, returns NEMO-shaped array interpolated with data 
+def use_matrix(weights, ops, matrix, variable):
+    """Given a weights file, opsfile, and a matrix, returns NEMO-shaped array
+    interpolated with data
+
     :arg weights: Path to weights file to be used interpolation.
     :type weights: str
-    
+
     :arg ops: Path to operational file to be used in interpolation.
     :type ops: str
-    
+
     :arg matrix: SciPy Compressed Sparse Row matrix
     :type :py:class 'scipy.sparse.csr_matrix'
-    
+
     :arg variable: Specified variable in ops file.
     :type variable: str
-    
+
     :returns: NEMO-sized Numpy array containing interpolations"""
-    
+
     with nc.Dataset(weights) as f:
-        s1 = f.variables['src01'][:]-1  # minus one for fortran-to-python indexing
-    
+        s1 = f.variables['src01'][:]-1  # -1 for fortran-to-python indexing
+
     with nc.Dataset(ops) as f:
-        odata = f.variables[variable][0,...]   # Load a 2D field
-        
+        odata = f.variables[variable][0, ...]   # Load a 2D field
+
     # Interpolate by matrix multiply - quite fast
     ndata = matrix*odata.flatten()
 
     # Reshape to NEMO shaped array
-    ndata=ndata.reshape(s1.shape)
-    
+    ndata = ndata.reshape(s1.shape)
+
     return ndata
