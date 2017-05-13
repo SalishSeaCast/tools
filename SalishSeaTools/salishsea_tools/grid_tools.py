@@ -24,8 +24,7 @@ http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/
 NKS nsoontie@eos.ubc.ca 08-2016
 """
 
-from salishsea_tools import geo_tools
-from salishsea_tools import nc_tools
+from salishsea_tools import geo_tools, utilities
 import numpy as np
 import progressbar
 import netCDF4 as nc
@@ -264,23 +263,20 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
     mask_GEM = np.zeros(ngrid_GEM, dtype=int)
 
     # Evaluate each point on GEM grid
-    with progressbar.ProgressBar(max_value=ngrid_GEM) as bar:
-        for index, coords in enumerate(zip(
+    bar = utilities.statusbar('Building GEM mask', width=90, maxval=ngrid_GEM)
+    for index, coords in enumerate(bar(zip(
             grid_GEM['nav_lon'].values.reshape(ngrid_GEM) - 360,
-            grid_GEM['nav_lat'].values.reshape(ngrid_GEM)
-        )):
+            grid_GEM['nav_lat'].values.reshape(ngrid_GEM),
+    ))):
 
-            j, i = geo_tools.find_closest_model_point(
-                coords[0], coords[1],
-                grid_NEMO['nav_lon'], grid_NEMO['nav_lat'],
-            )
-            if j is np.nan or i is np.nan:
-                mask_GEM[index] = 0
-            else:
-                mask_GEM[index] = mask_NEMO[j, i].values
-
-            # Update progress bar
-            bar.update(index)
+        j, i = geo_tools.find_closest_model_point(
+            coords[0], coords[1],
+            grid_NEMO['nav_lon'], grid_NEMO['nav_lat'],
+        )
+        if j is np.nan or i is np.nan:
+            mask_GEM[index] = 0
+        else:
+            mask_GEM[index] = mask_NEMO[j, i].values
 
     # Reshape
     mask_GEM = mask_GEM.reshape(grid_GEM['nav_lon'].shape)

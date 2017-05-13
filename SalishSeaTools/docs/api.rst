@@ -183,6 +183,15 @@ Modules for Working with `Live Ocean`_ Model Products
     :members:
 
 
+.. _salishsea_tools.utilities:
+
+:py:mod:`utilities` Module
+=================================
+
+.. automodule:: salishsea_tools.utilities
+    :members:
+
+
 .. _salishsea_tools.visualisations:
 
 :py:mod:`visualisations` Module
