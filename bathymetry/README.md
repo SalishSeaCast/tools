@@ -6,6 +6,13 @@ The links below are to static renderings of the notebooks via
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[mesh_mask201702_metadata.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/mesh_mask201702_metadata.ipynb)  
+    
+    **`mesh_mask201702.nc` Metadata**  
+      
+    Add metadata to the NEMO-generated mesh mask file for the 201702 bathymetry  
+    so that a well-defined ERDDAP dataset can be produced from it.  
+
 * ##[SmoothMouthJdF.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
     
     This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
