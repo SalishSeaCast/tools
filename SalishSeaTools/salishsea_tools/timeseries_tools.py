@@ -41,7 +41,9 @@ def load_NEMO_timeseries(
     data = np.empty((0, ngrid_water))
 
     # Loop through filenames
-    bar = utilities.statusbar(f'Loading {field}, {dim}={index}', width=90)
+    bar = utilities.statusbar(
+        'Loading {}, {}={}'.format(field, dim, index), width=90
+    )
     for findex, filename in enumerate(bar(filenames)):
         # Open NEMO results and flatten (depth averages added here)
         data_grid = xr.open_dataset(filename)[field].isel(**{dim: index})
