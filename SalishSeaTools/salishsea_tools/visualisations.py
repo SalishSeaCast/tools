@@ -448,6 +448,6 @@ def retrieve_cmap(varname,deep_bool):
     cbMIN = dict_pull['colorBarMinimum']
     print()
     cbMAX = dict_pull['colorBarMaximum']
-    cmap = dict_pull['cmap']
+    cmap_name = dict_pull['cmap']
     
-    return cbMIN, cbMAX, cmap
+    return cbMIN, cbMAX, cmap_name
