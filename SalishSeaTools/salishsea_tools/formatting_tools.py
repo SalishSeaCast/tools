@@ -24,7 +24,9 @@ d = {
 	'degrees_north':'$^\circ$N',
 	'degC':'$^\circ$C',
 	'g kg-1':'g / kg',
+	'g/kg': 'g / kg',
 	'mmol m-3':'mmol / $m^{3}$',
+	'mmol/m3':'mmol / $m^{3}$',
 	'm2/s3':'m$^2$ / s$^3$'
 	}
 
