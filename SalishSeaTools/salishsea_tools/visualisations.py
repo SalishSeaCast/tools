@@ -373,3 +373,81 @@ def plot_velocity(
     out = None
     
     return out
+
+def retrieve_cmap(varname,deep_bool):
+    """takes 2 args:
+    string varname - name of a variable from nowcast-green output
+    boolean deep_bool - indicates whether the variable is depth-integrated or not
+    returns 2 ints(min and max value of range), and string identifying cmap"""
+    
+    var_namemap ={'Fraser_tracer': {'varname':'Fraser_tracer'},
+              'ammonium': {'varname':'NH4'},
+              'NH4': {'varname':'NH4'},
+             'biogenic_silicon': {'varname':'bSi'},
+              'bSi': {'varname':'bSi'},
+             'ciliates': {'varname':'MYRI'},
+             'MYRI': {'varname':'MYRI'},
+              'diatoms': {'varname':'PHY2'},
+              'PHY2': {'varname':'PHY2'},
+             'dissolved_organic_nitrogen': {'varname':'dissolved_organic_nitrogen'},
+              'flagellates': {'varname':'PHY'},
+              'PHY': {'varname':'PHY'},
+             'mesozooplankton': {'varname':'MESZ'},
+              'MESZ': {'varname':'MESZ'},
+              'microzooplankton': {'varname':'MICZ'},
+             'MICZ': {'varname':'MICZ'},
+              'nitrate': {'varname':'NO3'},
+              'NO3': {'varname':'NO3'},
+             'particulate_organic_nitrogen': {'varname':'PON'},
+              'POC': {'varname':'PON'},
+              'PON': {'varname':'PON'},
+              'dissolved_organic_nitrogen': {'varname':'DON'},
+              'DOC': {'varname':'DON'},
+              'DON': {'varname':'DON'},    
+                  
+              'silicon': {'varname':'Si'},
+             'Si': {'varname':'Si'}}
+ 
+    #dictionary of colour ranges
+    var_colour_ranges = {
+    
+    'Fraser_tracer':{'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
+    'MESZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 3.0,'cmap': 'algae'},
+    'MICZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 4.0,'cmap': 'algae'},
+    'MYRI': {'colorBarMinimum': 0.0, 'colorBarMaximum': 5.0,'cmap': 'algae'},
+    'NH4': {'colorBarMinimum': 0.0, 'colorBarMaximum': 10.0,'cmap': 'matter'},
+    'NO3': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40.0,'cmap': 'tempo'},    
+    'PON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2.0,'cmap': 'amp'},
+    'DON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 20.0,'cmap': 'amp'},
+    'O2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
+    'PHY': {'colorBarMinimum': 0.0, 'colorBarMaximum': 6.0, 'cmap': 'algae'},    
+    'PHY2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 15.0,'cmap': 'algae'},    
+    'Si': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
+    'bSi': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
+    
+    'Fraser_tracer_int':{'colorBarMinimum': 0.0, 'colorBarMaximum': 6500,'cmap': 'turbid'},
+    'MESZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140,'cmap': 'algae'},
+    'MICZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},
+    'MYRI_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 75,'cmap': 'algae'},
+    'NH4_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1500,'cmap': 'matter'},
+    'NO3_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 24000,'cmap': 'tempo'},    
+    'PON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 600,'cmap': 'amp'},
+    'DON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2500,'cmap': 'amp'},
+    'O2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1000,'cmap': 'turbid'},
+    'PHY_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 100,'cmap': 'algae'},    
+    'PHY2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},    
+    'Si_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
+    'bSi_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
+} 
+    dp = var_namemap[varname]
+    vn = dp['varname']
+    if (deep_bool == True):
+        vn = vn + '_int'
+        
+    dict_pull = var_colour_ranges[vn]
+    cbMIN = dict_pull['colorBarMinimum']
+    print()
+    cbMAX = dict_pull['colorBarMaximum']
+    cmap = dict_pull['cmap']
+    
+    return cbMIN, cbMAX, cmap
