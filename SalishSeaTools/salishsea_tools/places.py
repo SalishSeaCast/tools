@@ -53,10 +53,7 @@ PLACES = {
         'NEMO grid ji': (747, 125),
         # indices of nearest wave model grid point
         # j is the latitude (y) direction, i is the longitude (x) direction
-        'ww3 grid ji': (453, 109),
-        # indices of nearest wave model grid point
-        # j is the latitude (y) direction, i is the longitude (x) direction
-        'ww3 lon lat': (-125.23699951171875, 50.038502)
+        'ww3 grid ji': (453, 109)
     },
     'Cherry Point': {
         'lon lat': (-122.766667, 48.866667),
@@ -66,7 +63,7 @@ PLACES = {
         'wind grid ji': (122, 166),
         'NEMO grid ji': (343, 341),
         'ww3 grid ji': (193, 462),
-        'ww3 lon lat': (-122.76600646972656, 48.8685)
+
     },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
@@ -75,7 +72,7 @@ PLACES = {
         'wind grid ji': (142, 133),
         'NEMO grid ji': (484, 208),
         'ww3 grid ji': (258, 296),
-        'ww3 lon lat': (-123.92799377441406, 49.160999)
+
     },
     'Point Atkinson': {
         'lon lat': (-123.25, 49.33),
@@ -83,7 +80,7 @@ PLACES = {
         'mean sea lvl': 3.09,
         'hist max sea lvl': 5.61,
         'ww3 grid ji': (296, 393),
-        'ww3 lon lat': (-123.24899291992188, 49.332001)
+
     },
     'Victoria': {
         'lon lat': (-123.36, 48.41),
@@ -91,7 +88,7 @@ PLACES = {
         'mean sea lvl': 1.8810,
         'hist max sea lvl': 3.76,
         'ww3 grid ji': (91, 377),
-        'ww3 lon lat': (-123.36099243164062, 48.4095)
+
     },
 
     # Ferry terminals
