@@ -206,6 +206,81 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
         newvar[level, i] = variable[level-1, i]
     return newvar
 
+def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var_name=None,
+                       land_colour='burlywood',is_depth_avg=False,is_pcolmesh=False,title='',cbar_args=None,
+):  
+    """Contour 2d data at an arbitrary klevel on the model grid
+
+    :arg axes: Axes instance to plot thalweg contour on.
+    :type axes: :py:class:`matplotlib.axes.Axes`
+
+    :arg data: 2D array to be contoured at level k
+    :type data: :py:class:`numpy.ndarray`
+    
+    :arg klev: Index of k-level along which to contour 
+    :type klev: int
+    
+    :arg mask: Mask array with same dimensions as data
+    :type mask: :py:class:`numpy.ndarray`
+
+    :arg clevels: argument for determining contour levels. Choices are
+                  1. an integer N, for N automatically determined levels.
+                  2. a sequence V of contour levels, which must be in
+                  increasing order.
+    :type clevels: str or int or iterable
+
+    :arg lon: Array of longitudes with same length as x dimension of data.
+    :type lon: :py:class:`numpy.ndarray`
+    
+    :arg lat: Array of longitudes with same length as x dimension of data.
+    :type lat: :py:class:`numpy.ndarray`
+
+    :arg str cmap: matplotlib colormap
+    
+    :arg str var_name: Name of variable to plot. Necesssary if cmap=None.
+    
+    :arg str land_colour: matplotlib colour for land
+    
+    :arg is_depth_avg: True if data is a depth averaged field (default is False).
+    :type is_depth_avg: boolean
+
+    :arg is_pcolmesh: plot a pcolormesh (True) instead of a contourf (default).
+    :type is_pcolmesh: boolean
+    
+    :arg str title: Title string 
+    
+    :arg dict cbar_args: Additional arguments to be passed to the cbar 
+                         function (fraction, pad, etc.)
+
+    :returns: matplotlib colorbar object
+    """
+    mdata = np.ma.masked_where(mask==0,data)
+
+    viz_tools.set_aspect(axes)
+    
+    if cmap == None:
+        cbMIN, cbMAX, cmap = visualisations.retrieve_cmap(var_name,is_depth_avg)
+        cmap = plt.get_cmap(cmocean.cm.algae) 
+    
+    if is_pcolmesh:
+        mesh = axes.pcolormesh(mdata, cmap=cmap)
+    else:
+        mesh= axes.contourf(mdata,clevels,cmap=cmap)
+       
+    axes.set_xlabel('X index')
+    axes.set_ylabel('Y index')
+    axes.set_title(title)
+    
+    axes.set_axis_bgcolor(land_colour)
+    
+    
+    if cbar_args is None:
+        cbar = plt.colorbar(mesh, ax=axes)
+    else:
+        cbar = plt.colorbar(mesh, ax=axes, **cbar_args)
+     
+    return cbar
+
 
 def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
