@@ -41,7 +41,7 @@ extensions = [
 
 intersphinx_mapping = {
     'docs':
-        ('http://salishsea-meopar-docs.readthedocs.org/en/latest/', None),
+        ('http://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
     'salishseanowcast':
         ('http://salishsea-nowcast.readthedocs.io/en/latest/', None),
 }
@@ -57,14 +57,20 @@ autodoc_mock_imports = [
     'mpl_toolkits.basemap',
     'pandas',
     'paramiko',
+    'progressbar',
     'retrying',
     'scipy',
     'scipy.interpolate',
     'scipy.io',
     'scipy.optimize',
+    'scipy.sparse',
     'xarray',
     'yaml',
     'zmq',
+    'zmq.eventloop',
+    'zmq.eventloop.ioloop',
+    'zmq.eventloop.zmqstream',
+    'zmq.utils',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

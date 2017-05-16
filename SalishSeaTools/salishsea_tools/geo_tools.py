@@ -27,7 +27,7 @@ def distance_along_curve(lons, lats):
     :arg lats: 1D array of latitude points.
     :type lats: :py:class:`numpy.ndarray`
 
-    :returns: Cummulative point-by-point distance along track in km.
+    :returns: Cumulative point-by-point distance along track in km.
     :rtype: :py:class:`numpy.ndarray`
     """
     dist = np.cumsum(haversine(lons[1:], lats[1:], lons[:-1], lats[:-1]))
@@ -175,9 +175,12 @@ def find_closest_model_point(
     )
 
     if len(j_list) == 0:
-        raise ValueError(
-            'No model point found. tol_lon/tol_lat too small or '
-            'lon/lat outside of domain.')
+        # Added by BMM March 2017
+        # If including points outside of domain:
+        return np.nan, np.nan
+        # raise ValueError(
+        #    'No model point found. tol_lon/tol_lat too small or '
+        #    'lon/lat outside of domain.')
     try:
         j, i = map(np.asscalar, (j_list, i_list))
     except ValueError:

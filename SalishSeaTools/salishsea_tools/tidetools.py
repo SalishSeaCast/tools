@@ -1445,7 +1445,7 @@ def convert_to_hours(time_model, reftime='None'):
     :type reftime: date time object
 
     :returns tp_wrt_epoch, times with respect to the
-        begining of the input in seconds
+        beginning of the input in seconds
     """
     if reftime == 'None':
         epoc = time_model[0]
@@ -1488,7 +1488,7 @@ def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
     """Function for the fit, assuming only 4 constituents of importance are:
         M2, K2, S1 and O1.
 
-    :arg x: Independant variable, time.
+    :arg x: Independent variable, time.
     :type x:
 
     :arg \*amp: Tidal amplitude of the a constituent
@@ -1514,7 +1514,7 @@ def sextuple(
     """Function for the fit, assuming 6 constituents of importance are:
     M2, K2, S1, O1, N2 and P1.
 
-    :arg x: Independant variable, time.
+    :arg x: Independent variable, time.
     :type x:
 
     :arg \*amp: Tidal amplitude of the a constituent
@@ -1543,7 +1543,7 @@ def octuple(
     """Function for the fit, for all the constituents: M2, K2, S1, O1, N2, P1,
     K2 and Q1.
 
-    :arg x: Independant variable, time.
+    :arg x: Independent variable, time.
     :type x:
 
     :arg \*amp: Tidal amplitude of the a constituent
@@ -1608,7 +1608,7 @@ def fittit(uaus, time, nconst):
     :type time: :py:class:'np.ndarray'
 
     :arg nconst: The amount of tidal constituents used for the analysis.
-                 They added in pairs and by order of importantce,
+                 They added in pairs and by order of importance,
                  M2, K1, S2, O1, N2, P1, K2, Q1.
     :type nconst: int
 
@@ -1799,13 +1799,17 @@ def filter_timeseries(record, winlen=39, method='box'):
         W = min(i, w, record_length-i-1)
         Weight = weight[:W]
         Weight = np.append(Weight[::-1], np.append(centerval, Weight))
-        Weight = (Weight/sum(Weight, centerval))
+        if sum(Weight) != 0:
+            Weight = (Weight/sum(Weight))
         
         # Expand weight dims so it can operate on record window
         for dim in range(record.ndim - 1):
             Weight = Weight[:, np.newaxis]
         
         # Apply mean over window length
-        filtered[i, ...] = np.sum(record[i-W:i+W+1, ...] * Weight, axis=0)
+        if W > 0:
+            filtered[i, ...] = np.sum(record[i-W:i+W+1, ...] * Weight, axis=0)
+        else:
+            filtered[i, ...] = record[i, ...]
     
     return filtered

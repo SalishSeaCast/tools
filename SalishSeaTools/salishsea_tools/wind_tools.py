@@ -22,7 +22,7 @@ from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
-
+import netCDF4 as nc
 from salishsea_tools import nc_tools
 
 # For convenience we import the wind speed conversion factors
@@ -87,7 +87,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     :arg str weather_path: The directory where weather dataset files
                            are stored.
 
-    :arg 2-tuple windji: Indices of weather datasset grid point to
+    :arg 2-tuple windji: Indices of weather dataset grid point to
                          calculate the average at as
                          :kbd:`(lon_index, lat_index)`.
 
@@ -129,3 +129,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
     wind_avg = namedtuple('wind_avg', 'u, v')
     return wind_avg(u_avg, v_avg)
+
+
+
+    

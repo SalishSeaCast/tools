@@ -146,12 +146,12 @@ Running the Unit Tests
 The test suite for the :kbd:`SalishSeaTools` package is in :file:`tools/SalishSeaTools/tests/`.
 The `pytest`_ tools is used for test fixtures and as the test runner for the suite.
 
-.. _pytest: http://pytest.org/latest/
+.. _pytest: https://docs.pytest.org/en/latest/
 
 With your :kbd:`salishsea-tools` development environment activated,
 use:
 
-.. _Mercurial: http://mercurial.selenic.com/
+.. _Mercurial: https://mercurial-scm.org/
 
 .. code-block:: bash
 

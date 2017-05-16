@@ -204,7 +204,7 @@ def get_params(u, v, time, nconst, tidecorr=tidetools.CorrTides):
     :type time: :py:class:'np.ndarray'
 
     :arg nconst: The amount of tidal constituents used for the analysis. They
-        added in pairs and by order of importantce, M2, K1, S2, O1, N2, P1, K2,
+        added in pairs and by order of importance, M2, K1, S2, O1, N2, P1, K2,
         Q1.
     :type nconst: int
 

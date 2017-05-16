@@ -38,8 +38,8 @@ Full Salish Sea Domain Bathymetry
 .. _SalishSeaBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb
 
 
-Initial Sub-domain Test Bathymentry
-===================================
+Initial Sub-domain Test Bathymetry
+==================================
 
 * `SalishSeaSubdomainBathy.ipynb`_: Documents the bathymetry used for the initial Salish Sea NEMO runs on a sub-set of the whole region domain.
   The :ref:`sub-domain bathymetry <SalishSeaSubdomainBathy-image>` was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.

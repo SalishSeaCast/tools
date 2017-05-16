@@ -263,7 +263,7 @@ def get_variables(fU, fV, fT, timestamp, depth):
     :type depth: int
 
     :returns: masked arrays U,V,E,S,T with of zonal velocity,
-     merdional velocity, sea surface height, salinity, and temperature at
+     meridional velocity, sea surface height, salinity, and temperature at
      specified time and z-level.
 
     """
@@ -527,7 +527,7 @@ def observed_anomaly(ttide, wlev_meas, msl):
     """
     Calculates the observed anomaly (water level obs - tidal predictions).
 
-    :arg ttide: A struc object that contains tidal precitions from
+    :arg ttide: A struc object that contains tidal predictions from
                 get_ttide_8.m
     :type ttide: struc with dimensions time, pred_all, pred_8
 
@@ -598,7 +598,7 @@ def correct_model(ssh, ttide, sdt, edt):
     difference = ttide.pred_all-ttide.pred_8
     difference = np.array(difference)
     # average correction over two times to shift to the model 1/2 outputs
-    # question: should I reconsider this caclulation by interpolating?
+    # question: should I reconsider this calculation by interpolating?
     corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
 
     corr_model = ssh+corr
@@ -622,7 +622,7 @@ def surge_tide(ssh, ttide, sdt, edt):
     :type edt: datetime object
 
     :returns: surgetide: the surge only run with tides added
-              (mean not inculded)
+              (mean not included)
     """
     # find index of ttide.time at start and end
     inds = ttide.time[ttide.time == sdt].index[0]
@@ -638,7 +638,7 @@ def surge_tide(ssh, ttide, sdt, edt):
 
 def get_statistics(obs, model, t_obs, t_model, sdt, edt):
     """
-    Calculates several statisitcs, such as mean error, maximum value, etc.
+    Calculates several statistics, such as mean error, maximum value, etc.
     for model and observations in a given time period.
 
     :arg obs: observation data
@@ -674,7 +674,7 @@ def get_statistics(obs, model, t_obs, t_model, sdt, edt):
     # rebase observations
     # rbase_obs, rbase_to = rebase_obs(trun_obs, trun_to)
     error = trun_model-obs_interp
-    # calculate statisitcs
+    # calculate statistics
     gamma2 = np.var(error)/np.var(obs_interp)
     mean_error = np.mean(error)
     mean_abs_error = np.mean(np.abs(error))
@@ -725,7 +725,7 @@ def rebase_obs(data, time):
     """
     Rebases the observations so that they are given on the half hour instead
     of hour.
-    Half hour outputs caclulated by averaging between two hourly outputs.
+    Half hour outputs calculated by averaging between two hourly outputs.
 
     :arg data: data to be rebased
     :type data: array
@@ -757,7 +757,7 @@ def _find_max(data, time):
 
 
 def willmott_skill(obs, model):
-    """Caclulates the Willmott skill score of the model. See Willmott 1982.
+    """Calculates the Willmott skill score of the model. See Willmott 1982.
     :arg obs: observations data
     :type obs: array
 
@@ -872,7 +872,7 @@ def get_operational_weather(start, end, grid):
                 format '01-Nov-2006'
     :type start: str
 
-    :arg grid: array of the operationa grid coordinates for the point of
+    :arg grid: array of the operational grid coordinates for the point of
                interest eg. [244,245]
     :arg type: arr of ints
 
@@ -928,9 +928,9 @@ def get_operational_weather(start, end, grid):
 
 def interp_to_model_time(time_model, varp, tp):
     """
-    Interpolates a variable to model ouput times.
+    Interpolates a variable to model output times.
 
-    :arg model_time: array of model ouput times as datetime objects
+    :arg model_time: array of model output times as datetime objects
     :type model_time: array with datetimes
 
     :arg varp: array of variable to be interpolated
