@@ -6,6 +6,13 @@ The links below are to static renderings of the notebooks via
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[mesh_mask201702_metadata.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/mesh_mask201702_metadata.ipynb)  
+    
+    **`mesh_mask201702.nc` Metadata**  
+      
+    Add metadata to the NEMO-generated mesh mask file for the 201702 bathymetry  
+    so that a well-defined ERDDAP dataset can be produced from it.  
+
 * ##[SmoothMouthJdF.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF.ipynb)  
     
     This notebook takes our original smoothed Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca identical for the first 6 grid points.  
@@ -13,6 +20,10 @@ Descriptions under the links below are from the first cell of the notebooks
 * ##[Thalweg Work.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Work.ipynb)  
     
     Determine the Thalweg in more Detail and Channelize it  
+
+* ##[SmoothMouthJdF-DownOneGrid.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SmoothMouthJdF-DownOneGrid.ipynb)  
+    
+    This notebook takes our downonegrid Salish Sea bathymetry and produces a bathymetry with the mouth of Juan de Fuca and Johnstone Strait identical for the first 6 grid points.  
 
 * ##[More Smoothing.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/More Smoothing.ipynb)  
     
@@ -49,6 +60,10 @@ Descriptions under the links below are from the first cell of the notebooks
     
     Comparison between original bathy and smoothed bathy  
 
+* ##[FindTSforSmoothedMouths.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/FindTSforSmoothedMouths.ipynb)  
+    
+    For smoothed mouths we need to fill in any new grid points.  
+
 * ##[bathy_for_jie.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/bathy_for_jie.ipynb)  
     
 * ##[SalishSeaSubdomainBathy.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb)  
@@ -69,13 +84,38 @@ Descriptions under the links below are from the first cell of the notebooks
     **Explore Changing Bathymetry Data Format**  
     **netCDF4 Instead of netCDF3_CLASSIC**  
 
+* ##[mesh_mask_downbyone2_metadata.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/mesh_mask_downbyone2_metadata.ipynb)  
+    
+    **`mesh_mask_downbyone2.nc` Metadata**  
+      
+    Add metadata to the NEMO-generated mesh mask file for the downbyone2 bathymetry  
+    so that a well-defined ERDDAP dataset can be produced from it.  
+
 * ##[TowardSmoothing.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/TowardSmoothing.ipynb)  
     
 * ##[BathyZeroTobaetc.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/BathyZeroTobaetc.ipynb)  
     
+* ##[JettyBathymetryTracers.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/JettyBathymetryTracers.ipynb)  
+    
+    Look at Jetty Bathymetry from Mesh Mask and create a TS file  
+
 * ##[Smooth, preserving thalweg.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Smooth, preserving thalweg.ipynb)  
     
     Smooth around the Thalweg  
+
+* ##[ProcessNewRiverBathymetry.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/ProcessNewRiverBathymetry.ipynb)  
+    
+    **Process New River Bathymetry ****  
+    Take the bathymetry produced by Michael including the better resolved river and process it.  
+    We need to do the following steps:  
+    1. Straighten North Open Boundary  
+    2. Straighten West Open Boundary  
+    3. Smooth  
+    4. Add shallow Jetty  
+    5. Check dredged River Channel  
+    6. Check continuity and Add Mixed Islands  
+    7. Fix Puget  
+    8. Write out bathy file and jetty extra friction files  
 
 * ##[Thalweg Smoothing.ipynb](http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/Thalweg Smoothing.ipynb)  
     
@@ -128,7 +168,7 @@ Descriptions under the links below are from the first cell of the notebooks
 
 ##License
 
-These notebooks and files are copyright 2013-2016
+These notebooks and files are copyright 2013-2017
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 

@@ -6,7 +6,7 @@ netCDF4 Files Creation and Conventions
 
 The Salish Sea MEOPAR project uses netCDF4_ files as input for the NEMO model and for other purposes,
 where appropriate.
-This section documents the recommended way of creating netCDF4 files with compression of varibles,
+This section documents the recommended way of creating netCDF4 files with compression of variables,
 limitation of variables to appropriate precision,
 and appropriate metadata attributes for the variables and the dataset as a whole.
 The recommendations are based on the `NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011`_.
@@ -84,7 +84,7 @@ and 398,
 respectively.
 
 The recommended maximum number of dimensions is 4.
-The recommended order of dimesions is :kbd:`t`,
+The recommended order of dimensions is :kbd:`t`,
 :kbd:`z`,
 :kbd:`y`,
 :kbd:`x`.
@@ -116,7 +116,7 @@ The third argument is a tuple of previously defined dimension names.
 As noted above,
 
 * The recommended maximum number of dimensions is 4
-* The recommended order of dimesions is :kbd:`t`,
+* The recommended order of dimensions is :kbd:`t`,
   :kbd:`z`,
   :kbd:`y`,
   :kbd:`x`
@@ -154,7 +154,7 @@ An appropriately sized and shaped NumPy array can be loaded into a dataset varia
 
     d[:] = np.arange(48, 51.1, 0.1)
 
-and values can be retrived using most of the usualy NumPy indexing and slicing techniques.
+and values can be retrieved using most of the usual NumPy indexing and slicing techniques.
 
 There are differences between the NumPy and netCDF variable slicing rules;
 see the `netCDF4-python`_ docs for details.

@@ -46,7 +46,7 @@ Use :kbd:`marlin --help` to see the available options and sub-commands::
 :kbd:`incoming`
 ===============
 
-The :kbd:`incoming` sub-command displays a list of SVN revisions from the upstream repo that have not yeat been applied to the local working copy.
+The :kbd:`incoming` sub-command displays a list of SVN revisions from the upstream repo that have not yet been applied to the local working copy.
 The list defaults to just the next revision that would be applied by an update operation,
 but the :kbd:`-l` or :kbd:`--limit` option allows the list to be extended.
 In particular,
