@@ -135,6 +135,58 @@ PLACES = {
         'lon lat': (-123.8, 49.3),
     },
 
+    #STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
+    'S3': {
+        'lon lat': (-123.558, 49.125),
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (450, 258),
+    },
+    #Mean_Debby_Stations
+    'Cluster_1': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (254,209),
+    },
+    'Cluster_2': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (254,209),
+    },
+    'Cluster_3': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (423,263),
+    },
+    'Cluster_4': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (393,32),
+    },
+    'Cluster_5': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (331,243),
+    },
+    'Cluster_6': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (328,83) ,
+    },
+    'Cluster_7': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (456,263) ,
+    },
+    'Cluster_8': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (647,158) ,
+    },
+    'Cluster_9': {
+        # NEMO python grid indices: j in y direction, i in x direction
+        'NEMO grid ji': (413,6) ,
+    },
+
+
+
+
+
+
+
+
+
     # VENUS
     'Central node': {
         # location from Ocean Networks Canada (ONC) website
