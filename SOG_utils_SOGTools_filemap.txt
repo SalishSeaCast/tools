@@ -1,0 +1,11 @@
+# hg convert file map for 15-May-2015 import of Ben Moore-Malley's
+# SOG_utils repo into tools repo to form the basis of the SOGTools
+# package.
+
+include SOG_loader.py
+include SOG_plotting.ipynb
+include carbonate.py
+
+rename SOG_loader.py ./SOGTools/sog_tools/SOG_loader.py
+rename carbonate.py ./SOGTools/sog_tools/carbonate.py
+rename SOG_plotting.ipynb ./SOGTools/notebooks/SOG_plotting.ipynb

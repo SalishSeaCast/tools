@@ -1,0 +1,48 @@
+# conda environment description file for SalishSeaTools package
+# development environment
+#
+# Create a conda environment for development, testing and documentation
+# of the SalishSeaTools package with:
+#
+#   $ cd tools
+#   $ conda env create -f SalishSeaTools/environment.yaml
+#   $ source activate salishsea-tools
+#   (salishsea-tools)$ pip install --editable SalishSeaTools
+#
+# See the requirements.pip file for an exhaustive list of all of the
+# packages installed in the environment and their versions used in
+# recent development.
+
+name: salishsea-tools
+
+channels:
+  - defaults
+
+dependencies:
+- basemap
+- bottleneck
+- coverage
+- ipython
+- jupyter_client
+- matplotlib
+- netCDF4
+- numpy
+- pandas
+- pip
+- pytest
+- python=3
+- pytz
+- python-dateutil
+- pyyaml
+- requests
+- scipy
+- sphinx
+- xarray
+- pip:
+  - angles
+  - arrow
+  - cliff
+  - ipdb
+  - nbsphinx
+  - retrying
+  - sphinx_rtd_theme

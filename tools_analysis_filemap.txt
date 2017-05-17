@@ -1,0 +1,24 @@
+# File map for 16-May-2014 separation of tools repo
+# into tools and analysis repos.
+
+include README.rst
+include LICENSE
+include tools_analysis_filemap.txt
+include Stability_analysis
+include compare_stratification
+include compare_tides
+include storm_surges
+include NetCDF_Plot/Nancy
+include NetCDF_Plot/Susan
+
+rename NetCDF_Plot/Nancy ./Nancy
+rename NetCDF_Plot/Susan ./Susan
+
+exclude I_ForcingFiles
+exclude Marlin
+exclude Run_Files
+exclude SalishSeaCmd
+exclude SalishSeaTools
+exclude bathymetry
+exclude docs
+exclude nocscombine

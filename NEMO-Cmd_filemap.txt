@@ -1,0 +1,27 @@
+# File map for 27-Oct-2016 creation of NEMO-Cmd repo
+# from the SalishSeaCmd/ directory of the tools repo.
+#
+# The following command was used to create the NEMO-Cmd repo:
+#    cd MEOPAR
+#    hg convert --filemap tools/NEMO-Cmd_filemap.txt tools NEMO-Cmd
+
+include .hgtags
+include environment-rtd.yml
+include LICENSE
+include readthedocs.yml
+include SalishSeaCmd/
+include NEMO-Cmd_filemap.txt
+
+rename SalishSeaCmd/docs docs
+rename SalishSeaCmd/salishsea_cmd nemo_cmd
+rename SalishSeaCmd/tests tests
+rename SalishSeaCmd/.coveragerc .coveragerc
+rename SalishSeaCmd/README.rst README.rst
+rename SalishSeaCmd/__pkg_metadata__.py __pkg_metadata__.py
+rename SalishSeaCmd/environment.yaml environment-dev.yaml
+rename SalishSeaCmd/requirements.pip requirements.txt
+rename SalishSeaCmd/setup.py setup.py
+
+include docs/conf.py
+include docs/license_description.txt
+include docs/Makefile
