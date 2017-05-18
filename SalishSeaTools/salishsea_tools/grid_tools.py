@@ -307,11 +307,9 @@ def build_matrix(weights, ops):
         w3 = f.variables['wgt03'][:]
         w4 = f.variables['wgt04'][:]
 
-    opsfile = nc.Dataset(ops
-
-    NO = len(opsfile.dimensions['x'])*len(opsfile.dimensions['y'])   # number of operational grid points
-    NN = s1.size                                                     # number of NEMO grid points
-    nemosize = s1.shape
+    with nc.Dataset(ops) as f:
+        NO = f.dimensions['x'].size * f.dimensions['y'].size   # number of operational grid points
+    NN, nemoshape = s1.size, s1.shape   # number of NEMO grid points and shape of NEMO matrix
 
     # Build matrix
     n = np.array([x for x in range(0, NN)])
@@ -320,27 +318,29 @@ def build_matrix(weights, ops):
     M3 = sp.csr_matrix((w3.flatten(), (n, s3.flatten())), (NN, NO))
     M4 = sp.csr_matrix((w4.flatten(), (n, s4.flatten())), (NN, NO))
     M = M1+M2+M3+M4
-    return M,nemosize
+    return M,nemoshape
 
 
-def use_matrix(ops,matrix,variable,nemosize,time):
-    """Given a opsfile, a matrix, variable name, and time index, returns NEMO-shaped array interpolated with data 
-    
+def use_matrix(ops,matrix,nemoshape,variable,time):
+    """Given an opsfile, interpolation matrix, the NEMO array shape,
+       a variable name, and time index,
+       returns NEMO-shaped array interpolated with data
+
     :arg ops: Path to operational file to be used in interpolation.
     :type ops: str
-    
-    :arg matrix: SciPy Compressed Sparse Row matrix
+
+    :arg matrix: SciPy Compressed Sparse Row matrix (from build_matrix)
     :type :py:class 'scipy.sparse.csr_matrix'
-    
+
+    :arg nemoshape: Shape of NEMO array (from build_matrix)
+    :type nemoshape: tuple
+
     :arg variable: Specified variable in ops file.
     :type variable: str
-    
-    :arg nemosize: Shape of NEMO array
-    :type nemosize: tuple
-    
+
     :arg time index: time index in ops file
     :type time index: integer
-    
+
     :returns: NEMO-sized Numpy array containing interpolations
     :type :py:class 'numpy.ndarray'"""
 
@@ -351,6 +351,6 @@ def use_matrix(ops,matrix,variable,nemosize,time):
     ndata = matrix*odata.flatten()
 
     # Reshape to NEMO shaped array
-    ndata = ndata.reshape(nemosize)
+    ndata = ndata.reshape(nemoshape)
 
     return ndata
