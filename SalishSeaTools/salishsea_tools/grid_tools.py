@@ -295,7 +295,8 @@ def build_matrix(weights, ops):
     :type ops: str
 
     :returns: SciPy Compressed Sparse Row matrix
-    :rtype :py:class 'scipy.sparse.csr_matrix' """
+    :rtype: :py:class: 'scipy.sparse.csr_matrix'
+    """
     # Weights
     with nc.Dataset(weights) as f:
         s1 = f.variables['src01'][:]-1  # -1 for fortran-to-python indexing
@@ -330,7 +331,7 @@ def use_matrix(ops,matrix,nemoshape,variable,time):
     :type ops: str
 
     :arg matrix: SciPy Compressed Sparse Row matrix (from build_matrix)
-    :type matrix: py:class 'scipy.sparse.csr_matrix'
+    :type matrix: :py:class: 'scipy.sparse.csr_matrix'
 
     :arg nemoshape: Shape of NEMO array (from build_matrix)
     :type nemoshape: tuple
@@ -342,7 +343,7 @@ def use_matrix(ops,matrix,nemoshape,variable,time):
     :type time index: integer
 
     :returns: NEMO-sized Numpy array containing interpolations
-    :rtype :py:class 'numpy.ndarray'"""
+    :rtype: :py:class: 'numpy.ndarray'"""
 
     with nc.Dataset(ops) as f:
         odata = f.variables[variable][time, ...]   # Load a 2D field
