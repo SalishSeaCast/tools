@@ -330,7 +330,7 @@ def use_matrix(ops,matrix,nemoshape,variable,time):
     :type ops: str
 
     :arg matrix: SciPy Compressed Sparse Row matrix (from build_matrix)
-    :type :py:class 'scipy.sparse.csr_matrix'
+    :type matrix: py:class 'scipy.sparse.csr_matrix'
 
     :arg nemoshape: Shape of NEMO array (from build_matrix)
     :type nemoshape: tuple
