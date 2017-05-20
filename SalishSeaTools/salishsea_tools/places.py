@@ -135,57 +135,56 @@ PLACES = {
         'lon lat': (-123.8, 49.3),
     },
 
-    #STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
+    # STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
     'S3': {
         'lon lat': (-123.558, 49.125),
-        # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (450, 258),
     },
-    #Mean_Debby_Stations
+    # Tereza's cluster stations, aligned with Vector Stations where possible.
     'Cluster_1': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (254,209),
+        'NEMO grid ji': (241, 212),
+        'lon lat': (48.215, -123.099),
+        'Vector Stn': '64'
     },
     'Cluster_2': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (254,209),
+        'NEMO grid ji': (294, 127),
+        'lon lat': (48.261, -123.717),
+        'Vector Stn': '69'
     },
     'Cluster_3': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (423,263),
+        'NEMO grid ji': (376, 291),
+        'lon lat': (48.899, -123.138),
+        'Vector Stn': '45'
     },
     'Cluster_4': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (393,32),
+        'NEMO grid ji': (282, 305),
+        'lon lat': (48.555, -122.750),
+        'Vector Stn': '53'
     },
     'Cluster_5': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (331,243),
+        'NEMO grid ji': (344, 271),
+        'lon lat': (48.735, -123.135),
+        'Vector Stn': '57'
     },
     'Cluster_6': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (328,83) ,
+        'NEMO grid ji': (320, 68),
+        'lon lat': (48.249, -124.110),
+        'Vector Stn': '73'
     },
     'Cluster_7': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (456,263) ,
+        'NEMO grid ji': (504, 246),
+        'lon lat': (49.317, -123.801),
+        'Vector Stn': '27'
     },
     'Cluster_8': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (647,158) ,
+        'NEMO grid ji': (646, 168),
+        'lon lat': (49.726, -124.679),
+        'Vector Stn': '12'
     },
     'Cluster_9': {
-        # NEMO python grid indices: j in y direction, i in x direction
-        'NEMO grid ji': (413,6) ,
+        'NEMO grid ji': (423, 300),
+        'lon lat': (49.101, -123.249),
     },
-
-
-
-
-
-
-
-
 
     # VENUS
     'Central node': {
