@@ -41,9 +41,13 @@ extensions = [
 
 intersphinx_mapping = {
     'docs':
-        ('http://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
+        ('https://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
     'salishseanowcast':
-        ('http://salishsea-nowcast.readthedocs.io/en/latest/', None),
+        ('https://salishsea-nowcast.readthedocs.io/en/latest/', None),
+    'numpy':
+        ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy':
+        ('https://docs.scipy.org/doc/scipy/reference/', None),
 }
 
 todo_include_todos = True
