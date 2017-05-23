@@ -109,7 +109,7 @@ Modules for Working with `Live Ocean`_ Model Products
 
 .. automodule:: salishsea_tools.nc_tools
     :members:
-
+.. autoclass:: salishsea_tools.nc_tools.scDataset
 
 .. _salishsea_tools.places:
 

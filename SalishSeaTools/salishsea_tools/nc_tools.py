@@ -1009,36 +1009,47 @@ class scDataset(object):
 
         Building this class was motivated by deficiencies in the other options
         for split-file concatenation:
-         - xarray.open_mfdataset() appears to load the entire dataset into
-           memory, which is both slow and memory intensive.
-         - netCDF4.MFDataset refuses to open NETCDF4 format files
+
+        - xarray.open_mfdataset() appears to load the entire dataset into memory,
+          which is both slow and memory intensive.
+
+        - netCDF4.MFDataset refuses to open NETCDF4 format files
+
         In the event that netCDF4.MFDataset is improved to work with NETCDF4
         files, this will become obsolete.
 
-        Example usage:
-
-        # Get the (concatenated) output times
-        with scDataset(files) as ds:
-            t = ds.variables['time_counter'][:]
-
-        # Get temperature at all times and all depth at one location
-        with scDataset(files) as ds:
-            temper = ds.variables['votemper'][:,:,100,100]
-
-        # Load surface salinity at each time in a loop for plotting/animation
-        with scDataset(files) as ds:
-            for ti in range(ds.variables['vosaline'].shape[0]):
-                print("Loading time "+str(ti))
-                surfsal = ds.variables['vosaline'][ti,0,:,:]
-                # make_a_plot(surfsal)
-
-        # Demo to show that normal Python indexing and slicing works
-        with scDataset(files) as ds:
-            t1 = ds.variables['votemper'][29:33:-1,-10:-1,100:130]
-            print(t1.shape)
-
         :arg filenames: list of netcdf filenames in chronological order
         :type filenames: list
+
+        Example usage:
+
+        .. code-block:: python
+
+           # Get the (concatenated) output times
+           with scDataset(files) as ds:
+               t = ds.variables['time_counter'][:]
+
+        .. code-block:: python
+
+           # Get temperature at all times and all depths at one location
+           with scDataset(files) as ds:
+               temper = ds.variables['votemper'][:,:,100,100]
+
+        .. code-block:: python
+
+           # Load surface salinity at each time in a loop for plotting/animation
+           with scDataset(files) as ds:
+               for ti in range(ds.variables['vosaline'].shape[0]):
+                   print("Loading time "+str(ti))
+                   surfsal = ds.variables['vosaline'][ti,0,:,:]
+                   # make_a_plot(surfsal)
+
+        .. code-block:: python
+
+           # Python indexing and slicing also works
+           with scDataset(files) as ds:
+               t1 = ds.variables['votemper'][29:33:-1,-10:-1,100:130]
+               print(t1.shape)
 
         """
         # Initialize a dataset manager with the list of files
