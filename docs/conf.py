@@ -95,6 +95,9 @@ copyright = (
     .format(datetime.date.today())
 )
 
+# For autoclass
+autoclass_content = 'init'
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
