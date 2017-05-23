@@ -1018,8 +1018,8 @@ class scDataset(object):
         In the event that netCDF4.MFDataset is improved to work with NETCDF4
         files, this will become obsolete.
 
-        :arg filenames: list of netcdf filenames in chronological order
-        :type filenames: list
+        :arg files: list of netcdf filenames in chronological order
+        :type files: list
 
         Example usage:
 
