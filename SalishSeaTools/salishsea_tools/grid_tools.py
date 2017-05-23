@@ -284,21 +284,24 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
     return mask_GEM
 
 
-def build_matrix(weights, ops):
-    """Given a weights and operation file and a variable of the ops file,
-    return matrix built with inputs
+def build_matrix(weightsfile, opsfile):
+    """
+    Given a NEMO weights file and an operational surface forcing file, we
+    assemble the weights into a sparse interpolation matrix that interpolates
+    the surface forcing data from the operational grid to the NEMO grid. This
+    function returns the matrix and the NEMO grid shape.
 
-    :arg weights: Path to weights file to be used interpolation.
-    :type weights: str
+    :arg weightsfile: Path to NEMO weights file.
+    :type weightsfile: str
 
-    :arg ops: Path to operational file to be used in interpolation.
-    :type ops: str
+    :arg opsfile: Path to an operational file.
+    :type opsfile: str
 
-    :returns: SciPy Compressed Sparse Row matrix
-    :rtype: :py:class: 'scipy.sparse.csr_matrix'
+    :returns: Sparse interpolation matrix and NEMO grid shape
+    :rtype: (:class:`~scipy:scipy.sparse.csr_matrix`, :class:`tuple`)
     """
     # Weights
-    with nc.Dataset(weights) as f:
+    with nc.Dataset(weightsfile) as f:
         s1 = f.variables['src01'][:]-1  # -1 for fortran-to-python indexing
         s2 = f.variables['src02'][:]-1
         s3 = f.variables['src03'][:]-1
@@ -308,7 +311,7 @@ def build_matrix(weights, ops):
         w3 = f.variables['wgt03'][:]
         w4 = f.variables['wgt04'][:]
 
-    with nc.Dataset(ops) as f:
+    with nc.Dataset(opsfile) as f:
         NO = f.dimensions['x'].size * f.dimensions['y'].size   # number of operational grid points
     NN, nemoshape = s1.size, s1.shape   # number of NEMO grid points and shape of NEMO matrix
 
@@ -322,31 +325,32 @@ def build_matrix(weights, ops):
     return M,nemoshape
 
 
-def use_matrix(ops,matrix,nemoshape,variable,time):
-    """Given an opsfile, interpolation matrix, the NEMO array shape,
-       a variable name, and time index,
-       returns NEMO-shaped array interpolated with data
+def use_matrix(opsfile,matrix,nemoshape,variable,time):
+    """
+    Given an operational surface forcing file, an interpolation matrix and
+    NEMO grid shape (produced by grid_tools.build_matrix), a variable name and
+    a time index, we return the operational data interpolated onto the NEMO grid.
 
-    :arg ops: Path to operational file to be used in interpolation.
-    :type ops: str
+    :arg opsfile: Path to operational file to interpolate.
+    :type opsfile: str
 
-    :arg matrix: SciPy Compressed Sparse Row matrix (from build_matrix)
-    :type matrix: :py:class: 'scipy.sparse.csr_matrix'
+    :arg matrix: Interpolation matrix (from build_matrix)
+    :type matrix: :class:`~scipy:scipy.sparse.csr_matrix`
 
-    :arg nemoshape: Shape of NEMO array (from build_matrix)
+    :arg nemoshape: NEMO grid shape (from build_matrix)
     :type nemoshape: tuple
 
     :arg variable: Specified variable in ops file.
     :type variable: str
 
-    :arg time index: time index in ops file
+    :arg time index: time index in ops file.
     :type time index: integer
 
-    :returns: NEMO-sized Numpy array containing interpolations
-    :rtype: :py:class: 'numpy.ndarray'"""
-
-    with nc.Dataset(ops) as f:
-        odata = f.variables[variable][time, ...]   # Load a 2D field
+    :returns: Operational data interpolated onto the NEMO grid
+    :rtype: :class:`~numpy:numpy.ndarray`
+    """
+    with nc.Dataset(opsfile) as f:
+        odata = f.variables[variable][time, ...]   # Load the 2D field
 
     # Interpolate by matrix multiply - quite fast
     ndata = matrix*odata.flatten()
