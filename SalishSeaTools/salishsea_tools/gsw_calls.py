@@ -39,6 +39,9 @@ def generic_gsw_caller(
         np.savetxt(tmp_fname, var_data.flatten(), delimiter=',')
     shape = input_vars[0].shape
     # create matlab wrapper
+    gsw_function_name = (
+        gsw_function_name if gsw_function_name.endswith('.m')
+        else '{}.m'.format(gsw_function_name))
     output = 'output_file'
     matlab_wrapper_name = _create_matlab_wrapper(gsw_function_name,
                                                  output,
