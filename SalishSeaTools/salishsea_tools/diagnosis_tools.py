@@ -31,21 +31,21 @@ def pcourantu(files,meshmask):
     :arg files: list of U filenames
     
     :arg meshmask: mesh mask 
-    :type meshmask: :py:class:'netCDF4.Dataset'
+    :type meshmask: :py:class:`netCDF4.Dataset`
     
     :returns: Numpy MaskedArray with unscaled Courant numbers.
-    :rtype: :py:class: 'numpy.ma.core.MaskedArray'
+    :rtype: :py:class: `numpy.ma.core.MaskedArray`
     """
     
-    ubdx = np.zeros((40,898,398))
     delta_x = meshmask['e1u']
     with nc_tools.scDataset(files) as f:   #merging files
         nt,nz,ny,nx = f.variables['vozocrtx'].shape
+        ubdx = np.zeros((nz,ny,nx))
         for n in range (nt):
             u = np.abs(f.variables['vozocrtx'][n,:,:,:] / delta_x)
             ubdx = np.maximum(u,ubdx)    #taking maximum over time
-        new_u = np.zeros((898,398))
-        for m in range(0,40):
+        new_u = np.zeros((ny,nx))
+        for m in range(0,nz):
             u = ubdx[m,:,:]
             new_u = np.maximum(u,new_u)  #taking maximum over deptht
             
@@ -57,21 +57,21 @@ def pcourantv(files,meshmask):
     :arg files: list of V filenames
     
     :arg meshmask: mesh mask 
-    :type meshmask: :py:class:'netCDF4.Dataset'
+    :type meshmask: :py:class:`netCDF4.Dataset`
     
     :returns: Numpy MaskedArray with unscaled Courant numbers.
-    :rtype: :py:class: 'numpy.ma.core.MaskedArray'
+    :rtype: :py:class: `numpy.ma.core.MaskedArray`
     """
     
-    vbdx = np.zeros((40,898,398))
     delta_y = meshmask['e2v']
     with nc_tools.scDataset(files) as f:    #merging files
         nt,nz,ny,nx = f.variables['vomecrty'].shape
+        vbdx = np.zeros((nz,ny,nx))
         for n in range (nt):
             v = np.abs(f.variables['vomecrty'][n,:,:,:] / delta_y)
             vbdx = np.maximum(v,vbdx)   #taking maximum over time
-        new_v = np.zeros((898,398))
-        for m in range(0,40):
+        new_v = np.zeros((ny,nx))
+        for m in range(0,nz):
             v = vbdx[m,:,:]
             new_v = np.maximum(v,new_v)   #taking maximum over deptht
             
@@ -83,26 +83,26 @@ def pcourantw(files,meshmask):
     :arg files: list of W filenames
     
     :arg meshmask: mesh mask 
-    :type meshmask: :py:class:'netCDF4.Dataset'
+    :type meshmask: :py:class:`netCDF4.Dataset`
     
     :returns: Numpy MaskedArray with unscaled Courant numbers.
-    :rtype: :py:class: 'numpy.ma.core.MaskedArray'
+    :rtype: :py:class: `numpy.ma.core.MaskedArray`
     """
-    
-    wbdx = np.zeros((40,898,398))
-    delta_z = meshmask['e3w_1d']
-    new_z1 = np.expand_dims(delta_z[:],axis=2)
-    new_z2 = np.swapaxes(new_z1,0,1)
-    ones = np.ones((40,898,398))
-    new_z3 = ones*new_z2
     
     with nc_tools.scDataset(files) as f:    #merging files
         nt,nz,ny,nx = f.variables['vovecrtz'].shape
+        wbdx = np.zeros((nz,ny,nx))
+        delta_z = meshmask['e3w_1d']
+        new_z1 = np.expand_dims(delta_z[:],axis=2)
+        new_z2 = np.swapaxes(new_z1,0,1)
+        ones = np.ones((nz,ny,nx))
+        new_z3 = ones*new_z2
+
         for n in range (nt):
             w = np.abs(f.variables['vovecrtz'][n,:,:,:] / new_z3)
             wbdx = np.maximum(w,wbdx)    #taking maximum over time
-        new_w = np.zeros((898,398))
-        for m in range(0,40):
+        new_w = np.zeros((ny,nx))
+        for m in range(0,nz):
             w = wbdx[m,:,:]
             new_w = np.maximum(w,new_w)  #taking maximum over deptht
             
