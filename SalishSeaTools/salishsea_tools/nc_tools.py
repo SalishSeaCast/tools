@@ -1064,14 +1064,14 @@ class scDataset(object):
         # Find the time dimension name
         for dim in d0.dimensions:
             if d0.dimensions[dim].isunlimited():
-                timename = dim
+                timedimname = dim
                 break
 
         # Open each dataset, get time dimension size and set the indices fi and li
         fi = []  # file (dataset) index
         li = []  # local time index
         for di in range(len(files)):
-            curlen = self._dsmgr[di].variables[timename].shape[0]
+            curlen = self._dsmgr[di].dimensions[timedimname].size
             fi += [di for x in range(curlen)]
             li += [x for x in range(curlen)]
 
@@ -1079,7 +1079,7 @@ class scDataset(object):
         self.variables = OrderedDict()
         vars0 = d0.variables
         for vname in vars0:
-            if vars0[vname].dimensions[0] == timename:
+            if vars0[vname].dimensions[0] == timedimname:
                 # We concatenate this variable
                 self.variables[vname] = self.scVariable(vars0[vname], vname, self._dsmgr, fi, li)
             else:
@@ -1150,18 +1150,26 @@ class scDataset(object):
             self.ndim       = v0.ndim
             self.shape      = (len(self._fi), ) + v0.shape[1:]
 
-        def __getitem__(self, items):
+        def __getitem__(self, initems):
             """
-            Implement Python indexing: int or slice accepted
+            Implement Python indexing: int, slice, ellipsis accepted
             """
             # Make the input iterable
-            if not isinstance(items, tuple):
-                items = [items]
+            if not isinstance(initems, tuple):
+                initems = initems,
 
-            # Check number of dimensions
-            ndim = len(items)
-            if self.ndim < ndim:
-                raise ValueError("Mismatch between requested dimensions and variable dimensions")
+            # Convert any ellipsis to slice
+            items = [slice(None,None,None)]*self.ndim
+            for i, item in enumerate(initems):
+                if item is not Ellipsis:
+                    items[i] = item
+                else:
+                    for j, item in enumerate(reversed(initems)):
+                        if item is not Ellipsis:
+                            items[self.ndim-j-1] = item
+                        else:
+                            break
+                    break
 
             # Find the time indices
             ti = items[0]      # global time indices to extract, may be int or slice
@@ -1170,34 +1178,37 @@ class scDataset(object):
 
             # For single time output (no concatenation), just draw from the right dataset
             if type(ti) is int or type(ti) is np.int64:
-                if ndim == 1:
+                if self.ndim == 1:
                     out = self.ds[fi].variables[self.name][li]
-                if ndim == 2:
+                if self.ndim == 2:
                     out = self.ds[fi].variables[self.name][li, items[1]]
-                if ndim == 3:
+                if self.ndim == 3:
                     out = self.ds[fi].variables[self.name][li, items[1], items[2]]
-                if ndim == 4:
+                if self.ndim == 4:
                     out = self.ds[fi].variables[self.name][li, items[1], items[2], items[3]]
                 return out
 
             # If we need to concatenate, then we need to determine the output
             # array size. This approach is an ugly hack but it works.
-            sizo = [1] * ndim  # assume one in each dimension
+            sizo = [1] * self.ndim  # assume one in each dimension
+            rdim = []               # list of dimensions to remove
             for ii, item in enumerate(items):
-                if type(item) is not int:         # update output size at this dim if not an integer index
+                if type(item) is int or type(item) is np.int64:
+                    rdim += [ii]
+                else:                             # update output size at this dim if not an integer index
                     tmp = [None] * self.shape[ii] # build a dummy array
                     sizo[ii] = len(tmp[item])     # index the dummy array, record length
             out = np.zeros(sizo, self.dtype)      # allocate output array with matching data type
-            out = np.squeeze(out)  # remove singleton dimensions
+            out = np.squeeze(out, axis=tuple(rdim))  # remove unwanted singleton dimensions
 
             # Now we read each time index sequentially and fill the output array
             for ii in range(len(fi)):
-                if ndim == 1:
+                if self.ndim == 1:
                     out[ii] = self.ds[fi[ii]].variables[self.name][li[ii]]
-                if ndim == 2:
+                if self.ndim == 2:
                     out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1]]
-                if ndim == 3:
+                if self.ndim == 3:
                     out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1], items[2]]
-                if ndim == 4:
+                if self.ndim == 4:
                     out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1], items[2], items[3]]
             return out
