@@ -79,6 +79,8 @@ PLACES = {
         'stn number': 7795,
         'mean sea lvl': 3.09,
         'hist max sea lvl': 5.61,
+        'wind grid ji': (146, 155),
+        'NEMO grid ji': (468, 329),
         'ww3 grid ji': (296, 393),
 
     },
@@ -87,6 +89,8 @@ PLACES = {
         'stn number': 7120,
         'mean sea lvl': 1.8810,
         'hist max sea lvl': 3.76,
+        'wind grid ji': (104, 144),
+        'NEMO grid ji': (297, 197),
         'ww3 grid ji': (91, 377),
 
     },
