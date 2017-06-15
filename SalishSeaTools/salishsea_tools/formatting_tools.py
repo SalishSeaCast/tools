@@ -1,4 +1,4 @@
-# Copyright 2013-2016 The Salish Sea MEOPAR contributors
+# Copyright 2013-2017 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,31 +16,31 @@
 """Functions for formatting data output from datasets.
 """
 
-# Dictionary of units:
-d = {
-	'm/s':'m/s', 
-	'm2/s':'m$^2$ / s$',
-	'degrees_east':'$^\circ$E',
-	'degrees_north':'$^\circ$N',
-	'degC':'$^\circ$C',
-	'g kg-1':'g / kg',
-	'g/kg': 'g / kg',
-	'mmol m-3':'mmol / $m^{3}$',
-	'mmol/m3':'mmol / $m^{3}$',
-	'm2/s3':'m$^2$ / s$^3$'
-	}
-
-def format_units(unit):
-	"""
-	:arg unit: variable name input
-	:type unit: str
-	
-	:returns: LaTeX formatted version of the unit
-	:rtype: str 
-	"""
-	try:
-		return d[unit]
-	except KeyError:
-		raise 'Unit not yet in dictionary.'
+#: String to LaTeX notation mapping for units
+STR_LATEX_MAPPING = {
+    'm/s': 'm/s',
+    'm2/s': 'm$^2$ / s$',
+    'degrees_east': '$^\circ$E',
+    'degrees_north': '$^\circ$N',
+    'degC': '$^\circ$C',
+    'g kg-1': 'g / kg',
+    'g/kg': 'g / kg',
+    'mmol m-3': 'mmol / $m^{3}$',
+    'mmol/m3': 'mmol / $m^{3}$',
+    'm2/s3': 'm$^2$ / s$^3$'
+}
 
 
+def format_units(units):
+    """Convert unit string to LaTeX notation.
+
+    :arg str units: Unit to convert.
+
+    :returns: Units in LaTeX notation.
+    :rtype: str
+    """
+    try:
+        return STR_LATEX_MAPPING[units]
+    except KeyError:
+        raise KeyError(
+            'units not found in string to LaTeX mapping: {}'.format(units))
