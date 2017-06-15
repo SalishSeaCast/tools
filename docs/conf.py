@@ -42,6 +42,8 @@ extensions = [
 intersphinx_mapping = {
     'docs':
         ('https://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
+    'salishseacmd':
+        ('https://salishseacmd.readthedocs.io/en/latest/', None),
     'salishseanowcast':
         ('https://salishsea-nowcast.readthedocs.io/en/latest/', None),
     'numpy':
