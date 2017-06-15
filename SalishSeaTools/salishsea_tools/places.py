@@ -92,7 +92,6 @@ PLACES = {
         'wind grid ji': (104, 144),
         'NEMO grid ji': (297, 197),
         'ww3 grid ji': (91, 377),
-
     },
 
     # Ferry terminals
