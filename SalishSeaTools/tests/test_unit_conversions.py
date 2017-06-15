@@ -43,7 +43,8 @@ def test_KNOTS__M_PER_S_constant_value():
     (0, 0),
     (1, 3.6),
 ])
-def test_mps_kph(m_per_s, expected) np.testing.assert_allclose(
+def test_mps_kph(m_per_s, expected):
+    np.testing.assert_allclose(
         unit_conversions.mps_kph(m_per_s), expected)
 
 
@@ -56,7 +57,8 @@ def test_mps_kph_ndarray():
     (0, 0),
     (1, 1.94384),
 ])
-def test_mps_knots(m_per_s, expected) np.testing.assert_allclose(
+def test_mps_knots(m_per_s, expected):
+    np.testing.assert_allclose(
         unit_conversions.mps_knots(m_per_s), expected, rtol=1e-05)
 
 
@@ -69,7 +71,8 @@ def test_mps_knots_ndarray():
     (0, 0),
     (1, 0.514444),
 ])
-def test_knots_mps(knots, expected) np.testing.assert_allclose(
+def test_knots_mps(knots, expected):
+    np.testing.assert_allclose(
         unit_conversions.knots_mps(knots), expected, rtol=1e-05)
 
 
@@ -84,7 +87,9 @@ def test_knots_mps_ndarray():
     (180, 90),
     (270, 0),
     (359, 271),
-]) def test_wind_to_from(wind_to, expected) np.testing.assert_allclose(
+])
+def test_wind_to_from(wind_to, expected):
+    np.testing.assert_allclose(
         unit_conversions.wind_to_from(wind_to), expected)
 
 
