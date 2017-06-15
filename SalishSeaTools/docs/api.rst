@@ -45,7 +45,7 @@ These API docs provide function signatures and docstrings derived directly from 
 .. _salishsea_tools.diagnosis_tools:
 
 :py:mod:`diagnosis_tools` Module
-===========================
+================================
 
 .. automodule:: salishsea_tools.diagnosis_tools
     :members:
@@ -54,7 +54,7 @@ These API docs provide function signatures and docstrings derived directly from 
 .. _salishsea_tools.formatting_tools:
 
 :py:mod:`formatting_tools` Module
-==========================
+=================================
 
 .. automodule:: salishsea_tools.formatting_tools
     :members:
