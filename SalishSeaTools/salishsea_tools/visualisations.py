@@ -17,10 +17,9 @@
 """
 import datetime
 
-from matplotlib import patches
 import matplotlib.pyplot as plt
 import numpy as np
-
+from matplotlib import patches
 from salishsea_tools import geo_tools, nc_tools
 
 
@@ -208,7 +207,7 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
 
 def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var_name=None,
                        land_colour='burlywood',is_depth_avg=False,is_pcolmesh=False,title='',cbar_args=None,
-):  
+):
     """Contour 2d data at an arbitrary klevel on the model grid
 
     :arg axes: Axes instance to plot thalweg contour on.
@@ -257,28 +256,28 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
     mdata = np.ma.masked_where(mask==0,data)
 
     viz_tools.set_aspect(axes)
-    
+
     if cmap == None:
         cbMIN, cbMAX, cmap = visualisations.retrieve_cmap(var_name,is_depth_avg)
-        cmap = plt.get_cmap(cmocean.cm.algae) 
-    
+        cmap = plt.get_cmap(cmocean.cm.algae)
+
     if is_pcolmesh:
         mesh = axes.pcolormesh(mdata, cmap=cmap)
     else:
         mesh= axes.contourf(mdata,clevels,cmap=cmap)
-       
+
     axes.set_xlabel('X index')
     axes.set_ylabel('Y index')
     axes.set_title(title)
-    
+
     axes.set_axis_bgcolor(land_colour)
-    
-    
+
+
     if cbar_args is None:
         cbar = plt.colorbar(mesh, ax=axes)
     else:
         cbar = plt.colorbar(mesh, ax=axes, **cbar_args)
-     
+
     return cbar
 
 
@@ -307,78 +306,78 @@ def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     :returns: Dictionary of line objects
     :rtype: dict > :py:class:`matplotlib.lines.Line2D`
     """
-    
+
     if DATA.time.shape[0] > 0:
-        
+
         # Convert time boundaries to datetime.datetime to allow operations/slicing
         starttime = nc_tools.xarraytime_to_datetime(DATA.time[ 0])
         endtime   = nc_tools.xarraytime_to_datetime(DATA.time[-1])
-        
+
         # Color plot cutoff
         time_cutoff = endtime - datetime.timedelta(hours=cutoff)
-        
+
         if DRIFT_OBJS is not None: # --- Update line objects only
-            
+
             # Plot drifter track (gray)
             DRIFT_OBJS['L_old'][0].set_data(
                 DATA.lon.sel(time=slice(starttime, time_cutoff)),
                 DATA.lat.sel(time=slice(starttime, time_cutoff)))
-            
+
             # Plot drifter track (color)
             DRIFT_OBJS['L_new'][0].set_data(
                 DATA.lon.sel(time=slice(time_cutoff, endtime)),
                 DATA.lat.sel(time=slice(time_cutoff, endtime)))
-            
+
             # Plot drifter position
             DRIFT_OBJS['P'][0].set_data(
                 DATA.lon.sel(time=endtime, method='nearest'),
                 DATA.lat.sel(time=endtime, method='nearest'))
-        
+
         else: # ------------------------ Plot new line objects instances
-            
+
             # Define drifter objects dict
             DRIFT_OBJS = {}
-            
+
             # Plot drifter track (gray)
             DRIFT_OBJS['L_old'] = ax.plot(
                 DATA.lon.sel(time=slice(starttime, time_cutoff)),
                 DATA.lat.sel(time=slice(starttime, time_cutoff)),
                 '-', linewidth=2, color='gray', zorder=zorder)
-            
+
             # Plot drifter track (color)
             DRIFT_OBJS['L_new'] = ax.plot(
                 DATA.lon.sel(time=slice(time_cutoff, endtime)),
                 DATA.lat.sel(time=slice(time_cutoff, endtime)),
                 '-', linewidth=2, color=color, zorder=zorder+1)
-            
+
             # Plot drifter position
             DRIFT_OBJS['P'] = ax.plot(
                 DATA.lon.sel(time=endtime, method='nearest'),
                 DATA.lat.sel(time=endtime, method='nearest'),
                 'o', color=color, zorder=zorder+2)
-    
+
     else:
-        
+
         if DRIFT_OBJS is not None: # --- Update line objects only
-            
+
             # Update drifter tracks
             DRIFT_OBJS['L_old'][0].set_data([], []) # gray
             DRIFT_OBJS['L_new'][0].set_data([], []) # color
             DRIFT_OBJS['P'    ][0].set_data([], []) # position
-            
+
         else:
-        
+
             DRIFT_OBJS = {}
             DRIFT_OBJS['L_old'] = ax.plot([], [], '-',
                 linewidth=2, color='gray', zorder=zorder)
-        
+
             # Plot drifter track (color)
             DRIFT_OBJS['L_new'] = ax.plot([], [], '-',
                 linewidth=2, color=color, zorder=zorder+1)
-        
+
             # Plot drifter position
             DRIFT_OBJS['P'] = ax.plot([], [], 'o', color=color, zorder=zorder+2)
-    
+
     return DRIFT_OBJS
 
 
@@ -390,20 +389,15 @@ def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
         This function is deprecated.
         Call plot formatting functions individually instead.
     """
-    
-    warnings.warn(
-        "create_figure has been deprecated. Call plot formatting functions"
-        + " individually instead.",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
+
+    raise DeprecationWarning(
+        'create_figure has been deprecated. Call plot formatting functions '
+        'individually instead.')
 
 
-def plot_tracers(ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1],
-                 cmap='jet', zorder=0):
+def plot_tracers(
+    ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1], cmap='jet', zorder=0
+):
     """Plot a horizontal slice of NEMO tracers as filled contours.
     
     .. note::
@@ -412,21 +406,16 @@ def plot_tracers(ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1],
         Plot NEMO results directly using `matplotlib.pyplot.contourf` or
         equivalent instead.
     """
-    
-    warnings.warn(
-        "plot_tracers has been deprecated. Plot NEMO results directly using"
-        + " matplotlib.pyplot.contourf or equivalent instead.",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
+
+    raise DeprecationWarning(
+        'plot_tracers has been deprecated. Plot NEMO results directly using '
+        'matplotlib.pyplot.contourf or equivalent instead.')
+
 
 
 def plot_velocity(
-        ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
-        mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
+    ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
+    mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
 ):
     """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
     Accepts subsampled u and v fields via the **processed** keyword
@@ -438,23 +427,18 @@ def plot_velocity(
         Plot NEMO results directly using `matplotlib.pyplot.quiver` or
         equivalent instead.
     """
-    
-    warnings.warn(
-        "plot_velocity has been deprecated. Plot NEMO results directly using"
-        + " matplotlib.pyplot.quiver or equivalent instead.",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
+
+    raise DeprecationWarning(
+        'plot_velocity has been deprecated. Plot NEMO results directly using '
+        'matplotlib.pyplot.quiver or equivalent instead.')
+
 
 def retrieve_cmap(varname,deep_bool):
     """takes 2 args:
     string varname - name of a variable from nowcast-green output
     boolean deep_bool - indicates whether the variable is depth-integrated or not
     returns 2 ints(min and max value of range), and string identifying cmap"""
-    
+
     var_namemap ={'Fraser_tracer': {'varname':'Fraser_tracer'},
               'ammonium': {'varname':'NH4'},
               'NH4': {'varname':'NH4'},
@@ -478,51 +462,51 @@ def retrieve_cmap(varname,deep_bool):
               'PON': {'varname':'PON'},
               'dissolved_organic_nitrogen': {'varname':'DON'},
               'DOC': {'varname':'DON'},
-              'DON': {'varname':'DON'},    
-                  
+              'DON': {'varname':'DON'},
+
               'silicon': {'varname':'Si'},
              'Si': {'varname':'Si'}}
- 
+
     #dictionary of colour ranges
     var_colour_ranges = {
-    
+
     'Fraser_tracer':{'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
     'MESZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 3.0,'cmap': 'algae'},
     'MICZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 4.0,'cmap': 'algae'},
     'MYRI': {'colorBarMinimum': 0.0, 'colorBarMaximum': 5.0,'cmap': 'algae'},
     'NH4': {'colorBarMinimum': 0.0, 'colorBarMaximum': 10.0,'cmap': 'matter'},
-    'NO3': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40.0,'cmap': 'tempo'},    
+    'NO3': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40.0,'cmap': 'tempo'},
     'PON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2.0,'cmap': 'amp'},
     'DON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 20.0,'cmap': 'amp'},
     'O2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
-    'PHY': {'colorBarMinimum': 0.0, 'colorBarMaximum': 6.0, 'cmap': 'algae'},    
-    'PHY2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 15.0,'cmap': 'algae'},    
+    'PHY': {'colorBarMinimum': 0.0, 'colorBarMaximum': 6.0, 'cmap': 'algae'},
+    'PHY2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 15.0,'cmap': 'algae'},
     'Si': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
     'bSi': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
-    
+
     'Fraser_tracer_int':{'colorBarMinimum': 0.0, 'colorBarMaximum': 6500,'cmap': 'turbid'},
     'MESZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140,'cmap': 'algae'},
     'MICZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},
     'MYRI_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 75,'cmap': 'algae'},
     'NH4_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1500,'cmap': 'matter'},
-    'NO3_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 24000,'cmap': 'tempo'},    
+    'NO3_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 24000,'cmap': 'tempo'},
     'PON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 600,'cmap': 'amp'},
     'DON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2500,'cmap': 'amp'},
     'O2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1000,'cmap': 'turbid'},
-    'PHY_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 100,'cmap': 'algae'},    
-    'PHY2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},    
+    'PHY_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 100,'cmap': 'algae'},
+    'PHY2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},
     'Si_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
     'bSi_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
-} 
+}
     dp = var_namemap[varname]
     vn = dp['varname']
     if (deep_bool == True):
         vn = vn + '_int'
-        
+
     dict_pull = var_colour_ranges[vn]
     cbMIN = dict_pull['colorBarMinimum']
     print()
     cbMAX = dict_pull['colorBarMaximum']
     cmap_name = dict_pull['cmap']
-    
+
     return cbMIN, cbMAX, cmap_name
