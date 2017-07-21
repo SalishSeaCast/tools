@@ -273,6 +273,7 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
 def create_LiveOcean_TS_BCs(
     start, end, avg_period, file_frequency,
     nowcast=False, teos_10=True, basename='LO',
+    single_nowcast=False,
     bc_dir='/results/forcing/LiveOcean/boundary_condtions/',
     LO_dir='/results/forcing/LiveOcean/downloaded/',
     NEMO_BC='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc'
@@ -347,8 +348,16 @@ def create_LiveOcean_TS_BCs(
 
     # Load and interpolate Live Ocean
     if not nowcast:
-        files = _list_LO_time_series_files(start, end, LO_dir)
-        save_dir = bc_dir
+        if not single_nowcast:
+            files = _list_LO_time_series_files(start, end, LO_dir)
+            save_dir = bc_dir
+        else:
+            sdt = datetime.datetime.strptime(start, '%Y-%m-%d')
+            files = [os.path.join(LO_dir, sdt.strftime('%Y%m%d'), 'low_passed_UBC.nc')]
+            print(files)
+            save_dir = os.path.join(bc_dir, start)
+            if not os.path.isdir(save_dir):
+                os.mkdir(save_dir)
     else:
         logger.info(
             'Preparing 48 hours of Live Ocean results. '
@@ -385,6 +394,16 @@ def create_LiveOcean_TS_BCs(
     if nowcast:
         filepaths = _relocate_files_for_nowcast(
             start, save_dir, basename, bc_dir)
+    elif single_nowcast:
+        filepaths = []
+        d_file = os.path.join(
+            save_dir, '{}_{}.nc'.format(
+                basename, sdt.strftime('y%Ym%md%d')))
+        filepath = os.path.join(
+            bc_dir, '{}_{}.nc'.format(
+                basename, sdt.strftime('y%Ym%md%d')))
+        os.rename(d_file, filepath)
+        filepaths.append(filepath)
     else:
         filepaths = files
     return filepaths
