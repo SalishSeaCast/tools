@@ -391,8 +391,15 @@ def create_LiveOcean_TS_BCs(
     :arg nowcast: Specifies that the boundary data is to be generated for the
                   nowcast framework. If true, the files are from a single
                   72 hour run beginning on start, in which case, the argument
-                  end is ignored. If false, a set of time series files
-                  is produced.
+                  end is ignored. If both this and single_nowcst are false,
+                  a set of time series files is produced.
+    :type nowcast: boolean
+
+    :arg single_nowcast: Specifies that the boundary data is to be generated for the
+                  nowcast framework. If true, the files are from a single tidally
+                  averaged value centered at 12 noon on day specified by start,
+                  in this case, the argument end is ignored. If both this and nowcast
+                  are false, a set of time series files is produced.
     :type nowcast: boolean
 
     :arg teos_10: specifies that temperature and salinity are saved in
@@ -414,6 +421,9 @@ def create_LiveOcean_TS_BCs(
     :returns: Boundary conditions files that were created.
     :rtype: list
     """
+    # Check for incoming consistency
+    if (nowcast and single_nowcast):
+        raise ValueError ('Choose either nowcast or single_nowcast, not both')
     # Create metadeta for temperature and salinity
     var_meta = {'vosaline': {'grid': 'SalishSea2',
                              'long_name': 'Practical Salinity',
@@ -434,21 +444,7 @@ def create_LiveOcean_TS_BCs(
     depBC, lonBC, latBC, shape = load_SalishSea_boundary_grid(fname=NEMO_BC)
 
     # Load and interpolate Live Ocean
-    if not nowcast:
-        if not single_nowcast:
-            files = _list_LO_time_series_files(start, end, LO_dir)
-            save_dir = bc_dir
-        else:
-            logger.info(
-            'Preparing one daily average Live Ocean result. '
-            'Argument end={} is ignored'.format(end))
-            sdt = datetime.datetime.strptime(start, '%Y-%m-%d')
-            files = [os.path.join(LO_dir, sdt.strftime('%Y%m%d'), 'low_passed_UBC.nc')]
-            print(files)
-            save_dir = os.path.join(bc_dir, start)
-            if not os.path.isdir(save_dir):
-                os.mkdir(save_dir)
-    else:
+    if nowcast:
         logger.info(
             'Preparing 48 hours of Live Ocean results. '
             'Argument end={} is ignored'.format(end))
@@ -456,6 +452,19 @@ def create_LiveOcean_TS_BCs(
         save_dir = os.path.join(bc_dir, start)
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
+    elif single_nowcast:
+        logger.info(
+            'Preparing one daily average Live Ocean result. '
+            'Argument end={} is ignored'.format(end))
+        sdt = datetime.datetime.strptime(start, '%Y-%m-%d')
+        files = [os.path.join(LO_dir, sdt.strftime('%Y%m%d'), 'low_passed_UBC.nc')]
+        save_dir = os.path.join(bc_dir, start)
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
+    else:
+        files = _list_LO_time_series_files(start, end, LO_dir)
+        save_dir = bc_dir
+
     LO_dataset = load_LiveOcean(files, resample_interval=avg_period)
     depth_interps = interpolate_to_NEMO_depths(LO_dataset, depBC,
                                                ['salt', 'temp'])
@@ -494,6 +503,8 @@ def create_LiveOcean_TS_BCs(
                 basename, sdt.strftime('y%Ym%md%d')))
         os.rename(d_file, filepath)
         filepaths.append(filepath)
+        if not os.listdir(save_dir):
+            os.rmdir(save_dir)
     else:
         filepaths = files
     return filepaths
