@@ -270,18 +270,17 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     return interps
 
 # calculations
-def recalcbioTSFits():
+#def recalcbioTSFits():
 
 # ------------------ Creation of files ------------------------------
 def create_LiveOcean_bio_BCs_fromTS(TSfile,outFile,
     TSdir = '/results/forcing/LiveOcean/boundary_conditions',
-    outDir = '/results'
+    outDir = '/results',
     nFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_NTS.csv',
     siFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_SiTS.csv',
     nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
     siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
-    
-    recalcFits=False)
+    recalcFits=False):
     # TS file is name of LO TS OBC file for the date you want bio OBCs for
     TS = nc.Dataset(os.path.join(TSdir,TSfile))
     outPath='/results/forcing/LiveOcean/boundary_conditions/bio'
@@ -351,14 +350,11 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,outFile,
 
     # set Si variable
     new.variables['Si'][:,:,:,:]=zcoeff*funfit+(1-zcoeff)*clim
-    
+
     new.close()
     TS.close()
 
     return
-
-
-
 
 
 def create_LiveOcean_TS_BCs(
@@ -443,6 +439,9 @@ def create_LiveOcean_TS_BCs(
             files = _list_LO_time_series_files(start, end, LO_dir)
             save_dir = bc_dir
         else:
+            logger.info(
+            'Preparing one daily average Live Ocean result. '
+            'Argument end={} is ignored'.format(end))
             sdt = datetime.datetime.strptime(start, '%Y-%m-%d')
             files = [os.path.join(LO_dir, sdt.strftime('%Y%m%d'), 'low_passed_UBC.nc')]
             print(files)
