@@ -20,7 +20,6 @@ from salishsea_tools import gsw_calls
 from scipy import interpolate
 
 import math
-import shutil
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -269,34 +268,129 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
 
     return interps
 
+def _bioFileSetup(TS,new):
+    for dname, the_dim in TS.dimensions.items():
+        new.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
+    deptht=new.createVariable('deptht','float32',('deptht',))
+    deptht.long_name = 'Vertical T Levels'
+    deptht.units = 'm'
+    deptht.positive = 'down'
+    deptht.valid_range = np.array((4., 428.))
+    deptht[:]=TS.variables['deptht']
+
+    #nav_lat
+    nav_lat = new.createVariable('nav_lat','float32',('yb','xbT'))
+    nav_lat.long_name = TS.variables['nav_lat'].long_name
+    nav_lat.units = TS.variables['nav_lat'].units
+    nav_lat[:] = TS.variables['nav_lat']
+
+    #nav_lon
+    nav_lon = new.createVariable('nav_lon','float32',('yb','xbT'))
+    nav_lon.long_name = TS.variables['nav_lon'].long_name
+    nav_lon.units = TS.variables['nav_lon'].units
+    nav_lon[:]=TS.variables['nav_lon']
+
+    # nbidta
+    nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
+    nbidta.long_name = TS.variables['nbidta'].long_name
+    nbidta.units = TS.variables['nbidta'].units
+    nbidta[:]=TS.variables['nbidta']
+
+    # nbjdta
+    nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
+    nbjdta.long_name = TS.variables['nbjdta'].long_name
+    nbjdta.units = TS.variables['nbjdta'].units
+    nbjdta[:]=TS.variables['nbjdta']
+
+    # nbrdta
+    nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
+    nbrdta.long_name = TS.variables['nbrdta'].long_name
+    nbrdta.units = TS.variables['nbrdta'].units
+    nbrdta[:]=TS.variables['nbrdta']
+
+    # time_counter
+    time_counter = new.createVariable('time_counter', 'float32', ('time_counter'))
+    time_counter.long_name = 'Time axis'
+    time_counter.axis = 'T'
+    time_counter.units = 'weeks since beginning of year'
+    if new == newBase:
+        time_counter[:]=TS.variables['time_counter']
+    elif new == newConst:
+        time_counter[:]=[0.0]
+    # NO3
+    voNO3 = newBase.createVariable('NO3', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voNO3.grid = TS.variables['votemper'].grid
+    voNO3.units = 'muM'
+    voNO3.long_name = 'Nitrate' 
+    # don't yet set values
+
+    #Si
+    voSi = newBase.createVariable('Si', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voSi.grid = TS.variables['votemper'].grid
+    voSi.units = 'muM'
+    voSi.long_name = 'Silica' 
+    # don't yet set values
+
+    return(new)
+
 # calculations
-#def recalcbioTSFits():
+def recalcbioTSFits(
+    nFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_NTS.csv',
+    siFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_SiTS.csv',
+    nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
+    siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
+    ):
+
+return
 
 # ------------------ Creation of files ------------------------------
-def create_LiveOcean_bio_BCs_fromTS(TSfile,outFile,
+def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
     TSdir = '/results/forcing/LiveOcean/boundary_conditions',
-    outDir = '/results',
+    outFile='bioLOTS_{:y%Ym%md%d}.nc',
+    outDir = '/results/forcing/LiveOcean/boundary_conditions/bio',
     nFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_NTS.csv',
     siFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_SiTS.csv',
     nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
     siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
     recalcFits=False):
+    """
+    :arg str strdate: the LiveOcean rundate in format yyyy-mm-dd
+
+    :arg str outFile: the outFile can be a filename or a filename template such as
+    the default
+
+    """
+
+    # if requested, recalculate nut-TS fits and nut climatologies from database
+    if recalcFits==True:
+        recalcBioTSFits(nFitFilePath = nFitFilePath,siFitFilePath = siFitFilePath,
+                         nClimFilePath = nClimFilePath, siClimFilePath = siClimFilePath)
+
+    # if no date is supplied, try to get it from the TS file name. otherwise, process it
+    if strdate==None:
+        TSyear=int(TSfile[-13:-9])
+        TSmon=int(TSfile[-8:-6])
+        TSday=int(TSfile[-5:-3])
+    else:
+        TSyear=int(strdate[0:4])
+        TSmon=int(strdate[5:7])
+        TSday=int(strdate[8:])
+    dtdate=dt.datetime(Tsyear,Tsmon,TSday)
+    YD=(dtdate-dt.datetime(TSyear-1,12,31)).days
+
+    # if necessary, substitue date into file name
+    if ('{' in outFile):
+        outFile=outFile.format(dtdate)
+
     # TS file is name of LO TS OBC file for the date you want bio OBCs for
     TS = nc.Dataset(os.path.join(TSdir,TSfile))
-    outPath='/results/forcing/LiveOcean/boundary_conditions/bio'
-    outName='bioOBCLOTS_'+TSfile[-14:]
 
-    # create and open file to write to
-    basefile='/ocean/eolson/MEOPAR/NEMO-3.6-inputs/boundary_conditions/bioOBC_LOBase.nc'
-    tofile=os.path.join(outPath,outName)
-    shutil.copy(basefile,tofile)
-    new = nc.Dataset(tofile,'r+',zlib=True)
-
-    # get the date from the filename
-    TSyear=int(TSfile[-13:-9])
-    TSmon=int(TSfile[-8:-6])
-    TSday=int(TSfile[-5:-3])
-    YD=(dt.datetime(TSyear,TSmon,TSday)-dt.datetime(TSyear-1,12,31)).days
+    # create and open file to write to, set up dimensions and vars
+    tofile = os.path.join(outDir,outFile)
+    new = nc.Dataset(tofile,'w',zlib=True)
+    new = _bioFileSetup(TS,new)
 
     # other definitions
     zs=np.array(new.variables['deptht'])
@@ -304,8 +398,8 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,outFile,
     ydays=np.arange(0,365,365/52)
 
     # load N data
-    nmat=np.loadtxt('/home/eolson/pyCode/notebooks/modelInput/OBC/nmat.csv',delimiter=',')
-    df = pd.read_csv('/home/eolson/pyCode/notebooks/modelInput/OBC/bioOBCfit_NTS.csv',index_col=0)
+    nmat=np.loadtxt(nClimFilePath,delimiter=',')
+    df = pd.read_csv(nFitFilePath,index_col=0)
     mC=df.loc[0,'mC']
     mT=df.loc[0,'mT']
     mS=df.loc[0,'mS']
@@ -330,8 +424,8 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,outFile,
     new.variables['NO3'][:,:,:,:]=zcoeff*funfit+(1-zcoeff)*clim
 
     # load Si data
-    simat=np.loadtxt('/home/eolson/pyCode/notebooks/modelInput/OBC/simat.csv',delimiter=',')
-    dfS = pd.read_csv('/home/eolson/pyCode/notebooks/modelInput/OBC/bioOBCfit_SiTS.csv',index_col=0)
+    simat=np.loadtxt(siClimFilePath,delimiter=',')
+    dfS = pd.read_csv(siFitFilePath,index_col=0)
     mC=dfS.loc[0,'mC']
     mT=dfS.loc[0,'mT']
     mS=dfS.loc[0,'mS']
