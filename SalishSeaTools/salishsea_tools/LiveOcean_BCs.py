@@ -335,15 +335,460 @@ def _bioFileSetup(TS,new):
 
     return(new)
 
+def _ginterp(xval,xPeriod,yval,L,xlocs):
+    # if not periodic, xPeriod=0
+    fil=np.empty(np.size(xlocs))
+    s=L/2.355
+    for ii in range(0,xlocs.size):
+        t=xlocs[ii]
+        diff=[min(abs(x-t),abs(x-t+xPeriod), abs(x-t-xPeriod)) for x in xval]
+        weight=[np.exp(-.5*x**2/s**2) if sum(diff<x)<2 or x < 5 else 0.0 for x in diff]
+        weight=np.array(weight)
+        if np.sum(weight)!=0:
+            fil[ii]=np.sum(weight*yval)/np.sum(weight)
+        else:
+            fil[ii]=np.nan
+    return(fil)
+
+def _ginterp2d(xval,xPeriod,yval,yPeriod,zval,L,M,zlocs_x,zlocs_y):
+    # if not periodic, xPeriod=0
+    s=L/2.355
+    n=M/2.355
+    sdict={}
+    mat=np.empty((np.size(zlocs_x),np.size(zlocs_y)))
+    for ii in range(0,zlocs_x.size):
+        print(ii)
+        for jj in range(0,zlocs_y.size):
+            tx=zlocs_x[ii]
+            ty=zlocs_y[jj]
+            diffx=[min(abs(x-tx),abs(x-tx+xPeriod), abs(x-tx-xPeriod)) for x in xval]
+            diffy=[min(abs(y-ty),abs(y-ty+yPeriod), abs(y-ty-yPeriod)) for y in yval]
+            weight=[np.exp(-.5*(x**2+y**2)/(s**2+n**2)) if \
+                    (sum(diffx<x)<3 or x < L) and (sum(diffy<y)<3 or y < M) \
+                    else 0.0 for x, y in zip(diffx, diffy)]
+            weight=np.array(weight)
+            if np.sum(weight)!=0:
+                sdict[(tx,ty)]=np.sum(weight*zval)/np.sum(weight)
+                mat[ii,jj]=np.sum(weight*zval)/np.sum(weight)
+            else:
+                sdict[(tx,ty)]=np.nan
+                mat[ii,jj]=np.nan
+    return(sdict,mat)
+
 # calculations
-def recalcbioTSFits(
+def recalcBioTSFits(TSfile,
+    TSdir = '/results/forcing/LiveOcean/boundary_conditions',
     nFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_NTS.csv',
     siFitFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/bioOBCfit_SiTS.csv',
     nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
     siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
-    ):
+    constFile='/ocean/eolson/MEOPAR/NEMO-3.6-inputs/boundary_conditions/bioOBC_constTest.nc'):
+    # recalculate TS fits and also create new constants file
+    try:
+        import sqlalchemy
+        from sqlalchemy import create_engine, case
+        from sqlalchemy.orm import create_session
+        from sqlalchemy.ext.automap import automap_base
+        from sqlalchemy.sql import and_, or_, not_, func
+    except ImportError:
+        raise ImportError('You need to install sqlalchemy in your environment to run recalcBioTSFits.')
+    # Load 3D T+S
+    # define constant values, not yet based on data:
+    val_bSi=7.74709546875e-06
+    val_DIA=1e-8
+    val_CRY=1e-8
+    val_MYRI=1e-8
+    val_MICZ=1e-8
+    val_Oxy = 160.0
+    val_Tur = 0.0
 
-return
+    TSfile='LO_y2016m10d25.nc'
+    TSFilePath=os.path.join(TSdir,TSfile)
+    TS = nc.Dataset(TSFilePath)
+
+    newConst = nc.Dataset(constFile, 'w', zlib=True)
+    #Copy dimensions
+    for dname, the_dim in TS.dimensions.items():
+        newConst.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
+
+    # create dimension variables:
+    # deptht
+    new =newConst
+    deptht=new.createVariable('deptht','float32',('deptht',))
+    deptht.long_name = 'Vertical T Levels'
+    deptht.units = 'm'
+    deptht.positive = 'down'
+    deptht.valid_range = np.array((4., 428.))
+    deptht[:]=TS.variables['deptht']
+    #nav_lat
+    nav_lat = new.createVariable('nav_lat','float32',('yb','xbT'))
+    nav_lat.long_name = TS.variables['nav_lat'].long_name
+    nav_lat.units = TS.variables['nav_lat'].units
+    nav_lat[:] = TS.variables['nav_lat']
+    #nav_lon
+    nav_lon = new.createVariable('nav_lon','float32',('yb','xbT'))
+    nav_lon.long_name = TS.variables['nav_lon'].long_name
+    nav_lon.units = TS.variables['nav_lon'].units
+    nav_lon[:]=TS.variables['nav_lon']
+    # nbidta
+    nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
+    nbidta.long_name = TS.variables['nbidta'].long_name
+    nbidta.units = TS.variables['nbidta'].units
+    nbidta[:]=TS.variables['nbidta']
+    # nbjdta
+    nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
+    nbjdta.long_name = TS.variables['nbjdta'].long_name
+    nbjdta.units = TS.variables['nbjdta'].units
+    nbjdta[:]=TS.variables['nbjdta']
+    # nbrdta
+    nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
+    nbrdta.long_name = TS.variables['nbrdta'].long_name
+    nbrdta.units = TS.variables['nbrdta'].units
+    nbrdta[:]=TS.variables['nbrdta']
+    # time_counter
+    time_counter = new.createVariable('time_counter', 'float32', ('time_counter'))
+    time_counter.long_name = 'Time axis'
+    time_counter.axis = 'T'
+    time_counter.units = 'weeks since beginning of year'
+    time_counter[:]=[0.0]
+    # variables: NO3, Si, NH4, PHY, PHY2, MYRI, MICZ, POC, DOC, bSi
+    #NH4
+    voNH4 = newConst.createVariable('NH4', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voNH4.grid = TS.variables['votemper'].grid
+    voNH4.units = 'muM'
+    voNH4.long_name = 'Ammonia' 
+    # don't yet set values
+    #DIA
+    voDIA = newConst.createVariable('DIA', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voDIA.units = 'muM N'
+    voDIA.long_name = 'Diatoms'
+    voDIA.grid = TS.variables['votemper'].grid
+    voDIA[:]=val_DIA
+    #CRY
+    voCRY = newConst.createVariable('CRY', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voCRY.units = 'muM N'
+    voCRY.long_name = 'Cryptophytes'
+    voCRY.grid = TS.variables['votemper'].grid
+    voCRY[:]=val_CRY
+    #MYRI
+    voMYRI = newConst.createVariable('MYRI', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voMYRI.units = 'muM N'
+    voMYRI.long_name = 'M. rubra' 
+    voMYRI.grid = TS.variables['votemper'].grid
+    voMYRI[:]=val_MYRI
+    #MICZ
+    voMICZ = newConst.createVariable('MICZ', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voMICZ.units = 'muM N'
+    voMICZ.long_name = 'Microzooplankton' 
+    voMICZ.grid = TS.variables['votemper'].grid
+    voMICZ[:]=val_MICZ
+    #PON
+    voPON = newConst.createVariable('PON', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voPON.units = 'muM N'
+    voPON.long_name = 'Particulate Organic Nitrogen'
+    voPON.grid = TS.variables['votemper'].grid
+    #voPON[:] = val_PON
+    #DON
+    voDON = newConst.createVariable('DON', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    voDON.units = 'muM N'
+    voDON.long_name = 'Dissolved Organic Nitrogen'
+    voDON.grid = TS.variables['votemper'].grid
+    #voDON[:]=DON_val
+    #bSi
+    vobSi = newConst.createVariable('bSi', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    vobSi.units = 'muM N'
+    vobSi.long_name = 'Biogenic Silica'
+    vobSi.grid = TS.variables['votemper'].grid
+    vobSi[:]=val_bSi
+    #O2
+    voO2 = newConst.createVariable('O2', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    #voO2.units = ''
+    voO2.long_name = 'oxygen'
+    voO2.grid = TS.variables['votemper'].grid
+    voO2[:]=val_Oxy
+    #turbidity
+    votu = newConst.createVariable('tur', 'float32', 
+                                   ('time_counter','deptht','yb','xbT'))
+    #voO2.units = ''
+    votu.long_name = 'turbidity'
+    votu.grid = TS.variables['votemper'].grid
+    votu[:]=0.0
+
+    # load database for data-based conditions
+    basepath='/ocean/eolson/MEOPAR/obs/'
+    basedir=basepath + 'DFOOPDB/'
+    dbname='DFO_OcProfDB'
+
+    # engine and reflection
+    Base = automap_base()
+    engine = create_engine('sqlite:///' + basedir + dbname + '.sqlite', echo = False)
+    Base.prepare(engine, reflect=True)
+    Station=Base.classes.StationTBL
+    Obs=Base.classes.ObsTBL
+    JDFLocs=Base.classes.JDFLocsTBL
+    Calcs=Base.classes.CalcsTBL
+    session = create_session(bind = engine, autocommit = False, autoflush = True)
+
+    # definitions
+    SA=case([(Calcs.Salinity_Bottle_SA!=None, Calcs.Salinity_Bottle_SA)], else_=
+             case([(Calcs.Salinity_T0_C0_SA!=None, Calcs.Salinity_T0_C0_SA)], else_=
+             case([(Calcs.Salinity_T1_C1_SA!=None, Calcs.Salinity_T1_C1_SA)], else_=
+             case([(Calcs.Salinity_SA!=None, Calcs.Salinity_SA)], else_=
+             case([(Calcs.Salinity__Unknown_SA!=None, Calcs.Salinity__Unknown_SA)], else_=Calcs.Salinity__Pre1978_SA)
+            ))))
+    NO=case([(Obs.Nitrate_plus_Nitrite!=None, Obs.Nitrate_plus_Nitrite)], else_=Obs.Nitrate)
+    NOUnits=case([(Obs.Nitrate_plus_Nitrite!=None, Obs.Nitrate_plus_Nitrite_units)], else_=Obs.Nitrate_units)
+    NOFlag=case([(Obs.Nitrate_plus_Nitrite!=None, Obs.Flag_Nitrate_plus_Nitrite)], else_=Obs.Flag_Nitrate)
+    # Obs.Quality_Flag_Nitr does not match any nitrate obs
+    # ISUS not included in this NO
+    Tem=case([(Obs.Temperature!=None, Obs.Temperature)], else_=
+             case([(Obs.Temperature_Primary!=None, Obs.Temperature_Primary)], else_=
+             case([(Obs.Temperature_Secondary!=None, Obs.Temperature_Secondary)], else_=Obs.Temperature_Reversing)))
+    TemUnits=case([(Obs.Temperature!=None, Obs.Temperature_units)], else_=
+             case([(Obs.Temperature_Primary!=None, Obs.Temperature_Primary_units)], else_=
+             case([(Obs.Temperature_Secondary!=None, Obs.Temperature_Secondary_units)], 
+                  else_=Obs.Temperature_Reversing_units)))
+    TemFlag=Obs.Quality_Flag_Temp
+    Ox=case([(Calcs.Oxygen_umolL!=None, Calcs.Oxygen_umolL)], else_=Calcs.Oxygen_Dissolved_umolL)
+    OxFlag=case([(Calcs.Oxygen_umolL!=None, Obs.Quality_Flag_Oxyg)], else_=Obs.Flag_Oxygen_Dissolved)
+    Press=case([(Obs.Pressure!=None, Obs.Pressure)], else_=Obs.Pressure_Reversing)
+
+    # Ammonium:
+
+    q=session.query(JDFLocs.ObsID, Station.StartYear,Station.StartMonth,Press,
+                    Obs.Ammonium,Obs.Ammonium_units,Tem,SA).select_from(Obs).\
+            join(JDFLocs,JDFLocs.ObsID==Obs.ID).join(Station,Station.ID==Obs.StationTBLID).\
+            join(Calcs,Calcs.ObsID==Obs.ID).filter(Obs.Ammonium!=None).\
+            all()
+    qP=[]
+    qNH=[]
+    remP=[]
+    remNH=[]
+    for OID, Yr, Mn, P, NH, un, T, S_A in q:
+        # throw out 1 data point that seems unusually high
+        if not (P>75 and NH >.2):
+            qP.append(P)
+            qNH.append(NH)
+        else:
+            remP.append(P)
+            remNH.append(NH)
+    qP=np.array(qP)
+    qNH=np.array(qNH)
+    remP=np.array(remP)
+    remNH=np.array(remNH)
+
+    # create depth-weighted mean profile using gaussian filter
+    zs=np.array(TS.variables['deptht'])
+    AmmProf=_ginterp(qP,0.0,qNH,10,zs)
+    AmmProf[AmmProf!=AmmProf]=0.0
+
+
+    for ii in range(0,zs.size):
+        voNH4[:,ii,0,:]=AmmProf[ii]
+
+    # DON
+
+    # take nearest available data to SJDF
+    q=session.query(Station.StartYear,Station.StartMonth,Press, Station.Lat, Station.Lon,Obs.Depth,
+                    Obs.Nitrogen_Dissolved_Organic,Obs.Nitrogen_Dissolved_Organic_units,Tem).\
+            select_from(Obs).join(Station,Station.ID==Obs.StationTBLID).\
+            filter(Obs.Nitrogen_Dissolved_Organic!=None).filter(Obs.Nitrogen_Dissolved_Organic>=0).\
+            filter(Station.Lat!=None).filter(Station.Lon!=None).\
+            filter(Station.Lat<48.8).filter(Station.Lon<-125).all()
+
+    qDON=[]
+    for row in q:
+        qDON.append(row.Nitrogen_Dissolved_Organic)
+    val_DON=np.mean(qDON)
+
+    voDON[:,:,:,:]=val_DON
+
+    # PON
+
+    # take nearest available data to SJDF
+    q=session.query(Station.StartYear,Station.StartMonth,Press, Station.Lat, Station.Lon,Obs.Depth,
+                    Obs.Nitrogen_Particulate_Organic,Obs.Nitrogen_Particulate_Organic_units,Tem).\
+            select_from(Obs).join(Station,Station.ID==Obs.StationTBLID).\
+            filter(Obs.Nitrogen_Particulate_Organic!=None).filter(Obs.Nitrogen_Particulate_Organic>=0).\
+            filter(Station.Lat!=None).filter(Station.Lon!=None).\
+            filter(Station.Lat<48.8).filter(Station.Lon<-125).all()
+
+    qPON=[]
+    for row in q:
+        qPON.append(row.Nitrogen_Particulate_Organic)
+    val_PON=np.mean(qPON)
+
+    voPON[:,:,:,:]=val_PON
+
+    newConst.close()
+    TS.close()
+
+    # set up NO3 and save climatology:
+    # umol/L=mmol/m**3, so all NO units the same
+    q=session.query(JDFLocs.ObsID, Station.StartYear,Station.StartMonth,Press,NO,
+                    Tem,SA,Station.StartDay).select_from(Obs).\
+            join(JDFLocs,JDFLocs.ObsID==Obs.ID).join(Station,Station.ID==Obs.StationTBLID).\
+            join(Calcs,Calcs.ObsID==Obs.ID).filter(SA<38).filter(SA>0).filter(NO!=None).\
+            filter(Tem!=None).filter(SA!=None).filter(Press!=None).\
+            all()
+    qYr=[]
+    qMn=[]
+    qDy=[]
+    qP=[]
+    qNO=[]
+    qT=[]
+    qSA=[]
+    qNO50=[]
+    qSA50=[]
+    qP50=[]
+    qT50=[]
+    date=[]
+    for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
+        qYr.append(Yr)
+        qMn.append(Mn)
+        qDy.append(dy)
+        qP.append(P)
+        qNO.append(NO3)
+        qT.append(T)
+        qSA.append(S_A)
+        date.append(datetime.date(int(Yr),int(Mn),int(dy)))
+        if P>80:
+            qNO50.append(NO3)
+            qT50.append(T)
+            qSA50.append(S_A)
+            qP50.append(P)
+    qSA=np.array(qSA)
+    qT=np.array(qT)
+    qP=np.array(qP)
+    qNO=np.array(qNO)
+    qSA50=np.array(qSA50)
+    qT50=np.array(qT50)
+    qP50=np.array(qP50)
+    qTC=gsw_calls.generic_gsw_caller('gsw_CT_from_t.m',
+                                                 [qSA, qT, qP, ])
+    qTC50=gsw_calls.generic_gsw_caller('gsw_CT_from_t.m',
+                                                 [qSA50, qT50, qP50, ])
+    date=np.array(date)
+    YD=0.0*qTC
+    for i in range(0,len(YD)):
+        YD[i]=date[i].timetuple().tm_yday
+    qNO50=np.array(qNO50)
+
+    a=np.vstack([qTC50,qSA50,np.ones(len(qTC50))]).T
+    #a2=np.vstack([qTC,qSA,np.ones(len(qTC))]).T
+    m = np.linalg.lstsq(a,qNO50)[0]
+    mT, mS, mC = m
+    df=pd.DataFrame({'mC':[mC],'mT':[mT],'mS':[mS]})
+    df.to_csv(nFitFilePath)
+
+    zupper=np.extract(zs<100, zs)
+    ydays=np.arange(0,365,365/52)
+
+    # umol/L=mmol/m**3, so all NO units the same
+    q=session.query(JDFLocs.ObsID, Station.StartYear,Station.StartMonth,Press,NO,
+                    Tem,SA,Station.StartDay).select_from(Obs).\
+            join(JDFLocs,JDFLocs.ObsID==Obs.ID).join(Station,Station.ID==Obs.StationTBLID).\
+            join(Calcs,Calcs.ObsID==Obs.ID).filter(SA<38).filter(SA>0).filter(NO!=None).\
+            filter(Tem!=None).filter(SA!=None).filter(Press<120).filter(Press!=None).\
+            all()
+    #for row in q:
+    #    print(row)
+
+    qYr=[]
+    qMn=[]
+    qDy=[]
+    qP=[]
+    qNO=[]
+    date=[]
+    for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
+        qYr.append(Yr)
+        qMn.append(Mn)
+        qDy.append(dy)
+        qP.append(P)
+        qNO.append(NO3)
+        date.append(datetime.date(int(Yr),int(Mn),int(dy)))
+
+    qP=np.array(qP)
+    qNO=np.array(qNO)
+    date=np.array(date)
+    YD=0.0*qNO
+    for i in range(0,len(YD)):
+        YD[i]=date[i].timetuple().tm_yday
+
+    ndict,nmat=_ginterp2d(YD,365,qP,0,qNO,30,10,ydays,zupper)
+    np.savetxt(nClimFilePath,nmat,delimiter=',')
+
+    # set up Si and save climatology:
+    # umol/L=mmol/m**3, so all NO units the same
+    q=session.query(JDFLocs.ObsID, Station.StartYear,Station.StartMonth,Press,
+                    Obs.Silicate,Tem,SA,Station.StartDay).select_from(Obs).\
+            join(JDFLocs,JDFLocs.ObsID==Obs.ID).join(Station,Station.ID==Obs.StationTBLID).\
+            join(Calcs,Calcs.ObsID==Obs.ID).filter(SA<38).filter(SA>0).filter(Obs.Silicate!=None).\
+            filter(Tem!=None).filter(SA!=None).filter(Press!=None).\
+            all()
+    qP50=[]
+    qNO50=[]
+    qSA50=[]
+    qT50=[]
+    date=[]
+    for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
+        if P>80:
+            qP50.append(P)
+            qNO50.append(NO3)
+            qT50.append(T)
+            qSA50.append(S_A)
+
+    qP50 =np.array(qP50)
+    qSA50=np.array(qSA50)
+    qT50 =np.array(qT50)
+    qTC50=gsw_calls.generic_gsw_caller('gsw_CT_from_t.m',[qSA50, qT50, qP50, ])
+    qNO50=np.array(qNO50)
+
+    a=np.vstack([qTC50,qSA50,np.ones(len(qTC50))]).T
+    m = np.linalg.lstsq(a,qNO50)[0]
+    mT, mS, mC = m
+    df=pd.DataFrame({'mC':[mC],'mT':[mT],'mS':[mS]})
+    df.to_csv(siFitFilePath)
+
+    # umol/L=mmol/m**3, so all NO units the same
+    q=session.query(JDFLocs.ObsID, Station.StartYear,Station.StartMonth,Press,Obs.Silicate,
+                    Tem,SA,Station.StartDay).select_from(Obs).\
+            join(JDFLocs,JDFLocs.ObsID==Obs.ID).join(Station,Station.ID==Obs.StationTBLID).\
+            join(Calcs,Calcs.ObsID==Obs.ID).filter(SA<38).filter(SA>0).filter(Obs.Silicate!=None).\
+            filter(Tem!=None).filter(SA!=None).filter(Press<120).filter(Press!=None).\
+            all()
+    qYr=[]
+    qMn=[]
+    qDy=[]
+    qP=[]
+    qNO=[]
+    date=[]
+    for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
+        qYr.append(Yr)
+        qMn.append(Mn)
+        qDy.append(dy)
+        qP.append(P)
+        qNO.append(NO3)
+        date.append(datetime.date(int(Yr),int(Mn),int(dy)))
+    qP=np.array(qP)
+    qNO=np.array(qNO)
+    date=np.array(date)
+    YD=0.0*qTC
+    for i in range(0,len(YD)):
+        YD[i]=date[i].timetuple().tm_yday
+    sidict,simat=_ginterp2d(YD,365,qP,0,qNO,30,10,ydays,zupper)
+    np.savetxt(siClimFilePath,simat,delimiter=',')
+
+    return
 
 # ------------------ Creation of files ------------------------------
 def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
