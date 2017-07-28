@@ -31,7 +31,7 @@ def pcourantu(files,meshmask):
 
     :arg files: list of U filenames
 
-    :arg meshmask: mesh mask 
+    :arg meshmask: mesh mask
     :type meshmask: :py:class:`netCDF4.Dataset`
 
     :returns: Numpy MaskedArray with unscaled Courant numbers.
@@ -39,26 +39,26 @@ def pcourantu(files,meshmask):
     """
 
     delta_x = meshmask['e1u'][:]
-    with nc_tools.scDataset(files) as f: #merging files
+    with nc_tools.scDataset(files) as f:             #merging files
         nt,nz,ny,nx = f.variables['vozocrtx'].shape
-        ubdx = np.zeros((nz,ny,nx))
+        umax = np.zeros((nz,ny,nx))
         for n in range(nt):
-            u = np.abs(f.variables['vozocrtx'][n,:,:,:] / delta_x)
-            ubdx = np.maximum(u,ubdx)    #taking maximum over time
-        new_u = np.zeros((ny,nx))
+            utmp = np.abs(f.variables['vozocrtx'][n,:,:,:])
+            umax = np.maximum(utmp,umax)             #taking maximum over time
+        ubdxmax = np.zeros((ny,nx))
         for m in range(nz):
-            u = ubdx[m,:,:]
-            new_u = np.maximum(u,new_u)  #taking maximum over depth
+            ubdxtmp = umax[m,...] / delta_x[0,...]
+            ubdxmax = np.maximum(ubdxtmp,ubdxmax)    #taking maximum over depth
 
     umask = meshmask['umask'][0,0,...]
-    return ma.masked_array(new_u, mask = 1-umask)
+    return ma.masked_array(ubdxmax, mask = 1-umask)
 
 def pcourantv(files,meshmask):
     """Given a list of V filenames and a mesh mask, returns an array with the unscaled Courant numbers.
 
     :arg files: list of V filenames
 
-    :arg meshmask: mesh mask 
+    :arg meshmask: mesh mask
     :type meshmask: :py:class:`netCDF4.Dataset`
 
     :returns: Numpy MaskedArray with unscaled Courant numbers.
@@ -66,45 +66,47 @@ def pcourantv(files,meshmask):
     """
 
     delta_y = meshmask['e2v'][:]
-    with nc_tools.scDataset(files) as f: #merging files
+    with nc_tools.scDataset(files) as f:             #merging files
         nt,nz,ny,nx = f.variables['vomecrty'].shape
-        vbdx = np.zeros((nz,ny,nx))
+        vmax = np.zeros((nz,ny,nx))
         for n in range(nt):
-            v = np.abs(f.variables['vomecrty'][n,:,:,:] / delta_y)
-            vbdx = np.maximum(v,vbdx)    #taking maximum over time
-        new_v = np.zeros((ny,nx))
+            vtmp = np.abs(f.variables['vomecrty'][n,:,:,:])
+            vmax = np.maximum(vtmp,vmax)             #taking maximum over time
+        vbdymax = np.zeros((ny,nx))
         for m in range(nz):
-            v = vbdx[m,:,:]
-            new_v = np.maximum(v,new_v)  #taking maximum over deptht
+            vbdytmp = vmax[m,...] / delta_y[0,...]
+            vbdymax = np.maximum(vbdytmp,vbdymax)    #taking maximum over depth
 
     vmask = meshmask['vmask'][0,0,...]
-    return ma.masked_array(new_v, mask = 1-vmask)
+    return ma.masked_array(vbdymax, mask = 1-vmask)
 
 def pcourantw(files,meshmask):
     """Given a list of W filenames and a mesh mask, returns an array with the unscaled Courant numbers.
 
     :arg files: list of W filenames
 
-    :arg meshmask: mesh mask 
+    :arg meshmask: mesh mask
     :type meshmask: :py:class:`netCDF4.Dataset`
 
     :returns: Numpy MaskedArray with unscaled Courant numbers.
     :rtype: :py:class: `numpy.ma.core.MaskedArray`
     """
 
-    with nc_tools.scDataset(files) as f: #merging files
+    with nc_tools.scDataset(files) as f:             #merging files
         nt,nz,ny,nx = f.variables['vovecrtz'].shape
-        wbdx = np.zeros((nz,ny,nx))
         delta_z = meshmask['e3w_1d'][0,...]
         delta_z = delta_z[:,np.newaxis,np.newaxis]
 
+        wmax = np.zeros((nz,ny,nx))
         for n in range(nt):
-            w = np.abs(f.variables['vovecrtz'][n,:,:,:] / delta_z)
-            wbdx = np.maximum(w,wbdx)    #taking maximum over time
-        new_w = np.zeros((ny,nx))
+            wtmp = np.abs(f.variables['vovecrtz'][n,:,:,:])
+            wmax = np.maximum(wtmp,wmax)             #taking maximum over time
+        wbdz = wmax / delta_z
+
+        wbdzmax = np.zeros((ny,nx))
         for m in range(nz):
-            w = wbdx[m,:,:]
-            new_w = np.maximum(w,new_w)  #taking maximum over deptht
+            wbdztmp = wbdz[m,...]
+            wbdzmax = np.maximum(wbdztmp,wbdzmax)    #taking maximum over depth
 
     tmask = meshmask['tmask'][0,0,...]
-    return ma.masked_array(new_w, mask = 1-tmask)
+    return ma.masked_array(wbdzmax, mask = 1-tmask)
