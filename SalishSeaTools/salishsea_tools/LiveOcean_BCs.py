@@ -290,35 +290,32 @@ def _bioFileSetup(TS,new):
     nav_lon.units = TS.variables['nav_lon'].units
     nav_lon[:]=TS.variables['nav_lon']
 
-    # nbidta
-    nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
-    nbidta.long_name = TS.variables['nbidta'].long_name
-    nbidta.units = TS.variables['nbidta'].units
-    nbidta[:]=TS.variables['nbidta']
+    ## nbidta
+    #nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
+    #nbidta.long_name = TS.variables['nbidta'].long_name
+    #nbidta.units = TS.variables['nbidta'].units
+    #nbidta[:]=TS.variables['nbidta']
 
-    # nbjdta
-    nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
-    nbjdta.long_name = TS.variables['nbjdta'].long_name
-    nbjdta.units = TS.variables['nbjdta'].units
-    nbjdta[:]=TS.variables['nbjdta']
+    ## nbjdta
+    #nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
+    #nbjdta.long_name = TS.variables['nbjdta'].long_name
+    #nbjdta.units = TS.variables['nbjdta'].units
+    #nbjdta[:]=TS.variables['nbjdta']
 
-    # nbrdta
-    nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
-    nbrdta.long_name = TS.variables['nbrdta'].long_name
-    nbrdta.units = TS.variables['nbrdta'].units
-    nbrdta[:]=TS.variables['nbrdta']
+    ## nbrdta
+    #nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
+    #nbrdta.long_name = TS.variables['nbrdta'].long_name
+    #nbrdta.units = TS.variables['nbrdta'].units
+    #nbrdta[:]=TS.variables['nbrdta']
 
     # time_counter
     time_counter = new.createVariable('time_counter', 'float32', ('time_counter'))
     time_counter.long_name = 'Time axis'
     time_counter.axis = 'T'
     time_counter.units = 'weeks since beginning of year'
-    if new == newBase:
-        time_counter[:]=TS.variables['time_counter']
-    elif new == newConst:
-        time_counter[:]=[0.0]
+    time_counter[:]=TS.variables['time_counter']
     # NO3
-    voNO3 = newBase.createVariable('NO3', 'float32', 
+    voNO3 = new.createVariable('NO3', 'float32', 
                                    ('time_counter','deptht','yb','xbT'))
     voNO3.grid = TS.variables['votemper'].grid
     voNO3.units = 'muM'
@@ -326,7 +323,7 @@ def _bioFileSetup(TS,new):
     # don't yet set values
 
     #Si
-    voSi = newBase.createVariable('Si', 'float32', 
+    voSi = new.createVariable('Si', 'float32', 
                                    ('time_counter','deptht','yb','xbT'))
     voSi.grid = TS.variables['votemper'].grid
     voSi.units = 'muM'
@@ -430,21 +427,22 @@ def recalcBioTSFits(TSfile,
     nav_lon.long_name = TS.variables['nav_lon'].long_name
     nav_lon.units = TS.variables['nav_lon'].units
     nav_lon[:]=TS.variables['nav_lon']
-    # nbidta
-    nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
-    nbidta.long_name = TS.variables['nbidta'].long_name
-    nbidta.units = TS.variables['nbidta'].units
-    nbidta[:]=TS.variables['nbidta']
-    # nbjdta
-    nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
-    nbjdta.long_name = TS.variables['nbjdta'].long_name
-    nbjdta.units = TS.variables['nbjdta'].units
-    nbjdta[:]=TS.variables['nbjdta']
-    # nbrdta
-    nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
-    nbrdta.long_name = TS.variables['nbrdta'].long_name
-    nbrdta.units = TS.variables['nbrdta'].units
-    nbrdta[:]=TS.variables['nbrdta']
+    # variables below no longer included
+    ## nbidta
+    #nbidta=new.createVariable('nbidta','int32',('yb','xbT'))
+    #nbidta.long_name = TS.variables['nbidta'].long_name
+    #nbidta.units = TS.variables['nbidta'].units
+    #nbidta[:]=TS.variables['nbidta']
+    ## nbjdta
+    #nbjdta=new.createVariable('nbjdta','int32',('yb','xbT'))
+    #nbjdta.long_name = TS.variables['nbjdta'].long_name
+    #nbjdta.units = TS.variables['nbjdta'].units
+    #nbjdta[:]=TS.variables['nbjdta']
+    ## nbrdta
+    #nbrdta=new.createVariable('nbrdta','int32',('yb','xbT'))
+    #nbrdta.long_name = TS.variables['nbrdta'].long_name
+    #nbrdta.units = TS.variables['nbrdta'].units
+    #nbrdta[:]=TS.variables['nbrdta']
     # time_counter
     time_counter = new.createVariable('time_counter', 'float32', ('time_counter'))
     time_counter.long_name = 'Time axis'
@@ -640,47 +638,22 @@ def recalcBioTSFits(TSfile,
             join(Calcs,Calcs.ObsID==Obs.ID).filter(SA<38).filter(SA>0).filter(NO!=None).\
             filter(Tem!=None).filter(SA!=None).filter(Press!=None).\
             all()
-    qYr=[]
-    qMn=[]
-    qDy=[]
-    qP=[]
-    qNO=[]
-    qT=[]
-    qSA=[]
     qNO50=[]
     qSA50=[]
     qP50=[]
     qT50=[]
-    date=[]
     for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
-        qYr.append(Yr)
-        qMn.append(Mn)
-        qDy.append(dy)
-        qP.append(P)
-        qNO.append(NO3)
-        qT.append(T)
-        qSA.append(S_A)
-        date.append(datetime.date(int(Yr),int(Mn),int(dy)))
         if P>80:
             qNO50.append(NO3)
             qT50.append(T)
             qSA50.append(S_A)
             qP50.append(P)
-    qSA=np.array(qSA)
-    qT=np.array(qT)
-    qP=np.array(qP)
-    qNO=np.array(qNO)
+    qNO50=np.array(qNO50)
     qSA50=np.array(qSA50)
     qT50=np.array(qT50)
     qP50=np.array(qP50)
-    qTC=gsw_calls.generic_gsw_caller('gsw_CT_from_t.m',
-                                                 [qSA, qT, qP, ])
     qTC50=gsw_calls.generic_gsw_caller('gsw_CT_from_t.m',
                                                  [qSA50, qT50, qP50, ])
-    date=np.array(date)
-    YD=0.0*qTC
-    for i in range(0,len(YD)):
-        YD[i]=date[i].timetuple().tm_yday
     qNO50=np.array(qNO50)
 
     a=np.vstack([qTC50,qSA50,np.ones(len(qTC50))]).T
@@ -739,7 +712,6 @@ def recalcBioTSFits(TSfile,
     qNO50=[]
     qSA50=[]
     qT50=[]
-    date=[]
     for OID, Yr, Mn, P, NO3, T, S_A, dy in q:
         if P>80:
             qP50.append(P)
@@ -782,7 +754,7 @@ def recalcBioTSFits(TSfile,
     qP=np.array(qP)
     qNO=np.array(qNO)
     date=np.array(date)
-    YD=0.0*qTC
+    YD=0.0*qP
     for i in range(0,len(YD)):
         YD[i]=date[i].timetuple().tm_yday
     sidict,simat=_ginterp2d(YD,365,qP,0,qNO,30,10,ydays,zupper)
@@ -822,8 +794,8 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
         TSyear=int(strdate[0:4])
         TSmon=int(strdate[5:7])
         TSday=int(strdate[8:])
-    dtdate=dt.datetime(Tsyear,Tsmon,TSday)
-    YD=(dtdate-dt.datetime(TSyear-1,12,31)).days
+    dtdate=datetime.datetime(TSyear,TSmon,TSday)
+    YD=(dtdate-datetime.datetime(TSyear-1,12,31)).days
 
     # if necessary, substitue date into file name
     if ('{' in outFile):
