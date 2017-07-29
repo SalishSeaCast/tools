@@ -380,8 +380,23 @@ def recalcBioTSFits(TSfile,
     nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
     siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
     constFile='/ocean/eolson/MEOPAR/NEMO-3.6-inputs/boundary_conditions/bioOBC_constTest.nc'):
-    # recalculate TS fits and also create new constants file
-    try:
+    """Recalculate TS fits and also create new boundary file for constant variables.
+
+    :arg str TSfile: the name of a TS boundary file to use as a template for dimensions
+
+    :arg str TSdir: path to the specified TSfile
+
+    :arg str nFitFilePath: path and filename where N to T,S fit coefficients will be saved 
+    
+    :arg str siFitFilePath: path and filename where Si to T,S fit coefficients will be saved
+ 
+    :arg str nClimFilePath: path and filename where N upper water column climatology will be saved 
+
+    :arg str siClimFilePath: path and filename where Si upper water column climatology will be saved 
+
+    :arg str constFile: path and filename where constant BC variables will be stored
+    """
+    #     try:
         import sqlalchemy
         from sqlalchemy import create_engine, case
         from sqlalchemy.orm import create_session
@@ -772,11 +787,30 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
     nClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/nmat.csv',
     siClimFilePath = '/results/forcing/LiveOcean/boundary_conditions/bio/fits/simat.csv',
     recalcFits=False):
-    """
-    :arg str strdate: the LiveOcean rundate in format yyyy-mm-dd
+    """ create BC files from LiveOcean-based TS BC files using linear fit of N and Si to T and S
 
-    :arg str outFile: the outFile can be a filename or a filename template such as
-    the default
+    :arg str TSfile: name of LiveOcean-based TS Bc file
+
+    :arg str strdate: the LiveOcean rundate in format yyyy-mm-dd. If not provided, it will be 
+                        inferred from TSfile if possible.
+
+    :arg str TSdir: path to directory where TSfile is located
+
+    :arg str outFile: file name or nowcast-style filename template for output file
+
+    :arg str outDir: path where outFile should be created
+
+    :arg str nFitFilePath: path and filename from which to load N to T,S fit coefficients 
+    
+    :arg str siFitFilePath: path and filename from which to load Si to T,S fit coefficients
+ 
+    :arg str nClimFilePath: path and filename from which to load N upper water column climatology
+
+    :arg str siClimFilePath: path and filename from which to load Si upper water column climatology
+
+    :arg Boolean recalcFits: if true, recalculate the T,S fits and store them in the paths
+                             they would otherwise be loaded from. Constant variable BC file will 
+                             also be recalculated and overwritten at default path.
 
     """
 
@@ -865,7 +899,7 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
     new.close()
     TS.close()
 
-    return
+    return 
 
 
 def create_LiveOcean_TS_BCs(
