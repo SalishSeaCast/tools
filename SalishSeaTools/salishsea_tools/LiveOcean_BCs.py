@@ -396,7 +396,7 @@ def recalcBioTSFits(TSfile,
 
     :arg str constFile: path and filename where constant BC variables will be stored
     """
-    #     try:
+    try:
         import sqlalchemy
         from sqlalchemy import create_engine, case
         from sqlalchemy.orm import create_session
