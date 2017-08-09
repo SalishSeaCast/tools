@@ -1370,7 +1370,7 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
     :type sal: numpy array
 
     :arg temp: temperature daya
-    :type temp: umpy array
+    :type temp: numpy array
 
     :returns: updated meta data, salinity and temperature"""
     # modify metadata
