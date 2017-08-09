@@ -812,7 +812,8 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
                              they would otherwise be loaded from. Constant variable BC file will 
                              also be recalculated and overwritten at default path.
 
-    :returns: outFile
+    :returns: Filepath of nutrients boundary conditions file that was created
+    :rtype: str
     """
 
     # if requested, recalculate nut-TS fits and nut climatologies from database
@@ -900,7 +901,7 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile,strdate=None,
     new.close()
     TS.close()
 
-    return outFile 
+    return tofile
 
 
 def create_LiveOcean_TS_BCs(
