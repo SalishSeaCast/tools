@@ -96,10 +96,12 @@ PLACES = {
 
     # Ferry terminals
     'Tsawwassen': {
-        'lon lat': (-123.1281, 49.0084),
+        'lon lat': (-123.132722, 49.006165),
+        'in berth radius': 0.0015,
     },
     'Duke Pt.': {
-        'lon lat': (-123.8909, 49.1632),
+        'lon lat': (-123.89095676900132, 49.16340592936349),
+        'in berth radius': 0.002,
     },
     'Horseshoe Bay': {
         'lon lat': (-123.2728, 49.3742),
