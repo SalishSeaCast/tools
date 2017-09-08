@@ -63,6 +63,15 @@ def each_limiter(zz_I_par,zz_NO,zz_NH,zz_Si,tmask,
     return ILim, NLim, SiLim, limiter
 
 def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
+    """ calculates limiting factor: I, Si, or N based on SMELT output
+    arg I: np.array slice of PAR from dia file
+    arg NO: " nitrate
+    arg NH: " ammonia
+    arg Si: " silicate
+    arg tmask: np.array containing appropriate tmask sliced to same size
+    arg nampisprod: namelist dict loaded using load_nml_bio with 
+        argument nampisprod 
+    """
     ILimDiat, NLimDiat, SiLimDiat, limiterDiat=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_diat'],
                                         nampisprod['zz_rate_gamma_diat'],nampisprod['zz_rate_k_Si_diat'],
                                         nampisprod['zz_rate_kapa_diat'],nampisprod['zz_rate_k_diat'])
@@ -80,7 +89,6 @@ def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     return Diat, Myri, Nano
 
 #def calc_limiter(resDir,fnameDia=None,fnamePtrc=None):
-#    """ calculates limiting factor: I, Si, or N based on SMELT output
 #    :arg str resDir: path to results directory where output and namelist files are stored
 #    :arg str fnameDia: (optional) diagnostic file to get output from; 
 #        if none suplied assumes there is only one possibility in resDir
