@@ -825,6 +825,8 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile, strdate=None,
 
     # create and open file to write to, set up dimensions and vars
     tofile = os.path.join(outDir, outFile)
+    if os.path.exists(tofile):
+        os.remove(tofile)
     new = nc.Dataset(tofile, 'w', zlib=True)
     new = _bioFileSetup(TS, new)
 
