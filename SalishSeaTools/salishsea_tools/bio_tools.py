@@ -20,13 +20,16 @@ import netCDF4 as nc
 import f90nml
 import os
 
-def load_nml_bio(resDir,nmlname,bioRefName='namelist_smelt_ref',bioCfgName='namelist_smelt_cfg'):
+def load_nml_bio(resDir,nmlname,bioRefName='namelist_smelt_ref',bioCfgName='namelist_smelt_cfg',namRefDir=None):
     """ extract parameter values from smelt namelists for nampisbio
     :arg str resDir: directory containing namelists associated with run; usually results diri
     :arg str nmlname name of namelist to load: eg, 'nampisprod'
     :arg str bioRefName: name of bio reference namelist (optional)
     :arg str bioCfgName: name of bio config namelist (optional)
+    :arg str namRefDir: dir to get ref namelist from if not in results dir (optional)
     """
+    if namRefDir==None:
+        namRefDir=resDir
     nmlRef=f90nml.read(os.path.join(resDir,bioRefName))
     nmlCfg=f90nml.read(os.path.join(resDir,bioCfgName))
     nml=nmlRef[nmlname]
