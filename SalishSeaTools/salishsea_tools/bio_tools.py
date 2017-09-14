@@ -62,8 +62,10 @@ def each_limiter(zz_I_par,zz_NO,zz_NH,zz_Si,tmask,
     limiter=-1*np.ones(zz_Si.shape)
     limiter=np.where(np.logical_and(ILim<=NLim,ILim<=SiLim),0,
                      np.where(NLim<=SiLim,1,np.where(SiLim<NLim,2,limiter)))
+    limval=np.where(np.logical_and(ILim<=NLim,ILim<=SiLim),ILim,
+                     np.where(NLim<=SiLim,NLim+2,np.where(SiLim<NLim,SiLim+4,limiter)))
 
-    return ILim, NLim, SiLim, limiter
+    return ILim, NLim, SiLim, limiter,limval
 
 def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     """ calculates limiting factor: I, Si, or N based on SMELT output
@@ -75,20 +77,20 @@ def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     arg nampisprod: namelist dict loaded using load_nml_bio with 
         argument nampisprod 
     """
-    ILimDiat, NLimDiat, SiLimDiat, limiterDiat=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_diat'],
+    ILimDiat, NLimDiat, SiLimDiat, limiterDiat, limvalDiat=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_diat'],
                                         nampisprod['zz_rate_gamma_diat'],nampisprod['zz_rate_k_Si_diat'],
                                         nampisprod['zz_rate_kapa_diat'],nampisprod['zz_rate_k_diat'])
     
-    ILimMyri, NLimMyri, SiLimMyri, limiterMyri=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_myri'],
+    ILimMyri, NLimMyri, SiLimMyri, limiterMyri, limvalMyri=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_myri'],
                                         nampisprod['zz_rate_gamma_myri'],nampisprod['zz_rate_k_Si_myri'],
                                         nampisprod['zz_rate_kapa_myri'],nampisprod['zz_rate_k_myri'])
     
-    ILimNano, NLimNano, SiLimNano, limiterNano=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_nano'],
+    ILimNano, NLimNano, SiLimNano, limiterNano, limvalNano=each_limiter(I,NO,NH,Si,tmask,nampisprod['zz_rate_Iopt_nano'],
                                         nampisprod['zz_rate_gamma_nano'],nampisprod['zz_rate_k_Si_nano'],
                                         nampisprod['zz_rate_kapa_nano'],nampisprod['zz_rate_k_nano'])
-    Diat={'ILim':ILimDiat,'NLim':NLimDiat,'SiLim':SiLimDiat,'limiter':limiterDiat}
-    Myri={'ILim':ILimMyri,'NLim':NLimMyri,'SiLim':SiLimMyri,'limiter':limiterMyri}
-    Nano={'ILim':ILimNano,'NLim':NLimNano,'SiLim':SiLimNano,'limiter':limiterNano}
+    Diat={'ILim':ILimDiat,'NLim':NLimDiat,'SiLim':SiLimDiat,'limiter':limiterDiat,'limval':limvalDiat}
+    Myri={'ILim':ILimMyri,'NLim':NLimMyri,'SiLim':SiLimMyri,'limiter':limiterMyri,'limval':limvalMyri}
+    Nano={'ILim':ILimNano,'NLim':NLimNano,'SiLim':SiLimNano,'limiter':limiterNano,'limval':limvalNano}
     return Diat, Myri, Nano
 
 #def calc_limiter(resDir,fnameDia=None,fnamePtrc=None):
