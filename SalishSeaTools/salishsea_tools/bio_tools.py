@@ -61,7 +61,7 @@ def each_limiter(zz_I_par,zz_NO,zz_NH,zz_Si,tmask,
     # set flags
     limiter=-1*np.ones(zz_Si.shape)
     limiter=np.where(np.logical_and(ILim<=NLim,ILim<=SiLim),0,
-                     np.where(NLim<=SiLim,1,np.where(SiLim<NLim,2,limiter)))
+                     np.where(NLim<=SiLim,2,np.where(SiLim<NLim,4,limiter)))
     limval=np.where(np.logical_and(ILim<=NLim,ILim<=SiLim),ILim,
                      np.where(NLim<=SiLim,NLim+2,np.where(SiLim<NLim,SiLim+4,limiter)))
 
