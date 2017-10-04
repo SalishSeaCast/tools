@@ -207,8 +207,8 @@ def reshape_coords_GEM(grid, mask_in):
 
     # Reshape mask, grid, and depth
     mask = mask_in.reshape(ngrid)
-    coords['gridY'] = coords['gridY'].reshape(ngrid)[mask]
-    coords['gridX'] = coords['gridX'].reshape(ngrid)[mask]
+    coords['gridY'] = coords['gridY'].reshape(ngrid)[mask.astype(bool)]
+    coords['gridX'] = coords['gridX'].reshape(ngrid)[mask.astype(bool)]
 
     return mask, coords, ngrid, ngrid_water
 
