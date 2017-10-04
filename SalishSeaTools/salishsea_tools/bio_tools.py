@@ -30,7 +30,7 @@ def load_nml_bio(resDir,nmlname,bioRefName='namelist_smelt_ref',bioCfgName='name
     """
     if namRefDir==None:
         namRefDir=resDir
-    nmlRef=f90nml.read(os.path.join(resDir,bioRefName))
+    nmlRef=f90nml.read(os.path.join(namRefDir,bioRefName))
     nmlCfg=f90nml.read(os.path.join(resDir,bioCfgName))
     nml=nmlRef[nmlname]
     for key in nmlCfg[nmlname]:
