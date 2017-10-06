@@ -24,11 +24,13 @@ from salishsea_tools import geo_tools, nc_tools
 
 
 def contour_thalweg(
-    axes, var, bathy, mesh_mask, clevels,
+    axes, var, bathy, mesh_mask, clevels=None,
     mesh_mask_depth_var='gdept_0', cmap='hsv', land_colour='burlywood',
     xcoord_distance=True,
     thalweg_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-    cbar_args=None
+    cbar_args=None, 
+    mesh_args=None,
+    method='contourf'
 ):
     """Contour the data stored in var along the domain thalweg.
 
@@ -71,6 +73,12 @@ def contour_thalweg(
     :arg dict cbar_args: Additional arguments to be passed to the cbar 
                          function (fraction, pad, etc.)
 
+    :arg dict mesh_args: Additional arguments to be passed to the contourf 
+                         or pcolormesh function 
+
+    : arg string method: method to use for data display: defaults to 
+                         'contourf' but 'pcolormesh' is also accepted
+
     :returns: matplotlib colorbar object
     """
     thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
@@ -101,8 +109,20 @@ def contour_thalweg(
             raise KeyError('no default clevels defined for {}'.format(clevels))
     # Prepare for plotting by filling in grid points just above bathymetry
     var_plot = _fill_in_bathy(var_thal, mesh_mask, thalweg_pts)
-    mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
+
+    if method == 'pcolormesh':
+        if mesh_args is None:
+            mesh = axes.pcolormesh(xx_thal, dep_thal, var_plot, cmap=cmap)
+        else:
+            mesh = axes.pcolormesh(xx_thal, dep_thal, var_plot, cmap=cmap, **mesh_args)
+        axes.set_xlim((np.min(xx_thal),np.max(xx_thal)))
+    else:
+        if mesh_args is None:
+            mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
                          extend='both')
+        else:
+            mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
+                         extend='both', **mesh_args)
     _add_bathy_patch(
         xx_thal, bathy['Bathymetry'][:], thalweg_pts, axes, color=land_colour)
     if cbar_args is None:
