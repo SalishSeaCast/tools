@@ -1057,7 +1057,7 @@ class scDataset(object):
 
         # Open the first dataset and set a few class variables
         d0 = self._dsmgr[0]
-        self.description = d0.description
+#        self.description = d0.description
         self.file_format = d0.file_format
         self.filepath    = files
 
