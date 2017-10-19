@@ -227,7 +227,13 @@ PLACES = {
     'Sandheads': {
         'lon lat': (-123.30, 49.10),
         'NEMO grid ji': (426, 292),
+        'GEM2.5 grid ji': (135, 151),
     },
+    'Sisters Islet': {
+        'lon lat': (-124.43, 49.49),
+        'NEMO grid ji': (582, 175),
+        'GEM2.5 grid ji': (160, 120),
+    }
 
     # Wave buoys
     'Halibut Bank': {
