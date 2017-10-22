@@ -92,7 +92,7 @@ def load_LiveOcean(files, resample_interval='1H'):
     # Determine z-rho (depth)
     G, S, T = grid.get_basic_info(files[0])  # note: grid.py is from Parker
     z_rho = np.zeros(d.salt.shape)
-    for t in np.arange(z_rho.shape[0]):
+    for t in range(z_rho.shape[0]):
         zeta = d.zeta.values[t, :, :]
         z_rho[t, :, :, :] = grid.get_z(G['h'], zeta, S)
     # Add z_rho to dataset
@@ -160,9 +160,9 @@ def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
     interps = {}
     for var_name in var_names:
         var_interp = np.zeros(dataset[var_name].shape)
-        for t in np.arange(var_interp.shape[0]):
-            for j in np.arange(var_interp.shape[2]):
-                for i in np.arange(var_interp.shape[3]):
+        for t in range(var_interp.shape[0]):
+            for j in range(var_interp.shape[2]):
+                for i in range(var_interp.shape[3]):
                     LO_depths = dataset.z_rho.values[t, :, j, i]
                     var = dataset[var_name].values[t, :, j, i]
                     var_interp[t, :, j, i] = np.interp(
@@ -191,8 +191,8 @@ def fill_NaNs_with_nearest_neighbour(data, lons, lats):
     :returns: a 4D numpy array
     """
     filled = data.copy()
-    for t in np.arange(data.shape[0]):
-        for k in np.arange(data.shape[1]):
+    for t in range(data.shape[0]):
+        for k in range(data.shape[1]):
             subdata = data[t, k, :, :]
             mask = np.isnan(subdata)
             points = np.array([lons[~mask], lats[~mask]]).T
@@ -243,8 +243,8 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
         var_new = np.zeros((var.shape[0], var.shape[1], shape[0], shape[1]))
         mask = var_new.copy()
         interp_nearest = var_new.copy()
-        for t in np.arange(var_new.shape[0]):
-            for k in np.arange(var_new.shape[1]):
+        for t in range(var_new.shape[0]):
+            for k in range(var_new.shape[1]):
                 var_grid = var[t, k, :, :]
                 # First, interpolate with bilinear. The result is masked near
                 # and at grid points where var_grid is masked.
@@ -845,7 +845,7 @@ def create_LiveOcean_bio_BCs_fromTS(TSfile, strdate=None,
     # process N
     ztan=[.5*math.tanh((a-70)/20)+1/2 for a in zupper]
     zcoeff=np.ones(np.shape(TS.variables['votemper'])) # zcoeff is multiplier of fit function; 1-zcoeff is multiplier of climatology
-    for i in np.arange(0,zupper.size):
+    for i in range(0,zupper.size):
         zcoeff[:,i,:,:]=ztan[i]
     funfit=mC +mT*TS.variables['votemper'][:,:,:,:]+mS*TS.variables['vosaline'][:,:,:,:]
 
