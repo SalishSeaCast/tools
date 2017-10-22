@@ -233,7 +233,7 @@ PLACES = {
         'lon lat': (-124.43, 49.49),
         'NEMO grid ji': (582, 175),
         'GEM2.5 grid ji': (160, 120),
-    }
+    },
 
     # Wave buoys
     'Halibut Bank': {
