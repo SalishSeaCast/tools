@@ -265,7 +265,9 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
         # Fill those with nearest lateral neighbour or level above
         interps[var_name] = fill_NaNs_with_nearest_neighbour(
             var_new, NEMOlon, NEMOlat)
-
+    # Make sure salinity is strictly increasing with depth
+    for k in range(1, var_new.shape[1]):
+        interps['salt'][:, k] = np.fmax(interps['salt'][:, k], interps['salt'][:, k-1])
     return interps
 
 def _bioFileSetup(TS, new):
