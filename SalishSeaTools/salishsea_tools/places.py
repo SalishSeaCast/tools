@@ -74,6 +74,14 @@ PLACES = {
         'ww3 grid ji': (258, 296),
 
     },
+    'Neah Bay': {
+        'lon lat': (-124.6, 48.4),
+        'stn number': 9443090,
+        'mean sea lvl': 1.925,
+        'hist max sea lvl': 4.359,
+        'wind grid ji': (111, 105),
+        'NEMO grid ji': (384, 15),
+    },
     'Point Atkinson': {
         'lon lat': (-123.25, 49.33),
         'stn number': 7795,
@@ -255,5 +263,6 @@ PLACES = {
 #: ordered from south and west to north and east.
 #: These names are keys of the :py:data:`~salishsea_tools.places.PLACES` dict.
 TIDE_GAUGE_SITES = (
-    'Victoria', 'Cherry Point', 'Point Atkinson', 'Nanaimo', 'Campbell River',
+    'Neah Bay', 'Victoria', 'Cherry Point', 'Point Atkinson', 'Nanaimo', 
+    'Campbell River',
 )
