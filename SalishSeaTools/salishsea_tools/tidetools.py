@@ -454,7 +454,8 @@ def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
         Use :py:func:`geo_tools.find_closest_model_point` instead.
     """
     raise DeprecationWarning(
-        'tidetools.find_closest_model_point() has been replaced by geo_tools.find_closest_model_point()')
+        'tidetools.find_closest_model_point() has been replaced by '
+        'geo_tools.find_closest_model_point()')
 
 
 
