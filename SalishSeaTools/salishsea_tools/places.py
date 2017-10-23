@@ -65,6 +65,16 @@ PLACES = {
         'ww3 grid ji': (193, 462),
 
     },
+    'Friday Harbor': {
+        'lon lat': (-123.016667, 48.55),
+        'stn number': 9449880,
+        ## TODO: data below are required before Friday Harbor max ssh
+        ## figure can be produced
+        # 'mean sea lvl': ,
+        # 'hist max sea lvl': ,
+        # 'wind grid ji': ,
+        # 'NEMO grid ji': ,
+    },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
         'mean sea lvl': 3.08,
