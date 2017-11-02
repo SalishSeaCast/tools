@@ -431,7 +431,7 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
 
         jj, ii=geo_tools.find_closest_model_point(df0.loc[df0.Station==nn]['LonDecDeg'].values[0],
                                        df0.loc[df0.Station==nn]['LatDecDeg'].values[0], nav_lon, nav_lat)
-        print(np.shape(gdepw),jj,ii,nn)
+        
         zmax=-1*gsw.z_from_p(cast25[nn].df.loc[ip,'prSM'],
                                     df0.loc[df0.Station==nn]['LatDecDeg'])
         edges=gdepw[:,jj,ii]
