@@ -268,7 +268,35 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     # Make sure salinity is strictly increasing with depth
     for k in range(1, var_new.shape[1]):
         interps['salt'][:, k] = np.fmax(interps['salt'][:, k], interps['salt'][:, k-1])
+    # Make sure density is strictly increasing with depth
+    interps = _increasing_density(interps)
     return interps
+
+
+def _increasing_density(filled):
+    # use approximate alpha and beta
+    beta = 7.4e-4
+    alpha = 2.1e-4
+    stable = False
+
+    while not stable:
+        for t in np.arange(filled['salt'].shape[0]):
+            approx_rho_stable = (
+                beta * (filled['salt'][t, 1:] - filled['salt'][t, :-1]) - alpha *
+                (filled['temp'][t, 1:] - filled['temp'][t, :-1]))
+            if (np.min(approx_rho_stable) >= 0):
+                stable = True
+            else:
+                inds_of_mask = np.where(approx_rho_stable < 0)
+                for i, j in zip(inds_of_mask[1], inds_of_mask[2]):
+                    ks = np.where(approx_rho_stable[:, i, j] < 0)
+                    kmax = max(ks[0]) + 2
+                    kmin = min(ks[0])
+                    for var_name in ['salt', 'temp']:
+                        average = np.mean(filled[var_name][t, kmin:kmax, i, j])
+                        filled[var_name][t, kmin:kmax, i, j] = average
+    return filled
+
 
 def _bioFileSetup(TS, new):
     for dname, the_dim in TS.dimensions.items():
