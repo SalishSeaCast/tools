@@ -17,11 +17,20 @@ class Cast:
         self.df=df
         self.source=fpath
 
-
 class zCast:
     def __init__(self,updf,downdf):
         self.uCast=updf
         self.dCast=downdf
+
+class rawCast:
+    def __init__(self):
+        self.uCast=dict()
+        self.dCast=dict()
+
+class dataPair:
+    def __init__(self,zval,varval):
+        self.z=zval
+        self.val=varval
 
 def fmtVarName(strx):
     """ transform string into one that meets python naming conventions"""
@@ -74,7 +83,7 @@ def readcnv(fpath):
     
     return mSta,mLat,mLon,df
 
-def bindepth(inP,inV,edges,targets=None):
+def bindepth(inP,inV,edges,targets=[]):
     # calculate depth-associated variables
     # 1st calculate bin averages of depth and variable
     # then use np interp to estimate at-grid-point values
@@ -82,7 +91,7 @@ def bindepth(inP,inV,edges,targets=None):
     binned=np.digitize(inP,edges)
     Pa=np.empty(len(edges)-1)
     Va=np.empty(len(edges)-1)
-    if targets == None:
+    if len(targets) == 0:
         Pi=.5*(edges[:-1]+edges[1:])
     else:
         Pi=targets[:(len(edges)-1)]
@@ -367,6 +376,149 @@ def loadDataFRP(exp='all',sel='narrow'):
 
             zCasts[nn]=zCast(uCast,dCast)
     
+    return df0, zCasts
+
+def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
+    import gsw # use to convert p to z
+    if exp not in {'exp1', 'exp2', 'all'}:
+        print('option exp='+exp+' is not defined.')
+        raise
+    if sel not in {'narrow', 'wide'}:
+        print('option sel='+sel+' is not defined.')
+        raise
+    df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
+    
+    zCasts=dict()
+    for nn in clist:
+        zCasts[nn]=rawCast()
+        ip=np.argmax(cast25[nn].df['prSM'].values)
+        ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
+        pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+        pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+        pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+        pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+        if sel=='narrow':
+            pS=pS_tur
+            pE=pE_tur
+        elif sel=='wide':
+            pS=pS_pr
+            pE=pE_pr
+
+        parDZ=.78
+        xmisDZ=.36
+        turbDZ=.67
+        zshiftdict={'gsw_ctA0':0.0,'gsw_srA0':0.0,'xmiss':xmisDZ,'seaTurbMtr':turbDZ,'par':parDZ,
+                    'wetStar':0.0,'sbeox0ML_L':0.0}
+        for var in ('gsw_ctA0','gsw_srA0','xmiss','par','wetStar','sbeox0ML_L'):
+            if not nn==14.2:
+                #downcast
+                inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
+                inV=cast25[nn].df.loc[pS:ip][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
+                zCasts[nn].dCast[var]=dataPair(inP,inV)
+            else:# special case where there is no downcast
+                zCasts[nn].dCast[var]=dataPair(np.nan,np.nan)
+            if not nn==14.1:
+                #upcast    
+                inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
+                inV=cast25[nn].df.loc[ip:pE][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
+                zCasts[nn].uCast[var]=dataPair(inP,inV)
+            else:# special case where there is no upcast
+                zCasts[nn].uCast[var]=dataPair(np.nan,np.nan)
+        if not nn==14.2:
+            #turbidity downcast
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # down z
+            inV=ssig.medfilt(cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values,3) # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].dCast['turb']=dataPair(inP,inV*1.0/tcor)
+        else: # special case where there is no downcast
+            zCasts[nn].dCast['turb']=dataPair(np.nan,np.nan)
+        if not nn==14.1:
+            #turbidity upcast
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # up z
+            inV=ssig.medfilt(cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values,3) # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].uCast['turb']=dataPair(inP,inV*1.0/tcor)
+        else: # special case where there is no upcasts
+            zCasts[nn].uCast['turb']=dataPair(np.nan,np.nan)
+
+    # fix first 2 casts for which sb25 pump did not turn on. use sb19
+    if (exp=='exp1' or exp=='all'):
+        for nn in range(1,3):
+
+            ip=np.argmax(cast25[nn].df['prSM'].values)
+            ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
+            pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+            pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+            pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+            pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+            if sel=='narrow':
+                pS=pS_tur
+                pE=pE_tur
+            elif sel=='wide':
+                pS=pS_pr
+                pE=pE_pr
+
+            ##temperature
+            #downcast
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg']) # down z
+            inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_ctA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].dCast['gsw_ctA0']=dataPair(inP,inV)
+            #upcast    
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg']) # up z
+            inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_ctA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].uCast['gsw_ctA0']=dataPair(inP,inV)
+
+            ##sal
+            #downcast
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg']) # down z
+            inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_srA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].dCast['gsw_srA0']=dataPair(inP,inV)
+            #upcast    
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg']) # up z
+            inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_srA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].uCast['gsw_srA0']=dataPair(inP,inV)
+
+            ##xmiss: xmis25=1.14099414691*xmis19+-1.6910134322
+            #downcast
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # down z
+            inV=1.14099414691*cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['CStarTr0'].values-1.6910134322 # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].dCast['xmiss']=dataPair(inP,inV)
+            #upcast    
+            inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
+                                    df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # up p
+            inV=1.14099414691*cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['CStarTr0'].values-1.6910134322 # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
+            zCasts[nn].dCast['wetStar']=dataPair(np.nan,np.nan)
+            zCasts[nn].uCast['wetStar']=dataPair(np.nan,np.nan)
+            zCasts[nn].dCast['sbeox0ML_L']=dataPair(np.nan,np.nan)
+            zCasts[nn].uCast['sbeox0ML_L']=dataPair(np.nan,np.nan)
+
     return df0, zCasts
 
 def loadDataFRP_SSGrid(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
