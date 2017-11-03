@@ -111,7 +111,7 @@ def cXfromX(X):
 def turbReg(m,Cx,fl):
     return np.maximum(0.0,m[0]*Cx-m[1]*fl-m[2])
 
-def loadDataFRP(exp='all'):
+def loadDataFRP_init(exp='all'):
     if exp not in {'exp1', 'exp2', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
@@ -199,18 +199,36 @@ def loadDataFRP(exp='all'):
     for ii in clist:
         cast19[ii]=Cast(fpath19[ii])
         cast25[ii]=Cast(fpath25[ii])
+    return df0, clist, tcor, cast19, cast25
+
+
+def loadDataFRP(exp='all',sel='narrow'):
+    if exp not in {'exp1', 'exp2', 'all'}:
+        print('option exp='+exp+' is not defined.')
+        raise
+    if sel not in {'narrow', 'wide'}:
+        print('option sel='+sel+' is not defined.')
+        raise
+    df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
 
     zCasts=dict()
+    dp=1.0
     for nn in clist:
         ip=np.argmax(cast25[nn].df['prSM'].values)
         ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
-        pS=df0.loc[df0.Station==nn,'pStart25'].values[0]
-        pE=df0.loc[df0.Station==nn,'pEnd25'].values[0]
-
-        dp=1.0
+        pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+        pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+        pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+        pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+        if sel=='narrow':
+            pS=pS_tur
+            pE=pE_tur
+        elif sel=='wide':
+            pS=pS_pr
+            pE=pE_pr
         pmax=cast25[nn].df.loc[ip,'prSM']
-        dp=1.0
         edges=np.arange(dp/2,pmax+dp,dp)
+        #edges=np.arange(0,pmax+dp,dp)
         parDZ=.78
         xmisDZ=.36
         turbDZ=.67
@@ -223,6 +241,8 @@ def loadDataFRP(exp='all'):
                 #downcast
                 inP=cast25[nn].df.loc[pS:ip]['prSM'].values-pshiftdict[var] # down p
                 inV=cast25[nn].df.loc[pS:ip][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
                 p, out=bindepth(inP,inV,edges)
                 if var=='gsw_ctA0':
                     dCast=pd.DataFrame(p,columns=['prSM'])
@@ -235,6 +255,8 @@ def loadDataFRP(exp='all'):
                 #upcast    
                 inP=cast25[nn].df.loc[ip:pE]['prSM'].values-pshiftdict[var] # down p
                 inV=cast25[nn].df.loc[ip:pE][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
                 p, out=bindepth(inP,inV,edges)
                 if var=='gsw_ctA0':
                     uCast=pd.DataFrame(p,columns=['prSM'])
@@ -247,6 +269,8 @@ def loadDataFRP(exp='all'):
             #turbidity downcast
             inP=cast25[nn].df.loc[pS:ip]['prSM'].values-turbDZ # down p
             inV=ssig.medfilt(cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values,3) # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, tur=bindepth(inP,inV,edges)
             dCast['turb']=tur*1.0/tcor
         else: # special case where there is no downcast
@@ -255,6 +279,8 @@ def loadDataFRP(exp='all'):
             #turbidity upcast
             inP=cast25[nn].df.loc[ip:pE]['prSM'].values-turbDZ # up p
             inV=ssig.medfilt(cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values,3) # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, tur=bindepth(inP,inV,edges)
             uCast['turb']=tur*1.0/tcor
         else: # special case where there is no upcasts
@@ -271,22 +297,34 @@ def loadDataFRP(exp='all'):
 
             ip=np.argmax(cast25[nn].df['prSM'].values)
             ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
-            pS=df0.loc[df0.Station==nn,'pStart25'].values[0]
-            pE=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+            pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+            pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+            pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+            pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+            if sel=='narrow':
+                pS=pS_tur
+                pE=pE_tur
+            elif sel=='wide':
+                pS=pS_pr
+                pE=pE_pr
 
-            dp=1.0
             pmax=cast25[nn].df.loc[ip,'prSM']
             edges=np.arange(dp/2,pmax+dp,dp)
+            #edges=np.arange(0,pmax+dp,dp)
 
             ##temperature
             #downcast
             inP=cast25[nn].df.loc[pS:ip]['prSM'].values # down p
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_ctA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             dCast['gsw_ctA0']=out
             #upcast    
             inP=cast25[nn].df.loc[ip:pE]['prSM'].values # up p
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_ctA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             uCast['gsw_ctA0']=out
 
@@ -294,11 +332,15 @@ def loadDataFRP(exp='all'):
             #downcast
             inP=cast25[nn].df.loc[pS:ip]['prSM'].values # down p
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_srA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             dCast['gsw_srA0']=out
             #upcast    
             inP=cast25[nn].df.loc[ip:pE]['prSM'].values # up p
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_srA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             uCast['gsw_srA0']=out
 
@@ -306,11 +348,15 @@ def loadDataFRP(exp='all'):
             #downcast
             inP=cast25[nn].df.loc[pS:ip]['prSM'].values-xmisDZ # down p
             inV=1.14099414691*cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['CStarTr0'].values-1.6910134322 # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             dCast['xmiss']=out
             #upcast    
             inP=cast25[nn].df.loc[ip:pE]['prSM'].values-xmisDZ # up p
             inV=1.14099414691*cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['CStarTr0'].values-1.6910134322 # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             uCast['xmiss']=out
 
@@ -323,16 +369,15 @@ def loadDataFRP(exp='all'):
     
     return df0, zCasts
 
-def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
+def loadDataFRP_SSGrid(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
     import gsw # only in this function; use to convert p to z
     if exp not in {'exp1', 'exp2', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
-    with open('/ocean/shared/SalishSeaCastData/FRPlume/stationsDigitizedFinal.csv','r') as fa:
-    	df0_a=pd.read_csv(fa,header=0,na_values='None')
-    with open('/ocean/shared/SalishSeaCastData/FRPlume/util/stationsDigitized_ancillary.csv','r') as fb:
-    	df0_b=pd.read_csv(fb,header=0,na_values='None')
-    df0=pd.merge(df0_a,df0_b,how='left',on=['Station','Date'])
+    if sel not in {'narrow', 'wide'}:
+        print('option sel='+sel+' is not defined.')
+        raise
+    df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
     
     # load mesh
     mesh=nc.Dataset(meshPath,'r')
@@ -343,91 +388,21 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
     nav_lon=mesh.variables['nav_lon'][:,:]
     mesh.close()
 
-    # calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
-    x=df0.loc[df0.ALS_Turb_NTU>0]['ALS_Turb_NTU'].values
-    x=x[:,np.newaxis]
-    tcor=np.linalg.lstsq(x,df0.loc[df0.ALS_Turb_NTU>0]['sb19Turb_uncorrected'])[0]
-
-    if exp=='exp1':
-        df0=df0.drop(df0.index[df0.Date != 20170410])
-    elif exp=='exp2':
-        df0=df0.drop(df0.index[df0.Date != 20170531])
-
-    basedir1='/ocean/shared/SalishSeaCastData/FRPlume/ctd/20170410/'
-    basedir2='/ocean/shared/SalishSeaCastData/FRPlume/ctd/20170531/'
-    dir19='19-4561/4_derive'
-    dir25='25-0363/4_derive'
-    dir19T10='19-4561/4b_deriveTEOS10'
-    dir25T10='25-0363/4a_deriveTEOS10'
-    f19=dict()
-    f25=dict()
-    
-    if (exp=='exp1' or exp=='all'):
-        f19[1]='fraser2017101.cnv'
-        f19[2]='fraser2017102.cnv'
-        f19[3]='fraser2017103.cnv'
-        f19[4]='fraser2017104.cnv'
-        f19[5]='fraser2017105.cnv'
-        f19[6]='fraser2017106.cnv'
-        f19[7]='fraser2017107.cnv'
-        f19[8]='fraser2017108.cnv'
-        f19[9]='fraser2017109.cnv'
-
-        f25[1]='fraser2017001.cnv'
-        f25[2]='fraser2017002.cnv'
-        f25[3]='fraser2017003.cnv'
-        f25[4]='fraser2017004.cnv'
-        f25[5]='fraser2017005.cnv'
-        f25[6]='fraser2017006.cnv'
-        f25[7]='fraser2017007.cnv'
-        f25[8]='fraser2017008.cnv'
-        f25[9]='fraser2017009.cnv'
-    if (exp=='exp2' or exp=='all'):
-        f19[10]='fraser2017110.cnv'
-        f19[11]='fraser2017111.cnv'
-        f19[12]='fraser2017112.cnv'
-        f19[13]='fraser2017113.cnv'
-        f19[14.1]='fraser2017114.cnv'
-        f19[14.2]='fraser2017114.cnv'
-        f19[15]='fraser2017115.cnv'
-        f19[16]='fraser2017116.cnv'
-        f19[17]='fraser2017117.cnv'
-        f19[18]='fraser2017118.cnv'
-
-        f25[10]='fraser2017010.cnv'
-        f25[11]='fraser2017011.cnv'
-        f25[12]='fraser2017012.cnv'
-        f25[13]='fraser2017013.cnv'
-        f25[14.1]='fraser2017014.cnv'
-        f25[14.2]='fraser2017014.cnv'
-        f25[15]='fraser2017015.cnv'
-        f25[16]='fraser2017016.cnv'
-        f25[17]='fraser2017017.cnv'
-        f25[18]='fraser2017018.cnv'
-    
-    fpath19=dict()
-    fpath25=dict()
-    clist=np.sort([ii for ii in f19.keys()])
-    for ii in clist:
-        if ii<10:
-            fpath19[ii]=os.path.join(basedir1,dir19T10,f19[ii])
-            fpath25[ii]=os.path.join(basedir1,dir25T10,f25[ii])
-        else:
-            fpath19[ii]=os.path.join(basedir2,dir19T10,f19[ii])
-            fpath25[ii]=os.path.join(basedir2,dir25T10,f25[ii])
-        
-    cast19=dict()
-    cast25=dict()
-    for ii in clist:
-        cast19[ii]=Cast(fpath19[ii])
-        cast25[ii]=Cast(fpath25[ii])
-
     zCasts=dict()
     for nn in clist:
         ip=np.argmax(cast25[nn].df['prSM'].values)
         ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
-        pS=df0.loc[df0.Station==nn,'pStart25'].values[0]
-        pE=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+        pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+        pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+        pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+        pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+        if sel=='narrow':
+            pS=pS_tur
+            pE=pE_tur
+        elif sel=='wide':
+            pS=pS_pr
+            pE=pE_pr
+
 
         jj, ii=geo_tools.find_closest_model_point(df0.loc[df0.Station==nn]['LonDecDeg'].values[0],
                                        df0.loc[df0.Station==nn]['LatDecDeg'].values[0], nav_lon, nav_lat)
@@ -452,6 +427,8 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
                 inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
                 inV=cast25[nn].df.loc[pS:ip][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
                 p, out=bindepth(inP,inV,edges=edges,targets=targets)
                 if var=='gsw_ctA0':
                     dCast=pd.DataFrame(p,columns=['depth_m'])
@@ -467,6 +444,8 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
                 inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
                 inV=cast25[nn].df.loc[ip:pE][var].values # down var
+                if sel=='wide':
+                    inV[inP<.1]=np.nan
                 p, out=bindepth(inP,inV,edges=edges,targets=targets)
                 if var=='gsw_ctA0':
                     uCast=pd.DataFrame(p,columns=['depth_m'])
@@ -482,6 +461,8 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # down z
             inV=ssig.medfilt(cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values,3) # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, tur=bindepth(inP,inV,edges=edges,targets=targets)
             dCast['turb']=tur*1.0/tcor
         else: # special case where there is no downcast
@@ -491,6 +472,8 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # up z
             inV=ssig.medfilt(cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values,3) # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, tur=bindepth(inP,inV,edges=edges,targets=targets)
             uCast['turb']=tur*1.0/tcor
         else: # special case where there is no upcasts
@@ -507,8 +490,16 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
 
             ip=np.argmax(cast25[nn].df['prSM'].values)
             ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
-            pS=df0.loc[df0.Station==nn,'pStart25'].values[0]
-            pE=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+            pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
+            pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
+            pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
+            pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
+            if sel=='narrow':
+                pS=pS_tur
+                pE=pE_tur
+            elif sel=='wide':
+                pS=pS_pr
+                pE=pE_pr
 
             jj, ii=geo_tools.find_closest_model_point(df0.loc[df0.Station==nn]['LonDecDeg'].values[0],
                                        df0.loc[df0.Station==nn]['LatDecDeg'].values[0], nav_lon, nav_lat)
@@ -525,12 +516,16 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg']) # down z
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_ctA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges=edges,targets=targets)
             dCast['gsw_ctA0']=out
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg']) # up z
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_ctA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges=edges,targets=targets)
             uCast['gsw_ctA0']=out
 
@@ -539,12 +534,16 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg']) # down z
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_srA0'].values # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges=edges,targets=targets)
             dCast['gsw_srA0']=out
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg']) # up z
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_srA0'].values # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges)
             uCast['gsw_srA0']=out
 
@@ -553,12 +552,16 @@ def loadDataFRP_SSGrid(exp='all',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/gri
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # down z
             inV=1.14099414691*cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['CStarTr0'].values-1.6910134322 # down var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges=edges,targets=targets)
             dCast['xmiss']=out
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
                                     df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # up p
             inV=1.14099414691*cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['CStarTr0'].values-1.6910134322 # up var
+            if sel=='wide':
+                inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges=edges,targets=targets)
             uCast['xmiss']=out
 
