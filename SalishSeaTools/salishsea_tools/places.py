@@ -242,7 +242,7 @@ PLACES = {
     },
 
     # Lightstations
-    'Sandheads': {
+    'Sand Heads': {
         'lon lat': (-123.30, 49.10),
         'NEMO grid ji': (426, 292),
         'GEM2.5 grid ji': (135, 151),
@@ -267,6 +267,8 @@ PLACES = {
         'EC buoy number': 46131,
     }
 }
+# Aliases:
+PLACES['Sandheads'] = PLACES['Sand Heads']
 
 
 #: Names of tide gauge sites,
