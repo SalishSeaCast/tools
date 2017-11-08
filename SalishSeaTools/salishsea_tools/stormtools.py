@@ -400,7 +400,8 @@ def get_EC_observations(station, start_day, end_day):
                 temp.append(float('NaN'))
     wind_spd = np.array(wind_spd) * 1000 / 3600  # km/hr to m/s
     wind_dir = -np.array(wind_dir)+270   # met. direction to cartesian angle
-    wind_dir = wind_dir + 360 * (wind_dir < 0)
+    with np.errstate(invalid='ignore'):
+        wind_dir = wind_dir + 360 * (wind_dir < 0)
     temp = np.array(temp)
     for i in np.arange(len(times)):
         times[i] = times[i].astimezone(tz.tzutc())
