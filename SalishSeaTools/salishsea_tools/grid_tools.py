@@ -259,19 +259,19 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
     """
 
     # Preallocate
-    ngrid_GEM = grid_GEM['x'].shape[0] * grid_GEM['y'].shape[0]
+    ngrid_GEM = grid_GEM['gridX'].shape[0] * grid_GEM['gridY'].shape[0]
     mask_GEM = np.zeros(ngrid_GEM, dtype=int)
 
     # Evaluate each point on GEM grid
     bar = utilities.statusbar('Building GEM mask', width=90, maxval=ngrid_GEM)
     for index, coords in enumerate(bar(zip(
-            grid_GEM['nav_lon'].values.reshape(ngrid_GEM) - 360,
-            grid_GEM['nav_lat'].values.reshape(ngrid_GEM),
+            grid_GEM['longitude'].values.reshape(ngrid_GEM) - 360,
+            grid_GEM['latitude'].values.reshape(ngrid_GEM),
     ))):
 
         j, i = geo_tools.find_closest_model_point(
             coords[0], coords[1],
-            grid_NEMO['nav_lon'], grid_NEMO['nav_lat'],
+            grid_NEMO['longitude'], grid_NEMO['latitude'],
         )
         if j is np.nan or i is np.nan:
             mask_GEM[index] = 0
@@ -279,7 +279,7 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
             mask_GEM[index] = mask_NEMO[j, i].values
 
     # Reshape
-    mask_GEM = mask_GEM.reshape(grid_GEM['nav_lon'].shape)
+    mask_GEM = mask_GEM.reshape(grid_GEM['longitude'].shape)
 
     return mask_GEM
 
@@ -325,11 +325,12 @@ def build_matrix(weightsfile, opsfile):
     return M,nemoshape
 
 
-def use_matrix(opsfile,matrix,nemoshape,variable,time):
+def use_matrix(opsfile, matrix, nemoshape, variable, time):
     """
     Given an operational surface forcing file, an interpolation matrix and
     NEMO grid shape (produced by grid_tools.build_matrix), a variable name and
-    a time index, we return the operational data interpolated onto the NEMO grid.
+    a time index, we return the operational data interpolated onto the NEMO
+    grid.
 
     :arg opsfile: Path to operational file to interpolate.
     :type opsfile: str
