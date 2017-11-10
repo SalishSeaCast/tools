@@ -504,8 +504,10 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             if sel=='wide': # exclude above surface data
                 with np.errstate(invalid='ignore'):
                     inV[inP<.1]=np.nan
+            zCasts[nn].dCast['turb_uncor']=dataPair(inP,inV)
             zCasts[nn].dCast['turb']=dataPair(inP,inV*1.0/tcor)
         else: # special case where there is no downcast
+            zCasts[nn].dCast['turb_uncor']=dataPair(np.nan,np.nan)
             zCasts[nn].dCast['turb']=dataPair(np.nan,np.nan)
         if not nn==14.1:
             #turbidity upcast
@@ -522,8 +524,10 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             if sel=='wide': # exclude above surface data
                 with np.errstate(invalid='ignore'):
                     inV[inP<.1]=np.nan
+            zCasts[nn].uCast['turb_uncor']=dataPair(inP,inV)
             zCasts[nn].uCast['turb']=dataPair(inP,inV*1.0/tcor)
         else: # special case where there is no upcasts
+            zCasts[nn].uCast['turb_uncor']=dataPair(np.nan,np.nan)
             zCasts[nn].uCast['turb']=dataPair(np.nan,np.nan)
 
     # fix first 2 casts for which sb25 pump did not turn on. use sb19
