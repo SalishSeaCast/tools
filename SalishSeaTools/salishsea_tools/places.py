@@ -77,6 +77,7 @@ PLACES = {
     },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
+        'stn number': 7917,
         'mean sea lvl': 3.08,
         'hist max sea lvl': 5.47,
         'wind grid ji': (142, 133),
@@ -122,12 +123,12 @@ PLACES = {
         'NEMO grid ji': (468, 333),
     },
     'Victoria': {
-        'lon lat': (-123.36, 48.41),
+        'lon lat': (-123.3707, 48.424666),
         'stn number': 7120,
         'mean sea lvl': 1.8810,
         'hist max sea lvl': 3.76,
         'wind grid ji': (104, 144),
-        'NEMO grid ji': (297, 197),
+        'NEMO grid ji': (302, 196),
         'ww3 grid ji': (91, 377),
     },
     'Woodwards Landing': {
@@ -268,7 +269,7 @@ PLACES = {
     # Lightstations
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
-        'stn number': 7594,
+        'stn number': 7594,           # checking if tidal stn is at lighthouse
         'NEMO grid ji': (426, 292),
         'GEM2.5 grid ji': (135, 151),
     },
