@@ -92,6 +92,16 @@ PLACES = {
         'wind grid ji': (111, 105),
         'NEMO grid ji': (384, 15),
     },
+    'New Westminister': {
+        'lon lat': (-122.90535, 49.203683),
+        'stn number': 7654,
+        'NEMO grid ji': (423, 363),
+    },
+    'Patricia Bay': {
+        'lon lat': (-123.4515, 48.6536),
+        'stn number': 7277,
+        'NEMO grid ji': (351, 214),
+    },
     'Point Atkinson': {
         'lon lat': (-123.25, 49.33),
         'stn number': 7795,
@@ -100,7 +110,16 @@ PLACES = {
         'wind grid ji': (146, 155),
         'NEMO grid ji': (468, 329),
         'ww3 grid ji': (296, 393),
-
+    },
+    'Port Renfrew': {
+        'lon lat': (-124.421, 48.555),
+        'stn number': 8525,
+        'NEMO grid ji': (401, 61),
+    },
+    'Sandy Cove': {
+        'lon lat': (-123.23, 49.34),
+        'stn number': 7786,
+        'NEMO grid ji': (468, 333),
     },
     'Victoria': {
         'lon lat': (-123.36, 48.41),
@@ -110,6 +129,11 @@ PLACES = {
         'wind grid ji': (104, 144),
         'NEMO grid ji': (297, 197),
         'ww3 grid ji': (91, 377),
+    },
+    'Woodwards Landing': {
+        'lon lat': (-123.0754, 49.1251),
+        'stn number': 7610,
+        'NEMO grid ji': (414, 329),
     },
 
     # Ferry terminals
@@ -244,6 +268,7 @@ PLACES = {
     # Lightstations
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
+        'stn number': 7594,
         'NEMO grid ji': (426, 292),
         'GEM2.5 grid ji': (135, 151),
     },
