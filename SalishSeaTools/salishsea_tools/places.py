@@ -72,8 +72,17 @@ PLACES = {
         ## figure can be produced
         # 'mean sea lvl': ,
         # 'hist max sea lvl': ,
-        # 'wind grid ji': ,
-        # 'NEMO grid ji': ,
+        'wind grid ji': (108, 155),
+        'NEMO grid ji': (300, 267),
+        'ww3 grid ji': (124, 427),
+    },
+    'Halfmoon Bay': {
+        'lon lat': (-123.912, 49.511),
+        'NEMO grid ji': (549, 254),
+        'wind grid ji': (158, 136),
+        'ww3 grid ji': (331, 297),
+        'mean sea lvl': 3.14,
+        'hist max sea lvl': 5.6,      # copied from Point Atkinson
     },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
@@ -81,8 +90,8 @@ PLACES = {
         'mean sea lvl': 3.08,
         'hist max sea lvl': 5.47,
         'wind grid ji': (142, 133),
-        'NEMO grid ji': (484, 208),
-        'ww3 grid ji': (258, 296),
+        'NEMO grid ji': (484, 208),  # current a little different
+        'ww3 grid ji': (261, 298),
 
     },
     'Neah Bay': {
@@ -97,11 +106,17 @@ PLACES = {
         'lon lat': (-122.90535, 49.203683),
         'stn number': 7654,
         'NEMO grid ji': (423, 363),
+        'wind grid ji': (138, 164),
+        # no nearby waves
     },
     'Patricia Bay': {
         'lon lat': (-123.4515, 48.6536),
         'stn number': 7277,
+        'mean sea lvl': 2.256,
+        'hist max sea lvl': 3.76-1.881+2.256, # based on Victoria
         'NEMO grid ji': (351, 214),
+        'wind grid ji': (115, 143),
+        'ww3 grid ji': (145, 363),
     },
     'Point Atkinson': {
         'lon lat': (-123.25, 49.33),
@@ -115,12 +130,29 @@ PLACES = {
     'Port Renfrew': {
         'lon lat': (-124.421, 48.555),
         'stn number': 8525,
+        'mean sea lvl': 1.937,
+        'hist max sea lvl': 4.359,  # from Neah Bay
         'NEMO grid ji': (401, 61),
+        'wind grid ji': (117, 112),
+        'ww3 grid ji': (123, 226),
     },
     'Sandy Cove': {
         'lon lat': (-123.23, 49.34),
         'stn number': 7786,
         'NEMO grid ji': (468, 333),
+        'wind grid ji': (146, 155),
+        'ww3 grid ji': (294, 396),
+        'mean sea lvl': 3.09, # from Pt Atk
+        'hist max sea lvl': 5.61, # from Pt Atk
+    },
+    'Squamish': {
+        'lon lat': (-123.155, 49.694),
+        'stn number': 7811,
+        'NEMO grid ji': (532, 389),
+        'wind ji': (162, 160),
+        'ww3 ji': (370, 404),
+        'mean sea lvl': 3.14,
+        'hist mas sea lvl': 5.61 # from Pt Atk
     },
     'Victoria': {
         'lon lat': (-123.3707, 48.424666),
@@ -129,12 +161,18 @@ PLACES = {
         'hist max sea lvl': 3.76,
         'wind grid ji': (104, 144),
         'NEMO grid ji': (302, 196),
-        'ww3 grid ji': (91, 377),
+        'ww3 grid ji': (90, 374),
     },
     'Woodwards Landing': {
         'lon lat': (-123.0754, 49.1251),
         'stn number': 7610,
         'NEMO grid ji': (414, 329),
+    },
+    'Boundary Bay Border': {
+        'lon lat': (-122.925, 49.0),
+        'NEMO grid ji': (380, 335),
+        'wind ji': (129, 162),
+        'ww3 grid ji': (222, 439),
     },
 
     # Ferry terminals
@@ -269,9 +307,11 @@ PLACES = {
     # Lightstations
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
-        'stn number': 7594,           # checking if tidal stn is at lighthouse
+        'stn number': 7594,           # Marlene's coordinates for Tide Station are slightly different.  Leaving as is.
         'NEMO grid ji': (426, 292),
         'GEM2.5 grid ji': (135, 151),
+        'wind grid ji': (135, 151),
+        'ww3 grid ji': (246, 385),
     },
     'Sisters Islet': {
         'lon lat': (-124.43, 49.49),
