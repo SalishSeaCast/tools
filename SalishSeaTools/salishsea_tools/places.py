@@ -80,7 +80,7 @@ PLACES = {
         'wind grid ji': (158, 136),
         'ww3 grid ji': (331, 297),
         'mean sea lvl': 3.14,
-        'hist max sea lvl': 5.6,      # copied from Point Atkinson
+        'hist max sea lvl': 5.61,      # copied from Point Atkinson
     },
     'Nanaimo': {
         'lon lat': (-123.93, 49.16),
@@ -99,10 +99,13 @@ PLACES = {
         'hist max sea lvl': 4.359,
         'wind grid ji': (111, 105),
         'NEMO grid ji': (384, 15),
+        'ww3 grid ji': (89, 200),
     },
     'New Westminister': {
         'lon lat': (-122.90535, 49.203683),
         'stn number': 7654,
+        'mean sea lvl': 1.881,
+        'hist max sea lvl': 4.66,
         'NEMO grid ji': (423, 363),
         'wind grid ji': (138, 164),
         # no nearby waves
@@ -111,7 +114,7 @@ PLACES = {
         'lon lat': (-123.4515, 48.6536),
         'stn number': 7277,
         'mean sea lvl': 2.256,
-        'hist max sea lvl': 3.76-1.881+2.256, # based on Victoria
+        'hist max sea lvl': 4.38,
         'NEMO grid ji': (351, 214),
         'wind grid ji': (115, 143),
         'ww3 grid ji': (145, 363),
@@ -140,7 +143,7 @@ PLACES = {
         'NEMO grid ji': (468, 333),
         'wind grid ji': (146, 155),
         'ww3 grid ji': (294, 396),
-        'mean sea lvl': 3.09, # from Pt Atk
+        'mean sea lvl': 3.09,
         'hist max sea lvl': 5.61, # from Pt Atk
     },
     'Squamish': {
@@ -164,10 +167,15 @@ PLACES = {
     'Woodwards Landing': {
         'lon lat': (-123.0754, 49.1251),
         'stn number': 7610,
+        'hist max sea lvl': 4.66,  # based on New West
+        'mean sea lvl': 2.215,
         'NEMO grid ji': (414, 329),
+        'wind grid ji': (135, 138),
     },
     'Boundary Bay Border': {
         'lon lat': (-122.925, 49.0),
+        'hist max sea lvl': 5.61-3.09+0.256, # based on Port Atk
+        'mean sea lvl': 0.256,
         'NEMO grid ji': (380, 335),
         'wind ji': (129, 162),
         'ww3 grid ji': (222, 439),
