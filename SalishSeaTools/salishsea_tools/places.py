@@ -61,7 +61,7 @@ PLACES = {
         'mean sea lvl': 3.543,
         'hist max sea lvl': 5.846,
         'wind grid ji': (122, 166),
-        'NEMO grid ji': (343, 341),
+        'NEMO grid ji': (343, 342),
         'ww3 grid ji': (193, 462),
 
     },
@@ -314,7 +314,9 @@ PLACES = {
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
         'stn number': 7594,           # Marlene's coordinates for Tide Station are slightly different.  Leaving as is.
-        'NEMO grid ji': (426, 292),
+        'NEMO grid ji': (426, 293),  # match Domain file
+        'mean sea lvl': 2.875,
+        'hist max sea lvl': 5.61-3.09+2.875 # based on Point Atk.
         'GEM2.5 grid ji': (135, 151),
         'wind grid ji': (135, 151),
         'ww3 grid ji': (246, 385),
