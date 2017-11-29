@@ -313,10 +313,10 @@ PLACES = {
     # Lightstations
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
-        'stn number': 7594,           # Marlene's coordinates for Tide Station are slightly different.  Leaving as is.
+        'stn number': 7594,  # Marlene's coordinates for Tide Station are slightly different.  Leaving as is.
         'NEMO grid ji': (426, 293),  # match Domain file
         'mean sea lvl': 2.875,
-        'hist max sea lvl': 5.61-3.09+2.875 # based on Point Atk.
+        'hist max sea lvl': 5.61-3.09+2.875,  # based on Point Atk.
         'GEM2.5 grid ji': (135, 151),
         'wind grid ji': (135, 151),
         'ww3 grid ji': (246, 385),
