@@ -150,8 +150,8 @@ PLACES = {
         'lon lat': (-123.155, 49.694),
         'stn number': 7811,
         'NEMO grid ji': (532, 389),
-        'wind ji': (162, 160),
-        'ww3 ji': (370, 404),
+        'wind grid ji': (162, 160),
+        'ww3 grid ji': (370, 404),
         'mean sea lvl': 3.14,
         'hist mas sea lvl': 5.61 # from Pt Atk
     },
@@ -177,7 +177,7 @@ PLACES = {
         'hist max sea lvl': 5.61-3.09+0.256, # based on Port Atk
         'mean sea lvl': 0.256,
         'NEMO grid ji': (380, 335),
-        'wind ji': (129, 162),
+        'wind grid ji': (129, 162),
         'ww3 grid ji': (222, 439),
     },
 
