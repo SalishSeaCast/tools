@@ -18,10 +18,15 @@
 from collections import OrderedDict
 import datetime as dtm
 import ftplib
+import functools
 import json
+import logging
 import re
 import os
-from pathlib import Path
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 try:
     from urllib.parse import (
@@ -45,12 +50,16 @@ import scipy.interpolate
 import scipy.io
 import xarray
 import pandas as pd
-import functools
+import zeep
 
 from salishsea_tools import (
     onc_sog_adcps,
     teos_tools,
 )
+from salishsea_tools.places import PLACES
+
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def load_drifters(
@@ -360,6 +369,139 @@ def onc_json_to_dataset(onc_json, teos=True):
             }
         )
     return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
+
+
+def get_chs_tides(data_type, stn_id, begin, end):
+    """Retrieve a time series of observed or predicted water levels for a CHS
+    recording tide gauge station from the https://ws-shc.qc.dfo-mpo.gc.ca/
+    web service for the date/time range given by begin and end.
+
+    The time series is returned as a :py:class:`pandas.Series` object.
+
+    The values of begin and end, and the returned time series date/time index
+    are all UTC.
+
+    Water levels are relative to chart datum for the station requested.
+
+    :param str data_type: Type of data to retrieve; :kbd:`obs` or :kbd:`pred`.
+
+    :param int or str stn_id: Tide gauge station number or name.
+                              Names use
+                              :py:object:`~salishsea_tools.places.PLACES` to
+                              look up the station number.
+
+    :param begin: UTC beginning date or date/time for data request.
+                  If a date only is used the time defaults to 00:00:00.
+    :type begin: str or :py:class:`arrow.Arrow`
+
+    :param end: UTC end date or date/time for data request.
+                If a date only is used the time defaults to 00:00:00.
+    :type end: str or :py:class:`arrow.Arrow`
+
+    :return: Water level time series.
+    :rtype: :py:class:`pandas.Series`
+    """
+    valid_data_types = {
+        # keyed by data_type arg value
+        'obs': {
+            # endpoint data type word
+            'endpoint': 'observations',
+            # search service data name
+            'data name': 'wl',
+        },
+        'pred': {
+            'endpoint': 'predictions',
+            'data name': 'wl15',
+        },
+    }
+    if data_type not in valid_data_types:
+        raise ValueError(
+            'invalid data_type: {data_type}; please use one of '
+            '{valid_data_types}'.format(
+                data_type=data_type,
+                valid_data_types=set(valid_data_types.keys())))
+    endpoint_tmpl = 'https://ws-shc.qc.dfo-mpo.gc.ca/{data_type}?WSDL'
+    endpoint = endpoint_tmpl.format(
+        data_type=valid_data_types[data_type]['endpoint'])
+    data_name = valid_data_types[data_type]['data name']
+    msg = (
+        'retrieving {data_type} water level data from {endpoint}'.format(
+            data_type=data_type, endpoint=endpoint)
+    )
+    try:
+        stn_number = '{:05d}'.format(stn_id)
+    except ValueError:
+        try:
+            stn_number = '{:05d}'.format(PLACES[stn_id]['stn number'])
+        except KeyError as e:
+            logging.error(
+                'station id not found in places.PLACES: {station_id}; '
+                'maybe try an integer station number?'.format(
+                    station_id=stn_id))
+            return
+    if int(stn_number) == stn_id:
+        msg = ' '.join((
+            msg,
+            'for station {stn_number}'.format(
+                endpoint=endpoint, stn_number=stn_number))
+        )
+    else:
+        msg = ' '.join((
+            msg,
+            'for station {stn_number} {stn_id}'.format(
+                endpoint=endpoint, stn_number=stn_number, stn_id=stn_id))
+        )
+    try:
+        if not hasattr(begin, 'range'):
+            begin = arrow.get(begin)
+    except arrow.parser.ParserError:
+        logging.error('invalid start date/time: {}'.format(begin))
+        return
+    msg = ' '.join((
+        msg, 'from {begin}'.format(begin=begin.format('YYYY-MM-DD HH:mm:ss'))
+    ))
+    try:
+        if not hasattr(end, 'range'):
+            end = arrow.get(end)
+    except arrow.parser.ParserError:
+        logging.error('invalid end date/time: {}'.format(end))
+        return
+    msg = ' '.join((
+        msg, 'to {end}'.format(end=end.format('YYYY-MM-DD HH:mm:ss'))
+    ))
+    logging.info(msg)
+    client = zeep.Client(endpoint)
+    lat_min, lat_max = -90, 90
+    lon_min, lon_max = -180, 180
+    depth_min, depth_max = 0, 0
+    first_value = 1
+    n_values = 1000
+    metadata, order = True, 'asc'
+    datetimes, water_levels = [], []
+    search_begin = begin
+    while search_begin < end:
+        response = client.service.search(
+            data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
+            search_begin.format('YYYY-MM-DD HH:mm:ss'),
+            end.format('YYYY-MM-DD HH:mm:ss'),
+            first_value, n_values, metadata, 'station_id={}'.format(stn_number),
+            order
+        )
+        response = zeep.helpers.serialize_object(response)
+        if response['size'] <= 1:
+            break
+        datetimes.extend(d['boundaryDate']['min'] for d in response['data'])
+        water_levels.extend(float(d['value']) for d in response['data'])
+        search_begin = arrow.get(datetimes[-1])
+    name = (
+        '{stn_number} water levels' if int(stn_number) == stn_id
+        else '{stn_number} {stn_id} water levels').format(
+        stn_number=stn_number, stn_id=stn_id)
+    time_series = pd.Series(
+        data=water_levels, index=pd.to_datetime(datetimes), name=name
+    )
+    time_series.drop_duplicates()
+    return time_series
 
 
 def request_onc_sog_adcp(date, node, userid):
@@ -709,15 +851,3 @@ def load_nowcast_station_tracers(
         if verbose:
             print("Done, dataframe saved to: " + save_path)
     return(nowcast_df)
-
-
-
-
-
-
-
-
-
-
-
-
