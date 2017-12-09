@@ -24,6 +24,7 @@ dependencies:
 - coverage
 - ipython
 - jupyter_client
+- lxml
 - matplotlib
 - netCDF4
 - numpy
@@ -37,6 +38,7 @@ dependencies:
 - requests
 - scipy
 - sphinx
+- sphinx_rtd_theme
 - xarray
 - pip:
   - angles
@@ -45,4 +47,4 @@ dependencies:
   - ipdb
   - nbsphinx
   - retrying
-  - sphinx_rtd_theme
+  - zeep
