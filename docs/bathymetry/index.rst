@@ -23,7 +23,7 @@ Bathymetry Notebooks and Tools
 Full Salish Sea Domain Bathymetry
 =================================
 
-* `SalishSeaBathy.ipynb`_: Documents the :ref:`full domain bathymetry <SalishSeaBathy-image>` used for the Salish Sea NEMO runs.
+* `SalishSeaBathy.ipynb`_: Documents the full domain bathymetry used for the Salish Sea NEMO runs.
   The notebook includes:
 
   * Conversion of the bathymetry data from the 2-Oct-2013 :file:`WC3_PREP` tarball to a netCDF4 dataset with zlib compression enabled for all variables and :kbd:`least_significant_digit=1` set for the depths
@@ -42,7 +42,7 @@ Initial Sub-domain Test Bathymetry
 ==================================
 
 * `SalishSeaSubdomainBathy.ipynb`_: Documents the bathymetry used for the initial Salish Sea NEMO runs on a sub-set of the whole region domain.
-  The :ref:`sub-domain bathymetry <SalishSeaSubdomainBathy-image>` was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.
+  The sub-domain bathymetry was used for the runs known as :kbd:`JPP` and :kbd:`WCSD_RUN_tide_M2_OW_ON_file_DAMP_ANALY`.
   The notebook includes 2 approaches to smoothing to bathymetry to get a successful 72 hour NEMO-3.4 run with M2 tidal forcing:
 
   * Manual smoothing based on depth adjustments at the locations where test runs failed
