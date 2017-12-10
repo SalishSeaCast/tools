@@ -22,7 +22,6 @@ from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
-import netCDF4 as nc
 from salishsea_tools import nc_tools
 
 # For convenience we import the wind speed conversion factors
