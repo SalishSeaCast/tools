@@ -74,6 +74,7 @@ autodoc_mock_imports = [
     'scipy.sparse',
     'xarray',
     'yaml',
+    'zeep',
     'zmq',
     'zmq.eventloop',
     'zmq.eventloop.ioloop',
