@@ -48,6 +48,8 @@ intersphinx_mapping = {
         ('https://salishsea-nowcast.readthedocs.io/en/latest/', None),
     'numpy':
         ('https://docs.scipy.org/doc/numpy/', None),
+    'pandas':
+        ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'scipy':
         ('https://docs.scipy.org/doc/scipy/reference/', None),
 }
