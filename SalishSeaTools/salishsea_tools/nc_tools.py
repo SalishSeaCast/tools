@@ -31,15 +31,13 @@ from datetime import (
     datetime,
     timedelta,
 )
-from dateutil.parser import parse
 from resource import getrlimit, RLIMIT_NOFILE
 import os
 
 import arrow
 import netCDF4 as nc
-import xarray  as xr
-import pandas  as pd
-import numpy   as np
+import pandas as pd
+import numpy as np
 
 import warnings
 
