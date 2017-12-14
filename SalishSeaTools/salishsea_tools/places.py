@@ -174,8 +174,8 @@ PLACES = {
     },
     'Boundary Bay': {
         'lon lat': (-122.925, 49.0),
-        'hist max sea lvl': 5.61-3.09+0.256, # based on Port Atk
-        'mean sea lvl': 0.256,
+        'hist max sea lvl': 5.61,            # based on Point Atk
+        'mean sea lvl': 3.09,                # based on Point Atk
         'NEMO grid ji': (380, 335),
         'wind grid ji': (129, 162),
         'ww3 grid ji': (222, 439),
