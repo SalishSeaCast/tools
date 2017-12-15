@@ -153,7 +153,7 @@ PLACES = {
         'wind grid ji': (162, 160),
         'ww3 grid ji': (370, 404),
         'mean sea lvl': 3.14,
-        'hist mas sea lvl': 5.61 # from Pt Atk
+        'hist max sea lvl': 5.61 # from Pt Atk
     },
     'Victoria': {
         'lon lat': (-123.3707, 48.424666),
@@ -349,6 +349,11 @@ PLACES['Sandheads'] = PLACES['Sand Heads']
 #: ordered from south and west to north and east.
 #: These names are keys of the :py:data:`~salishsea_tools.places.PLACES` dict.
 TIDE_GAUGE_SITES = (
-    'Neah Bay', 'Victoria', 'Cherry Point', 'Point Atkinson', 'Nanaimo', 
+    'Neah Bay', 'Victoria', 'Cherry Point', 'Point Atkinson', 'Nanaimo',
     'Campbell River',
+)
+#: Other tide sites, no wind data at these (just to keep the number of arrows under control)
+SUPP_TIDE_SITES = (
+    'Friday Harbor', 'Halfmoon Bay', 'Patricia Bay', 'Port Renfrew',
+    'Squamish', 'Boundary Bay', 'Sand Heads',
 )
