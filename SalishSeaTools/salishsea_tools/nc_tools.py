@@ -133,7 +133,7 @@ def time_origin(dataset, time_var='time_counter'):
     """Return the time_var.time_origin value.
 
     :arg dataset: netcdf dataset object
-    :type dataset: :py:class:`netCDF4.Dataset`
+    :type dataset: :py:class:`netCDF4.Dataset` or :py:class:`xarray.Dataset`
 
     :arg time_var: name of time variable
     :type time_var: str
@@ -145,15 +145,23 @@ def time_origin(dataset, time_var='time_counter'):
     try:
         time_counter = dataset.variables[time_var]
     except KeyError:
-        raise KeyError('dataset does not have time_counter variable')
+        raise KeyError(
+            'dataset does not have {time_var} variable'.format(
+                time_var=time_var))
     try:
-        time_origin = time_counter.time_origin.title()
+        # netCDF4 dataset
+        time_orig = time_counter.time_origin.title()
     except AttributeError:
-        raise AttributeError(
-            'NetCDF: '
-            'time_counter variable does not have time_origin attribute')
+        try:
+            # xarray dataset
+            time_orig = time_counter.attrs['time_origin'].title()
+        except KeyError:
+            raise AttributeError(
+                'NetCDF: '
+                '{time_var} variable does not have '
+                'time_origin attribute'.format(time_var=time_var))
     value = arrow.get(
-        time_origin,
+        time_orig,
         ['YYYY-MMM-DD HH:mm:ss',
          'DD-MMM-YYYY HH:mm:ss',
          'YYYY-MM-DD HH:mm:ss'])
@@ -170,7 +178,7 @@ def timestamp(dataset, tindex, time_var='time_counter'):
     :type dataset: :py:class:`netCDF4.Dataset`
 
     :arg tindex: time_counter variable index.
-    :type tindex: int or list
+    :type tindex: int or iterable
 
     :arg time_var: name of the time variable
     :type time_var: str
