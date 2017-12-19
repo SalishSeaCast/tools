@@ -155,6 +155,7 @@ def time_origin(dataset, time_var='time_counter'):
     value = arrow.get(
         time_origin,
         ['YYYY-MMM-DD HH:mm:ss',
+         'DD-MMM-YYYY HH:mm:ss',
          'YYYY-MM-DD HH:mm:ss'])
     return value
 
@@ -240,7 +241,9 @@ def xarraytime_to_datetime(xarraytime):
     return datetime_obj
 
 
-def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
+def ssh_timeseries_at_point(
+    grid_T, j, i, datetimes=False, time_var='time_counter', ssh_var='sossheig'
+):
     """Return the sea surface height and time counter values
     at a single grid point from a NEMO tracer results dataset.
 
@@ -258,14 +261,20 @@ def ssh_timeseries_at_point(grid_T, j, i, datetimes=False):
                             :py:obj:`True`, otherwise return them as
                             :py:class:`arrow.Arrow` objects (the default).
 
+    :arg time_var: Name of time variable.
+    :type time_var: str
+
+    :arg ssh_var: Name of sea surface height variable.
+    :type time_var: str
+
     :returns: 2-tuple of 1-dimensional :py:class:`numpy.ndarray` objects.
               The :py:attr:`ssh` attribute holds the sea surface heights,
               and the :py:attr:`time` attribute holds the time counter
               values.
     :rtype: :py:class:`collections.namedtuple`
     """
-    ssh = grid_T.variables['sossheig'][:, j, i]
-    time = timestamp(grid_T, range(len(ssh)))
+    ssh = grid_T.variables[ssh_var][:, j, i]
+    time = timestamp(grid_T, range(len(ssh)), time_var=time_var)
     if datetimes:
         time = np.array([a.datetime for a in time])
     ssh_ts = namedtuple('ssh_ts', 'ssh, time')
