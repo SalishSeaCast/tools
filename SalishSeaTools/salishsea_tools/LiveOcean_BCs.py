@@ -1,53 +1,42 @@
+# Copyright 2013-2018 The Salish Sea NEMO Project and
+# The University of British Columbia
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # A module to interpolate Live Ocean results onto Salish Sea NEMO grid and
 # save boundary forcing files.
 
-# Nancy Soontiens, August 2016
-# nsoontie@eos.ubc.ca
 import datetime
-import glob
+#import glob
 import logging
 import os
-import re
-import subprocess as sp
-import sys
+#import re
+#import subprocess as sp
+#import sys
 
 import mpl_toolkits.basemap as Basemap
-import netCDF4 as nc
+#import netCDF4 as nc
 import numpy as np
 import xarray as xr
 from salishsea_tools import LiveOcean_grid as grid
 from salishsea_tools import gsw_calls
-from scipy import interpolate
+#from scipy import interpolate
 
-import math
-import pandas as pd
+#import math
+#import pandas as pd
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-
-
-# -------Main function to generate boundary files from command line--------
-# Example: python LiveOcean_BCs '2016-08-30'
-def create_files_for_nowcast(date, teos_10=True):
-    """Create boundary files from Live Ocean results for use in nowcast,
-    forecast and forecast2.
-
-    :arg str date: the LiveOcean rundate in format yyyy-mm-dd
-
-    :arg teos_10: specifies that temperature and salinity are saved in
-                  teos-10 variables if true. If true, temperature is saved as
-                  Conservative Temperature and salinity is Reference Salinity.
-                  If false, temperature is saved as Potential Temperature and
-                  salinity is Practical Salinity
-    :type teos_10: boolean
-    """
-    save_dir = '/results/forcing/LiveOcean/boundary_conditions/'
-    LO_dir = '/results/forcing/LiveOcean/downloaded/'
-
-    create_LiveOcean_TS_BCs(
-        date, date, '1H', 'daily', nowcast=True, teos_10=teos_10,
-        bc_dir=save_dir, LO_dir=LO_dir)
-
 
 # ---------------------- Interpolation functions ------------------------
 def load_SalishSea_boundary_grid(
@@ -69,35 +58,34 @@ def load_SalishSea_boundary_grid(
     return depth, lon, lat, shape
 
 
-def load_LiveOcean(files, resample_interval='1H'):
-    """Load a time series of Live Ocean results represented by a list of files.
-    Time series is resampled by averaging over resample_interval.
-    Default is 1 hour.
+def load_LiveOcean(date, LO_dir='/results/forcing/LiveOcean/downloaded/', LO_file='low_passed_UBC.nc'):
 
-    :arg files: Live Ocean filenames
-    :type files: list of strings
+    """Load a time series of Live Ocean results represented by a date, location and filename
 
-    :arg str resample_interval: interval for resampling based on pandas values.
-                                e.g. 1H is one hour, 7D is seven days, etc
+    :arg date: date as yyyy-mm-dd
+    :type date: string
+
+    :arg LO_dir: directory of Live Ocean file
+    :type LO_dir: string
+
+    :arg LO_file: Live Ocean filename
+    :type LO_file: string
 
     :returns: xarray dataset of Live Ocean results
     """
-    # Loop through files and load
-    d = xr.open_dataset(files[0])
-    for f in files[1:]:
-        with xr.open_dataset(f) as d1:
-            # drop uncommon variables - subfunction?
-            d, d1 = _remove_uncommon_variables_or_coords(d, d1)
-            d = xr.concat([d, d1], dim='ocean_time', data_vars='minimal')
+    # Choose file and load
+    sdt = datetime.datetime.strptime(date, '%Y-%m-%d')
+    file = os.path.join(LO_dir, sdt.strftime('%Y%m%d'), LO_file)
+
+    G, S, T = grid.get_basic_info(file)  # note: grid.py is from Parker
+    d = xr.open_dataset(file)
+
     # Determine z-rho (depth)
-    G, S, T = grid.get_basic_info(files[0])  # note: grid.py is from Parker
-    z_rho = np.zeros(d.salt.shape)
-    for t in range(z_rho.shape[0]):
-        zeta = d.zeta.values[t, :, :]
-        z_rho[t, :, :, :] = grid.get_z(G['h'], zeta, S)
+    zeta = d.zeta.values[0]
+    z_rho = grid.get_z(G['h'], zeta, S)
     # Add z_rho to dataset
     zrho_DA = xr.DataArray(
-        z_rho,
+        np.expand_dims(z_rho, 0),
         dims=['ocean_time', 's_rho', 'eta_rho', 'xi_rho'],
         coords={'ocean_time': d.ocean_time.values[:],
                 's_rho': d.s_rho.values[:],
@@ -108,8 +96,6 @@ def load_LiveOcean(files, resample_interval='1H'):
                'long_name': 'Depth at s-levels',
                'field': 'z_rho ,scalar'})
     d = d.assign(z_rho=zrho_DA)
-    # Resample
-    d = d.resample(resample_interval, 'ocean_time')
 
     return d
 
