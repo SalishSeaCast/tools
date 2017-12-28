@@ -132,41 +132,31 @@ def interpolate_to_NEMO_depths(dataset, depBC,
 
     return interps
 
+def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
+    """Removes points south of Tatoosh point because the water masses there
+    are different"
 
-def fill_NaNs_with_nearest_neighbour(data, lons, lats):
-    """At each depth level and time, fill in NaN values with nearest lateral
-    neighbour. If the entire depth level is NaN, fill with values from level
-    above. The last two dimensions of data are the lateral dimensions.
-    lons.shape and lats.shape = (data.shape[-2], data.shape[-1])
+    :arg interps: dictionary of 4D numpy arrays.
+                     Key represents the variable name.
+    :type var_arrrays: dictionary
 
-    :arg data: the data to be filled
-    :type data: 4D numpy array
+    :arg imask: longitude points to be removed
+    :type imask: int
 
-    :arg lons: longitude points
-    :type lons: 2D numpy array
+    :arg jmask: latitude points to be removed
+    :type jmask: int
 
-    :arg lats: latitude points
-    :type lats: 2D numpy array
-
-    :returns: a 4D numpy array
+    :returns: interps with values south-west of Tatoosh set to Nan.
     """
-    filled = data.copy()
-    for t in range(data.shape[0]):
-        for k in range(data.shape[1]):
-            subdata = data[t, k, :, :]
-            mask = np.isnan(subdata)
-            points = np.array([lons[~mask], lats[~mask]]).T
-            valid_data = subdata[~mask]
-            try:
-                filled[t, k, mask] = interpolate.griddata(
-                    points, valid_data, (lons[mask], lats[mask]),
-                    method='nearest'
-                )
-            except ValueError:
-                # if the whole depth level is NaN,
-                # set it equal to the level above
-                filled[t, k, :, :] = filled[t, k - 1, :, :]
-    return filled
+
+    for var in interps.keys():
+        for i in range(6):
+            for j in range(17):
+                interps[var][:, i, j] = np.nan
+
+    interps[var] = np.ma.masked_invalid(interps[var][:])
+
+    return interps
 
 
 def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
