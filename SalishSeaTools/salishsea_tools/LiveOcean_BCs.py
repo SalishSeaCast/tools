@@ -237,8 +237,8 @@ def extend_to_depth(interps, maxk=35):
 
     return interps
 
-def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
-    """Interpolates arrays in var_arrays laterally to NEMO grid.
+def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
+    """Interpolates arrays in interps laterally to NEMO grid.
     Assumes these arrays have already been interpolated vertically.
     Note that by this point interps should be a full array
 
@@ -265,7 +265,7 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     lonsLO = dataset.lon_rho.values[0, :]
     latsLO = dataset.lat_rho.values[:, 0]
     # interpolate each variable
-    interps = {}
+    interpl = {}
     for var in interps.keys():
         var_new = np.zeros((interps[var].shape[0], shape[0], shape[1]))
         for k in range(var_new.shape[0]):
@@ -274,31 +274,6 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
                 var_grid, lonsLO, latsLO, NEMOlon, NEMOlat)
         interpl[var] = var_new
     return interpl
-
-
-def _increasing_density(filled):
-    # use approximate alpha and beta
-    beta = 7.4e-4
-    alpha = 2.1e-4
-    stable = False
-
-    while not stable:
-        for t in np.arange(filled['salt'].shape[0]):
-            approx_rho_stable = (
-                beta * (filled['salt'][t, 1:] - filled['salt'][t, :-1]) - alpha *
-                (filled['temp'][t, 1:] - filled['temp'][t, :-1]))
-            if (np.min(approx_rho_stable) >= 0):
-                stable = True
-            else:
-                inds_of_mask = np.where(approx_rho_stable < 0)
-                for i, j in zip(inds_of_mask[1], inds_of_mask[2]):
-                    ks = np.where(approx_rho_stable[:, i, j] < 0)
-                    kmax = max(ks[0]) + 2
-                    kmin = min(ks[0])
-                    for var_name in ['salt', 'temp']:
-                        average = np.mean(filled[var_name][t, kmin:kmax, i, j])
-                        filled[var_name][t, kmin:kmax, i, j] = average
-    return filled
 
 
 def _bioFileSetup(TS, new):
