@@ -30,7 +30,7 @@ import numpy as np
 import xarray as xr
 from salishsea_tools import LiveOcean_grid as grid
 from salishsea_tools import gsw_calls
-#from scipy import interpolate
+from scipy import interpolate
 
 #import math
 #import pandas as pd
@@ -158,6 +158,32 @@ def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
 
     return interps
 
+
+def fill_box(interps, maxk=35):
+    """Fill all NaN in the LiveOcean with nearest points (constant depth),
+    go as far down as maxk
+
+    :arg interps: dictionary of 4D numpy arrays.
+                     Key represents the variable name.
+    :type interps: dictionary
+
+    :arg maxk: maximum Live Ocean depth with data
+    :type maxk: int
+
+    :returns interps with filled values
+    """
+
+    for var in interps.keys():
+        for k in range(maxk):
+            array = np.ma.masked_invalid(interps[var][k])
+            xx, yy = np.meshgrid(range(interps[var].shape[2]),
+                                 range(interps[var].shape[1]))
+            x1 = xx[~array.mask]
+            y1 = yy[~array.mask]
+            newarr = array[~array.mask]
+            interps[var][k] = interpolate.griddata((x1, y1), newarr.ravel(),
+                         (xx, yy), method='nearest')
+    return interps
 
 def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     """Interpolates arrays in var_arrays laterally to NEMO grid.
