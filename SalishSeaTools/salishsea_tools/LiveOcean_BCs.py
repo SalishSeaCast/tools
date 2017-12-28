@@ -100,33 +100,8 @@ def load_LiveOcean(date, LO_dir='/results/forcing/LiveOcean/downloaded/', LO_fil
     return d
 
 
-def _remove_uncommon_variables_or_coords(d, d1, remove_type='variables'):
-    """Removes uncommon variables or coordinates between two xarray datasets
-
-    :arg d: First dataset
-    :type d: xarray dataset
-
-    :arg d1: Second dataset
-    :type d1: xarray dataset
-
-    :arg str remove_type: the type to be removed. Either 'variables'
-                          or 'coordinates'.
-
-    :returns: two new datasets with uncommon variables/coordinates removed
-    """
-    if remove_type == 'variables':
-        d1list = d1.data_vars
-        dlist = d.data_vars
-    elif remove_type == 'coords':
-        d1list = d1.coords
-        dlist = d.coords
-    diff = set(dlist) ^ set(d1list)
-    rm_d1 = set(d1list) & diff
-    rm_d = set(dlist) & diff
-    return d.drop(list(rm_d)), d1.drop(list(rm_d1))
-
-
-def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
+def interpolate_to_NEMO_depths(dataset, depBC,
+                               var_names = ['salt', 'temp', 'NO3']):
     """ Interpolate variables in var_names from a Live Ocean dataset to NEMO
     depths. LiveOcean land points (including points lower than bathymetry) are
     set to np.nan and then masked.
@@ -134,8 +109,8 @@ def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
     :arg dataset: Live Ocean dataset
     :type dataset: xarray Dataset
 
-    :arg NEMO_depths: NEMO model depths
-    :type NEMO_depths: 1D numpy array
+    :arg depBC: NEMO model depths
+    :type depBC: 1D numpy array
 
     :arg var_names: list of Live Ocean variable names to be interpolated,
                     e.g ['salt', 'temp']
@@ -145,14 +120,13 @@ def interpolate_to_NEMO_depths(dataset, NEMO_depths, var_names):
     """
     interps = {}
     for var_name in var_names:
-        var_interp = np.zeros(dataset[var_name].shape)
-        for t in range(var_interp.shape[0]):
-            for j in range(var_interp.shape[2]):
-                for i in range(var_interp.shape[3]):
-                    LO_depths = dataset.z_rho.values[t, :, j, i]
-                    var = dataset[var_name].values[t, :, j, i]
-                    var_interp[t, :, j, i] = np.interp(
-                        -NEMO_depths, LO_depths, var, left=np.nan)
+        var_interp = np.zeros(dataset[var_name][0].shape)
+        for j in range(var_interp.shape[1]):
+            for i in range(var_interp.shape[2]):
+                LO_depths = dataset.z_rho.values[0, :, j, i]
+                var = dataset[var_name].values[0, :, j, i]
+                var_interp[:, j, i] = np.interp(
+                        -depBC, LO_depths, var, left=np.nan)
                     # NEMO depths are positive, LiveOcean are negative
         interps[var_name] = np.ma.masked_invalid(var_interp)
 
