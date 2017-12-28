@@ -218,15 +218,33 @@ def convect(sigma, interps):
     return sigma, interps
 
 
+def extend_to_depth(interps, maxk=35):
+    """Fill all values below level with LiveOcean data with data from above
+    start at maxk
+
+    :arg interps: dictionary of 3D numpy arrays.
+                     Key represents the variable name.
+    :type interps: dictionary
+
+    :arg maxk: maximum Live Ocean depth with data
+    :type maxk: int
+
+    :returns interps extended to depth
+    """
+
+    for var in interps.keys():
+        interps[var][maxk:] = interps[var][maxk-1]
+
+    return interps
+
 def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     """Interpolates arrays in var_arrays laterally to NEMO grid.
     Assumes these arrays have already been interpolated vertically.
-    NaN values are set to nearest lateral neighbour.
-    If a vertical level is entirely NaNs, it is set equal to the level above.
+    Note that by this point interps should be a full array
 
-    :arg var_arrays: dictionary of 4D numpy arrays.
+    :arg interps: dictionary of 4D numpy arrays.
                      Key represents the variable name.
-    :type var_arrrays: dictionary
+    :type interps: dictionary
 
     :arg dataset: LiveOcean results. Used to look up lateral grid.
     :type dataset: xarray Dataset
@@ -248,38 +266,14 @@ def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     latsLO = dataset.lat_rho.values[:, 0]
     # interpolate each variable
     interps = {}
-    for var_name, var in var_arrays.items():
-        var_new = np.zeros((var.shape[0], var.shape[1], shape[0], shape[1]))
-        mask = var_new.copy()
-        interp_nearest = var_new.copy()
-        for t in range(var_new.shape[0]):
-            for k in range(var_new.shape[1]):
-                var_grid = var[t, k, :, :]
-                # First, interpolate with bilinear. The result is masked near
-                # and at grid points where var_grid is masked.
-                var_interp = Basemap.interp(
-                    var_grid, lonsLO, latsLO, NEMOlon, NEMOlat)
-                # Keep track of mask
-                mask[t, k, ...] = var_interp.mask
-                # Next, interpolate using nearest neighbour so that masked
-                # areas can be filled later.
-                interp_nearest[t, k, ...] = Basemap.interp(
-                    var_grid, lonsLO, latsLO, NEMOlon, NEMOlat, order=0)
-                # ave bilinear intepr in var_new
-                var_new[t, k, ...] = var_interp
-        # Fill in masked values with nearest neighbour interpolant
-        inds_of_mask = np.where(mask == 1)
-        var_new[inds_of_mask] = interp_nearest[inds_of_mask]
-        # There are still some nans over pure land areas.
-        # Fill those with nearest lateral neighbour or level above
-        interps[var_name] = fill_NaNs_with_nearest_neighbour(
-            var_new, NEMOlon, NEMOlat)
-    # Make sure salinity is strictly increasing with depth
-    for k in range(1, var_new.shape[1]):
-        interps['salt'][:, k] = np.fmax(interps['salt'][:, k], interps['salt'][:, k-1])
-    # Make sure density is strictly increasing with depth
-    interps = _increasing_density(interps)
-    return interps
+    for var in interps.keys():
+        var_new = np.zeros((interps[var].shape[0], shape[0], shape[1]))
+        for k in range(var_new.shape[0]):
+            var_grid = interps[var][k, :, :]
+            var_new[k, ...] = Basemap.interp(
+                var_grid, lonsLO, latsLO, NEMOlon, NEMOlat)
+        interpl[var] = var_new
+    return interpl
 
 
 def _increasing_density(filled):
