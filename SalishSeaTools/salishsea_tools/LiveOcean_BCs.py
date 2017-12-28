@@ -136,7 +136,7 @@ def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
     """Removes points south of Tatoosh point because the water masses there
     are different"
 
-    :arg interps: dictionary of 4D numpy arrays.
+    :arg interps: dictionary of 3D numpy arrays.
                      Key represents the variable name.
     :type var_arrrays: dictionary
 
@@ -163,7 +163,7 @@ def fill_box(interps, maxk=35):
     """Fill all NaN in the LiveOcean with nearest points (constant depth),
     go as far down as maxk
 
-    :arg interps: dictionary of 4D numpy arrays.
+    :arg interps: dictionary of 3D numpy arrays.
                      Key represents the variable name.
     :type interps: dictionary
 
@@ -184,6 +184,39 @@ def fill_box(interps, maxk=35):
             interps[var][k] = interpolate.griddata((x1, y1), newarr.ravel(),
                          (xx, yy), method='nearest')
     return interps
+
+def convect(sigma, interps):
+    """Convect interps based on density (sigma).  Ignores variations in cell depths and convects
+    vertically
+
+    :arg interps: dictionary of 3D numpy arrays.
+                     Key represents the variable name.
+    :type interps: dictionary
+
+    :arg sigma: sigma-t, density, 3D array
+    :type sigma: numpy array
+
+    :returns sigma, interps stabilized
+    """
+
+    var_names = interps.keys()
+    kmax, imax, jmax = sigma.shape
+    good = False
+    while not good:
+        good = True
+        for k in range(kmax - 1):
+            for i in range(imax):
+                for j in range(jmax):
+                    if sigma[k, i, j] > sigma[k + 1, i, j]:
+                        good = False
+                        for var in var_names:
+                            interps[var][k, i, j], interps[var][
+                                k + 1, i, j] = interps[var][
+                                    k + 1, i, j], interps[var][k, i, j]
+                        sigma[k, i, j], sigma[k + 1, i, j] = sigma[
+                            k + 1, i, j], sigma[k, i, j]
+    return sigma, interps
+
 
 def interpolate_to_NEMO_lateral(var_arrays, dataset, NEMOlon, NEMOlat, shape):
     """Interpolates arrays in var_arrays laterally to NEMO grid.
