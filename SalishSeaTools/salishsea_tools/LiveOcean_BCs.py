@@ -25,7 +25,7 @@ import os
 #import sys
 
 import mpl_toolkits.basemap as Basemap
-#import netCDF4 as nc
+import netCDF4 as nc
 import numpy as np
 import xarray as xr
 from salishsea_tools import LiveOcean_grid as grid
@@ -39,21 +39,26 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # ---------------------- Interpolation functions ------------------------
-def load_SalishSea_boundary_grid(
-    fname='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc',
-):
+def load_SalishSea_boundary_grid(imin, imax, rim, meshfilename):
     """Load the Salish Sea NEMO model boundary depth, latitudes and longitudes.
+
+    :arg imin int: first grid point of western boundary
+
+    :arg imax int: one past last grid point of western boundary
+
+    :arg rim int: rim width, note rim starts at second grid point
 
     :arg fname str: name of boundary file
 
     :returns: numpy arrays depth, lon, lat and a tuple shape
     """
 
-    f = nc.Dataset(fname)
-    depth = f.variables['deptht'][:]
-    lon = f.variables['nav_lon'][:]
-    lat = f.variables['nav_lat'][:]
-    shape = lon.shape
+    with nc.Dataset(meshfilename) as meshfile:
+        lonBC = meshfile.variables['nav_lon'][imin:imax, 1:rim+1]
+        latBC = meshfile.variables['nav_lat'][imin:imax, 1:rim+1]
+        depBC = meshfile.variables['gdept_1d'][0]
+
+    shape = lonBC.shape
 
     return depth, lon, lat, shape
 
@@ -276,62 +281,19 @@ def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
     return interpl
 
 
-
-
-
-
 # ------------------ Creation of files ------------------------------
 
 
 def create_LiveOcean_TS_BCs(
-    start, end, avg_period, file_frequency,
-    nowcast=False, teos_10=True, basename='LO',
-    single_nowcast=False,
-    bc_dir='/results/forcing/LiveOcean/boundary_condtions/',
+    date,
+    basename='LO',
+    bc_dir='/results/forcing/LiveOcean/modified/',
     LO_dir='/results/forcing/LiveOcean/downloaded/',
-    NEMO_BC='/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/west/SalishSea_west_TEOS10.nc'
 ):
-    """Create a series of Live Ocean boundary condition files in date range
-    [start, end] for use in the NEMO model.
+    """Create a Live Ocean boundary condition file for date
+    for use in the NEMO model.
 
-    :arg str start: start date in format 'yyyy-mm-dd'
-
-    :arg str end: end date in format 'yyyy-mm-dd
-
-    :arg str avg_period: The averaging period for the forcing files.
-                         options are '1H' for hourly, '1D' for daily,
-                         '7D' for weekly', '1M' for monthly
-
-    :arg str file_frequency: The frequency by which the files will be saved.
-                             Options are:
-
-                             * 'yearly' files that contain a year of data and
-                               look like :file:`*_yYYYY.nc`
-                             * 'monthly' for files that contain a month of
-                               data and look like :file:`*_yYYYYmMM.nc`
-                             * 'daily' for files that contain a day of data and
-                               look like :file:`*_yYYYYmMMdDD.nc`
-
-                             where :kbd:`*` is the basename.
-
-    :arg nowcast: Specifies that the boundary data is to be generated for the
-                  nowcast framework. If true, the files are from a single
-                  72 hour run beginning on start, in which case, the argument
-                  end is ignored. If both this and single_nowcst are false,
-                  a set of time series files is produced.
-    :type nowcast: boolean
-
-    :arg single_nowcast: Specifies that the boundary data is to be generated for the
-                  nowcast framework. If true, the files are from a single tidally
-                  averaged value centered at 12 noon on day specified by start,
-                  in this case, the argument end is ignored. If both this and nowcast
-                  are false, a set of time series files is produced.
-    :type nowcast: boolean
-
-    :arg teos_10: specifies that temperature and salinity are saved in
-                  teos-10 variables if true. If false, temperature is Potential
-                  Temperature and Salinity is Practical Salinity
-    :type teos_10: boolean
+    :arg str date: date in format 'yyyy-mm-dd'
 
     :arg str basename: the base name of the saved files.
                        Eg. basename='LO', file_frequency='daily' saves files as
@@ -341,30 +303,26 @@ def create_LiveOcean_TS_BCs(
 
     :arg str LO_dir: the directory in which Live Ocean results are stored.
 
-    :arg str NEMO_BC: path to an example NEMO boundary condition file for
-                      loading boundary info.
-
     :returns: Boundary conditions files that were created.
     :rtype: list
     """
-    # Check for incoming consistency
-    if (nowcast and single_nowcast):
-        raise ValueError ('Choose either nowcast or single_nowcast, not both')
-    # Create metadeta for temperature and salinity
+
+    # Create metadeta for temperature and salinity (Live Ocean variables, NEMO grid)
     var_meta = {'vosaline': {'grid': 'SalishSea2',
                              'long_name': 'Practical Salinity',
                              'units': 'psu'},
                 'votemper': {'grid': 'SalishSea2',
                              'long_name': 'Potential Temperature',
-                             'units': 'deg C'}
+                             'units': 'deg C'},
+                'NO3':      {'grid': 'SalishSea2',
+                             'long_name': 'Nitrate',
+                             'units': 'muM'}
                 }
 
     # Mapping from LiveOcean TS names to NEMO TS names
     LO_to_NEMO_var_map = {'salt': 'vosaline',
-                          'temp': 'votemper'}
-
-    # Initialize var_arrays dict
-    NEMO_var_arrays = {key: [] for key in LO_to_NEMO_var_map.values()}
+                          'temp': 'votemper',
+                          'NO3': 'NO3'}
 
     # Load BC information
     depBC, lonBC, latBC, shape = load_SalishSea_boundary_grid(fname=NEMO_BC)
