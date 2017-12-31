@@ -31,6 +31,7 @@ from scipy import interpolate
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+
 # ---------------------- Interpolation functions ------------------------
 def load_SalishSea_boundary_grid(imin, imax, rim, meshfilename):
     """Load the Salish Sea NEMO model boundary depth, latitudes and longitudes.
@@ -47,8 +48,8 @@ def load_SalishSea_boundary_grid(imin, imax, rim, meshfilename):
     """
 
     with nc.Dataset(meshfilename) as meshfile:
-        lonBC = meshfile.variables['nav_lon'][imin:imax, 1:rim+1]
-        latBC = meshfile.variables['nav_lat'][imin:imax, 1:rim+1]
+        lonBC = meshfile.variables['nav_lon'][imin:imax, 1:rim + 1]
+        latBC = meshfile.variables['nav_lat'][imin:imax, 1:rim + 1]
         depBC = meshfile.variables['gdept_1d'][0]
 
     shape = lonBC.shape
@@ -56,8 +57,11 @@ def load_SalishSea_boundary_grid(imin, imax, rim, meshfilename):
     return depBC, lonBC, latBC, shape
 
 
-def load_LiveOcean(date, LO_dir='/results/forcing/LiveOcean/downloaded/', LO_file='low_passed_UBC.nc'):
-
+def load_LiveOcean(
+    date,
+    LO_dir='/results/forcing/LiveOcean/downloaded/',
+    LO_file='low_passed_UBC.nc'
+):
     """Load a time series of Live Ocean results represented by a date, location and filename
 
     :arg date: date as yyyy-mm-dd
@@ -85,21 +89,27 @@ def load_LiveOcean(date, LO_dir='/results/forcing/LiveOcean/downloaded/', LO_fil
     zrho_DA = xr.DataArray(
         np.expand_dims(z_rho, 0),
         dims=['ocean_time', 's_rho', 'eta_rho', 'xi_rho'],
-        coords={'ocean_time': d.ocean_time.values[:],
-                's_rho': d.s_rho.values[:],
-                'eta_rho': d.eta_rho.values[:],
-                'xi_rho': d.xi_rho.values[:]},
-        attrs={'units': 'metres',
-               'positive': 'up',
-               'long_name': 'Depth at s-levels',
-               'field': 'z_rho ,scalar'})
+        coords={
+            'ocean_time': d.ocean_time.values[:],
+            's_rho': d.s_rho.values[:],
+            'eta_rho': d.eta_rho.values[:],
+            'xi_rho': d.xi_rho.values[:]
+        },
+        attrs={
+            'units': 'metres',
+            'positive': 'up',
+            'long_name': 'Depth at s-levels',
+            'field': 'z_rho ,scalar'
+        }
+    )
     d = d.assign(z_rho=zrho_DA)
 
     return d
 
 
-def interpolate_to_NEMO_depths(dataset, depBC,
-                               var_names = ['salt', 'temp', 'NO3']):
+def interpolate_to_NEMO_depths(
+    dataset, depBC, var_names=['salt', 'temp', 'NO3']
+):
     """ Interpolate variables in var_names from a Live Ocean dataset to NEMO
     depths. LiveOcean land points (including points lower than bathymetry) are
     set to np.nan and then masked.
@@ -124,11 +134,13 @@ def interpolate_to_NEMO_depths(dataset, depBC,
                 LO_depths = dataset.z_rho.values[0, :, j, i]
                 var = dataset[var_name].values[0, :, j, i]
                 var_interp[:, j, i] = np.interp(
-                        -depBC, LO_depths, var, left=np.nan)
-                    # NEMO depths are positive, LiveOcean are negative
+                    -depBC, LO_depths, var, left=np.nan
+                )
+                # NEMO depths are positive, LiveOcean are negative
         interps[var_name] = np.ma.masked_invalid(var_interp)
 
     return interps
+
 
 def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
     """Removes points south of Tatoosh point because the water masses there
@@ -174,14 +186,17 @@ def fill_box(interps, maxk=35):
     for var in interps.keys():
         for k in range(maxk):
             array = np.ma.masked_invalid(interps[var][k])
-            xx, yy = np.meshgrid(range(interps[var].shape[2]),
-                                 range(interps[var].shape[1]))
+            xx, yy = np.meshgrid(
+                range(interps[var].shape[2]), range(interps[var].shape[1])
+            )
             x1 = xx[~array.mask]
             y1 = yy[~array.mask]
             newarr = array[~array.mask]
-            interps[var][k] = interpolate.griddata((x1, y1), newarr.ravel(),
-                         (xx, yy), method='nearest')
+            interps[var][k] = interpolate.griddata((x1, y1),
+                                                   newarr.ravel(), (xx, yy),
+                                                   method='nearest')
     return interps
+
 
 def convect(sigma, interps):
     """Convect interps based on density (sigma).  Ignores variations in cell depths and convects
@@ -209,10 +224,12 @@ def convect(sigma, interps):
                         good = False
                         for var in var_names:
                             interps[var][k, i, j], interps[var][
-                                k + 1, i, j] = interps[var][
-                                    k + 1, i, j], interps[var][k, i, j]
+                                k + 1, i, j
+                            ] = interps[var][k + 1, i, j], interps[var][k, i, j
+                                                                        ]
                         sigma[k, i, j], sigma[k + 1, i, j] = sigma[
-                            k + 1, i, j], sigma[k, i, j]
+                            k + 1, i, j
+                        ], sigma[k, i, j]
     return sigma, interps
 
 
@@ -231,9 +248,10 @@ def extend_to_depth(interps, maxk=35):
     """
 
     for var in interps.keys():
-        interps[var][maxk:] = interps[var][maxk-1]
+        interps[var][maxk:] = interps[var][maxk - 1]
 
     return interps
+
 
 def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
     """Interpolates arrays in interps laterally to NEMO grid.
@@ -269,7 +287,8 @@ def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
         for k in range(var_new.shape[0]):
             var_grid = interps[var][k, :, :]
             var_new[k, ...] = Basemap.interp(
-                var_grid, lonsLO, latsLO, NEMOlon, NEMOlat)
+                var_grid, lonsLO, latsLO, NEMOlon, NEMOlat
+            )
         interpl[var] = var_new
     return interpl
 
@@ -313,47 +332,67 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     returns dataset
     """
 
-# Add some global attributes
+    # Add some global attributes
     ds_attrs = {
         'acknowledgements':
             'Live Ocean http://faculty.washington.edu/pmacc/LO/LiveOcean.html',
-        'creator_email': 'sallen@eoas.ubc.ca',
-        'creator_name': 'Salish Sea MEOPAR Project Contributors',
-        'creator_url': 'https://salishsea-meopar-docs.readthedocs.org/',
-        'institution': 'UBC EOAS',
-        'institution_fullname': ('Earth, Ocean & Atmospheric Sciences,'
-                                 ' University of British Columbia'),
-        'summary': ('Temperature, Salinity and Nitrate from the Live Ocean model'
-                    ' interpolated in space onto the Salish Sea NEMO Model'
-                    ' western open boundary. Silicon from Nitrate.'),
-        'source': ('http://nbviewer.jupyter.org/urls/bitbucket.org/'
-                   'salishsea/.../LiveOceanNew'),
-        'history':
-            ('[{}] File creation.'
-             .format(datetime.datetime.today().strftime('%Y-%m-%d')))
+        'creator_email':
+            'sallen@eoas.ubc.ca',
+        'creator_name':
+            'Salish Sea MEOPAR Project Contributors',
+        'creator_url':
+            'https://salishsea-meopar-docs.readthedocs.org/',
+        'institution':
+            'UBC EOAS',
+        'institution_fullname': (
+            'Earth, Ocean & Atmospheric Sciences,'
+            ' University of British Columbia'
+        ),
+        'summary': (
+            'Temperature, Salinity and Nitrate from the Live Ocean model'
+            ' interpolated in space onto the Salish Sea NEMO Model'
+            ' western open boundary. Silicon from Nitrate.'
+        ),
+        'source': (
+            'http://nbviewer.jupyter.org/urls/bitbucket.org/'
+            'salishsea/.../LiveOceanNew'
+        ),
+        'history': (
+            '[{}] File creation.'
+            .format(datetime.datetime.today().strftime('%Y-%m-%d'))
+        )
     }
 
     da = {}
     for var in interpl.keys():
-        da[var] = xr.DataArray(data=interpl[var],
-                 name=LO_to_NEMO_var_map[var],
-                 dims=('time_counter', 'deptht', 'yb', 'xbT'),
-                 coords={'time_counter': time,
-                        'deptht': depBC,
-                        'yb': [1],
-                        'xbT' : np.arange(interpl[var].shape[3])},
-                 attrs=var_meta[LO_to_NEMO_var_map[var]])
+        da[var] = xr.DataArray(
+            data=interpl[var],
+            name=LO_to_NEMO_var_map[var],
+            dims=('time_counter', 'deptht', 'yb', 'xbT'),
+            coords={
+                'time_counter': time,
+                'deptht': depBC,
+                'yb': [1],
+                'xbT': np.arange(interpl[var].shape[3])
+            },
+            attrs=var_meta[LO_to_NEMO_var_map[var]]
+        )
 
-    ds = xr.Dataset(data_vars={'vosaline': da['salt'],
-                          'votemper': da['temp'],
-                          'NO3': da['NO3'],
-                           'Si': da['Si']
-                          },
-               coords={'time_counter': time,
-                        'deptht': depBC,
-                        'yb': [1],
-                        'xbT' : np.arange(interpl['salt'].shape[3])},
-               attrs=ds_attrs)
+    ds = xr.Dataset(
+        data_vars={
+            'vosaline': da['salt'],
+            'votemper': da['temp'],
+            'NO3': da['NO3'],
+            'Si': da['Si']
+        },
+        coords={
+            'time_counter': time,
+            'deptht': depBC,
+            'yb': [1],
+            'xbT': np.arange(interpl['salt'].shape[3])
+        },
+        attrs=ds_attrs
+    )
 
     return ds
 
@@ -375,20 +414,16 @@ def write_out_file(ds, date, basename, bc_dir):
     """
 
     sdt = datetime.datetime.strptime(date, '%Y-%m-%d')
-    filename = '{}_{}.nc'.format(
-                basename, sdt.strftime('y%Ym%md%d'))
+    filename = '{}_{}.nc'.format(basename, sdt.strftime('y%Ym%md%d'))
     filepath = os.path.join(bc_dir, filename)
-    encoding = {
-        var: {
-            'zlib': True
-            }
-        for var in ds.data_vars
-        }
+    encoding = {var: {'zlib': True} for var in ds.data_vars}
     encoding['time_counter'] = {'units': 'minutes since 1970-01-01 00:00'}
 
-    ds.to_netcdf(path=filepath, unlimited_dims=('time_counter'),
-             encoding=encoding,
-             )
+    ds.to_netcdf(
+        path=filepath,
+        unlimited_dims=('time_counter'),
+        encoding=encoding,
+    )
     logger.debug('Saved {}'.format(filename))
 
     return filepath
@@ -422,29 +457,41 @@ def create_LiveOcean_TS_BCs(
     """
 
     # Create metadeta for temperature and salinity (Live Ocean variables, NEMO grid)
-    var_meta = {'vosaline': {'grid': 'SalishSea2',
-                             'long_name': 'Practical Salinity',
-                             'units': 'psu'},
-                'votemper': {'grid': 'SalishSea2',
-                             'long_name': 'Potential Temperature',
-                             'units': 'deg C'},
-                'NO3':      {'grid': 'SalishSea2',
-                             'long_name': 'Nitrate',
-                             'units': 'muM'},
-                'Si':       {'grid': 'SalishSea2',
-                             'long_name': 'Nitrate',
-                             'units': 'muM'},
-                }
+    var_meta = {
+        'vosaline': {
+            'grid': 'SalishSea2',
+            'long_name': 'Practical Salinity',
+            'units': 'psu'
+        },
+        'votemper': {
+            'grid': 'SalishSea2',
+            'long_name': 'Potential Temperature',
+            'units': 'deg C'
+        },
+        'NO3': {
+            'grid': 'SalishSea2',
+            'long_name': 'Nitrate',
+            'units': 'muM'
+        },
+        'Si': {
+            'grid': 'SalishSea2',
+            'long_name': 'Nitrate',
+            'units': 'muM'
+        },
+    }
 
     # Mapping from LiveOcean TS names to NEMO TS names
-    LO_to_NEMO_var_map = {'salt': 'vosaline',
-                          'temp': 'votemper',
-                          'NO3': 'NO3',
-                          'Si': 'Si'}
+    LO_to_NEMO_var_map = {
+        'salt': 'vosaline',
+        'temp': 'votemper',
+        'NO3': 'NO3',
+        'Si': 'Si'
+    }
 
     # Load BC information
-    depBC, lonBC, latBC, shape = load_SalishSea_boundary_grid(imin=376-1, imax=470, rim=10,
-                                                          meshfilename=meshfilename)
+    depBC, lonBC, latBC, shape = load_SalishSea_boundary_grid(
+        imin=376 - 1, imax=470, rim=10, meshfilename=meshfilename
+    )
 
     # Load the Live Ocean File
     d = load_LiveOcean(date)
@@ -464,7 +511,9 @@ def create_LiveOcean_TS_BCs(
     interps = fill_box(interps)
 
     # Caculate the density (sigma) and convect
-    sigma = gsw_calls.generic_gsw_caller('gsw_sigma0.m', [interps['salt'][:], interps['temp'][:] ])
+    sigma = gsw_calls.generic_gsw_caller(
+        'gsw_sigma0.m', [interps['salt'][:], interps['temp'][:]]
+    )
     sigma, interps = convect(sigma, interps)
 
     # Fill Live Ocean Vertically
@@ -474,13 +523,18 @@ def create_LiveOcean_TS_BCs(
     interpl = interpolate_to_NEMO_lateral(interps, d, lonBC, latBC, shape)
 
     # Convect Again
-    sigmal = gsw_calls.generic_gsw_caller('gsw_sigma0.m', [interpl['salt'][:], interpl['temp'][:] ])
+    sigmal = gsw_calls.generic_gsw_caller(
+        'gsw_sigma0.m', [interpl['salt'][:], interpl['temp'][:]]
+    )
     sigmal, interpl = convect(sigmal, interpl)
 
     # Rework indexes for NEMO
     for var in interpl.keys():
         interpl[var] = np.swapaxes(interpl[var], 1, 2)
-        interpl[var] = interpl[var].reshape(1, interpl[var].shape[0], 1, interpl[var].shape[2]*interpl[var].shape[1])
+        interpl[var] = interpl[var].reshape(
+            1, interpl[var].shape[0], 1,
+            interpl[var].shape[2] * interpl[var].shape[1]
+        )
 
     # Calculate Si from NO3
     interpl['Si'] = calculate_Si_from_NO3(interpl['NO3'])
@@ -516,11 +570,16 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
     new_meta['vosaline']['units'] = 'g/kg'
     new_meta['votemper']['long_name'] = 'Conservative Temperature'
     # Convert salinity from practical to reference salinity
-    sal_ref = gsw_calls.generic_gsw_caller('gsw_SR_from_SP.m',
-                                           [sal[:], ])
+    sal_ref = gsw_calls.generic_gsw_caller('gsw_SR_from_SP.m', [
+        sal[:],
+    ])
     # Conver temperature from potential to consvervative
-    temp_cons = gsw_calls.generic_gsw_caller('gsw_CT_from_pt.m',
-                                             [sal_ref[:], temp[:], ])
+    temp_cons = gsw_calls.generic_gsw_caller(
+        'gsw_CT_from_pt.m', [
+            sal_ref[:],
+            temp[:],
+        ]
+    )
     return new_meta, sal_ref, temp_cons
 
 
