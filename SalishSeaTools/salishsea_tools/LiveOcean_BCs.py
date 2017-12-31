@@ -62,16 +62,17 @@ def load_LiveOcean(
     LO_dir='/results/forcing/LiveOcean/downloaded/',
     LO_file='low_passed_UBC.nc'
 ):
-    """Load a time series of Live Ocean results represented by a date, location and filename
+    """Load a time series of Live Ocean results represented by a date,
+    location and filename
 
     :arg date: date as yyyy-mm-dd
-    :type date: string
+    :type date: str
 
     :arg LO_dir: directory of Live Ocean file
-    :type LO_dir: string
+    :type LO_dir: str
 
     :arg LO_file: Live Ocean filename
-    :type LO_file: string
+    :type LO_file: str
 
     :returns: xarray dataset of Live Ocean results
     """
@@ -147,7 +148,7 @@ def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
     are different"
 
     :arg interps: dictionary of 3D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type var_arrrays: dictionary
 
     :arg imask: longitude points to be removed
@@ -174,7 +175,7 @@ def fill_box(interps, maxk=35):
     go as far down as maxk
 
     :arg interps: dictionary of 3D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type interps: dictionary
 
     :arg maxk: maximum Live Ocean depth with data
@@ -199,11 +200,11 @@ def fill_box(interps, maxk=35):
 
 
 def convect(sigma, interps):
-    """Convect interps based on density (sigma).  Ignores variations in cell depths and convects
-    vertically
+    """Convect interps based on density (sigma).
+    Ignores variations in cell depths and convects vertically
 
     :arg interps: dictionary of 3D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type interps: dictionary
 
     :arg sigma: sigma-t, density, 3D array
@@ -238,7 +239,7 @@ def extend_to_depth(interps, maxk=35):
     start at maxk
 
     :arg interps: dictionary of 3D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type interps: dictionary
 
     :arg maxk: maximum Live Ocean depth with data
@@ -259,7 +260,7 @@ def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
     Note that by this point interps should be a full array
 
     :arg interps: dictionary of 4D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type interps: dictionary
 
     :arg dataset: LiveOcean results. Used to look up lateral grid.
@@ -311,7 +312,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     """Prepare xarray dataset for Live Ocean file
 
     :arg interpl: dictionary of 4D numpy arrays.
-                     Key represents the variable name.
+                  Key represents the variable name.
     :type interpl: dictionary SSS
 
     :arg var_meta: metadata for each variable in var_arrays.
@@ -320,7 +321,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
                     metadata
 
     :arg LO_to_NEMO_var_map: a dictionary mapping between LO variable names
-                            (keys) and NEMO variable names (values)
+                             (keys) and NEMO variable names (values)
     :type LO_to_NEMO_var_map: a dictionary with string key-value pairs
 
     :arg depBC: NEMO model depths
@@ -456,7 +457,8 @@ def create_LiveOcean_TS_BCs(
     :rtype: list
     """
 
-    # Create metadeta for temperature and salinity (Live Ocean variables, NEMO grid)
+    # Create metadeta for temperature and salinity
+    # (Live Ocean variables, NEMO grid)
     var_meta = {
         'vosaline': {
             'grid': 'SalishSea2',
@@ -500,9 +502,9 @@ def create_LiveOcean_TS_BCs(
     interps = interpolate_to_NEMO_depths(d, depBC)
 
     # Change to TEOS-10
-    var_meta, interps['salt'], interps['temp'] = \
-            _convert_TS_to_TEOS10(
-                var_meta, interps['salt'], interps['temp'])
+    var_meta, interps['salt'], interps['temp'] = _convert_TS_to_TEOS10(
+        var_meta, interps['salt'], interps['temp']
+    )
 
     # Remove South of Tatoosh
     interps = remove_south_of_Tatoosh(interps)
@@ -573,7 +575,7 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
     sal_ref = gsw_calls.generic_gsw_caller('gsw_SR_from_SP.m', [
         sal[:],
     ])
-    # Conver temperature from potential to consvervative
+    # Convert temperature from potential to conservative
     temp_cons = gsw_calls.generic_gsw_caller(
         'gsw_CT_from_pt.m', [
             sal_ref[:],
@@ -581,20 +583,3 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
         ]
     )
     return new_meta, sal_ref, temp_cons
-
-
-# Command-line interface to create boundary files from Live Ocean results
-# for use in nowcast, forecast and forecast2
-#
-# See the SalishSeaNowcast.nowcast.workers.make_live_ocean_files worker for
-# the nowcast automation code that does this job
-if __name__ == '__main__':
-    # Configure logging so that information messages appear on stderr
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    create_files_for_nowcast(sys.argv[1])
