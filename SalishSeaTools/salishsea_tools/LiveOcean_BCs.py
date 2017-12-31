@@ -496,7 +496,7 @@ def create_LiveOcean_TS_BCs(
     )
 
     # Load the Live Ocean File
-    d = load_LiveOcean(date)
+    d = load_LiveOcean(date, LO_dir)
 
     # Depth interpolation
     interps = interpolate_to_NEMO_depths(d, depBC)
