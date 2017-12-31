@@ -149,7 +149,7 @@ def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
 
     :arg interps: dictionary of 3D numpy arrays.
                   Key represents the variable name.
-    :type var_arrrays: dictionary
+    :type var_arrrays: dict
 
     :arg imask: longitude points to be removed
     :type imask: int
@@ -161,8 +161,8 @@ def remove_south_of_Tatoosh(interps, imask=6, jmask=17):
     """
 
     for var in interps.keys():
-        for i in range(6):
-            for j in range(17):
+        for i in range(imask):
+            for j in range(jmask):
                 interps[var][:, i, j] = np.nan
 
     interps[var] = np.ma.masked_invalid(interps[var][:])
