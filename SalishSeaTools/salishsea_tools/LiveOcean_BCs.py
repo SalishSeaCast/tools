@@ -398,7 +398,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     return ds
 
 
-def write_out_file(ds, date, basename, bc_dir):
+def write_out_file(ds, date, file_template, bc_dir):
     """Write out the Live Ocean Data File
 
     :arg ds: xarray dataset containing data
@@ -407,15 +407,16 @@ def write_out_file(ds, date, basename, bc_dir):
     :arg date: date for file
     :type date: str
 
-    :arg basename: basename for file
-    :type basename: str
+    :arg file_template: filename template for the saved files;
+                        it will be formatted with a datetime.
+    :type file_template: str
 
     :arg bc_dir: directory for boundary condition file
     :type bc_dir: str
     """
 
     sdt = datetime.datetime.strptime(date, '%Y-%m-%d')
-    filename = '{}_{}.nc'.format(basename, sdt.strftime('y%Ym%md%d'))
+    filename = file_template.format(sdt)
     filepath = os.path.join(bc_dir, filename)
     encoding = {var: {'zlib': True} for var in ds.data_vars}
     encoding['time_counter'] = {'units': 'minutes since 1970-01-01 00:00'}
@@ -435,7 +436,7 @@ def write_out_file(ds, date, basename, bc_dir):
 
 def create_LiveOcean_TS_BCs(
     date,
-    basename='LiveOcean_v201712',
+    file_template='LiveOcean_v201712_{:y%Ym%md%d}.nc',
     meshfilename='/results/nowcast-sys/grid/mesh_mask201702.nc',
     bc_dir='/results/forcing/LiveOcean/boundary_conditions/',
     LO_dir='/results/forcing/LiveOcean/downloaded/',
@@ -445,9 +446,8 @@ def create_LiveOcean_TS_BCs(
 
     :arg str date: date in format 'yyyy-mm-dd'
 
-    :arg str basename: the base name of the saved files.
-                       Eg. basename='LO', file_frequency='daily' saves files as
-                       'LO_yYYYYmMMdDD.nc'
+    :arg str file_template: filename template for the saved files;
+                            it will be formatted with a datetime.
 
     :arg str bc_dir: the directory in which to save the results.
 
@@ -546,7 +546,7 @@ def create_LiveOcean_TS_BCs(
     ds = prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, ts)
 
     # Write out file
-    filepath = write_out_file(ds, date, basename, bc_dir)
+    filepath = write_out_file(ds, date, file_template, bc_dir)
     return filepath
 
 
