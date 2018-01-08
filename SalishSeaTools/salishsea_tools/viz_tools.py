@@ -425,7 +425,7 @@ def unstagger_xarray(qty, index):
 
 
 def rotate_vel(u_in, v_in, origin='grid'):
-    """Rotate u and v component values to either N-S or model grid.
+    """Rotate u and v component values to either E-N or model grid.
 
     The origin argument sets the input coordinates ('grid' or 'map')
 
