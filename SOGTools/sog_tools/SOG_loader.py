@@ -15,18 +15,18 @@
 """Routines for loading SOG model output files into Pandas data structures
 """
 
+from datetime import datetime, timedelta
+from dateutil.parser import parse
 import numpy as np
 import pandas as pd
-import datetime as dtm
-import matplotlib.dates as dts
-import pytz
+import xarray as xr
 import carbonate as carb
 
 
 def load_TS(filename):
     '''Load the timeseries file from path FILENAME into a dataframe TS_OUT
     '''
-    
+
     # Load timeseries file and extract headers
     file_obj = open(filename, 'rt')
     for index, line in enumerate(file_obj):
@@ -37,27 +37,33 @@ def load_TS(filename):
             field_units = line.split(': ', 1)[1].split(', ')
         elif line.startswith('*EndOfHeader'):
             break
-    
+
     # Read timeseries data into dataframe and assign header
-    data = pd.read_csv(filename, delim_whitespace=True, header=0,
-                       names=field_names, skiprows=index+1)
-    
+    data = pd.read_csv(
+        filename, delim_whitespace=True, header=0, names=field_names,
+        skiprows=index+1,
+    )
+
     # Extract startdate and convert to MPL time
-    dt_stamp = field_units[0].split('hr since ', 1)[1].split(' LST', 1)[0]
-    dt_num   = dts.date2num(dtm.datetime.strptime(dt_stamp, '%Y-%m-%d %H:%M:%S'))
-    
+    datetime_start = parse(
+        field_units[0].split('hr since ', 1)[1].split(' LST', 1)[0],
+    )
+
     # Create date dataframe and append to DATA
-    date   = pd.DataFrame({'date': dts.num2date((data['time'] + 8)/24 +
-                          dt_num, tz=pytz.timezone('Canada/Pacific'))})
-    TS_out = pd.concat([date, data], axis=1).set_index('date')
-    
+    date = pd.DataFrame({
+        'date': [
+            datetime_start + timedelta(hours=hour) for hour in data['time']
+        ],
+    })
+    TS_out = pd.concat([date, data], axis=1).set_index('date').to_xarray()
+
     return TS_out
 
 
 def load_hoff(filename):
     '''Load the hoffmueller file from path FILENAME into a panel HOFF_OUT
     '''
-    
+
     # Load timeseries file and extract headers
     file_obj = open(filename, 'rt')
     for index, line in enumerate(file_obj):
@@ -76,25 +82,31 @@ def load_hoff(filename):
             interval = line.split(': ', 1)[1]
         elif line.startswith('*EndOfHeader'):
             break
-        
+
     # Read timeseries data into dataframe and assign header
     data = pd.read_csv(filename, delim_whitespace=True, header=0,
-                       names=field_names, skiprows=index, chunksize=83,
+                       names=field_names, skiprows=index, chunksize=82,
                        index_col=0)
-    
-    # Timestamp in matplotlib time
-    dt_num = dts.date2num(dtm.datetime.strptime(year_start + ' ' + day_start,
-                          '%Y %j')) + 8/24 + float(sec_start)/86400
-    
-    # Extract dataframe chunks into dictionary
-    data_dict = {}
-    for index, chunk in enumerate(data):
-        data_dict[dts.num2date(dt_num + index*float(interval),
-                  tz=pytz.timezone('Canada/Pacific'))] = chunk.dropna(how='all')
 
-    # Load dictionary into panel object
-    hoff_out = pd.Panel(data_dict).transpose(2, 0, 1)
-    
+    # Timestamp in matplotlib time
+    datetime_start = datetime.strptime(
+        year_start + day_start, '%Y%j',
+    ) + timedelta(seconds=int(sec_start))
+
+    # Extract dataframe chunks
+    datetime_index = []
+    data_list = []
+    for index, chunk in enumerate(data):
+        datetime_index.append(
+            datetime_start + timedelta(days=index*float(interval)),
+        )
+        data_list.append(chunk.to_xarray())
+
+    # Concatenate xarray dataset list along time axis
+    hoff_out = xr.concat(
+        data_list, dim=xr.DataArray(datetime_index, name='time', dims='time'),
+    )
+
     return hoff_out
 
 
