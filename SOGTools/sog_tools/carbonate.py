@@ -74,11 +74,11 @@ def calc_carbonate(values, TP, TSi, T, S, P, params=['TA', 'TC']):
         elif param is 'TC':
             TC = val * 1.0e-6
         elif param is 'pH':
-            pH = param
+            pH = val
         elif param is 'pCO2':
-            pCO2 = param * 1.0e-6
+            pCO2 = val * 1.0e-6
         elif param is 'OmegaA':
-            OmegaA = param
+            OmegaA = val
             CO3 = OmegaA * KAr / Ca
         else:
             raise ValueError('Unknown CO2 parameter: {}'.format(param))
