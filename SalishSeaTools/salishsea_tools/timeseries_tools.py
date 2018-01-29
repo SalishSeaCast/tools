@@ -231,7 +231,15 @@ def reshape_to_ts(data_grid, mask, ngrid, ngrid_water, spacing=1):
 
 
 def reshape_to_grid(data_flat, coords, shape):
-    """
+    """Given a flattened array of data with the corresponding Y and X coordinates and the desired grid shape, return the grid of desired shape with the data given. Assumes flattened array has a time dimension as first dimension.
+
+    :arg data_flat: 2d array of data. First dimension is assumed to be time.
+
+    :arg coords: List of form [Ycoords, Xcoords] for each data point given.
+
+    :arg shape: 2d tuple corresponding to desired grid shape. For Salish Sea model, shape would be (898,398). 
+
+    :returns: Array of with dimensions corresponding to shape given with data in coordinates given.  
     """
 
     # Preallocate gridded array
