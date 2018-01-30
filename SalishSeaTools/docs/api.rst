@@ -33,6 +33,15 @@ These API docs provide function signatures and docstrings derived directly from 
     :members:
 
 
+.. _salishsea_tools.bio_tools:
+
+:py:mod:`bio_tools` Module
+================================
+
+.. automodule:: salishsea_tools.bio_tools
+    :members:
+
+
 .. _salishsea_tools.data_tools:
 
 :py:mod:`data_tools` Module
@@ -48,6 +57,14 @@ These API docs provide function signatures and docstrings derived directly from 
 ================================
 
 .. automodule:: salishsea_tools.diagnosis_tools
+    :members:
+
+.. _salishsea_tools.ellipse_tools:
+
+:py:mod:`ellipse_tools` Module
+================================
+
+.. automodule:: salishsea_tools.ellipse_tools
     :members:
 
 
@@ -108,6 +125,15 @@ Modules for Working with `Live Ocean`_ Model Products
     :members:
 
 .. automodule:: salishsea_tools.UBC_subdomain
+    :members:
+
+
+.. _salishsea_tools.loadDataFRP:
+
+:py:mod:`loadDataFRP` Module
+================================
+
+.. automodule:: salishsea_tools.loadDataFRP
     :members:
 
 
