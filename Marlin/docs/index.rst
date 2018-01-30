@@ -5,7 +5,7 @@ Marlin -- Salish Sea NEMO svn-hg Maintenance Tool
 *************************************************
 
 :py:obj:`Marlin` is a command line tool for maintenance of the Salish Sea MEOPAR project NEMO-hg-mirror code repository.
-It's main purpose is to automate the process of incorporating Subversion revisions from the NEMO master repository into our Mercurial repository.
+Its main purpose is to automate the process of incorporating Subversion revisions from the NEMO master repository into our Mercurial repository.
 
 Yes,
 :py:obj:`Marlin` is named for `Nemo's over-protective father`_...
