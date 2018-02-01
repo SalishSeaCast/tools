@@ -101,7 +101,7 @@ PLACES = {
         'NEMO grid ji': (384, 15),
         'ww3 grid ji': (89, 200),
     },
-    'New Westminister': {
+    'New Westminster': {
         'lon lat': (-122.90535, 49.203683),
         'stn number': 7654,
         'mean sea lvl': 1.881,
