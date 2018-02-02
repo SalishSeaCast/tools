@@ -104,7 +104,7 @@ PLACES = {
     'New Westminster': {
         'lon lat': (-122.90535, 49.203683),
         'stn number': 7654,
-        'mean sea lvl': 1.881,
+        'mean sea lvl': 1.881+0.6,  # correction for model mean sea lvl, messes up with datum though.  We should actually correct the model
         'hist max sea lvl': 4.66,
         'NEMO grid ji': (423, 363),
         'wind grid ji': (138, 164),
