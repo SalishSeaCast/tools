@@ -76,6 +76,7 @@ PLACES = {
     },
     'Halfmoon Bay': {
         'lon lat': (-123.912, 49.511),
+        'stn number': 7830,
         'NEMO grid ji': (549, 254),
         'wind grid ji': (158, 136),
         'ww3 grid ji': (331, 297),
