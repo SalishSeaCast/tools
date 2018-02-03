@@ -500,7 +500,6 @@ def get_chs_tides(data_type, stn_id, begin, end):
     time_series = pd.Series(
         data=water_levels, index=pd.to_datetime(datetimes), name=name
     )
-    time_series.drop_duplicates()
     return time_series
 
 
