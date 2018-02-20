@@ -213,6 +213,7 @@ def convect(sigma, interps):
     :returns sigma, interps stabilized
     """
 
+    small = 0.01
     var_names = interps.keys()
     kmax, imax, jmax = sigma.shape
     good = False
@@ -231,7 +232,36 @@ def convect(sigma, interps):
                         sigma[k, i, j], sigma[k + 1, i, j] = sigma[
                             k + 1, i, j
                         ], sigma[k, i, j]
+
     return sigma, interps
+
+def stabilize(sigma, interps):
+    """Add a little salt to stabilize marginally
+    stable cells
+
+    :arg interps: dictionary of 3D numpy arrays.
+                  Key represents the variable name.
+    :type interps: dictionary
+
+    :arg sigma: sigma-t, density, 3D array
+    :type sigma: numpy array
+
+    :returns interps stabilized
+    """
+
+    small = 0.01  # stabilize for delta sigma less than this
+    kl = 25 # stabilize for low delta sigma higher than this
+    add_salt = 0.01  # add this much salt
+    var_names = interps.keys()
+    kmax, imax, jmax = sigma.shape
+    for k in range(kl - 1):
+        for i in range(imax):
+            for j in range(jmax):
+                if sigma[k+1, i, j] - sigma[k, i, j] < small:
+                    interps['salt'][:k+1, i, j] += -add_salt/np.float(k+1)
+                    interps['salt'][k+1:, i, j] += add_salt/np.float(kmax-k+1)
+
+    return interps
 
 
 def extend_to_depth(interps, maxk=35):
@@ -529,6 +559,7 @@ def create_LiveOcean_TS_BCs(
         'gsw_sigma0.m', [interpl['salt'][:], interpl['temp'][:]]
     )
     sigmal, interpl = convect(sigmal, interpl)
+    interpl = stabilize(sigmal, interpl)
 
     # Rework indexes for NEMO
     for var in interpl.keys():
