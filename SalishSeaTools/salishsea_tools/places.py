@@ -145,7 +145,7 @@ PLACES = {
         'wind grid ji': (146, 155),
         'ww3 grid ji': (294, 396),
         'mean sea lvl': 3.09,
-        'hist max sea lvl': 5.61, # from Pt Atk
+        'hist max sea lvl': 5.61,  # from Pt. Atkinson
     },
     'Squamish': {
         'lon lat': (-123.155, 49.694),
@@ -154,7 +154,7 @@ PLACES = {
         'wind grid ji': (162, 160),
         'ww3 grid ji': (370, 404),
         'mean sea lvl': 3.14,
-        'hist max sea lvl': 5.61 # from Pt Atk
+        'hist max sea lvl': 5.61  # from Pt. Atkkinson
     },
     'Victoria': {
         'lon lat': (-123.3707, 48.424666),
@@ -176,11 +176,45 @@ PLACES = {
     'Boundary Bay': {
         'lon lat': (-122.925, 49.0),
         'stn number': None,
-        'hist max sea lvl': 5.61,            # based on Point Atk
-        'mean sea lvl': 3.09,                # based on Point Atk
+        'hist max sea lvl': 5.61,  # based on Point Atk
+        'mean sea lvl': 3.09,  # based on Point Atk
         'NEMO grid ji': (380, 335),
         'wind grid ji': (129, 162),
         'ww3 grid ji': (222, 439),
+    },
+
+    # VHFR FVCOM model tide guage stations
+    'Calamity Point': {
+        'lon lat': (-123.1276, 49.31262),
+        'stn number': 7724,
+        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'NEMO grid ji': None,
+        # 'wind grid ji': TODO
+        'ww3 grid ji': None,
+    },
+    'Vancouver Harbour': {
+        'lon lat': (-123.1069, 49.28937),
+        'stn number': 7735,
+        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'NEMO grid ji': None,
+        # 'wind grid ji': TODO
+        'ww3 grid ji': None,
+    },
+    'Port Moody': {
+        'lon lat': (-122.8658, 49.28814),
+        'stn number': 7755,
+        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'NEMO grid ji': None,
+        # 'wind grid ji': TODO
+        'ww3 grid ji': None,
+    },
+    'Indian Arm Head': {
+        'lon lat': (-122.8864, 49.4615),
+        'stn number': 7774,
+        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'NEMO grid ji': None,
+        # 'wind grid ji': TODO
+        'ww3 grid ji': None,
     },
 
     # Ferry terminals
