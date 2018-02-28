@@ -267,6 +267,7 @@ PLACES = {
     'S3': {
         'lon lat': (-123.558, 49.125),
         'NEMO grid ji': (450, 258),
+        'GEM2.5 grid ji': (146, 155),
     },
     # Tereza's cluster stations, aligned with Vector Stations where possible.
     'Cluster_1': {
@@ -375,7 +376,13 @@ PLACES = {
         'NEMO grid ji': (707, 145),
         'GEM2.5 grid ji': (183, 107),
         'EC buoy number': 46131,
-    }
+    },
+
+    # Airports
+    'YVR': {
+        'lon lat': (-123.184, 49.195),
+        'GEM2.5 grid ji' : (139, 155),
+    },
 }
 # Aliases:
 PLACES['Sandheads'] = PLACES['Sand Heads']
