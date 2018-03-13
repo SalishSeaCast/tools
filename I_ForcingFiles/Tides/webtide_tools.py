@@ -17,7 +17,10 @@
 """
 
 
-def get_data_from_csv(tidevar, constituent, depth, CFactor):
+def get_data_from_csv(tidevar, constituent, depth, CFactor, ibmin, ibmax,
+                      Tfilename='Tidal Elevation Constituents T.csv',
+                      Ufilename='Tidal Current Constituents U.csv',
+                      Vfilename='Tidal Current Constituents V.csv', inorth=0):
     """Get the constituent data from the csv file.
     """
     import pandas as pd
@@ -68,7 +71,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         corr_amp = CFactor['A1 Amp'] * CFactor['Q1 Amp']
     # WATER LEVEL ELEVATION
     if tidevar == 'T':
-        webtide = pd.read_csv('Tidal Elevation Constituents T.csv',
+        webtide = pd.read_csv(Tfilename,
                               skiprows=2)
         webtide = webtide.rename(columns={'Constituent': 'const',
                                           'Longitude': 'lon',
@@ -76,25 +79,33 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                                           'Amplitude (m)': 'amp',
                                           'Phase (deg GMT)': 'pha'})
 
-        # how long is the boundary?
-        boundlen = len(depth[depth != 0])
+        # number of points from webtide
+        nwebtide = int(webtide.shape[0]/8.)
 
-        # along western boundary, etaZ1 and etaZ2 are 0 in masked cells
-        amp_W = numpy.zeros((boundlen+10, 1))
-        pha_W = numpy.zeros((boundlen+10, 1))
+        # how long is the boundary?
+        boundlen = ibmax - ibmin
+        gap = boundlen - nwebtide - inorth
+
+        # along western boundary, etaZ1 and etaZ2
+        amp_W = numpy.zeros((boundlen, 1))
+        pha_W = numpy.zeros((boundlen, 1))
 
         # find the boundary
-        I = numpy.where(depth != 0)
+        I = numpy.arange(ibmin, ibmax)
 
         # allocate the M2 phase and amplitude from Webtide
         # to the boundary cells
         # (CHECK: Are these allocated in the right order?)
-        amp_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].amp * corr_amp
-        pha_W[5:boundlen+5, 0] = webtide[webtide.const == (base + ':')].pha + corr_pha
+        amp_W[gap:boundlen-inorth, 0] = webtide[webtide.const == (base + ':')].amp * corr_amp
+        amp_W[0:gap, 0] = amp_W[gap, 0]
+        amp_W[boundlen-inorth:, 0] = amp_W[boundlen-inorth-1,0]
+
+        pha_W[gap:boundlen-inorth, 0] = webtide[webtide.const == (base + ':')].pha + corr_pha
+        pha_W[0:gap, 0] = pha_W[gap, 0]
+        pha_W[boundlen-inorth:, 0] = pha_W[boundlen-inorth-1, 0]
 
         if constituent == "K1" or constituent == "M2":
             print (constituent, "eta")
-            print (pha_W)
 
         if constituent == "P1":
             amp_W = amp_W * 0.310
@@ -109,7 +120,7 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 
     #U VELOCITY
     if tidevar == 'U':
-        webtide = pd.read_csv('Tidal Current Constituents U.csv',
+        webtide = pd.read_csv(Ufilename,
                               skiprows=2)
         webtide = webtide.rename(columns={'Constituent': 'const',
                                           'Longitude': 'lon',
@@ -119,8 +130,11 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                                           'V Amplitude (m)': 'nsamp',
                                           'V Phase (deg GMT)': 'nspha'})
 
+        # number of points from webtide
+        nwebtide = int(webtide.shape[0]/8.)
         # how long is the boundary?
-        boundlen = len(depth[depth != 0])
+        boundlen = ibmax - ibmin
+        gap = boundlen - nwebtide - inorth
 
         # Convert amplitudes from north/south u/v into grid co-ordinates
 
@@ -134,7 +148,6 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
                va_ugrid * numpy.sin(theta) * numpy.sin(vphi_ugrid))
         uZ2 = (ua_ugrid * numpy.cos(theta) * numpy.sin(uphi_ugrid) +
                va_ugrid * numpy.sin(theta) * numpy.cos(vphi_ugrid))
-        print ('blah')
 
         # adjustments for phase correction
         amp = numpy.sqrt(uZ1[:]**2 + uZ2[:]**2)
@@ -153,26 +166,35 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         uZ2 = amp * numpy.sin(pha) * corr_amp
 
         # find the boundary
-        I = numpy.where(depth!=0)
+        I = numpy.arange(ibmin, ibmax)
 
         #allocate the z1 and z2 I calculated from Webtide to the boundary cells
         #along western boundary, etaZ1 and etaZ2 are 0 in masked cells
         #(CHECK: Are these allocated in the right order?)
-        Z1 = numpy.zeros((boundlen+10,1))
-        Z2 = numpy.zeros((boundlen+10,1))
-        Z1[5:boundlen+5,0] = uZ1
-        Z2[5:boundlen+5,0] = uZ2
+        Z1 = numpy.zeros((boundlen,1))
+        Z2 = numpy.zeros((boundlen,1))
+        Z1[gap:boundlen-inorth,0] = uZ1
+        Z2[gap:boundlen-inorth,0] = uZ2
+
+        Z1[0:gap,0] = Z1[gap, 0]
+        Z2[0:gap,0] = Z2[gap, 0]
+
+        Z1[boundlen-inorth:, 0] = Z1[boundlen-inorth-1, 0]
+        Z2[boundlen-inorth:, 0] = Z2[boundlen-inorth-1, 0]
 
     #V VELOCITY
     if tidevar == 'V':
-        webtide = pd.read_csv('Tidal Current Constituents V.csv',\
+        webtide = pd.read_csv(Vfilename,\
                               skiprows = 2)
         webtide = webtide.rename(columns={'Constituent': 'const', 'Longitude': 'lon', 'Latitude': 'lat', \
                                           'U Amplitude (m)': 'ewamp', 'U Phase (deg GMT)': 'ewpha',\
                                           'V Amplitude (m)': 'nsamp', 'V Phase (deg GMT)': 'nspha'})
-	#how long is the boundary?
-        boundlen = len(depth[depth!=0])
-        print(boundlen)
+        # number of points from webtide
+        nwebtide = int(webtide.shape[0]/8.)
+
+        # how long is the boundary?
+        boundlen = ibmax - ibmin
+        gap = boundlen - nwebtide - inorth
 
         #Convert phase from north/south into grid co-ordinates (see docs/tides/tides_data_acquisition for details)
         ua_vgrid = numpy.array(webtide[webtide.const==(base+':')].ewamp)*corr
@@ -200,15 +222,21 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
         vZ2 = amp*numpy.sin(pha)*corr_amp
 
         #find the boundary
-        I = numpy.where(depth!=0)
+        I = numpy.arange(ibmin, ibmax)
 
         #allocate the z1 and z2 I calculated from Webtide to the boundary cells
         #along western boundary, etaZ1 and etaZ2 are 0 in masked cells
         #(CHECK: Are these allocated in the right order?)
-        Z1 = numpy.zeros((boundlen+9,1))
-        Z2 = numpy.zeros((boundlen+9,1))
-        Z1[4:boundlen+4,0] = vZ1
-        Z2[4:boundlen+4,0] = vZ2
+        Z1 = numpy.zeros((boundlen,1))
+        Z2 = numpy.zeros((boundlen,1))
+        Z1[gap:boundlen-inorth, 0] = vZ1
+        Z2[gap:boundlen-inorth ,0] = vZ2
+        Z1[0:gap,0] = Z1[gap, 0]
+        Z2[0:gap,0] = Z2[gap, 0]
+
+        Z1[boundlen-inorth:, 0] = Z1[boundlen-inorth-1, 0]
+        Z2[boundlen-inorth:, 0] = Z2[boundlen-inorth-1, 0]
+
 
     return Z1, Z2, I, boundlen
 
@@ -219,14 +247,19 @@ def get_data_from_csv(tidevar, constituent, depth, CFactor):
 # - depth data
 
 
-def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
+def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors,
+                       ibmin, ibmax,
+                      Tfilename='Tidal Elevation Constituents T.csv',
+                      Ufilename='Tidal Current Constituents U.csv',
+                      Vfilename='Tidal Current Constituents V.csv', inorth=0
+):
     import netCDF4 as NC
     import numpy
 
     # get the data from the csv file
     Z1, Z2, I, boundlen = get_data_from_csv(
-        tidevar, constituent, depth, CFactors)
-    print (boundlen, tidevar, I[0][0])
+        tidevar, constituent, depth, CFactors, ibmin, ibmax,
+                      Tfilename, Ufilename, Vfilename, inorth)
 
     if len(number) == 1:
         name = 'SalishSea' + number
@@ -235,15 +268,10 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     nemo = NC.Dataset(
          name+'_'+code+'_west_tide_'+constituent+'_grid_'+tidevar+'.nc',
          'w')
-    nemo.description = 'Tide data from WebTide - K1 phase shifted'
+    nemo.description = 'Tide data from WebTide'
 
     # give the netcdf some dimensions
-    # note that the real boundary extends on more grid point to the south
-    # in v than for ssh or u
-    if tidevar == 'V':
-        nemo.createDimension('xb', boundlen+9)
-    else:
-        nemo.createDimension('xb', boundlen+10)
+    nemo.createDimension('xb', boundlen)
     nemo.createDimension('yb', 1)
 
     # add in the counter around the boundary
@@ -253,12 +281,8 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
     xb.longname = 'counter around boundary'
     yb = nemo.createVariable('yb', 'int32', ('yb',), zlib=True)
     yb.units = 'non dim'
-    if tidevar == 'V':
-        xb[:] = numpy.arange(I[0][0]-4, I[0][-1]+6)
-    else:
-        xb[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
+    xb[:] = I[:]
     yb[0] = 1
-    print (xb.shape)
 
     # create i and j grid position
     nbidta = nemo.createVariable('nbidta', 'int32', ('yb', 'xb'), zlib=True)
@@ -272,10 +296,7 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
 
     # give values for West Boundary (this is where the webtide points go)
     nbidta[:] = 1
-    if tidevar == 'V':
-        nbjdta[:] = numpy.arange(I[0][0]-4, I[0][-1]+6)
-    else:
-        nbjdta[:] = numpy.arange(I[0][0]-5, I[0][-1]+6)
+    nbjdta[:] = I[:]
 
     # give values for the corner
     nbrdta[:] = 1
@@ -287,11 +308,8 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
         z2 = nemo.createVariable('z2', 'float32', ('yb', 'xb'), zlib=True)
         z2.units = 'm'
         z2.longname = 'tidal elevation: sine'
-        z1[0, 0:boundlen+10] = Z1[:, 0]
-        z2[0, 0:boundlen+10] = Z2[:, 0]
-        print(Z1.size)
-        print(z1.size)
-        print(z2.size)
+        z1[0, 0:boundlen] = Z1[:, 0]
+        z2[0, 0:boundlen] = Z2[:, 0]
 
     if tidevar == 'U':
         u1 = nemo.createVariable('u1', 'float32', ('yb', 'xb'), zlib=True)
@@ -300,8 +318,8 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
         u2 = nemo.createVariable('u2', 'float32', ('yb', 'xb'), zlib=True)
         u2.units = 'm'
         u2.longname = 'tidal x-velocity: sine'
-        u1[0, 0:boundlen+10] = Z1[:, 0]
-        u2[0, 0:boundlen+10] = Z2[:, 0]
+        u1[0, 0:boundlen] = Z1[:, 0]
+        u2[0, 0:boundlen] = Z2[:, 0]
 
     if tidevar == 'V':
         v1 = nemo.createVariable('v1', 'float32', ('yb', 'xb'), zlib=True)
@@ -310,10 +328,8 @@ def create_tide_netcdf(tidevar, constituent, depth, number, code, CFactors):
         v2 = nemo.createVariable('v2', 'float32', ('yb', 'xb'), zlib=True)
         v2.units = 'm'
         v2.longname = 'tidal y-velocity: sine'
-        print (v1.shape, v2.shape)
-        print (Z1.shape)
-        v1[0, 0:boundlen+9] = Z1[:, 0]
-        v2[0, 0:boundlen+9] = Z2[:, 0]
+        v1[0, 0:boundlen] = Z1[:, 0]
+        v2[0, 0:boundlen] = Z2[:, 0]
 
     return Z1, Z2
     nemo.close()
@@ -354,7 +370,6 @@ def create_northern_tides(Z1,Z2,tidevar,constituent,code, name='SalishSea2'):
     nbrdta = nemo.createVariable('nbrdta', 'int32' , ('yb','xb'))
     nbrdta.long_name = 'position from boundary'
     nbrdta.units = 1
-    print (nbidta.shape)
     # add in the counter around the boundary (taken from Susan's code in Prepare Tide Files)
     xb = nemo.createVariable('xb', 'int32', ('xb',),zlib=True)
     xb.units = 'non dim'
