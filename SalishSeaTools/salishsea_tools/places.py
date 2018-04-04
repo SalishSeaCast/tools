@@ -105,7 +105,7 @@ PLACES = {
     'New Westminster': {
         'lon lat': (-122.90535, 49.203683),
         'stn number': 7654,
-        'mean sea lvl': 1.881+0.6,  # correction for model mean sea lvl, messes up with datum though.  We should actually correct the model
+        'mean sea lvl': 1.3,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'hist max sea lvl': 4.66,
         'NEMO grid ji': (423, 363),
         'wind grid ji': (138, 164),
@@ -144,7 +144,7 @@ PLACES = {
         'NEMO grid ji': (468, 333),
         'wind grid ji': (146, 155),
         'ww3 grid ji': (294, 396),
-        'mean sea lvl': 3.09,
+        'mean sea lvl': 3.1,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'hist max sea lvl': 5.61,  # from Pt. Atkinson
     },
     'Squamish': {
@@ -169,7 +169,7 @@ PLACES = {
         'lon lat': (-123.0754, 49.1251),
         'stn number': 7610,
         'hist max sea lvl': 4.66,  # based on New West
-        'mean sea lvl': 2.215,
+        'mean sea lvl': 1.84,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': (414, 329),
         'wind grid ji': (135, 138),
     },
@@ -187,7 +187,7 @@ PLACES = {
     'Calamity Point': {
         'lon lat': (-123.1276, 49.31262),
         'stn number': 7724,
-        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'mean sea lvl': 3.001,  # same as Vancouver Harbour; from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
         # 'wind grid ji': TODO
         'ww3 grid ji': None,
@@ -195,7 +195,7 @@ PLACES = {
     'Vancouver Harbour': {
         'lon lat': (-123.1069, 49.28937),
         'stn number': 7735,
-        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'mean sea lvl': 3.001,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
         # 'wind grid ji': TODO
         'ww3 grid ji': None,
@@ -203,7 +203,7 @@ PLACES = {
     'Port Moody': {
         'lon lat': (-122.8658, 49.28814),
         'stn number': 7755,
-        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'mean sea lvl': 3.143,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
         # 'wind grid ji': TODO
         'ww3 grid ji': None,
@@ -211,7 +211,7 @@ PLACES = {
     'Indian Arm Head': {
         'lon lat': (-122.8864, 49.4615),
         'stn number': 7774,
-        'mean sea lvl': 3.09,  # based on Point Atkinson
+        'mean sea lvl': 3.052,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
         # 'wind grid ji': TODO
         'ww3 grid ji': None,
