@@ -162,7 +162,7 @@ def turbReg(m,Cx,fl):
     return np.maximum(0.0,m[0]*Cx-m[1]*fl-m[2])
 
 def loadDataFRP_init(exp='all'):
-    if exp not in {'exp1', 'exp2', 'all'}:
+    if exp not in {'exp1', 'exp2', 'exp3', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
     with open('/ocean/shared/SalishSeaCastData/FRPlume/stationsDigitizedFinal.csv','r') as fa:
@@ -172,17 +172,20 @@ def loadDataFRP_init(exp='all'):
     df0=pd.merge(df0_a,df0_b,how='left',on=['Station','Date'])
 
     # calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
-    x=df0.loc[df0.ALS_Turb_NTU>0]['ALS_Turb_NTU'].values
+    x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'].values
     x=x[:,np.newaxis]
-    tcor=np.linalg.lstsq(x,df0.loc[df0.ALS_Turb_NTU>0]['sb19Turb_uncorrected'])[0]
+    tcor=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'])[0]
 
     if exp=='exp1':
         df0=df0.drop(df0.index[df0.Date != 20170410])
     elif exp=='exp2':
         df0=df0.drop(df0.index[df0.Date != 20170531])
+    elif exp=='exp3':
+        df0=df0.drop(df0.index[df0.Date != 20171101])
 
     basedir1='/ocean/shared/SalishSeaCastData/FRPlume/ctd/20170410/'
     basedir2='/ocean/shared/SalishSeaCastData/FRPlume/ctd/20170531/'
+    basedir3='/ocean/shared/SalishSeaCastData/FRPlume/ctd/20171101/'
     dir19='19-4561/4_derive'
     dir25='25-0363/4_derive'
     dir19T10='19-4561/4b_deriveTEOS10'
@@ -232,6 +235,21 @@ def loadDataFRP_init(exp='all'):
         f25[16]='fraser2017016.cnv'
         f25[17]='fraser2017017.cnv'
         f25[18]='fraser2017018.cnv'
+    if (exp=='exp3' or exp=='all'):
+        f19[19]='fraser2017119.cnv'
+        f19[20]='fraser2017120.cnv'
+        f19[21]='fraser2017121.cnv'
+        f19[22]='fraser2017122.cnv'
+        f19[23]='fraser2017123.cnv'
+        f19[24]='fraser2017124.cnv'
+
+        f25[19]='fraser2017019.cnv'
+        f25[20]='fraser2017020.cnv'
+        f25[21]='fraser2017021.cnv'
+        f25[22]='fraser2017022.cnv'
+        f25[23]='fraser2017023.cnv'
+        f25[24]='fraser2017024.cnv'
+
     
     fpath19=dict()
     fpath25=dict()
@@ -240,9 +258,12 @@ def loadDataFRP_init(exp='all'):
         if ii<10:
             fpath19[ii]=os.path.join(basedir1,dir19T10,f19[ii])
             fpath25[ii]=os.path.join(basedir1,dir25T10,f25[ii])
-        else:
+        elif ii<19:
             fpath19[ii]=os.path.join(basedir2,dir19T10,f19[ii])
             fpath25[ii]=os.path.join(basedir2,dir25T10,f25[ii])
+        else:
+            fpath19[ii]=os.path.join(basedir3,dir19T10,f19[ii])
+            fpath25[ii]=os.path.join(basedir3,dir25T10,f25[ii])
         
     cast19=dict()
     cast25=dict()
@@ -439,7 +460,7 @@ def loadDataFRP(exp='all',sel='narrow'):
 
 def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
     import gsw # use to convert p to z
-    if exp not in {'exp1', 'exp2', 'all'}:
+    if exp not in {'exp1', 'exp2', 'exp3', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
     if sel not in {'narrow', 'wide'}:
