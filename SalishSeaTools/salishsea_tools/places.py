@@ -265,6 +265,7 @@ PLACES = {
     'Central SJDF': {
         'lon lat': (-123.9534, 48.281677),
         'NEMO grid ji': (315,95),
+        'GEM2.5 grid ji': (101, 124),
     },
     # STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
     'S3': {
