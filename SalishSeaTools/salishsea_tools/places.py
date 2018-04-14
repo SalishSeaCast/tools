@@ -270,7 +270,7 @@ PLACES = {
     'S3': {
         'lon lat': (-123.558, 49.125),
         'NEMO grid ji': (450, 258),
-        'GEM2.5 grid ji': (146, 155),
+        'GEM2.5 grid ji': (138, 144),
     },
     # Tereza's cluster stations, aligned with Vector Stations where possible.
     'Cluster_1': {
