@@ -262,7 +262,10 @@ PLACES = {
     'Strait of Georgia': {
         'lon lat': (-123.8, 49.3),
     },
-
+    'Central SJDF': {
+        'lon lat': (-123.9534, 48.281677),
+        'NEMO grid ji': (315,95),
+    },
     # STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
     'S3': {
         'lon lat': (-123.558, 49.125),
@@ -400,3 +403,118 @@ SUPP_TIDE_SITES = (
     'Friday Harbor', 'Halfmoon Bay', 'Patricia Bay', 'Port Renfrew',
     'Squamish', 'Boundary Bay', 'Sand Heads',
 )
+
+def DispGeoLocs():
+    """Display locations in map coordinates
+
+    :returns: figure handle
+    :rtype: :py:class:`matplotlib.figure.Figure`
+    """
+    from mpl_toolkits.basemap import Basemap
+    from matplotlib import pyplot as plt
+    places2=PLACES.copy()
+    places2.pop('Sandheads')
+    places2.pop('Departure Bay')
+    width = 300000; lon_0 = -124.3; lat_0 = 49
+    fig=plt.figure(figsize=(20,20))
+    m = Basemap(width=width,height=width,projection='aeqd', resolution='h',
+                lat_0=lat_0,lon_0=lon_0)
+    m.drawmapboundary()
+    m.drawcoastlines(linewidth=0.5)
+    m.drawrivers()
+    m.drawparallels(range(40,60,2))
+    m.drawmeridians(range(-130,-110,2))
+    #plt.title('EC River Stations')
+
+    # map stations:
+    for pl in places2.keys():
+        if 'lon lat' in places2[pl].keys():
+            lon,lat=places2[pl]['lon lat']
+            if (47<lat<51) & (-128<lon<-120):
+                if pl in ('Sandy Cove','Calamity Point','Port Moody','Vancouver','New Westminster','Delta DDL node','East node','Boundary Bay','Duke Pt.'):
+                    xpt, ypt = m(lon, lat)
+                    xpt2, ypt2 = m(lon+.03, lat)
+                    m.plot(xpt,ypt,'ro')
+                    plt.text(xpt2,ypt2,pl,fontsize=10,fontweight='bold',
+                            ha='left',va='center',color='r')
+                else:
+                    xpt, ypt = m(lon, lat)
+                    xpt2, ypt2 = m(lon-.03, lat)
+                    m.plot(xpt,ypt,'ro')
+                    plt.text(xpt2,ypt2,pl,fontsize=10,fontweight='bold',
+                            ha='right',va='center',color='r')
+    return fig
+
+def DispGridLocs(mesh_mask='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc'):
+    """Display locations in NEMO model grid coordinates
+
+    :arg mesh_mask: string with path to the meshmask you would like to plot; 201702 default
+    :type mesh_mask: str
+
+    :returns: figure handle
+    :rtype: :py:class:`matplotlib.figure.Figure`
+    """
+    import numpy as np # only grid
+    from mpl_toolkits.basemap import Basemap
+    import netCDF4 as nc # only grid
+    from matplotlib import pyplot as plt
+    from salishsea_tools import viz_tools # only grid
+    places2=PLACES.copy()
+    places2.pop('Sandheads')
+    places2.pop('Departure Bay')
+    with nc.Dataset(mesh_mask) as fm:
+        tmask=np.copy(fm.variables['tmask'])
+        e3t_0=np.copy(fm.variables['e3t_0'])
+    bathy=np.sum(e3t_0[0,:,:,:]*tmask[0,:,:,:],0)
+    cm=plt.cm.get_cmap('Blues')
+    cm.set_bad('lightgray')
+    fig,ax=plt.subplots(1,2,figsize=(18,18))
+    viz_tools.set_aspect(ax[0])
+    viz_tools.set_aspect(ax[1])
+    ax[0].pcolormesh(np.ma.masked_where(tmask[0,0,:,:]==0,bathy),cmap=plt.cm.get_cmap('Blues'))
+    # map stations:
+    for pl in places2.keys():
+        if 'NEMO grid ji' in places2[pl].keys() and places2[pl]['NEMO grid ji'] is not None:
+            j,i=places2[pl]['NEMO grid ji']
+            if pl in ('Sandy Cove','Calamity Point','Port Moody','Vancouver','New Westminster',
+                      'East Node','Duke Pt.','Halibut Bank','Cherry Point','Central SJDF','Friday Harbor'):
+                ax[0].plot(i,j,'ro')
+                ax[0].text(i+4,j,pl,fontsize=10,fontweight='bold',
+                        ha='left',va='center',color='r')
+            elif pl in ('Sand Heads','Delta DDL node','Central Node','Delta BBL node','Cluster_9',
+                      'East Node','Woodwards Landing'):
+                ax[0].plot(i,j,'ro')
+            else:
+                ax[0].plot(i,j,'ro')
+                ax[0].text(i-4,j,pl,fontsize=10,fontweight='bold',
+                        ha='right',va='center',color='r')
+    xl=(240,340)
+    yl=(400,450)
+    ax[1].pcolormesh(np.ma.masked_where(tmask[0,0,:,:]==0,bathy),cmap=plt.cm.get_cmap('Blues'))
+    # map stations:
+    for pl in places2.keys():
+        if 'NEMO grid ji' in places2[pl].keys() and places2[pl]['NEMO grid ji'] is not None:
+            j,i=places2[pl]['NEMO grid ji']
+            if (xl[0]<i<xl[1]) & (yl[0]<j<yl[1]):
+                if pl in ('Sandy Cove','Calamity Point','Port Moody','Vancouver','New Westminster','Friday Harbor',
+                          'East Node','Duke Point','Halibut Bank','Cherry Point', 'Sand Heads','Cluster_9','Central SJDF'):
+                    ax[1].plot(i,j,'ro')
+                    ax[1].text(i+1,j,pl,fontsize=10,fontweight='bold',
+                            ha='left',va='center',color='r')
+                elif pl in ('Delta BBL node'):
+                    ax[1].plot(i,j,'ro')
+                    ax[1].text(i,j-2,pl,fontsize=10,fontweight='bold',
+                            ha='center',va='center',color='r')
+                elif pl in ('Delta DDL node'):
+                    ax[1].plot(i,j,'ro')
+                    ax[1].text(i,j+2,pl,fontsize=10,fontweight='bold',
+                            ha='right',va='center',color='r')
+                else:
+                    ax[1].plot(i,j,'ro')
+                    ax[1].text(i-1,j,pl,fontsize=10,fontweight='bold',
+                            ha='right',va='center',color='r')
+    ax[1].set_xlim(xl[0],xl[1])
+    ax[1].set_ylim(yl[0],yl[1])
+    return fig
+
+
