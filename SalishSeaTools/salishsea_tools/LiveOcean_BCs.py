@@ -109,7 +109,7 @@ def load_LiveOcean(
 
 
 def interpolate_to_NEMO_depths(
-    dataset, depBC, var_names=['salt', 'temp', 'NO3']
+    dataset, depBC, var_names
 ):
     """ Interpolate variables in var_names from a Live Ocean dataset to NEMO
     depths. LiveOcean land points (including points lower than bathymetry) are
@@ -252,7 +252,6 @@ def stabilize(sigma, interps):
     small = 0.01  # stabilize for delta sigma less than this
     kl = 25 # stabilize for low delta sigma higher than this
     add_salt = 0.01  # add this much salt
-    var_names = interps.keys()
     kmax, imax, jmax = sigma.shape
     for k in range(kl - 1):
         for i in range(imax):
@@ -380,7 +379,8 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
             ' University of British Columbia'
         ),
         'summary': (
-            'Temperature, Salinity and Nitrate from the Live Ocean model'
+            'Temperature, Salinity, Nitrate, Oxygen, DIC and TALK'
+            'from the Live Ocean model'
             ' interpolated in space onto the Salish Sea NEMO Model'
             ' western open boundary. Silicon from Nitrate.'
         ),
@@ -414,7 +414,10 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
             'vosaline': da['salt'],
             'votemper': da['temp'],
             'NO3': da['NO3'],
-            'Si': da['Si']
+            'Si': da['Si'],
+            'OXY': da['oxygen'],
+            'DIC': da['TIC'],
+            'TA': da['alkalinity']
         },
         coords={
             'time_counter': time,
@@ -507,9 +510,25 @@ def create_LiveOcean_TS_BCs(
         },
         'Si': {
             'grid': 'SalishSea2',
-            'long_name': 'Nitrate',
+            'long_name': 'Dissolved Silicon',
             'units': 'muM'
         },
+        'OXY': {
+            'grid': 'SalishSea2',
+            'long_name': 'Oxygen',
+            'units': 'muM'
+        },
+        'DIC': {
+            'grid': 'SalishSea2',
+            'long_name': 'Dissolved Inorganic Carbon',
+            'units': 'muM'
+        },
+        'TA': {
+            'grid': 'SalishSea2',
+            'long_name': 'Total Alkalinity',
+            'units': 'muM'
+        },
+
     }
 
     # Mapping from LiveOcean TS names to NEMO TS names
@@ -517,7 +536,10 @@ def create_LiveOcean_TS_BCs(
         'salt': 'vosaline',
         'temp': 'votemper',
         'NO3': 'NO3',
-        'Si': 'Si'
+        'Si': 'Si',
+        'oxygen': 'OXY',
+        'TIC': 'DIC',
+        'alkalinity': 'TA',
     }
 
     # Load BC information
@@ -529,7 +551,7 @@ def create_LiveOcean_TS_BCs(
     d = load_LiveOcean(date, LO_dir)
 
     # Depth interpolation
-    interps = interpolate_to_NEMO_depths(d, depBC)
+    interps = interpolate_to_NEMO_depths(d, depBC, var_names=(var in LO_to_NEMO_var_map if var != 'Si'))
 
     # Change to TEOS-10
     var_meta, interps['salt'], interps['temp'] = _convert_TS_to_TEOS10(
