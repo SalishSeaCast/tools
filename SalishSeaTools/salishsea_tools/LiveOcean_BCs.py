@@ -332,8 +332,8 @@ def calculate_Si_from_NO3(NO3):
 
     :returns: a 3-D array of silicon values
     """
-    a, b, c = 0, 1.03, 0.015
-    Si = a + b * NO3 + c * NO3**2
+    a, b = 6.46, 1.35
+    Si = a + b * NO3
 
     return Si
 
