@@ -551,7 +551,7 @@ def create_LiveOcean_TS_BCs(
     d = load_LiveOcean(date, LO_dir)
 
     # Depth interpolation
-    interps = interpolate_to_NEMO_depths(d, depBC, var_names=(var in LO_to_NEMO_var_map if var != 'Si'))
+    interps = interpolate_to_NEMO_depths(d, depBC, var_names=(var for var in LO_to_NEMO_var_map if var != 'Si'))
 
     # Change to TEOS-10
     var_meta, interps['salt'], interps['temp'] = _convert_TS_to_TEOS10(
