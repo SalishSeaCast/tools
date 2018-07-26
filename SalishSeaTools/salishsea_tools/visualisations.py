@@ -27,8 +27,8 @@ def contour_thalweg(
     axes, var, bathy, mesh_mask, clevels=None,
     mesh_mask_depth_var='gdept_0', cmap='hsv', land_colour='burlywood',
     xcoord_distance=True,
-    thalweg_file='/data/nsoontie/MEOPAR/tools/bathymetry/thalweg_working.txt',
-    cbar_args=None, 
+    thalweg_file='/home/sallen/MEOPAR/Tools/bathymetry/thalweg_working.txt',
+    cbar_args=None,
     mesh_args=None,
     method='contourf'
 ):
