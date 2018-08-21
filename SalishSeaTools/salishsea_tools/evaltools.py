@@ -27,19 +27,19 @@ from salishsea_tools import geo_tools
 def matchData(
     data,
     varmap,
+    filemap,
+    fdict,
     mod_start,
     mod_end,
-    method='bin',
-    deltat=0,
-    deltad=0.0,
     mod_nam_fmt='nowcast',
     mod_basedir='/results/SalishSea/nowcast-green/',
     mod_flen=1,
-    mod_ftype='ptrc_T',
-    mod_tres=1,
+    method='bin',
+    deltat=0,
+    deltad=0.0,
     meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc'
     #bathyPath='/results/nowcast-sys/grid/bathymetry_201702.nc'
-):
+    ):
     """Given a dataset, find the nearest model matches
 
     :arg data: pandas dataframe containing data to compare to. Must include the following:
@@ -48,7 +48,11 @@ def matchData(
         'Lon': 
     :type :py:class:`pandas.DataFrame`
 
-    :arg dict varmap: dictionary mapping names of data columns to variable names, string to string
+    :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
+
+    :arg dict filemap: dictionary mapping names of model variables to array containing 
+
+    :arg dict fdict: map mod_ftype to ftres
 
     :arg mod_start: date of start of first selected model file
     :type :py:class:`datetime.datetime`
@@ -81,77 +85,104 @@ def matchData(
 
     :arg int mod_tres: temporal resolution of file to read in hours; defaults to 1 for hourly files
 
-    :arg str bathyPath: path to bathymetry file
+    :arg str meshPath: path to mesh file
 
     """
+    # check that required columns are in dataframe:
+    if not set(('dtUTC','Lat','Lon','Z')) <= set(data.keys()):
+        raise Exception('{} missing from data'.format([el for el in set(('dtUTC','Lat','Lon','Z'))-set(data.keys())],'%s'))
 
-    flist=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,mod_ftype,mod_tres)
+    # check that entries are minimal and consistent:
+    fkeysVar=list(filemap.keys())
+    for ikey in fkeysVar:
+        if ikey not in set(varmap.values()):
+            filemap.pop(ikey) 
+    if len(set(varmap.values())-set(filemap.keys()))>0:
+        print('Error: file(s) missing from filemap:',set(varmap.values())-set(filemap.keys()))
+    fkeysVar=list(filemap.keys())
+    ftypes=list(fdict.keys())
+    for ikey in ftypes:
+        if ikey not in set(filemap.values()):
+            fdict.pop(ikey) 
+    if len(set(filemap.values())-set(fdict.keys()))>0:
+        print('Error: file(s) missing from fdict:',set(filemap.values())-set(fdict.keys()))
+    ftypes=list(fdict.keys()) 
+    # reverse filemap dict
+    filemap_r=dict()
+    for ift in ftypes:
+        filemap_r[ift]=list()
+    for ikey in filemap:
+        filemap_r[filemap[ikey]].append(ikey)
 
-    with nc.Dataset(meshPath) as mesh:
-        mlon = np.copy(mesh.variables['nav_lon'][:, :])
-        mlat = np.copy(mesh.variables['nav_lat'][:, :])
-        tmask= np.copy(mesh.variables['tmask'][0,:,:,:]
+    # adjustments to data dataframe
+    data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
+    data=data.dropna(how='any',subset=['dtUTC','Lat','Lon','Z']).dropna(how='all',subset=[*varmap.keys()])
+    data['j']=np.zeros((len(data))).astype(int)
+    data['i']=np.zeros((len(data))).astype(int)
+    with nc.Dataset(meshPath) as fmesh:
+        lmask=-1*(fmesh.variables['tmask'][0,0,:,:]-1)
+        for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
+            jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
+                                                        land_mask = lmask)
+            data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+    data=data.sort_values(by=['dtUTC','Lat','Lon','Z'])
+    data.reset_index(drop=True,inplace=True)
 
-    # restrct data to time range of interest
-    data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)]
-    # make sure data is in ascending order in time with monotonically increasing index
-    data=data.sort_values('dtUTC').set_index(np.arange(0,len(data)))
-    data=data.dropna(how='any',subset=['dtUTC','Lat','Lon']).dropna(how='all',subset=[*varmap.keys()])
+    # set up columns to accept model values
+    for ivar in varmap.values():
+        data['mod_'+ivar]=np.zeros((len(data)))
+
+    # list model files
+    flist=dict()
+    for ift in ftypes:
+        flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
 
     if method == 'bin':
-        return _binmatch(data,flist,mlon,mlat,mod_start,mod_end,...)
+        data = _binmatch(data,flist,ftypes,filemap_r)
     else:
         print('option '+method+' not written yet')
         return
+    return data, varmap
 
+def _binmatch(data,flist,ftypes,filemap_r):
+    # loop through data, openening and closing model files as needed and storing model data
+    for ind, row in data.iterrows():
+        if ind==0: # load first files
+            fid=dict()
+            fend=dict()
+            for ift in ftypes:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+            torig=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') # assumes same for all files in run
+        for ift in ftypes:
+            if row['dtUTC']>=fend[ift]:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+            # now read data
+            # find time index
+            ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig)
+            # find depth index
+            ik=_getZInd_bin(row['Z'],fid[ift])
+            # assign values for each var assoc with ift
+            for ivar in filemap_r[ift]:
+                data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+    return data
 
-def _binmatch(data,flist,mlon,mlat,mod_start,mod_end,...):
+def _nextfile_bin(ift,idt,ifind,fid,fend,flist):
+    if ift in fid.keys():
+        fid[ift].close()
+    frow=flist[ift].loc[(ifind.t_0<=idt)&(ifind.t_n>idt)]
+    fid[ift]=nc.Dataset(frow['paths'].values[0])
+    fend[ift]=frow['t_n'].values[0]
+    return fid, fend
 
-    with nc.Dataset(flist['paths'][0]) as fd:
-          deptht=np.copy(fd.variables['deptht_bounds'][:])
+def _getTimeInd_bin(idt,ifid,torig):
+    tlist=ifid.variables['time_centered_bounds'][:,:]
+    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
+    return ih
 
-    list_of_i = list()
-    list_of_j = list()
-    list_of_k = list()
-    list_of_mod=dict()
-    for var in varmap.keys:
-        list_of_mod[var]=list()
-    for n in data.index:
-        date = data.dtUTC[n]
-        j, i = geo_tools.find_closest_model_point(data.Lon[n], data.Lat[n], 
-                                             mlon, mlat, land_mask = tmask[0,:,:])
-        k = np.argwhere((deptht[:,0]<=data.depth[n])&(deptht[:,1]>data.depth[n]))
-        if mesh.variables['tmask'][0, k, j, i] == 1:
-            for m in range(numfiles):
-                if (date > bounds[m]) & (date < bounds[m+1]):
-                    here = m
-            datestr_l = bounds_l[here].strftime('%Y%m%d')
-            datestr_r = bounds_r[here].strftime('%Y%m%d')
-            datestr = datestr_l + '-' + datestr_r
-            nuts = nc.Dataset(glob.glob(PATH + 'SalishSea*1h*ptrc_T*' + datestr +'.nc')[0])
-            if date.minute < 30:
-                before = datetime.datetime(year = date.year, month = date.month, day = date.day, 
-                                   hour = (date.hour), minute = 30) - datetime.timedelta(hours=1)
-            if date.minute >= 30:
-                before = datetime.datetime(year = date.year, month = date.month, day = date.day, 
-                                       hour = (date.hour), minute = 30)
-            delta = (date.minute) / 60
-            hour = (before - bounds_l[here]).days * 24 + int((before - bounds_l[here]).seconds / 60 / 60)
-            ni_val = (delta*(nuts.variables['nitrate'][hour, depth, Yind, Xind] ) + 
-                       (1- delta)*(nuts.variables['nitrate'][hour+1, depth, Yind, Xind] ))
-            si_val = (delta*(nuts.variables['silicon'][hour, depth, Yind, Xind] ) + 
-                       (1- delta)*(nuts.variables['silicon'][hour+1, depth, Yind, Xind] ))
-            list_of_lons = np.append(list_of_lons, df2.Lon[n])
-            list_of_lats = np.append(list_of_lats, df2.Lat[n])
-            list_of_datetimes = np.append(list_of_datetimes, date)
-            list_of_cs_ni = np.append(list_of_cs_ni, float(df2['N'][n]))
-            list_of_cs_si = np.append(list_of_cs_si, float(df2['Si'][n]))
-            list_of_model_ni = np.append(list_of_model_ni, ni_val)
-            list_of_model_si = np.append(list_of_model_si, si_val)
-            #list_of_depths = np.append(list_of_depths, depth)
-            list_of_depths = np.append(list_of_depths, df2.depth[n])
-
-    return newdata
+def _getZInd_bin(idt,ifid):
+    tlist=ifid.variables['deptht_bounds'][:,:]
+    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>idt][0] # return first index where latter endpoint is larger
+    return ih
 
 def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     """
@@ -169,7 +200,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     if nam_fmt=='nowcast':
         stencil='{0}/SalishSea_'+ftres+'_{1}_{1}_'+ftype+'.nc'
     elif nam_fmt=='long':
-       stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc' 
+       stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
     else:
         raise Exception('nam_fmt '+nam_fmt+' is not defined')
     iits=start
@@ -177,7 +208,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     inds=list()
     paths=list()
     t_0=list()
-    t_1=list()
+    t_n=list()
     while iits<=end:
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
@@ -189,8 +220,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         inds.append(ind)
         paths.append(iifstr)
         t_0.append(iits)
-        t_1.append(iitn)
+        t_n.append(iitn)
         iits=iitn
         ind=ind+1
-    return pd.DataFrame(data=np.swapaxes([paths,t_0,t_1],0,1),index=inds,columns=['paths','t_0','t_1'])
-    
+    return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
