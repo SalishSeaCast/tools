@@ -38,27 +38,26 @@ def matchData(
     deltat=0,
     deltad=0.0,
     meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc'
-    #bathyPath='/results/nowcast-sys/grid/bathymetry_201702.nc'
     ):
     """Given a dataset, find the nearest model matches
 
     :arg data: pandas dataframe containing data to compare to. Must include the following:
         'dtUTC': column with UTC date and time
         'Lat': decimal latitude
-        'Lon': 
+        'Lon': decimal longitude
+        'Z': depth, positive 
     :type :py:class:`pandas.DataFrame`
 
     :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 
-    :arg dict filemap: dictionary mapping names of model variables to array containing 
+    :arg dict filemap: dictionary mapping names of model variables to filetypes containing them 
 
-    :arg dict fdict: map mod_ftype to ftres
+    :arg dict fdict: dictionary mapping filetypes to their time resolution in hours
 
     :arg mod_start: date of start of first selected model file
     :type :py:class:`datetime.datetime`
 
-    :arg mod_end: at least 1 > last start  date for model results
-
+    :arg mod_end: last date of model run
     :type :py:class:`datetime.datetime`
 
     :arg str method: method to use for matching. options are:
@@ -80,10 +79,6 @@ def matchData(
     :arg str mod_basedir: path to search for model files; defaults to nowcast-green
 
     :arg int mod_flen: length of model files in days; defaults to 1, which is how nowcast data is stored
-
-    :arg str mod_ftype: file type specifier, eg ptrc_T, grid_T, etc 
-
-    :arg int mod_tres: temporal resolution of file to read in hours; defaults to 1 for hourly files
 
     :arg str meshPath: path to mesh file
 
