@@ -23,6 +23,8 @@ import netCDF4 as nc
 import pandas as pd
 import glob
 from salishsea_tools import geo_tools
+import gsw
+import os
 
 def matchData(
     data,
@@ -219,3 +221,69 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         iits=iitn
         ind=ind+1
     return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
+
+
+
+def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sqlite'):
+    """
+    load DFO data stored in SQLite database
+    """
+    try:
+        from sqlalchemy import create_engine, case
+        from sqlalchemy.orm import create_session 
+        from sqlalchemy.ext.automap import automap_base
+        from sqlalchemy.sql import and_, or_, not_, func
+    except ImportError:
+        raise ImportError('You need to install sqlalchemy in your environment to use this function.')
+
+    # definitions
+    # if db does not exist, exit
+    if not os.path.isfile(os.path.join(basedir, dbname)):
+        raise Exception('ERROR: {}.sqlite does not exist'.format(dbname))
+    engine = create_engine('sqlite:///' + basedir + dbname, echo = False)
+    Base = automap_base()
+    # reflect the tables in salish.sqlite:
+    Base.prepare(engine, reflect=True)
+    # mapped classes have been created
+    # existing tables:
+    StationTBL=Base.classes.StationTBL
+    ObsTBL=Base.classes.ObsTBL
+    CalcsTBL=Base.classes.CalcsTBL
+    JDFLocsTBL=Base.classes.JDFLocsTBL
+    session = create_session(bind = engine, autocommit = False, autoflush = True)
+    SA=case([(CalcsTBL.Salinity_Bottle_SA!=None, CalcsTBL.Salinity_Bottle_SA)], else_=
+             case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
+             case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
+             case([(CalcsTBL.Salinity_SA!=None, CalcsTBL.Salinity_SA)], else_=
+             case([(CalcsTBL.Salinity__Unknown_SA!=None, CalcsTBL.Salinity__Unknown_SA)], 
+                  else_=CalcsTBL.Salinity__Pre1978_SA)
+            ))))
+    Tem=case([(ObsTBL.Temperature!=None, ObsTBL.Temperature)], else_=
+             case([(ObsTBL.Temperature_Primary!=None, ObsTBL.Temperature_Primary)], else_=
+             case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary)], else_=ObsTBL.Temperature_Reversing)))
+    TemUnits=case([(ObsTBL.Temperature!=None, ObsTBL.Temperature_units)], else_=
+             case([(ObsTBL.Temperature_Primary!=None, ObsTBL.Temperature_Primary_units)], else_=
+             case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary_units)], 
+                  else_=ObsTBL.Temperature_Reversing_units)))
+    TemFlag=ObsTBL.Quality_Flag_Temp
+    
+    
+    qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
+                      StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
+                      StationTBL.Lat,StationTBL.Lon,
+                     ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Ammonium,ObsTBL.Ammonium_units,ObsTBL.Chlorophyll_Extracted,
+                     ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),Tem.label('T'),TemUnits.label('T_units')).\
+                select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
+                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.StartYear>2014,
+                                                                    StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+    df1=pd.DataFrame(qry.all())
+    df1['Z']=np.where(df1['Depth']>=0,df1['Depth'],-1.0*gsw.z_from_p(p=df1['Pressure'],lat=df1['Lat']))
+    df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
+    session.close()
+    engine.dispose()
+    return df1
+
+
+
