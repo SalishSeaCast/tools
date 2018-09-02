@@ -25,7 +25,7 @@ import glob
 from salishsea_tools import geo_tools
 import gsw
 import os
-
+import pytz
 def matchData(
     data,
     varmap,
@@ -286,4 +286,18 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     return df1
 
 
-
+def loadPSF2015():
+    nutrients_2015 = pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/PSFbottledata2015_CN_edits_EOCor2.csv')
+    data=nutrients_2015.loc[pd.notnull(nutrients_2015['date'])&
+                        pd.notnull(nutrients_2015['Time'])&
+                        pd.notnull(nutrients_2015['lat'])&
+                        pd.notnull(nutrients_2015['lon'])].copy(deep=True)
+    data['Lat']=data['lat']
+    data['Lon']=data['lon']
+    data['Z']=data['depth']
+    ts=data['Time'].values
+    ds=data['date'].values
+    dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+' '+jj,'%d-%m-%Y %I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None)
+        for ii,jj in zip(ds,ts)]
+    data['dtUTC']=dts
+    return data
