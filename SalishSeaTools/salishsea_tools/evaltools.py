@@ -39,9 +39,12 @@ def matchData(
     method='bin',
     deltat=0,
     deltad=0.0,
-    meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc'
+    meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc',
+    maskName='tmask'
     ):
     """Given a dataset, find the nearest model matches
+
+    note: only one grid mask is loaded so all model variables must be on same grid; defaults to tmask
 
     :arg data: pandas dataframe containing data to compare to. Must include the following:
         'dtUTC': column with UTC date and time
@@ -117,7 +120,8 @@ def matchData(
     data['j']=np.zeros((len(data))).astype(int)
     data['i']=np.zeros((len(data))).astype(int)
     with nc.Dataset(meshPath) as fmesh:
-        lmask=-1*(fmesh.variables['tmask'][0,0,:,:]-1)
+        omask=np.copy(fmesh.variables[maskName])
+        lmask=-1*(omask[0,0,:,:]-1)
         for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
             jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
                                                         land_mask = lmask)
@@ -127,7 +131,7 @@ def matchData(
 
     # set up columns to accept model values
     for ivar in varmap.values():
-        data['mod_'+ivar]=np.zeros((len(data)))
+        data['mod_'+ivar]=np.full(len(data),np.nan)
 
     # list model files
     flist=dict()
@@ -135,13 +139,13 @@ def matchData(
         flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
 
     if method == 'bin':
-        data = _binmatch(data,flist,ftypes,filemap_r)
+        data = _binmatch(data,flist,ftypes,filemap_r,omask)
     else:
         print('option '+method+' not written yet')
         return
     return data, varmap
 
-def _binmatch(data,flist,ftypes,filemap_r):
+def _binmatch(data,flist,ftypes,filemap_r,gridmask):
     # loop through data, openening and closing model files as needed and storing model data
     for ind, row in data.iterrows():
         if ind==0: # load first files
@@ -159,8 +163,9 @@ def _binmatch(data,flist,ftypes,filemap_r):
             # find depth index
             ik=_getZInd_bin(row['Z'],fid[ift])
             # assign values for each var assoc with ift
-            for ivar in filemap_r[ift]:
-                data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+            if gridmask[0,ik,row['j'],row['i']]==1:
+                for ivar in filemap_r[ift]:
+                    data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
     return data
 
 def _nextfile_bin(ift,idt,ifind,fid,fend,flist):
@@ -301,3 +306,15 @@ def loadPSF2015():
         for ii,jj in zip(ds,ts)]
     data['dtUTC']=dts
     return data
+
+def stats(obs0,mod0):
+    iii=np.logical_and(~np.isnan(obs),~np.isnan(mod))
+    obs=obs0(iii)
+    mod=mod0(iii)
+    N=len(obs)
+    modmean=np.mean(mod)
+    obsmean=np.mean(obs)
+    bias=modmean-obsmean
+    RMSE=np.sqrt(np.sum((mod-obs)**2)/N)
+    WSS=1.0-np.sum((mod-obs)**2)/np.sum((np.abs(mod-obsmean)+np.abs(obs-obsmean))**2)
+    return N, modmean, obsmean, bias, RMSE, WSS
