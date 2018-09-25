@@ -26,6 +26,8 @@ from salishsea_tools import geo_tools
 import gsw
 import os
 import pytz
+import matplotlib.pyplot as plt
+
 def matchData(
     data,
     varmap,
@@ -308,9 +310,11 @@ def loadPSF2015():
     return data
 
 def stats(obs0,mod0):
-    iii=np.logical_and(~np.isnan(obs),~np.isnan(mod))
-    obs=obs0(iii)
-    mod=mod0(iii)
+    obs0=_deframe(obs0)
+    mod0=_deframe(mod0)
+    iii=np.logical_and(~np.isnan(obs0),~np.isnan(mod0))
+    obs=obs0[iii]
+    mod=mod0[iii]
     N=len(obs)
     modmean=np.mean(mod)
     obsmean=np.mean(obs)
@@ -318,3 +322,45 @@ def stats(obs0,mod0):
     RMSE=np.sqrt(np.sum((mod-obs)**2)/N)
     WSS=1.0-np.sum((mod-obs)**2)/np.sum((np.abs(mod-obsmean)+np.abs(obs-obsmean))**2)
     return N, modmean, obsmean, bias, RMSE, WSS
+
+def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),sepname='',sepunits='',
+    cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod','coral','tomato','firebrick','mediumvioletred','magenta')):
+    if len(sepname)==0:
+        sepname=sepvar
+    ps=list()
+    if len(sepvals)==0:
+        obs0=_deframe(df[obsvar])
+        mod0=_deframe(df[modvar])
+        ps.append(ax.plot(obs0,mod0,'.',color=cols[0]))
+    else:
+        obs0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[obsvar]])
+        mod0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[modvar]])
+        sep0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[sepvar]])
+        sepvals=np.sort(sepvals)
+        # less than min case:
+        ii=0
+        iii=sep0<sepvals[ii]
+        if np.sum(iii)>0:
+            ll=u'{} < {} {}'.format(sepname,sepvals[ii],sepunits).strip()
+            p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
+            ps.append(p0)
+        # between min and max:
+        for ii in range(1,len(sepvals)):
+            iii=np.logical_and(sep0<sepvals[ii],sep0>=sepvals[ii-1])
+            if np.sum(iii)>0:
+                ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,sepname,sepvals[ii],sepunits).strip()
+                p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
+                ps.append(p0)
+        # greater than max:
+        iii=sep0>=sepvals[ii]
+        if np.sum(iii)>0:
+            ll=u'{} \u2265 {} {}'.format(sepname,sepvals[ii],sepunits).strip()
+            p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
+            ps.append(p0)
+    return ps
+
+
+def _deframe(x):
+    if isinstance(x,pd.Series) or isinstance(x,pd.DataFrame):
+        x=x.values.flatten()
+    return x
