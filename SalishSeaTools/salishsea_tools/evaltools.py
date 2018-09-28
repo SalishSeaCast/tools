@@ -28,9 +28,9 @@ import os
 import pytz
 import matplotlib.pyplot as plt
 
+# :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
     data,
-    varmap,
     filemap,
     fdict,
     mod_start,
@@ -54,8 +54,6 @@ def matchData(
         'Lon': decimal longitude
         'Z': depth, positive 
     :type :py:class:`pandas.DataFrame`
-
-    :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 
     :arg dict filemap: dictionary mapping names of model variables to filetypes containing them 
 
@@ -94,15 +92,16 @@ def matchData(
     if not set(('dtUTC','Lat','Lon','Z')) <= set(data.keys()):
         raise Exception('{} missing from data'.format([el for el in set(('dtUTC','Lat','Lon','Z'))-set(data.keys())],'%s'))
 
-    # check that entries are minimal and consistent:
-    fkeysVar=list(filemap.keys())
-    for ikey in fkeysVar:
-        if ikey not in set(varmap.values()):
-            filemap.pop(ikey) 
-    if len(set(varmap.values())-set(filemap.keys()))>0:
-        print('Error: file(s) missing from filemap:',set(varmap.values())-set(filemap.keys()))
+    ## check that entries are minimal and consistent:
+    #fkeysVar=list(filemap.keys())
+    #for ikey in fkeysVar:
+    #    if ikey not in set(varmap.values()):
+    #        filemap.pop(ikey) 
+    #if len(set(varmap.values())-set(filemap.keys()))>0:
+    #    print('Error: file(s) missing from filemap:',set(varmap.values())-set(filemap.keys()))
     fkeysVar=list(filemap.keys())
     ftypes=list(fdict.keys())
+    # don't load more files than necessary:
     for ikey in ftypes:
         if ikey not in set(filemap.values()):
             fdict.pop(ikey) 
@@ -118,7 +117,7 @@ def matchData(
 
     # adjustments to data dataframe
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
-    data=data.dropna(how='any',subset=['dtUTC','Lat','Lon','Z']).dropna(how='all',subset=[*varmap.keys()])
+    data=data.dropna(how='any',subset=['dtUTC','Lat','Lon','Z']) #.dropna(how='all',subset=[*varmap.keys()])
     data['j']=np.zeros((len(data))).astype(int)
     data['i']=np.zeros((len(data))).astype(int)
     with nc.Dataset(meshPath) as fmesh:
@@ -132,7 +131,9 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
 
     # set up columns to accept model values
-    for ivar in varmap.values():
+    for ivar in filemap.values():
+        data['mod_'+ivar]=np.full(len(data),np.nan)
+    for ivar in admod:
         data['mod_'+ivar]=np.full(len(data),np.nan)
 
     # list model files
@@ -145,7 +146,7 @@ def matchData(
     else:
         print('option '+method+' not written yet')
         return
-    return data, varmap
+    return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask):
     # loop through data, openening and closing model files as needed and storing model data
