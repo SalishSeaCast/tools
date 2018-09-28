@@ -323,15 +323,15 @@ def stats(obs0,mod0):
     WSS=1.0-np.sum((mod-obs)**2)/np.sum((np.abs(mod-obsmean)+np.abs(obs-obsmean))**2)
     return N, modmean, obsmean, bias, RMSE, WSS
 
-def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),sepname='',sepunits='',
+def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepunits='',
     cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod','coral','tomato','firebrick','mediumvioletred','magenta')):
-    if len(sepname)==0:
-        sepname=sepvar
+    if len(lname)==0:
+        lname=sepvar
     ps=list()
     if len(sepvals)==0:
         obs0=_deframe(df[obsvar])
         mod0=_deframe(df[modvar])
-        ps.append(ax.plot(obs0,mod0,'.',color=cols[0]))
+        ps.append(ax.plot(obs0,mod0,'.',color=cols[0],label=lname))
     else:
         obs0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[obsvar]])
         mod0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[modvar]])
@@ -341,21 +341,21 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),sepname='',sep
         ii=0
         iii=sep0<sepvals[ii]
         if np.sum(iii)>0:
-            ll=u'{} < {} {}'.format(sepname,sepvals[ii],sepunits).strip()
+            ll=u'{} < {} {}'.format(lname,sepvals[ii],sepunits).strip()
             p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
             ps.append(p0)
         # between min and max:
         for ii in range(1,len(sepvals)):
             iii=np.logical_and(sep0<sepvals[ii],sep0>=sepvals[ii-1])
             if np.sum(iii)>0:
-                ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,sepname,sepvals[ii],sepunits).strip()
+                ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
                 p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
                 ps.append(p0)
         # greater than max:
         iii=sep0>=sepvals[ii]
         if np.sum(iii)>0:
-            ll=u'{} \u2265 {} {}'.format(sepname,sepvals[ii],sepunits).strip()
-            p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
+            ll=u'{} \u2265 {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii+1],label=ll)
             ps.append(p0)
     return ps
 
@@ -364,3 +364,8 @@ def _deframe(x):
     if isinstance(x,pd.Series) or isinstance(x,pd.DataFrame):
         x=x.values.flatten()
     return x
+
+def printstats(datadf,obsvar,modvar):
+    N, modmean, obsmean, bias, RMSE, WSS = et.stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
+    print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
+    return
