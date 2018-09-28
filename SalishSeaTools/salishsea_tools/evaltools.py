@@ -133,8 +133,6 @@ def matchData(
     # set up columns to accept model values
     for ivar in filemap.values():
         data['mod_'+ivar]=np.full(len(data),np.nan)
-    for ivar in admod:
-        data['mod_'+ivar]=np.full(len(data),np.nan)
 
     # list model files
     flist=dict()
