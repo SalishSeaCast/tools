@@ -366,6 +366,6 @@ def _deframe(x):
     return x
 
 def printstats(datadf,obsvar,modvar):
-    N, modmean, obsmean, bias, RMSE, WSS = et.stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
+    N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
     print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
     return
