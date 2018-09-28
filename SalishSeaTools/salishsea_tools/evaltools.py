@@ -332,9 +332,9 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
         mod0=_deframe(df[modvar])
         ps.append(ax.plot(obs0,mod0,'.',color=cols[0],label=lname))
     else:
-        obs0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[obsvar]])
-        mod0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[modvar]])
-        sep0=_deframe(df.loc[(df[obsvar]>=0.0)&(df[modvar]>=0.0)&(df[sepvar]>=0.0),[sepvar]])
+        obs0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar]),[obsvar]])
+        mod0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar]),[modvar]])
+        sep0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar]),[sepvar]])
         sepvals=np.sort(sepvals)
         # less than min case:
         ii=0
