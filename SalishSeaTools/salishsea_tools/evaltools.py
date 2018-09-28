@@ -131,7 +131,7 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
 
     # set up columns to accept model values
-    for ivar in filemap.values():
+    for ivar in filemap.keys():
         data['mod_'+ivar]=np.full(len(data),np.nan)
 
     # list model files
