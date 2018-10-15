@@ -195,7 +195,7 @@ def timestamp(dataset, tindex, time_var='time_counter'):
     results = []
     for i in tindex:
         try:
-            results.append(time_orig + timedelta(seconds=time_counter[i]))
+            results.append(time_orig + timedelta(seconds=np.asscalar(time_counter[i])))
         except IndexError:
             raise IndexError(
                 'time_counter variable has no tindex={}'.format(tindex))
