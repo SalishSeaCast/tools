@@ -230,9 +230,13 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
 
 
 
-def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sqlite'):
+def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sqlite',
+        datelims=()):
     """
     load DFO data stored in SQLite database
+    basedir is location of database
+    dbname is database name
+    datelims, if provided, loads only data between first and second datetime in tuple
     """
     try:
         from sqlalchemy import create_engine, case
@@ -273,15 +277,36 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                   else_=ObsTBL.Temperature_Reversing_units)))
     TemFlag=ObsTBL.Quality_Flag_Temp
     
-    
-    qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
+    if len(datelims)<2:
+        qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
                       StationTBL.Lat,StationTBL.Lon,
                      ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Ammonium,ObsTBL.Ammonium_units,ObsTBL.Chlorophyll_Extracted,
                      ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
                       ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),Tem.label('T'),TemUnits.label('T_units')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
-                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.StartYear>2014,
+                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+    else:
+        start_y=datelims[0].year
+        start_m=datelims[0].month
+        start_d=datelims[0].day
+        end_y=datelims[1].year
+        end_m=datelims[1].month
+        end_d=datelims[1].day
+        qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
+                      StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
+                      StationTBL.Lat,StationTBL.Lon,
+                     ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Ammonium,ObsTBL.Ammonium_units,ObsTBL.Chlorophyll_Extracted,
+                     ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),Tem.label('T'),TemUnits.label('T_units')).\
+                select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
+                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
+                                                                         and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
+                                                                         and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
+                                                                     or_(StationTBL.StartYear<end_y,
+                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
+                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
     df1=pd.DataFrame(qry.all())
