@@ -366,7 +366,7 @@ and we can access the depth that the sensor is located at as:
 
     adcp_data.depth
 
-This compact and easy to understand when our future selves read our code.
+This makes for compact and easy to understand code that our future selves and others will appreciate when they read our code.
 
 
 Module-Specific Best Practices
