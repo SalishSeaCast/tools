@@ -217,6 +217,12 @@ PLACES = {
         'ww3 grid ji': None,
     },
 
+    # VHFR FVCOM model HADCP station
+    '2nd Narrows Rail Bridge': {
+        'lon lat': (-123.0247222, 49.2938889),
+        'stn number': 3160171  # AIS MMSI (Maritime Mobile Service Identity)
+    },
+
     # Ferry terminals
     'Tsawwassen': {
         'lon lat': (-123.132722, 49.006165),
@@ -405,6 +411,7 @@ SUPP_TIDE_SITES = (
     'Squamish', 'Boundary Bay', 'Sand Heads',
 )
 
+
 def DispGeoLocs():
     """Display locations in map coordinates
 
@@ -445,6 +452,7 @@ def DispGeoLocs():
                     plt.text(xpt2,ypt2,pl,fontsize=10,fontweight='bold',
                             ha='right',va='center',color='r')
     return fig
+
 
 def DispGridLocs(mesh_mask='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc'):
     """Display locations in NEMO model grid coordinates
