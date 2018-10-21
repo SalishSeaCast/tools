@@ -27,6 +27,7 @@ import gsw
 import os
 import pytz
 import matplotlib.pyplot as plt
+import cmocean as cmo
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
@@ -118,15 +119,19 @@ def matchData(
     # adjustments to data dataframe
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
     data=data.dropna(how='any',subset=['dtUTC','Lat','Lon','Z']) #.dropna(how='all',subset=[*varmap.keys()])
-    data['j']=np.zeros((len(data))).astype(int)
-    data['i']=np.zeros((len(data))).astype(int)
+    data['j']=-1*np.ones((len(data))).astype(int)
+    data['i']=-1*np.ones((len(data))).astype(int)
     with nc.Dataset(meshPath) as fmesh:
         omask=np.copy(fmesh.variables[maskName])
         lmask=-1*(omask[0,0,:,:]-1)
         for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
             jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
                                                         land_mask = lmask)
-            data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+            if isinstance(jj,int):
+                data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+            else:
+                print('(Lat,Lon)=',la,lo,' not matched to domain')
+    data.drop(data.loc[(data.i==-1)&(data.j==-1)].index, inplace=True)
     data=data.sort_values(by=['dtUTC','Lat','Lon','Z'])
     data.reset_index(drop=True,inplace=True)
 
@@ -346,6 +351,18 @@ def stats(obs0,mod0):
     RMSE=np.sqrt(np.sum((mod-obs)**2)/N)
     WSS=1.0-np.sum((mod-obs)**2)/np.sum((np.abs(mod-obsmean)+np.abs(obs-obsmean))**2)
     return N, modmean, obsmean, bias, RMSE, WSS
+
+def varvarScatter(ax,df,obsvar,modvar,colvar,vmin=0,vmax=0,cbar=False,cm=cmo.cm.thermal,args={}):
+    obs0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[obsvar]])
+    mod0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[modvar]])
+    sep0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[colvar]])
+    if vmin==vmax:
+        vmin=np.min(sep0)
+        vmax=np.max(sep0)
+    ps=ax.scatter(obs0,mod0,c=sep0,vmin=vmin,vmax=vmax,cmap=cm,**args)
+    if cbar==True:
+        plt.colorbar(ps)
+    return ps
 
 def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepunits='',
     cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod','coral','tomato','firebrick','mediumvioletred','magenta')):
