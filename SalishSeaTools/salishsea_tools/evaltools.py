@@ -321,6 +321,99 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     engine.dispose()
     return df1
 
+def _lt0convert(arg):
+    if arg=='<0':
+        val=0.0
+    else:
+        val=pd.to_numeric(arg, errors='coerce',downcast=None)
+    return float(val)
+
+def loadPSF(datelims=()):
+    dfs=list()
+    if len(datelims)<2:
+        datelims=(dt.datetime(2014,1,1),dt.datetime(2020,1,1))
+    if datelims[0].year<2016:
+        # load 2015
+        f2015 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
+                         sheetname = '2015 N+P+Si',dtype={'date (dd/mm/yyyy)':str})
+        f2015=f2015.drop(f2015.loc[(f2015['lon']<-360)|(f2015['lon']>360)].index)
+        f2015 = f2015.dropna(subset = ['date (dd/mm/yyyy)', 'Time (Local)', 'lat', 'lon', 'depth'], how='any')
+        ds=f2015['date (dd/mm/yyyy)'].values
+        ts=f2015['Time (Local)'].values
+        dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii,'%Y-%m-%d %H:%M:%S')+dt.timedelta(hours=jj.hour,minutes=jj.minute,seconds=jj.second)
+            ).astimezone(pytz.utc).replace(tzinfo=None) for ii,jj in zip(ds,ts)]
+        f2015['dtUTC']=dts
+        f2015.rename(columns={'lat':'Lat','lon':'Lon','depth':'Z','station':'Station','no23':'NO23','po4':'PO4','si':'Si'},inplace=True)
+        f2015.drop(['num','date (dd/mm/yyyy)','Time (Local)'],axis=1,inplace=True)
+        f2015_g=f2015.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
+        f2015_m=f2015_g.mean()
+        f2015=f2015_m.reindex()
+        dfs.append(f2015)
+    elif (datelims[0].year<2017) and (datelims[1].year>2015):
+        # load 2016
+        f2016N = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
+                         sheetname = '2016 N+P',dtypes={'NO3+NO':str,'PO4':str},na_values=('nan','NaN','30..09'))
+        f2016N = f2016N.drop(f2016N.keys()[11:], axis=1)
+        f2016N['NO23']=[_lt0convert(ii) for ii in f2016N['NO3+NO']]
+        f2016N['PO4_2']=[_lt0convert(ii) for ii in f2016N['PO4']]
+        f2016N = f2016N.dropna(subset = ['Date (dd/mm/yyyy)', 'Time (Local)', 'Latitude', 'Longitude', 'Depth'], how='any')
+        ds=f2016N['Date (dd/mm/yyyy)']
+        ts=f2016N['Time (Local)']
+        dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime(ii.year,ii.month,ii.day)+dt.timedelta(hours=jj.hour,minutes=jj.minute,seconds=jj.second)
+            ).astimezone(pytz.utc).replace(tzinfo=None) for ii,jj in zip(ds,ts)]
+        f2016N['dtUTC']=dts
+        f2016N.drop(['Crew','Date (dd/mm/yyyy)','Time (Local)', 'Lat_reported',
+               'Long_reported','PO4','NO3+NO'],axis=1,inplace=True)
+        f2016N.rename(columns={'PO4_2':'PO4','Latitude':'Lat','Longitude':'Lon','Depth':'Z'},inplace=True)
+        f2016N_g=f2016N.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
+        f2016N_m=f2016N_g.mean()
+        f2016Si = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',sheetname = '2016 SiO2')
+        f2016Si = f2016Si.drop(f2016Si.keys()[9:], axis=1)
+        f2016Si = f2016Si.dropna(subset = ['DDMMYYYY', 'Time (Local)', 'Latitude', 'Longitude', 'Depth'], how='any')
+        ds=f2016Si['DDMMYYYY']
+        ts=f2016Si['Time (Local)']
+        dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime(ii.year,ii.month,ii.day)+dt.timedelta(hours=jj.hour,minutes=jj.minute,seconds=jj.second)
+            ).astimezone(pytz.utc).replace(tzinfo=None) for ii,jj in zip(ds,ts)]
+        f2016Si['dtUTC']=dts
+        z=[0 if (iii=='S') else float(iii) for iii in f2016Si['Depth'].values]
+        f2016Si['Z']=z
+        f2016Si.rename(columns={'Latitude':'Lat','Longitude':'Lon','SiO2 µM':'Si','Site ID':'Station'},inplace=True)
+        f2016Si.drop(['DDMMYYYY','Time (Local)', 'Lat_reported',
+               'Long_reported','Depth'],axis=1,inplace=True)
+        f2016Si_g=f2016Si.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
+        f2016Si_m=f2016Si_g.mean()
+        f2016 = pd.merge(f2016N_m, f2016Si_m,  how='outer', left_on=['Station','Lat','Lon','dtUTC','Z'], right_on = ['Station','Lat','Lon','dtUTC','Z'])
+        dfs.append(f2016)
+    elif (datelims[1].year>2016):
+        # load 2017
+        f2017 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
+                         sheetname = '2017 N+P+Si',skiprows=3,dtypes={'Date (dd/mm/yyyy)':dt.date,'Time (Local)':dt.time,
+                                                                      'NO3+NO':str,'PO4':str,'Si':str})
+        f2017['NO23']=[_lt0convert(ii) for ii in f2017['NO3+NO']]
+        f2017['PO4_2']=[_lt0convert(ii) for ii in f2017['PO4']]
+        f2017['Si_2']=[_lt0convert(ii) for ii in f2017['Si']]
+        degminlat=[ii.split('°') for ii in f2017['Latitude'].values]
+        f2017['Lat']=[float(ii[0])+float(ii[1])/60 for ii in degminlat]
+        degminlon=[ii.split('°') for ii in f2017['Longitude'].values]
+        f2017['Lon']=[-1.0*(float(ii[0])+float(ii[1])/60) for ii in degminlon]
+        f2017 = f2017.dropna(subset = ['Date (dd/mm/yyyy)', 'Time (Local)', 'Lat', 'Lon', 'Depth'], how='any')
+        ds=f2017['Date (dd/mm/yyyy)']
+        ts=f2017['Time (Local)']
+        dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime(ii.year,ii.month,ii.day)+dt.timedelta(hours=jj.hour,minutes=jj.minute,seconds=jj.second)
+            ).astimezone(pytz.utc).replace(tzinfo=None) for ii,jj in zip(ds,ts)]
+        f2017['dtUTC']=dts
+        f2017.drop(['Crew','Date (dd/mm/yyyy)','Time (Local)','Comments','Latitude','Longitude','NO3+NO'],axis=1,inplace=True)
+        f2017.rename(columns={'Depth':'Z','PO4_2':'PO4','Si_2':'Si'},inplace=True)
+        f2017_g=f2017.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
+        f2017_m=f2017_g.mean()
+        f2017=f2017_m.reindex()
+        dfs.append(f2017)
+    if len(dfs)>1:
+        df=pd.concat(dfs,ignore_index=True)
+    else:
+        df=dfs[0]
+    df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<=datelims[1])].copy(deep=True)
+    return df
 
 def loadPSF2015():
     nutrients_2015 = pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/PSFbottledata2015_CN_edits_EOCor2.csv')
