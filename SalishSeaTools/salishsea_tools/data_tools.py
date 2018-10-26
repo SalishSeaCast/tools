@@ -304,7 +304,7 @@ def get_onc_data(
 
     :arg str token: ONC web services API token generated on the
                     :guilabel:`Web Services API` tab of
-                    http://dmas.uvic.ca/Profile
+                    https://data.oceannetworks.ca/Profile
 
     :arg dict query_params: Query parameters expressed as key/value pairs.
 
@@ -312,7 +312,7 @@ def get_onc_data(
               data web service
     :rtype: dict
     """
-    url_tmpl = 'http://dmas.uvic.ca/api/{endpoint}?{query}'
+    url_tmpl = 'https://data.oceannetworks.ca/api/{endpoint}?{query}'
     query = {'method': method, 'token': token}
     query.update(query_params)
     data_url = url_tmpl.format(
@@ -520,13 +520,13 @@ def request_onc_sog_adcp(date, node, userid):
                    :py:obj:`salishsea_tools.onc_sog_adcps.deployments`
                    (e.g. "Central node").
 
-    :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
+    :arg str userid: Email address associated with an ONC data.oceannetworks.ca account.
 
     :returns: Search info data provided by the ONC data service;
               contains search header id.
     :rtype: dict
     """
-    SERVICE_URL = 'http://dmas.uvic.ca/VSearchByInstrumentServiceAjax'
+    SERVICE_URL = 'https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax'
     data_date = arrow.get(
         *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
     query = _build_adcp_query(data_date, node, userid)
@@ -551,7 +551,7 @@ def _build_adcp_query(data_date, node, userid):
                    :py:obj:`salishsea_tools.onc_sog_adcps.deployments`
                    (e.g. "Central node").
 
-    :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
+    :arg str userid: Email address associated with an ONC data.oceannetworks.ca account.
 
     :rtype: dict
     """
@@ -604,14 +604,14 @@ def get_onc_sog_adcp_search_status(search_hdr_id, userid):
 
     :arg int search_hdr_id: ONC search header id.
 
-    :arg str userid: Email address associated with an ONC dmas.uvic.ca account.
+    :arg str userid: Email address associated with an ONC data.oceannetworks.ca account.
 
     This function relies on a soon-to-be-deprecated ONC web service.
     It is based on a Matlab script provided by Marlene Jefferies of ONC.
     It is primarily intended for debugging requests produced by
     :py:func:`~salishsea_tools.data_tools.get_onc_sog_adcp_mat`.
     """
-    SERVICE_URL = 'http://dmas.uvic.ca/VSearchByInstrumentServiceAjax'
+    SERVICE_URL = 'https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax'
     OPERATION = 1  # getSearchResult()
     query = {
         'operation': OPERATION,
@@ -646,7 +646,7 @@ def get_onc_sog_adcp_mat(date, search_info, dest_path, userno):
 
     :arg str dest_path: Path at which to store the downloaded :kbd:`.mat` file.
 
-    :arg str userno: User number with an ONC dmas.uvic.ca account.
+    :arg str userno: User number with an ONC data.oceannetworks.ca account.
 
     :rtype: str
     """
