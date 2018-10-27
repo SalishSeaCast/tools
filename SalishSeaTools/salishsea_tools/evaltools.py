@@ -328,14 +328,15 @@ def _lt0convert(arg):
         val=pd.to_numeric(arg, errors='coerce',downcast=None)
     return float(val)
 
-def loadPSF(datelims=()):
+def loadPSF(datelims=(),loadChl=True):
     dfs=list()
+    dfchls=list()
     if len(datelims)<2:
         datelims=(dt.datetime(2014,1,1),dt.datetime(2020,1,1))
     if datelims[0].year<2016:
         # load 2015
         f2015 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheetname = '2015 N+P+Si',dtype={'date (dd/mm/yyyy)':str})
+                         sheet_name = '2015 N+P+Si',dtype={'date (dd/mm/yyyy)':str})
         f2015=f2015.drop(f2015.loc[(f2015['lon']<-360)|(f2015['lon']>360)].index)
         f2015 = f2015.dropna(subset = ['date (dd/mm/yyyy)', 'Time (Local)', 'lat', 'lon', 'depth'], how='any')
         ds=f2015['date (dd/mm/yyyy)'].values
@@ -349,10 +350,32 @@ def loadPSF(datelims=()):
         f2015_m=f2015_g.mean()
         f2015=f2015_m.reindex()
         dfs.append(f2015)
-    elif (datelims[0].year<2017) and (datelims[1].year>2015):
+        if loadChl:
+            # load 2015 chl
+            Chl2015=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/Chla_2015PSFSalish_Sea_22.01.2018vers_8_CN_edits.csv',encoding='latin-1',
+                                dtype={'Date sampled (mm/dd/yyyy)':str, 'Time of Day (Local)':str,
+                                        'Latitude':str,'Longitude':str,'Chl a':float,'Phaeophytin':float,'Depth':float},parse_dates=False)
+            degminlat=[ii.split('ç') for ii in Chl2015['Latitude'].values]
+            Chl2015['Lat']=[float(ii[0])+float(ii[1])/60 for ii in degminlat]
+            degminlon=[ii.split('ç') for ii in Chl2015['Longitude'].values]
+            Chl2015['Lon']=[-1.0*(float(ii[0])+float(ii[1])/60) for ii in degminlon]
+            Chl2015 = Chl2015.dropna(subset = ['Date sampled (mm/dd/yyyy)', 'Time of Day (Local)', 'Lat', 'Lon', 'Depth'], how='any')
+            ds=Chl2015['Date sampled (mm/dd/yyyy)']
+            ts=Chl2015['Time of Day (Local)']
+            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m/%d/%yT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None) 
+                 for ii,jj in zip(ds,ts)]
+            Chl2015['dtUTC']=dts
+            Chl2015['Z']=[float(ii) for ii in Chl2015['Depth']]
+            Chl2015.drop(['Date sampled (mm/dd/yyyy)','Time of Day (Local)','Latitude','Longitude','Depth'],axis=1,inplace=True)
+            Chl2015.rename(columns={'Chl a':'Chl','Phaeophytin':'Phaeo','Station Name':'Station'},inplace=True)
+            Chl2015_g=Chl2015.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
+            Chl2015_m=Chl2015_g.mean()
+            Chl2015=Chl2015_m.reindex()
+            dfchls.append(Chl2015)
+    if (datelims[0].year<2017) and (datelims[1].year>2015):
         # load 2016
         f2016N = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheetname = '2016 N+P',dtypes={'NO3+NO':str,'PO4':str},na_values=('nan','NaN','30..09'))
+                         sheet_name = '2016 N+P',dtypes={'NO3+NO':str,'PO4':str},na_values=('nan','NaN','30..09'))
         f2016N = f2016N.drop(f2016N.keys()[11:], axis=1)
         f2016N['NO23']=[_lt0convert(ii) for ii in f2016N['NO3+NO']]
         f2016N['PO4_2']=[_lt0convert(ii) for ii in f2016N['PO4']]
@@ -367,7 +390,7 @@ def loadPSF(datelims=()):
         f2016N.rename(columns={'PO4_2':'PO4','Latitude':'Lat','Longitude':'Lon','Depth':'Z'},inplace=True)
         f2016N_g=f2016N.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
         f2016N_m=f2016N_g.mean()
-        f2016Si = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',sheetname = '2016 SiO2')
+        f2016Si = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',sheet_name = '2016 SiO2')
         f2016Si = f2016Si.drop(f2016Si.keys()[9:], axis=1)
         f2016Si = f2016Si.dropna(subset = ['DDMMYYYY', 'Time (Local)', 'Latitude', 'Longitude', 'Depth'], how='any')
         ds=f2016Si['DDMMYYYY']
@@ -384,10 +407,29 @@ def loadPSF(datelims=()):
         f2016Si_m=f2016Si_g.mean()
         f2016 = pd.merge(f2016N_m, f2016Si_m,  how='outer', left_on=['Station','Lat','Lon','dtUTC','Z'], right_on = ['Station','Lat','Lon','dtUTC','Z'])
         dfs.append(f2016)
-    elif (datelims[1].year>2016):
+        if loadChl:
+            # load 2016 chl
+            Chl2016Dat=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/2016ChlorophyllChlData.csv')#,encoding='latin-1')
+            Chl2016Sta=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/2016ChlorophyllStationData.csv')
+            Chl2016Sta.rename(columns={'DateCollected ':'DateCollected','Latitude':'Lat','Longitude':'Lon'},inplace=True)
+            Chl2016Sta.dropna(subset = ['DateCollected', 'TimeCollected', 'Lat','Lon', 'Depth_m'], how='any',inplace=True)
+            Chl2016Sta.drop_duplicates(inplace=True)
+            Chl2016Dat.drop(Chl2016Dat.loc[Chl2016Dat.quality_flag>3].index,axis=0,inplace=True)
+            Chl2016Dat.drop(['Chla_ugL','Phaeophytin_ugL','quality_flag','ShipBoat'],axis=1,inplace=True)
+            Chl2016Dat.rename(columns={'MeanChla_ugL':'Chl','MeanPhaeophytin_ugL':'Phaeo'},inplace=True)
+            Chl2016=pd.merge(Chl2016Sta,Chl2016Dat,how='inner', left_on=['DateCollected','Station','Depth_m'], right_on = ['DateCollected','Station','Depth_m'])
+            Chl2016['Z']=[float(ii) for ii in Chl2016['Depth_m']]
+            ds=Chl2016['DateCollected']
+            ts=Chl2016['TimeCollected']
+            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m-%d-%YT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None) 
+                 for ii,jj in zip(ds,ts)]
+            Chl2016['dtUTC']=dts
+            Chl2016.drop(['DateCollected','TimeCollected','CV'],axis=1,inplace=True)
+            dfchls.append(Chl2016)
+    if (datelims[1].year>2016):
         # load 2017
         f2017 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheetname = '2017 N+P+Si',skiprows=3,dtypes={'Date (dd/mm/yyyy)':dt.date,'Time (Local)':dt.time,
+                         sheet_name = '2017 N+P+Si',skiprows=3,dtypes={'Date (dd/mm/yyyy)':dt.date,'Time (Local)':dt.time,
                                                                       'NO3+NO':str,'PO4':str,'Si':str})
         f2017['NO23']=[_lt0convert(ii) for ii in f2017['NO3+NO']]
         f2017['PO4_2']=[_lt0convert(ii) for ii in f2017['PO4']]
@@ -408,10 +450,35 @@ def loadPSF(datelims=()):
         f2017_m=f2017_g.mean()
         f2017=f2017_m.reindex()
         dfs.append(f2017)
+        if loadChl:
+            # load 2017 chl
+            Chl2017=pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/PSF 2017 Chla_Data_Final_v-January 22-2018_CN_edits.xlsx',
+                                  sheet_name='avg-mean-cv%',skiprows=15,usecols=[1,3,4,5,7,9,11],names=['Date','Station','Time','Z0','Chl','Qflag','Phaeo'])
+            Chl2017.dropna(subset=['Station','Date','Time','Z0'],how='any',inplace=True)
+            Chl2017.dropna(subset=['Chl','Phaeo'],how='all',inplace=True)
+            Chl2017.drop(Chl2017.loc[Chl2017.Qflag>3].index,axis=0,inplace=True)
+            ds=Chl2017['Date']
+            ts=Chl2017['Time']
+            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime(ii.year,ii.month,ii.day)+dt.timedelta(hours=jj.hour,minutes=jj.minute,seconds=jj.second)).astimezone(pytz.utc).replace(tzinfo=None)
+                for ii,jj in zip(ds,ts)]
+            Chl2017['dtUTC']=dts
+            staMap2017=f2017.loc[:,['Station','Lat','Lon']].copy(deep=True)
+            staMap2017.drop_duplicates(inplace=True)
+            Chl2017=pd.merge(Chl2017,staMap2017,how='inner', left_on=['Station'], right_on = ['Station'])
+            Chl2017['Z']=[float(ii) for ii in Chl2017['Z0']]
+            Chl2017.drop(['Qflag','Date','Z0'],axis=1,inplace=True)
+            dfchls.append(Chl2017)
     if len(dfs)>1:
-        df=pd.concat(dfs,ignore_index=True)
+        df=pd.concat(dfs,ignore_index=True,sort=True)
+        if loadChl:
+            dfChl=pd.concat(dfchls, ignore_index=True,sort=True)
     else:
         df=dfs[0]
+        if loadChl:
+            dfChl=dfchls[0]
+    if loadChl:
+        df_a=pd.merge(df, dfChl,  how='outer', left_on=['Station','Lat','Lon','dtUTC','Z'], right_on = ['Station','Lat','Lon','dtUTC','Z'])
+        df=df_a
     df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<=datelims[1])].copy(deep=True)
     return df
 
