@@ -498,6 +498,85 @@ def loadPSF2015():
     data['dtUTC']=dts
     return data
 
+def loadHakai(datelims=()):
+    if len(datelims)<2:
+        datelims=(dt.datetime(1900,1,1),dt.datetime(2100,1,1))
+    start_date=datelims[0]
+    end_date=datelims[1]    
+
+    f0 = pd.read_excel('/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/2018-09-11_144804_HakaiData_nutrients.xlsx',
+                     sheet_name = 'Hakai Data')
+    f0.drop(['ACTION','Lat', 'Long', 'Collection Method', 'Installed', 'Lab Technician', 'NH4+', 'NO2+NO3 (ug/L)',
+           'no2_no3_units', 'TP', 'TDP', 'TN', 'TDN', 'SRP', 'Project Specific ID', 'Hakai ID', 'Source',
+           'po4pfilt', 'no3nfilt', 'po4punfl', 'no3nunfl', 'nh4nunfl', 'NH4+ Flag',
+           'TP FLag', 'TDP FLag', 'TN Flag', 'TDN FLag','Volume (ml)',
+           'SRP Flag', 'PO4 Flag', 'po4pfilt_flag', 'no3nfilt_flag','Preserved', 'Analyzed',
+           'po4punfl_flag', 'no3nunfl_flag', 'nh4nunfl_flag', 'Analyzing Lab', 'Sample Status',
+           'Quality Level', 'Comments', 'Quality Log'], axis = 1, inplace = True)
+    dts0=[pytz.timezone('Canada/Pacific').localize(i).astimezone(pytz.utc).replace(tzinfo=None)
+            for i in f0['Collected']]
+    f0['dtUTC']=dts0
+    
+    fc = pd.read_csv('/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/ctd-bulk-1536702711696.csv',
+                    usecols=['Cast PK','Cruise','Station', 'Drop number','Start time', 'Bottom time',
+                             'Latitude', 'Longitude', 'Depth (m)', 'Temperature (deg C)', 'Temperature flag', 'Pressure (dbar)',
+                             'Pressure flag', 'PAR', 'PAR flag', 'Fluorometry Chlorophyll (ug/L)', 'Fluorometry Chlorophyll flag',
+                             'Turbidity (FTU)', 'Turbidity flag',
+                             'Salinity (PSU)', 'Salinity flag'],
+                    dtype={'Drop number':np.float64,'PAR flag':str,'Fluorometry Chlorophyll flag':str},na_values='null')
+    
+    ## fix apparent typos:
+    # reversed lats and lons
+    iii=fc['Latitude']>90
+    lons=-1*fc.loc[iii,'Latitude'].values
+    lats=-1*fc.loc[iii,'Longitude'].values
+    fc.loc[iii,'Longitude']=lons
+    fc.loc[iii,'Latitude']=lats
+    
+    # remove data with missing lats and lons
+    nans=fc.loc[(fc['Latitude'].isnull())|(fc['Longitude'].isnull())]
+    fc=fc.drop(nans.index)
+    
+    # apparently bad lats/lons
+    QU16bad=fc.loc[(fc['Station']=='QU16')&(fc['Latitude']>50.3)]
+    fc=fc.drop(QU16bad.index)
+    QU36bad=fc.loc[(fc['Station']=='QU36')&(fc['Latitude']>50.2)]
+    fc=fc.drop(QU36bad.index)
+    QU37bad=fc.loc[(fc['Station']=='QU37')&(fc['Longitude']<-125.1)]
+    fc=fc.drop(QU37bad.index)
+    QU38bad=fc.loc[(fc['Station']=='QU38')&(fc['Longitude']>-125.2)]
+    fc=fc.drop(QU38bad.index)
+    QU5bad=fc.loc[(fc['Station']=='QU5')&(fc['Longitude']>-125.18)]
+    fc=fc.drop(QU5bad.index)
+    
+    fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
+    
+    fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
+    dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S')).astimezone(pytz.utc).replace(tzinfo=None)
+            for i in fc['Start time']]
+    fc['dtUTC']=dts
+    
+    dloc=[dt.datetime(i.year,i.month,i.day) for i in fc['dt']]
+    fc['dloc']=dloc
+    
+    fcS=fc.loc[:,['Latitude','Longitude']].groupby([fc['Station'],fc['dloc']]).mean().reset_index()
+    
+    f0['Station']=f0['Site ID']
+    #f0['dt']=[dt.datetime.strptime(i,'%Y-%m-%d %H:%M:%S') for i in f0['Collected']]
+    dloc0=[dt.datetime(i.year,i.month,i.day) for i in f0['Collected']]
+    f0['dloc']=dloc0
+    
+    fdata=f0.merge(fcS,how='left')
+    
+    fdata['Lat']=fdata['Latitude']
+    fdata['Lon']=fdata['Longitude']
+    fdata['Z']=fdata['Line Out Depth']
+    
+    fdata2=fdata.loc[(fdata['dtUTC']>start_date)&(fdata['dtUTC']<end_date)&(fdata['Z']>=0)&(fdata['Z']<440)&(fdata['Lon']<360)&(fdata['Lat']<=90)].copy(deep=True).reset_index()
+    fdata2.drop(['no','event_pk','Date','Sampling Bout','Latitude','Longitude','index','Gather Lat','Gather Long', 'Pressure Transducer Depth (m)',
+                'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)    
+    return fdata2
+
 def stats(obs0,mod0):
     obs0=_deframe(obs0)
     mod0=_deframe(mod0)
