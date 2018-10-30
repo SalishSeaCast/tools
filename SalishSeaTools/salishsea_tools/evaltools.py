@@ -169,7 +169,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
             # find depth index
             ik=_getZInd_bin(row['Z'],fid[ift])
             # assign values for each var assoc with ift
-            if gridmask[0,ik,row['j'],row['i']]==1:
+            if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
                 for ivar in filemap_r[ift]:
                     data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
     return data
@@ -189,7 +189,10 @@ def _getTimeInd_bin(idt,ifid,torig):
 
 def _getZInd_bin(idt,ifid):
     tlist=ifid.variables['deptht_bounds'][:,:]
-    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>idt][0] # return first index where latter endpoint is larger
+    if idt<=np.max(tlist):
+        ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>idt][0] # return first index where latter endpoint is larger
+    else:
+        ih=np.nan
     return ih
 
 def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
