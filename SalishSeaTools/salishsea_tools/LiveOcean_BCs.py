@@ -20,12 +20,12 @@ import datetime
 import logging
 import os
 
+import gsw
 import mpl_toolkits.basemap as Basemap
 import netCDF4 as nc
 import numpy as np
 import xarray as xr
 from salishsea_tools import LiveOcean_grid as grid
-from salishsea_tools import gsw_calls
 from scipy import interpolate
 
 logger = logging.getLogger(__name__)
@@ -129,7 +129,8 @@ def interpolate_to_NEMO_depths(
     """
     interps = {}
     for var_name in var_names:
-        var_interp = np.zeros(dataset[var_name][0].shape)
+        var_interp = np.zeros((depBC.shape[0], dataset[var_name][0, 0].shape[0],
+                               dataset[var_name][0, 0].shape[1]))
         for j in range(var_interp.shape[1]):
             for i in range(var_interp.shape[2]):
                 LO_depths = dataset.z_rho.values[0, :, j, i]
@@ -564,10 +565,8 @@ def create_LiveOcean_TS_BCs(
     # Fill whole LiveOcean data box horizontally
     interps = fill_box(interps)
 
-    # Caculate the density (sigma) and convect
-    sigma = gsw_calls.generic_gsw_caller(
-        'gsw_sigma0.m', [interps['salt'][:], interps['temp'][:]]
-    )
+    # Calculate the density (sigma) and convect
+    sigma = gsw.sigma0(interps['salt'][:], interps['temp'][:])
     sigma, interps = convect(sigma, interps)
 
     # Fill Live Ocean Vertically
@@ -577,9 +576,7 @@ def create_LiveOcean_TS_BCs(
     interpl = interpolate_to_NEMO_lateral(interps, d, lonBC, latBC, shape)
 
     # Convect Again
-    sigmal = gsw_calls.generic_gsw_caller(
-        'gsw_sigma0.m', [interpl['salt'][:], interpl['temp'][:]]
-    )
+    sigmal = gsw.sigma0(interpl['salt'][:], interpl['temp'][:])
     sigmal, interpl = convect(sigmal, interpl)
     interpl = stabilize(sigmal, interpl)
 
@@ -605,7 +602,7 @@ def create_LiveOcean_TS_BCs(
 
 def _convert_TS_to_TEOS10(var_meta, sal, temp):
     """Convert Practical Salinity and potential temperature to Reference
-       Salinity and Conservative Temperature using gsw matlab functions.
+       Salinity and Conservative Temperature using gsw functions.
 
     :arg var_meta: dictionary of metadata for salinity and temperature.
                    Must have keys vosaline and votemper, each with a sub
@@ -625,14 +622,8 @@ def _convert_TS_to_TEOS10(var_meta, sal, temp):
     new_meta['vosaline']['units'] = 'g/kg'
     new_meta['votemper']['long_name'] = 'Conservative Temperature'
     # Convert salinity from practical to reference salinity
-    sal_ref = gsw_calls.generic_gsw_caller('gsw_SR_from_SP.m', [
-        sal[:],
-    ])
+    sal_ref = gsw.SR_from_SP(sal[:])
     # Convert temperature from potential to conservative
-    temp_cons = gsw_calls.generic_gsw_caller(
-        'gsw_CT_from_pt.m', [
-            sal_ref[:],
-            temp[:],
-        ]
-    )
+    temp_cons = gsw.CT_from_pt(sal_ref[:], temp[:])
+
     return new_meta, sal_ref, temp_cons
