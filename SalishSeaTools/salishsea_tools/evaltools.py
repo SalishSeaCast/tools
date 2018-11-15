@@ -28,6 +28,7 @@ import os
 import pytz
 import matplotlib.pyplot as plt
 import cmocean as cmo
+import warnings
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
@@ -284,14 +285,19 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
              case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary_units)], 
                   else_=ObsTBL.Temperature_Reversing_units)))
     TemFlag=ObsTBL.Quality_Flag_Temp
-    
+    CT=case([(CalcsTBL.Temperature_CT!=None, CalcsTBL.Temperature_CT)], else_=
+         case([(CalcsTBL.Temperature_Primary_CT!=None, CalcsTBL.Temperature_Primary_CT)], else_=
+         case([(CalcsTBL.Temperature_Secondary_CT!=None, CalcsTBL.Temperature_Secondary_CT)], 
+              else_=CalcsTBL.Temperature_Reversing_CT)
+        ))
+
     if len(datelims)<2:
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
                       StationTBL.Lat,StationTBL.Lon,
                      ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Ammonium,ObsTBL.Ammonium_units,ObsTBL.Chlorophyll_Extracted,
                      ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
-                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),Tem.label('T'),TemUnits.label('T_units')).\
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
@@ -307,7 +313,7 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                       StationTBL.Lat,StationTBL.Lon,
                      ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Ammonium,ObsTBL.Ammonium_units,ObsTBL.Chlorophyll_Extracted,
                      ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
-                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),Tem.label('T'),TemUnits.label('T_units')).\
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
@@ -331,11 +337,13 @@ def _lt0convert(arg):
         val=pd.to_numeric(arg, errors='coerce',downcast=None)
     return float(val)
 
-def loadPSF(datelims=(),loadChl=True):
+def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     dfs=list()
     dfchls=list()
     if len(datelims)<2:
         datelims=(dt.datetime(2014,1,1),dt.datetime(2020,1,1))
+    if loadCTD:
+        ctddfs=dict()
     if datelims[0].year<2016:
         # load 2015
         f2015 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
@@ -375,6 +383,15 @@ def loadPSF(datelims=(),loadChl=True):
             Chl2015_m=Chl2015_g.mean()
             Chl2015=Chl2015_m.reindex()
             dfchls.append(Chl2015)
+        if loadCTD:
+            phys2015=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/phys/CitSci2015_20180621.csv',skiprows=lambda x: x in [0,1,2,3,4,6],delimiter=',',
+                    dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                    converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                                'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                                'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+            ctddfs[2015]=dict()
+            ctddfs[2015]['df']=phys2015
+            ctddfs[2015]['dtlims']=(dt.datetime(2014,12,31),dt.datetime(2016,1,1))
     if (datelims[0].year<2017) and (datelims[1].year>2015):
         # load 2016
         f2016N = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
@@ -429,6 +446,15 @@ def loadPSF(datelims=(),loadChl=True):
             Chl2016['dtUTC']=dts
             Chl2016.drop(['DateCollected','TimeCollected','CV'],axis=1,inplace=True)
             dfchls.append(Chl2016)
+        if loadCTD:
+            phys2016=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/phys/CitSci2016_20180621.csv',skiprows=lambda x: x in [0,1,2,3,4,5,6,7,9],delimiter=',',
+                    dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                    converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                                'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                                'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+            ctddfs[2016]=dict()
+            ctddfs[2016]['df']=phys2016
+            ctddfs[2016]['dtlims']=(dt.datetime(2015,12,31),dt.datetime(2017,1,1))
     if (datelims[1].year>2016):
         # load 2017
         f2017 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
@@ -469,8 +495,17 @@ def loadPSF(datelims=(),loadChl=True):
             staMap2017.drop_duplicates(inplace=True)
             Chl2017=pd.merge(Chl2017,staMap2017,how='inner', left_on=['Station'], right_on = ['Station'])
             Chl2017['Z']=[float(ii) for ii in Chl2017['Z0']]
-            Chl2017.drop(['Qflag','Date','Z0'],axis=1,inplace=True)
+            Chl2017.drop(['Qflag','Date','Z0','Time'],axis=1,inplace=True)
             dfchls.append(Chl2017)
+        if loadCTD:
+            phys2017=pd.read_csv('/ocean/eolson/MEOPAR/obs/PSFCitSci/phys/CitSci2017_20180621.csv',skiprows=lambda x: x in [0,1,2,3,4,5,7],delimiter=',',
+                    dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                    converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                                'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                                'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+            ctddfs[2017]=dict()
+            ctddfs[2017]['df']=phys2017
+            ctddfs[2017]['dtlims']=(dt.datetime(2016,12,31),dt.datetime(2018,1,1))
     if len(dfs)>1:
         df=pd.concat(dfs,ignore_index=True,sort=True)
         if loadChl:
@@ -482,7 +517,53 @@ def loadPSF(datelims=(),loadChl=True):
     if loadChl:
         df_a=pd.merge(df, dfChl,  how='outer', left_on=['Station','Lat','Lon','dtUTC','Z'], right_on = ['Station','Lat','Lon','dtUTC','Z'])
         df=df_a
+    # set surface sample to more likely value of 0.55 m to aid matching with CTD data
+    # extra 0.01 is to make np.round round up to 1 so that CTD data can match
+    df.loc[df.Z==0,['Z']]=0.51
     df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<=datelims[1])].copy(deep=True)
+    if loadCTD:
+        df1=df.copy(deep=True)
+        for ik in ctddfs.keys():
+            idf=ctddfs[ik]['df']
+            dtsP=[dt.datetime.strptime(ii,'%d/%m/%Y %H:%M:%S') for ii in idf['datetime'].values]
+            tPacP=utc_to_pac(dtsP)
+            PacDayP=[dt.datetime(ii.year,ii.month,ii.day) for ii in tPacP]
+            idf['tPacPhys']=tPacP
+            idf['PacDay']=PacDayP
+            idf['dtUTCPhys']=dtsP
+            idf['StaTrim']=[ii.replace('-','') for ii in idf['station']]
+            idf['HrsPast']=[(ii-dt.datetime(2014,1,1)).total_seconds()/3600 for ii in dtsP]
+            idf['CT']=[gsw.CT_from_t(SA,t,p) for SA, t, p, in zip(idf['salinity'],idf['temperature'],idf['pressure'])]
+        tPac=utc_to_pac(df['dtUTC'])
+        PacDay=[dt.datetime(ii.year,ii.month,ii.day) for ii in tPac]
+        df1['tPac']=tPac
+        df1['PacDay']=PacDay
+        df1['StaTrim']=[ii.replace('-','') for ii in df['Station']]
+        df1['HrsPast']=[(ii-dt.datetime(2014,1,1)).total_seconds()/3600 for ii in df['dtUTC']]
+        df['SA']=np.nan
+        df['CT']=np.nan
+        df['pLat']=np.nan
+        df['pLon']=np.nan
+        df['tdiffH']=np.nan
+        for ik in ctddfs.keys():
+            jdf=ctddfs[ik]['df']
+            dtlims=ctddfs[ik]['dtlims']
+            for i, row in df1.loc[(df1['dtUTC']>dtlims[0])&(df1['dtUTC']<dtlims[1])].iterrows():
+                idf=jdf.loc[(jdf.StaTrim==row['StaTrim'])&(jdf.depth==np.round(row['Z']))&(np.abs(jdf.HrsPast-row['HrsPast'])<1.0)\
+                                 &(np.abs(jdf.latitude-row['Lat'])<0.05)&(np.abs(jdf.longitude-row['Lon'])<0.05)]
+                if len(idf)>0:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", category=RuntimeWarning)
+                        sal=np.nanmean(idf['salinity'].values)
+                        tem=np.nanmean(idf['CT'].values)
+                        lat=np.nanmean(idf['latitude'].values)
+                        lon=np.nanmean(idf['longitude'].values)
+                    tdelta=np.nanmean([(ii-row['dtUTC']).total_seconds()/3600 for ii in idf['dtUTCPhys']])
+                    df.at[i,'SA']=sal
+                    df.at[i,'CT']=tem
+                    df.at[i,'pLat']=lat
+                    df.at[i,'pLon']=lon
+                    df.at[i,'tdiffH']=tdelta
     return df
 
 def loadPSF2015():
@@ -647,6 +728,9 @@ def _deframe(x):
     if isinstance(x,pd.Series) or isinstance(x,pd.DataFrame):
         x=x.values.flatten()
     return x
+
+def utc_to_pac(timeArray):
+    return [pytz.utc.localize(ii).astimezone(pytz.timezone('Canada/Pacific')) for ii in timeArray]
 
 def printstats(datadf,obsvar,modvar):
     N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
