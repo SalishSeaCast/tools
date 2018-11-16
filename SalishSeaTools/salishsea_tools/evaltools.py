@@ -558,7 +558,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
                         tem=np.nanmean(idf['CT'].values)
                         lat=np.nanmean(idf['latitude'].values)
                         lon=np.nanmean(idf['longitude'].values)
-                    tdelta=np.nanmean([(ii-row['dtUTC']).total_seconds()/3600 for ii in idf['dtUTCPhys']])
+                    tdelta=np.nanmean([np.abs((ii-row['dtUTC']).total_seconds()/3600) for ii in idf['dtUTCPhys']])
                     df.at[i,'SA']=sal
                     df.at[i,'CT']=tem
                     df.at[i,'pLat']=lat
@@ -632,8 +632,6 @@ def loadHakai(datelims=()):
     fc=fc.drop(QU38bad.index)
     QU5bad=fc.loc[(fc['Station']=='QU5')&(fc['Longitude']>-125.18)]
     fc=fc.drop(QU5bad.index)
-    
-    fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
     
     fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
     dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S')).astimezone(pytz.utc).replace(tzinfo=None)
