@@ -582,7 +582,7 @@ def loadPSF2015():
     data['dtUTC']=dts
     return data
 
-def loadHakai(datelims=()):
+def loadHakai(datelims=(),loadCTD=False):
     if len(datelims)<2:
         datelims=(dt.datetime(1900,1,1),dt.datetime(2100,1,1))
     start_date=datelims[0]
@@ -607,7 +607,7 @@ def loadHakai(datelims=()):
                              'Pressure flag', 'PAR', 'PAR flag', 'Fluorometry Chlorophyll (ug/L)', 'Fluorometry Chlorophyll flag',
                              'Turbidity (FTU)', 'Turbidity flag',
                              'Salinity (PSU)', 'Salinity flag'],
-                    dtype={'Drop number':np.float64,'PAR flag':str,'Fluorometry Chlorophyll flag':str},na_values='null')
+                    dtype={'Drop number':np.float64,'PAR flag':str,'Fluorometry Chlorophyll flag':str},na_values=('null','-9.99e-29'))
     
     ## fix apparent typos:
     # reversed lats and lons
@@ -632,6 +632,10 @@ def loadHakai(datelims=()):
     fc=fc.drop(QU38bad.index)
     QU5bad=fc.loc[(fc['Station']=='QU5')&(fc['Longitude']>-125.18)]
     fc=fc.drop(QU5bad.index)
+
+    # remove data with suspicious 0 temperature and salinity
+    iind=(fc['Temperature (deg C)']==0)&(fc['Salinity (PSU)']==0)
+    fc.loc[iind,['Temperature (deg C)', 'Pressure (dbar)', 'PAR', 'Fluorometry Chlorophyll (ug/L)', 'Turbidity (FTU)', 'Salinity (PSU)']]=np.nan
     
     fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
     dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S')).astimezone(pytz.utc).replace(tzinfo=None)
@@ -653,7 +657,32 @@ def loadHakai(datelims=()):
     fdata['Lat']=fdata['Latitude']
     fdata['Lon']=fdata['Longitude']
     fdata['Z']=fdata['Line Out Depth']
+
+    fdata['SA']=np.nan
+    fdata['CT']=np.nan
+    fdata['pZ']=np.nan
+    df2=fdata.copy(deep=True)
     
+    zthresh=1.5
+    print("Note: CTD depths (pZ) may vary from bottle depths (Z) by up to ",str(zthresh)," m.")
+    for i, row in df2.iterrows():
+        idf=fc.loc[(fc.Station==row['Station'])&(fc.dloc==row['dloc'])&\
+                   ((np.abs(fc['Depth (m)']-row['Pressure Transducer Depth (m)'])<zthresh)|(np.abs(fc['Depth (m)']-row['Line Out Depth'])<zthresh))]
+        if len(idf)>0:
+            zrow=row['Pressure Transducer Depth (m)'] if ~np.isnan(row['Pressure Transducer Depth (m)']) else row['Line Out Depth']
+            zdifmin=np.min([np.abs(ii-zrow) for ii in idf['Depth (m)']])
+            # if there are multiple minimum distance rows, just take the first
+            idfZ=idf.loc[np.abs(idf['Depth (m)']-zrow)==zdifmin]
+            isna = (not np.isnan(idfZ['Salinity (PSU)'].values[0])) and (not np.isnan(idfZ['Pressure (dbar)'].values[0])) and \
+                    (not np.isnan(idfZ['Longitude'].values[0])) and (not np.isnan(idfZ['Latitude'].values[0])) 
+            isnat = (not np.isnan(idfZ['Temperature (deg C)'].values[0]))
+            sal=gsw.SA_from_SP(idfZ['Salinity (PSU)'].values[0],idfZ['Pressure (dbar)'].values[0],idfZ['Longitude'].values[0],
+                                idfZ['Latitude'].values[0]) if isna else np.nan
+            tem=gsw.CT_from_t(sal,idfZ['Temperature (deg C)'].values[0],idfZ['Pressure (dbar)'].values[0]) if (isna and isnat) else np.nan
+            fdata.at[i,'SA']=sal
+            fdata.at[i,'CT']=tem
+            fdata.at[i,'pZ']=idfZ['Depth (m)'].values[0]
+
     fdata2=fdata.loc[(fdata['dtUTC']>start_date)&(fdata['dtUTC']<end_date)&(fdata['Z']>=0)&(fdata['Z']<440)&(fdata['Lon']<360)&(fdata['Lat']<=90)].copy(deep=True).reset_index()
     fdata2.drop(['no','event_pk','Date','Sampling Bout','Latitude','Longitude','index','Gather Lat','Gather Long', 'Pressure Transducer Depth (m)',
                 'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)    
