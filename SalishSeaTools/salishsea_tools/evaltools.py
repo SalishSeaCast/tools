@@ -238,6 +238,73 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
 
 
+def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_CTD.sqlite',
+        datelims=()):
+    """
+    load DFO CTD data stored in SQLite database (exclude most points outside Salish Sea)
+    basedir is location of database
+    dbname is database name
+    datelims, if provided, loads only data between first and second datetime in tuple
+    """
+    try:
+        from sqlalchemy import create_engine, case
+        from sqlalchemy.orm import create_session 
+        from sqlalchemy.ext.automap import automap_base
+        from sqlalchemy.sql import and_, or_, not_, func
+    except ImportError:
+        raise ImportError('You need to install sqlalchemy in your environment to use this function.')
+
+    # definitions
+    # if db does not exist, exit
+    if not os.path.isfile(os.path.join(basedir, dbname)):
+        raise Exception('ERROR: {}.sqlite does not exist'.format(dbname))
+    engine = create_engine('sqlite:///' + basedir + dbname, echo = False)
+    Base = automap_base()
+    # reflect the tables in salish.sqlite:
+    Base.prepare(engine, reflect=True)
+    # mapped classes have been created
+    # existing tables:
+    StationTBL=Base.classes.StationTBL
+    ObsTBL=Base.classes.ObsTBL
+    CalcsTBL=Base.classes.CalcsTBL
+    session = create_session(bind = engine, autocommit = False, autoflush = True)
+    SA=case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
+             case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
+             case([(CalcsTBL.Salinity_SA!=None, CalcsTBL.Salinity_SA)], else_= None)))
+    CT=case([(CalcsTBL.Temperature_Primary_CT!=None, CalcsTBL.Temperature_Primary_CT)], else_=
+             case([(CalcsTBL.Temperature_Secondary_CT!=None, CalcsTBL.Temperature_Secondary_CT)], else_=CalcsTBL.Temperature_CT))
+    ZD=case([(ObsTBL.Depth!=None,ObsTBL.Depth)], else_= CalcsTBL.Z)
+    if len(datelims)<2:
+        qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
+                      StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),CalcsTBL.Z,SA.label('SA'),CT.label('CT')).\
+                select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
+                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+    else:
+        start_y=datelims[0].year
+        start_m=datelims[0].month
+        start_d=datelims[0].day
+        end_y=datelims[1].year
+        end_m=datelims[1].month
+        end_d=datelims[1].day
+        qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
+                      StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),CalcsTBL.Z,SA.label('SA'),CT.label('CT')).\
+                select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
+                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
+                                                                         and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
+                                                                         and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
+                                                                     or_(StationTBL.StartYear<end_y,
+                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
+                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
+                                                                    StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+    df1=pd.DataFrame(qry.all())
+    df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
+    session.close()
+    engine.dispose()
+    return df1
 
 def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sqlite',
         datelims=()):
