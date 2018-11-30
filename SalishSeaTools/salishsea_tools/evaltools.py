@@ -133,7 +133,7 @@ def matchData(
             else:
                 print('(Lat,Lon)=',la,lo,' not matched to domain')
     data.drop(data.loc[(data.i==-1)&(data.j==-1)].index, inplace=True)
-    data=data.sort_values(by=['dtUTC','Lat','Lon','Z'])
+    data=data.sort_values(by=['dtUTC','Z','j','i'])
     data.reset_index(drop=True,inplace=True)
 
     # set up columns to accept model values
@@ -150,11 +150,20 @@ def matchData(
     else:
         print('option '+method+' not written yet')
         return
+    data=data.sort_values(by=['dtUTC','Lat','Lon','Z'])
+    data.reset_index(drop=True,inplace=True)
     return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask):
     # loop through data, openening and closing model files as needed and storing model data
+    if len(data)>5000:
+        pprint=True
+        lendat=len(data)
+    else: 
+        pprint= False
     for ind, row in data.iterrows():
+        if (pprint==True and ind%5000==0):
+            print('progress: {}%'.format(ind/lendat*100))
         if ind==0: # load first files
             fid=dict()
             fend=dict()
@@ -277,10 +286,11 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     if len(datelims)<2:
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
-                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),CalcsTBL.Z,SA.label('SA'),CT.label('CT')).\
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
-                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
-                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+                join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
+                                                                    StationTBL.Include==True,ObsTBL.Include==True,CalcsTBL.Include==True))
     else:
         start_y=datelims[0].year
         start_m=datelims[0].month
@@ -290,16 +300,17 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
         end_d=datelims[1].day
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
-                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),CalcsTBL.Z,SA.label('SA'),CT.label('CT')).\
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
-                join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
+                join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
                                                                      or_(StationTBL.StartYear<end_y,
                                                                          and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
                                                                          and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
-                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
+                                                                    StationTBL.Include==True,ObsTBL.Include==True,CalcsTBL.Include==True))
     df1=pd.DataFrame(qry.all())
     df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
     session.close()
