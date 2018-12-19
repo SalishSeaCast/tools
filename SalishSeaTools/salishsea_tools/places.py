@@ -388,6 +388,12 @@ PLACES = {
         'EC buoy number': 46131,
     },
 
+    # Seasonal Chl sensor at town dock
+    'Egmont': {
+        'lon lat': (-123.93, 49.75),
+        'NEMO grid ji': (598,282),
+    },
+
     # Airports
     'YVR': {
         'lon lat': (-123.184, 49.195),
