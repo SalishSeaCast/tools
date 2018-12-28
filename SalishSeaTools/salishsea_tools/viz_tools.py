@@ -20,6 +20,7 @@ from __future__ import division
 
 import netCDF4 as nc
 import numpy as np
+from salishsea_tools import geo_tools
 
 
 def calc_abs_max(array):
@@ -458,6 +459,84 @@ def rotate_vel(u_in, v_in, origin='grid'):
     u_out = u_in * np.cos(theta_rad) - fac * v_in * np.sin(theta_rad)
     v_out = u_in * np.sin(theta_rad) * fac + v_in * np.cos(theta_rad)
     
+    return u_out, v_out
+
+
+def rotate_vel2(u_in, v_in, coords, origin="grid"):
+    """Rotate u and v component values to either E-N or model grid. The origin
+    argument sets the input coordinates ('grid' or 'map').
+
+    This function is an evolution of rotate_vel that uses spherical trig to
+    compute the rotation angle at T points rather than assuming 29 degrees
+    applies uniformly. For most of the Salish Sea domain the 29 degree
+    approximation is reasonable, but it does not work in the compressed Fraser
+    River region, hence the need for a per-point angle calculation. The u_in
+    and v_in arguments should be unstaggered velocities at T points from
+    viz_tools.unstagger() which exclude the first row and column.
+
+    :arg u_in: u velocity component values
+    :type u_in: :py:class:`numpy.ndarray`
+
+    :arg v_in: v velocity component values
+    :type v_in: :py:class:`numpy.ndarray`
+
+    :arg coords: File path/name to netCDF coordinates file
+                 or a dataset object containing the U-point coordinates.
+    :type coords: str or :py:class:`netCDF4.Dataset`
+
+    :arg origin: Input coordinate system
+                 (either 'grid' or 'map', output will be the other)
+    :type origin: str
+
+    :returns u_out, v_out: rotated u and v component values
+    :rtype: :py:class:`numpy.ndarray`
+    """
+
+    # Determine rotation direction
+    if origin is "grid":
+        fac = 1
+    elif origin is "map":
+        fac = -1
+    else:
+        raise ValueError("Invalid origin value: {origin}".format(origin=origin))
+
+    # Load u-point coordinates
+    if hasattr(coords, "variables"):
+        cnc = coords
+    else:
+        cnc = nc.Dataset(coords)
+    glamu = cnc["glamu"][0, ...]
+    gphiu = cnc["gphiu"][0, ...]
+
+    # Get the value of R that geo_tools.haversine() uses
+    R = geo_tools.haversine(0, 0, 0, 1) / np.deg2rad(1)
+
+    # Find angle by spherical trig
+    # https://en.wikipedia.org/wiki/Solution_of_triangles#Three_sides_given_.28spherical_SSS.29
+
+    # First point
+    xA = glamu[0:-1, 0:-1]
+    yA = gphiu[0:-1, 0:-1]
+    # Second point
+    xB = glamu[0:-1, 1:]
+    yB = gphiu[0:-1, 1:]
+    # Third point: same longitude as second point, same latitude as first point
+    xC = xB
+    yC = yA
+
+    # Compute distances, convert to angles
+    a = geo_tools.haversine(xB, yB, xC, yC) / R
+    b = geo_tools.haversine(xA, yA, xC, yC) / R
+    c = geo_tools.haversine(xA, yA, xB, yB) / R
+
+    # A is the angle counterclockwise from due east in radians
+    cosA = (np.cos(a) - np.cos(b) * np.cos(c)) / (np.sin(b) * np.sin(c))
+    A = np.arccos(cosA)
+
+    # Rotate velocities
+    u_out = u_in * np.cos(A) - fac * v_in * np.sin(A)
+    v_out = u_in * np.sin(A) * fac + v_in * np.cos(A)
+
     return u_out, v_out
 
 
