@@ -208,3 +208,51 @@ def find_closest_model_point(
     except ValueError:
         raise ValueError(
             'lat/lon on land and no nearby water point found')
+
+
+def closestPointArray(lons,lats,
+    model_lons, model_lats, tol2=1, grid='NEMO', land_mask=None,
+    tols={
+        'NEMO': {'tol_lon': 0.0104, 'tol_lat': 0.00388},
+        'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.012},
+        }
+):
+    """Wrapper on find_closest_model_point that is faster if you have many points to locate AND
+    you expect the points to be ordered such that each point is likely close to the point ahead
+    (eg ship track). 
+    Returns the grid coordinates of the closest model points as numpy arrays of lons and lats.
+    See find_closest_model_point for more details.
+    For a list of 5000 points on ONC ferry path, speed up was ~95%.
+
+    Additional/changed input:
+    :arg float lons: numpy array of longitudes to find closest grid point to
+
+    :arg float lats: numpy array of latitudes to find closest grid point to
+
+    :arg int tol2:: expected distance in grid cells between one point and the next
+
+    :returns: yinds, xinds: numpy arrays of same shape as input lons
+    """
+    tol2=int(tol2) # ensure integer indices
+    outi=np.nan*np.ones(np.shape(lons))
+    outj=np.nan*np.ones(np.shape(lons))
+    ilast=np.nan
+    jlast=np.nan
+    for kk in range(0,len(lons)):
+        if not np.isnan(ilast):
+            jj,ii=find_closest_model_point(lons[kk],lats[kk],
+                    model_lons[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)],
+                    model_lats[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)],
+                    land_mask=land_mask if land_mask is None else land_mask[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)])
+            if np.isnan(jj): # if not found in expected grid swath
+                jj,ii=find_closest_model_point(lons[kk],lats[kk],model_lons,model_lats,land_mask=land_mask)
+            else:
+                jj=jj+jlast-tol2
+                ii=ii+ilast-tol2
+        else:
+            jj,ii=find_closest_model_point(lons[kk],lats[kk],model_lons,model_lats,land_mask=land_mask)
+        jlast=np.nan if np.isnan(jj) else int(jj)
+        ilast=np.nan if np.isnan(ii) else int(ii)
+        outj[kk]=jlast
+        outi[kk]=ilast
+    return outj, outi
