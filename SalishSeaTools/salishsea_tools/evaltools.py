@@ -784,10 +784,13 @@ def varvarScatter(ax,df,obsvar,modvar,colvar,vmin=0,vmax=0,cbar=False,cm=cmo.cm.
     obs0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[obsvar]])
     mod0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[modvar]])
     sep0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[colvar]==df[colvar]),[colvar]])
-    if vmin==vmax:
-        vmin=np.min(sep0)
-        vmax=np.max(sep0)
-    ps=ax.scatter(obs0,mod0,c=sep0,vmin=vmin,vmax=vmax,cmap=cm,**args)
+    if 'norm' in args:
+        ps=ax.scatter(obs0,mod0,c=sep0,cmap=cm,**args)
+    else:
+        if vmin==vmax:
+            vmin=np.min(sep0)
+            vmax=np.max(sep0)
+        ps=ax.scatter(obs0,mod0,c=sep0,vmin=vmin,vmax=vmax,cmap=cm,**args)
     if cbar==True:
         plt.colorbar(ps)
     return ps
