@@ -273,6 +273,12 @@ PLACES = {
         'NEMO grid ji': (315,95),
         'GEM2.5 grid ji': (101, 124),
     },
+    # if you have a better location in mind for Baynes Sound, please update!
+    # if not, I will after I hear from Debbie/Evie -EO
+    'Baynes Sound': {
+        'lon lat': (-124.86022, 49.60356),
+        'NEMO grid ji': (635, 126),
+    },
     # STRATOGEM STATION S3(lat,lon)=(49 7.5 N, 123 33.5 W)
     'S3': {
         'lon lat': (-123.558, 49.125),
