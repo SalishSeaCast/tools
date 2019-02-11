@@ -234,21 +234,26 @@ def closestPointArray(lons,lats,
     :returns: yinds, xinds: numpy arrays of same shape as input lons
     """
     tol2=int(tol2) # ensure integer indices
+    mj,mi=np.shape(model_lons)
     outi=np.nan*np.ones(np.shape(lons))
     outj=np.nan*np.ones(np.shape(lons))
     ilast=np.nan
     jlast=np.nan
     for kk in range(0,len(lons)):
         if not np.isnan(ilast):
+            jjs=max(0,jlast-tol2)
+            jje=min(mj,jlast+1+tol2)
+            iis=max(0,ilast-tol2)
+            iie=min(mi,ilast+1+tol2)
             jj,ii=find_closest_model_point(lons[kk],lats[kk],
-                    model_lons[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)],
-                    model_lats[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)],
-                    land_mask=land_mask if land_mask is None else land_mask[(jlast-tol2):(jlast+1+tol2),(ilast-tol2):(ilast+1+tol2)])
+                    model_lons[jjs:jje,iis:iie],
+                    model_lats[jjs:jje,iis:iie],
+                    land_mask=land_mask if land_mask is None else land_mask[jjs:jje,iis:iie])
             if np.isnan(jj): # if not found in expected grid swath
                 jj,ii=find_closest_model_point(lons[kk],lats[kk],model_lons,model_lats,land_mask=land_mask)
             else:
-                jj=jj+jlast-tol2
-                ii=ii+ilast-tol2
+                jj=jj+jjs
+                ii=ii+iis
         else:
             jj,ii=find_closest_model_point(lons[kk],lats[kk],model_lons,model_lats,land_mask=land_mask)
         jlast=np.nan if np.isnan(jj) else int(jj)
