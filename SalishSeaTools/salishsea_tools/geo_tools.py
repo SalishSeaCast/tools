@@ -241,15 +241,15 @@ def closestPointArray(lons,lats,
     jlast=np.nan
     for kk in range(0,len(lons)):
         if not np.isnan(ilast):
-            jjs=max(0,jlast-tol2)
-            jje=min(mj,jlast+1+tol2)
-            iis=max(0,ilast-tol2)
-            iie=min(mi,ilast+1+tol2)
+            jjs=max(0,jlast-tol2-1)
+            jje=min(mj,jlast+1+tol2+1)
+            iis=max(0,ilast-tol2-1)
+            iie=min(mi,ilast+1+tol2+1)
             jj,ii=find_closest_model_point(lons[kk],lats[kk],
                     model_lons[jjs:jje,iis:iie],
                     model_lats[jjs:jje,iis:iie],
                     land_mask=land_mask if land_mask is None else land_mask[jjs:jje,iis:iie])
-            if np.isnan(jj): # if not found in expected grid swath
+            if np.isnan(jj) or jj==0 or jj==(jje-1) or ii==0 or ii==(iie-1): # if not found in expected grid swath or on edge
                 jj,ii=find_closest_model_point(lons[kk],lats[kk],model_lons,model_lats,land_mask=land_mask)
             else:
                 jj=jj+jjs
