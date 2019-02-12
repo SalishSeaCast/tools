@@ -44,7 +44,9 @@ def matchData(
     deltat=0,
     deltad=0.0,
     meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc',
-    maskName='tmask'
+    maskName='tmask',
+    wrapSearch=False,
+    wrapTol=1
     ):
     """Given a dataset, find the nearest model matches
 
@@ -91,16 +93,12 @@ def matchData(
 
     """
     # check that required columns are in dataframe:
-    if not set(('dtUTC','Lat','Lon','Z')) <= set(data.keys()):
-        raise Exception('{} missing from data'.format([el for el in set(('dtUTC','Lat','Lon','Z'))-set(data.keys())],'%s'))
-
-    ## check that entries are minimal and consistent:
-    #fkeysVar=list(filemap.keys())
-    #for ikey in fkeysVar:
-    #    if ikey not in set(varmap.values()):
-    #        filemap.pop(ikey) 
-    #if len(set(varmap.values())-set(filemap.keys()))>0:
-    #    print('Error: file(s) missing from filemap:',set(varmap.values())-set(filemap.keys()))
+    if method == 'ferry':
+        reqsubset=['dtUTC','Lat','Lon']
+    else:
+        reqsubset=['dtUTC','Lat','Lon','Z']
+    if not set(reqsubset) <= set(data.keys()):
+        raise Exception('{} missing from data'.format([el for el in set(reqsubset)-set(data.keys())],'%s'))
     fkeysVar=list(filemap.keys())
     ftypes=list(fdict.keys())
     # don't load more files than necessary:
@@ -119,21 +117,27 @@ def matchData(
 
     # adjustments to data dataframe
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
-    data=data.dropna(how='any',subset=['dtUTC','Lat','Lon','Z']) #.dropna(how='all',subset=[*varmap.keys()])
-    data['j']=-1*np.ones((len(data))).astype(int)
-    data['i']=-1*np.ones((len(data))).astype(int)
+    data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
     with nc.Dataset(meshPath) as fmesh:
         omask=np.copy(fmesh.variables[maskName])
         lmask=-1*(omask[0,0,:,:]-1)
-        for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
-            jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
-                                                        land_mask = lmask)
-            if isinstance(jj,int):
-                data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
-            else:
-                print('(Lat,Lon)=',la,lo,' not matched to domain')
-    data.drop(data.loc[(data.i==-1)&(data.j==-1)].index, inplace=True)
-    data=data.sort_values(by=['dtUTC','Z','j','i'])
+        if wrapSearch:
+            jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
+                                                            tol2=wrapTol,land_mask = lmask)
+            data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
+            data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
+        else:
+            data['j']=-1*np.ones((len(data))).astype(int)
+            data['i']=-1*np.ones((len(data))).astype(int)
+            for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
+                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
+                                                            land_mask = lmask)
+                if isinstance(jj,int):
+                    data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+                else:
+                    print('(Lat,Lon)=',la,lo,' not matched to domain')
+    data.drop(data.loc[(data.i==-1)|(data.j==-1)].index, inplace=True)
+    data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
 
     # set up columns to accept model values
@@ -147,11 +151,50 @@ def matchData(
 
     if method == 'bin':
         data = _binmatch(data,flist,ftypes,filemap_r,omask)
+    elif method == 'ferry':
+        print('data is matched to mean of upper 3 model levels')
+        data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
     else:
         print('option '+method+' not written yet')
         return
-    data=data.sort_values(by=['dtUTC','Lat','Lon','Z'])
     data.reset_index(drop=True,inplace=True)
+    return data
+
+def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
+    print(dt.datetime.now())
+    # loop through data, openening and closing model files as needed and storing model data
+    # extract average of upper 3 model levels (approx 3 m)
+    # set file name and hour
+    if len(data)>5000:
+        pprint=True
+        lendat=len(data)
+    else: 
+        pprint= False
+    for ift in ftypes:
+        data['indf_'+ift] = [int(flist[ift].loc[(aa>=flist[ift].t_0)&(aa<flist[ift].t_n)].index[0]) for aa in data['dtUTC']]
+        t2=[flist[ift].loc[aa,['t_0']].values[0] for aa in data['indf_'+ift].values]
+        data['ih_'+ift]=[int(np.floor((aa-bb).total_seconds()/(fdict[ift]*3600))) for aa,bb in zip(data['dtUTC'],t2)]
+        print('done index '+ift,dt.datetime.now())
+        indflast=-1
+        for ind, row in data.iterrows():
+            if (pprint==True and ind%np.round(lendat/10)==0):
+                print(ift,'progress: {}%'.format(ind/lendat*100))
+            if not row['indf_'+ift]==indflast:
+                if not indflast==-1:
+                    fid.close()
+                fid=nc.Dataset(flist[ift].loc[row['indf_'+ift],['paths']].values[0])
+                indflast=row['indf_'+ift]
+            for ivar in filemap_r[ift]:
+                data.loc[ind,['mod_'+ivar]]=np.mean(fid.variables[ivar][row['ih_'+ift],:3,row['j'],row['i']])
+        #for ifind in np.unique(data.loc[:,['indf_'+ift]].values,axis=0):
+        #    fid=nc.Dataset(flist[ift].loc[ifind[0],['paths']].values[0])
+        #    idata=data.loc[data['indf_'+ift]==ifind[0]]
+        #    for ih,iij,iii in np.unique(idata.loc[:,['ih_'+ift,'j','i']].values,axis=0):
+        #        if (gridmask[0,0,iij,iii]==1):
+        #            for ivar in filemap_r[ift]:
+        #                data.loc[(data['indf_'+ift]==ifind[0])&(data['ih_'+ift]==ih)&(data['j']==iij)&(data['i']==iii),['mod_'+ivar]]=\
+        #                                                np.mean(fid.variables[ivar][ih,:3,iij,iii])
+        #    fid.close()
     return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask):
