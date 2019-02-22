@@ -257,7 +257,7 @@ class TestSetAspect(object):
     def test_set_aspect_defaults(self):
         axes = Mock()
         aspect = viz_tools.set_aspect(axes)
-        axes.set_aspect.assert_called_once_with(5/4.4, adjustable='box-forced')
+        axes.set_aspect.assert_called_once_with(5/4.4, adjustable='box')
         assert aspect == 5/4.4
 
     def test_set_aspect_args(self):
@@ -272,13 +272,13 @@ class TestSetAspect(object):
         lats_aspect = 1 / np.cos(42 * np.pi / 180)
         aspect = viz_tools.set_aspect(axes, coords='map', lats=lats)
         axes.set_aspect.assert_called_once_with(
-            lats_aspect, adjustable='box-forced')
+            lats_aspect, adjustable='box')
         assert aspect == lats_aspect
 
     def test_set_aspect_map_explicit(self):
         axes = Mock()
         aspect = viz_tools.set_aspect(axes, 2/3, coords='map')
-        axes.set_aspect.assert_called_once_with(2/3, adjustable='box-forced')
+        axes.set_aspect.assert_called_once_with(2/3, adjustable='box')
         assert aspect == 2/3
 
 

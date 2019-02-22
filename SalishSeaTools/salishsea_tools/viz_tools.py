@@ -337,7 +337,7 @@ def set_aspect(
     aspect=5/4.4,
     coords='grid',
     lats=None,
-    adjustable='box-forced',
+    adjustable='box',
 ):
     """Set the aspect ratio for the axes.
 
