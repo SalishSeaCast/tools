@@ -46,7 +46,8 @@ def matchData(
     meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc',
     maskName='tmask',
     wrapSearch=False,
-    wrapTol=1
+    wrapTol=1,
+    e3tvar='e3t',
     ):
     """Given a dataset, find the nearest model matches
 
@@ -91,6 +92,14 @@ def matchData(
 
     :arg str meshPath: path to mesh file
 
+    :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
+
+    :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes nearness of values
+
+    :arg int wrapTol: assumed search radius from previous grid point if wrapSearch=True
+
+    :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
+
     """
     # check that required columns are in dataframe:
     if method == 'ferry':
@@ -130,8 +139,8 @@ def matchData(
             data['j']=-1*np.ones((len(data))).astype(int)
             data['i']=-1*np.ones((len(data))).astype(int)
             for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
-                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
-                                                            land_mask = lmask)
+                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], 
+                                                fmesh.variables['nav_lat'], land_mask = lmask)
                 if isinstance(jj,int):
                     data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
                 else:
@@ -154,14 +163,57 @@ def matchData(
     elif method == 'ferry':
         print('data is matched to mean of upper 3 model levels')
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
+    elif method == 'vvlZ':
+        data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
     else:
         print('option '+method+' not written yet')
         return
     data.reset_index(drop=True,inplace=True)
     return data
 
+def _interpvvlZ(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
+    ifte3t=filemap.pop(e3tvar)
+    pere3t=fdict.pop(ifte3t)
+    pers=np.unique([i for i in fdict.values()])
+    # reverse fdict
+    fdict_r=dict()
+    for iii in pers:
+        fdict_r[iii]=list()
+    for ikey in fdict:
+        fdict_r[fdict[ikey]].append(ikey)
+    # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
+    # also, we are only dealing with data saved at same interval as e3t
+    test=fdict_r.copy()
+    test.pop(pere3t)
+    if len(test)>0: # loop through and print eliminated variables
+        print('Warning: variables excluded because save interval mismatched with e3t:')
+        for aa in test:
+            for bb in fdict_r[aa]:
+                print(filemap_r[bb])
+
+    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0]) 
+                        for aa in data['dtUTC']]
+    t2=[flist[ifte3t].loc[aa,['t_0']].values[0] for aa in data['indf'].values]
+    data['ih']=[int(np.floor((aa-bb).total_seconds()/(pere3t*3600))) for aa,bb in zip(data['dtUTC'],t2)]
+    # now get appropriate e3t for each set of data points:
+    for indf,grp0 in data.groupby(['indf']):
+        with nc.Dataset(flist[ifte3t].loc[indf,['paths']].values[0]) as fe3t:
+            ff=dict()
+            for ift in fdict_r[pere3t]:
+                ff[ift]=nc.Dataset(flist[ift].loc[indf,['paths']].values[0])
+            for (ih,jj,ii),grp1 in grp0.groupby(['ih','j','i']):
+                e3t=fe3t.variables[e3tvar][ih,:,jj,ii][tmask[0,:,jj,ii]==1]
+                zs=np.cumsum(e3t)-.5*e3t
+                ztar=grp1['Z'].values
+                for ift in fdict_r[pere3t]:
+                    for ivar in filemap_r[ift]:
+                        vals=ff[ift].variables[ivar][ih,:,jj,ii][tmask[0,:,jj,ii]==1]
+                        data.loc[grp1.index,['mod_'+ivar]]=np.where(ztar<np.sum(e3t),np.interp(ztar,zs,vals),np.nan)
+            for ift in fdict_r[pere3t]:
+                ff[ift].close()
+    return data
+
 def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
-    print(dt.datetime.now())
     # loop through data, openening and closing model files as needed and storing model data
     # extract average of upper 3 model levels (approx 3 m)
     # set file name and hour
