@@ -357,8 +357,7 @@ def onc_json_to_dataset(onc_json, teos=True):
             name=sensor['sensor'],
             data=data,
             coords={
-                'sampleTime': [arrow.get(d['sampleTime']).datetime
-                               for d in sensor['data']],
+                'sampleTime': [arrow.get(d['sampleTime']).naive for d in sensor['data']],
             },
             dims=('sampleTime',),
             attrs={
