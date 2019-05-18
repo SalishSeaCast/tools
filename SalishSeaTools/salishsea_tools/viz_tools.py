@@ -540,6 +540,63 @@ def rotate_vel2(u_in, v_in, coords, origin="grid"):
     return u_out, v_out
 
 
+def rotate_vel_bybearing(u_in, v_in, coords, origin="grid"):
+    """Rotate u and v component values to either E-N or model grid. The origin
+    argument sets the input coordinates ('grid' or 'map').
+
+    This function is an evolution of rotate_vel that uses a bearing calculation
+    based on the coordinates to compute the rotation angle based on
+    https://www.movable-type.co.uk/scripts/latlong.html see Bearing
+    The u_in and v_in arguments should be on the grid passed in as a dictionary
+    in coords
+
+    :arg u_in: u velocity component values
+    :type u_in: :py:class:`numpy.ndarray`
+
+    :arg v_in: v velocity component values
+    :type v_in: :py:class:`numpy.ndarray`
+
+    :arg coords: dict of latitudes and longitudes
+    :type coords: dict
+
+    :arg origin: Input coordinate system
+                 (either 'grid' or 'map', output will be the other)
+    :type origin: str
+
+    :returns u_out, v_out: rotated u and v component values
+    :rtype: :py:class:`numpy.ndarray`
+    """
+
+    # Determine rotation direction
+    if origin is "grid":
+        fac = 1
+    elif origin is "map":
+        fac = -1
+    else:
+        raise ValueError("Invalid origin value: {origin}".format(origin=origin))
+
+    glamu = coords["glamu"]
+    gphiu = coords["gphiu"]
+
+    # First point
+    xA = np.deg2rad(glamu[:, 0:-1])
+    yA = np.deg2rad(gphiu[:, 0:-1])
+    # Second point
+    xB = np.deg2rad(glamu[:, 1:])
+    yB = np.deg2rad(gphiu[:, 1:])
+
+    # A is the angle counterclockwise from due east in radians
+    A = np.empty_like(u_in)
+    A[:, 0:-1] = np.arctan2(np.cos(yA) * np.sin(yB) - np.sin(yA) * np.cos(yB) * np.cos(xB-xA), np.sin(xB-xA) * np.cos(yB))
+    A[:, -1] = A[:, -2]
+
+    # Rotate velocities
+    u_out = u_in * np.cos(A) - fac * v_in * np.sin(A)
+    v_out = u_in * np.sin(A) * fac + v_in * np.cos(A)
+
+    return u_out, v_out
+
+
 def clear_contours(C):
     """Clear contours from an existing plot.
     
