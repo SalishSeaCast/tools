@@ -575,18 +575,19 @@ def rotate_vel_bybearing(u_in, v_in, coords, origin="grid"):
     else:
         raise ValueError("Invalid origin value: {origin}".format(origin=origin))
 
-    glamu = coords["glamu"]
-    gphiu = coords["gphiu"]
+    longitude = np.array(coords["lon"])
+    latitude = np.array(coords["lat"])
 
     # First point
-    xA = np.deg2rad(glamu[:, 0:-1])
-    yA = np.deg2rad(gphiu[:, 0:-1])
+    xA = np.deg2rad(longitude[:, 0:-1])
+    yA = np.deg2rad(latitude[:, 0:-1])
     # Second point
-    xB = np.deg2rad(glamu[:, 1:])
-    yB = np.deg2rad(gphiu[:, 1:])
+    xB = np.deg2rad(longitude[:, 1:])
+    yB = np.deg2rad(latitude[:, 1:])
 
     # A is the angle counterclockwise from due east in radians
-    A = np.empty_like(u_in)
+    A = np.empty_like(longitude)
+
     A[:, 0:-1] = np.arctan2(np.cos(yA) * np.sin(yB) - np.sin(yA) * np.cos(yB) * np.cos(xB-xA), np.sin(xB-xA) * np.cos(yB))
     A[:, -1] = A[:, -2]
 
