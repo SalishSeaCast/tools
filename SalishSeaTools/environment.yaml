@@ -16,16 +16,21 @@
 name: salishsea-tools
 
 channels:
+  - conda-forge
   - defaults
 
 dependencies:
+- arrow
 - basemap
 - bottleneck
+- cliff
 - coverage
+- ipdb
 - ipython
-- jupyter_client
+- jupyterlab
 - lxml
 - matplotlib
+- nbsphinx
 - netCDF4
 - numpy
 - pandas
@@ -36,15 +41,11 @@ dependencies:
 - python-dateutil
 - pyyaml
 - requests
+- retrying
 - scipy
 - sphinx
 - sphinx_rtd_theme
 - xarray
+- zeep
 - pip:
   - angles
-  - arrow
-  - cliff
-  - ipdb
-  - nbsphinx
-  - retrying
-  - zeep
