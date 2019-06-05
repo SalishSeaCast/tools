@@ -35,6 +35,7 @@ dependencies:
 - numpy
 - pandas
 - pip
+- progressbar
 - pytest
 - python=3
 - pytz
