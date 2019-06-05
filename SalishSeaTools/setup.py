@@ -50,6 +50,7 @@ install_requires = [
     'netCDF4',
     'numpy',
     'pandas',
+    "progressbar",
     'python-dateutil',
     'pytz',
     'requests',
