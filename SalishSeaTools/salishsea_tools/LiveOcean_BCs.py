@@ -324,18 +324,54 @@ def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
     return interpl
 
 
-def calculate_Si_from_NO3(NO3):
+def calculate_Si_from_NO3(NO3, SA, a=6.46, b=1.35, c=0, sigma=1, tsa=29):
     """Use a simple fit to calculate Si from NO3
 
     :arg NO3: 3-D array of nitate values
     :type NO3: array
 
+    :arg SA: 3-D array of absolute salinities
+    :type SA: array
+
+    :arg float a: constant in Si from NO3 fit units uM
+
+    :arg float b: linear term in Si form NO3 fit units none
+
+    :arg float c: magnitude for salinity additional impact units uM
+
+    :arg float sigma: 1/width of tanh for salinity impact units /(g/kg)
+
+    :arg float tsa: centre of salnity correction units g/kg
+
     :returns: a 3-D array of silicon values
     """
-    a, b = 6.46, 1.35
-    Si = a + b * NO3
+    Si = a + b * NO3 + c * np.tanh(sigma * (SA - tsa))
+    Si[Si < 0] = 0
 
     return Si
+
+def correct_high_NO3(NO3, smax=100, nmax=120):
+    """Correct LiveOcean nitrates that are higher than smax, so that
+    the largest nitrate is nmax.  Defaults cause no correction.
+
+    :arg NO3: 3-D array of nitrate values
+    :type NO3: array
+
+    :arg smax: highest nitrate value corrected
+    :type smax: float
+
+    :arg nmax: maximum nitrate value allowed
+    :type nmax: float
+
+    :returns: a 3-D array of corrected nitrate values"""
+
+   #correction = np.array([(nitrate - smax) if nitrate > smax else 0 for
+    #                      nitrate in NO3])
+    correction = NO3 - smax
+    correction[NO3 < smax] = 0.
+    newnitrate = NO3 - correction * correction / (correction + nmax - smax)
+
+    return newnitrate
 
 
 def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
@@ -474,6 +510,13 @@ def create_LiveOcean_TS_BCs(
     meshfilename='/results/nowcast-sys/grid/mesh_mask201702.nc',
     bc_dir='/results/forcing/LiveOcean/boundary_conditions/',
     LO_dir='/results/forcing/LiveOcean/downloaded/',
+    LO_to_SSC_parameters = {'NO3': {'smax' : 100.,
+                                'nmax' : 120.,},
+                        'Si' : {'a' : 6.46,
+                                'b' : 1.35,
+                                'c' : 0.,
+                                'sigma' : 1.,
+                                'tsa' : 29}}
 ):
     """Create a Live Ocean boundary condition file for date
     for use in the NEMO model.
@@ -486,6 +529,9 @@ def create_LiveOcean_TS_BCs(
     :arg str bc_dir: the directory in which to save the results.
 
     :arg str LO_dir: the directory in which Live Ocean results are stored.
+
+    :arg dict LO_to_SSC_parameters: a dictionary of parameters to convert
+                                    Live Ocean values to Salish Sea Cast
 
     :returns: Boundary conditions files that were created.
     :rtype: list
@@ -588,8 +634,22 @@ def create_LiveOcean_TS_BCs(
             interpl[var].shape[2] * interpl[var].shape[1]
         )
 
-    # Calculate Si from NO3
-    interpl['Si'] = calculate_Si_from_NO3(interpl['NO3'])
+    # Calculate Si from NO3 using LiveOcean nitrate
+    interpl['Si'] = calculate_Si_from_NO3(
+                        interpl['NO3'], interpl['salt'],
+                        a=LO_to_SSC_parameters['Si']['a'],
+                        b=LO_to_SSC_parameters['Si']['b'],
+                        c=LO_to_SSC_parameters['Si']['c'],
+                        sigma=LO_to_SSC_parameters['Si']['sigma'],
+                        tsa=LO_to_SSC_parameters['Si']['tsa']
+        )
+
+    # Correct NO3 values
+    interpl['NO3'] = correct_high_NO3(
+                         interpl['NO3'],
+                         smax=LO_to_SSC_parameters['NO3']['smax'],
+                         nmax=LO_to_SSC_parameters['NO3']['nmax']
+        )
 
     # Prepare dataset
     ts = d.ocean_time.data
