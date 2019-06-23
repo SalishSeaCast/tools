@@ -24,26 +24,18 @@ def set_parameters(parameter_set):
     returns a dictionary of parameters
     """
 
-    if parameter_set == 'v201702':
+    LO_to_SSC_parameters = {
         # Original base paramter set: using NO3 directly from Live Ocean and
         # a linear fit to get Si from NO3
-        LO_to_SSC_parameters = {'NO3': {'smax': 100.,
-                                        'nmax': 120.},
-                                'Si': {'a': 6.46,
-                                       'b': 1.35,
-                                       'c': 0.,
-                                       'sigma': 1.,
-                                       'tsa': 29}}
-
-    elif parameter_set == 'v201905':
+        "v201702": {
+            "NO3": {"smax": 100.0, "nmax": 120.0},
+            "Si": {"a": 6.46, "b": 1.35, "c": 0.0, "sigma": 1.0, "tsa": 29},
+        },
         # Parameter set that corrects the highest Live Ocean NO3 values and
         # improves the Si parametrization by including salinity
-        LO_to_SSC_parameters = {'NO3': {'smax': 25.880,
-                                        'nmax': 46.050},
-                                'Si': {'a': 1.756,
-                                       'b': 1.556,
-                                       'c': -7.331,
-                                       'sigma': 1.631,
-                                       'tsa': 32.4929}}
-
-    return LO_to_SSC_parameters
+        "v201905": {
+            "NO3": {"smax": 25.880, "nmax": 46.050},
+            "Si": {"a": 1.756, "b": 1.556, "c": -7.331, "sigma": 1.631, "tsa": 32.4929},
+        },
+    }
+    return LO_to_SSC_parameters[parameter_set]
