@@ -48,6 +48,7 @@ def matchData(
     wrapSearch=False,
     wrapTol=1,
     e3tvar='e3t',
+    fid=None
     ):
     """Given a dataset, find the nearest model matches
 
@@ -125,6 +126,11 @@ def matchData(
         filemap_r[filemap[ikey]].append(ikey)
 
     # adjustments to data dataframe
+    with nc.Dataset(meshPath) as fmesh:
+        omask=np.copy(fmesh.variables[maskName])
+        navlon=np.copy(fmesh.variables['nav_lon'][:,:])
+        navlat=np.copy(fmesh.variables['nav_lat'][:,:])
+
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
     data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
     with nc.Dataset(meshPath) as fmesh:
@@ -154,9 +160,10 @@ def matchData(
         data['mod_'+ivar]=np.full(len(data),np.nan)
 
     # list model files
-    flist=dict()
-    for ift in ftypes:
-        flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
+    if method != 'netmatch':
+        flist=dict()
+        for ift in ftypes:
+            flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
 
     if method == 'bin':
         data = _binmatch(data,flist,ftypes,filemap_r,omask)
@@ -165,9 +172,36 @@ def matchData(
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
     elif method == 'vvlZ':
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
+
+    elif method == 'netmatch':
+        data =  _netmatch(data,fid,filemap.keys(),omask)
     else:
         print('option '+method+' not written yet')
         return
+    data.reset_index(drop=True,inplace=True)
+    return data
+
+def _gridHoriz(data,mod_start,mod_end,omask):
+    data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
+    data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
+        lmask=-1*(omask[0,0,:,:]-1)
+        if wrapSearch:
+            jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,fmesh.variables['nav_lon'], fmesh.variables['nav_lat'],
+                                                            tol2=wrapTol,land_mask = lmask)
+            data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
+            data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
+        else:
+            data['j']=-1*np.ones((len(data))).astype(int)
+            data['i']=-1*np.ones((len(data))).astype(int)
+            for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
+                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'],
+                                                fmesh.variables['nav_lat'], land_mask = lmask)
+                if isinstance(jj,int):
+                    data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+                else:
+                    print('(Lat,Lon)=',la,lo,' not matched to domain')
+    data.drop(data.loc[(data.i==-1)|(data.j==-1)].index, inplace=True)
+    data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
     return data
 
@@ -279,6 +313,22 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
                     data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
     return data
 
+def _netmatch(data,fid,varlist,gridmask):
+    # match single file to all data
+    if len(data)>5000:
+        pprint=True
+        lendat=len(data)
+    else: 
+        pprint= False
+    for ind, row in data.iterrows():
+            # find depth index
+            ik=_getZInd_bin(row['Z'],fid,boundsFlag=True)
+            # assign values for each var assoc with ift
+            if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
+                for ivar in varlist:
+                    data.loc[ind,['mod_'+ivar]]=fid.variables[ivar][0,ik,row['j'],row['i']]
+    return data
+
 def _nextfile_bin(ift,idt,ifind,fid,fend,flist):
     if ift in fid.keys():
         fid[ift].close()
@@ -292,8 +342,12 @@ def _getTimeInd_bin(idt,ifid,torig):
     ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
     return ih
 
-def _getZInd_bin(idt,ifid):
-    tlist=ifid.variables['deptht_bounds'][:,:]
+def _getZInd_bin(idt,ifid,boundsFlag=False):
+    if boundsFlag==True:
+        ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc')
+        tlist=ftemp.variables['deptht_bounds'][:,:]
+    else:
+        tlist=ifid.variables['deptht_bounds'][:,:]
     if idt<=np.max(tlist):
         ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>idt][0] # return first index where latter endpoint is larger
     else:
