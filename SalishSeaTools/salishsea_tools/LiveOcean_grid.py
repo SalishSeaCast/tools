@@ -2,12 +2,13 @@
 # Adapted from Parker MacCready's code
 
 # Nancy Soontiens 2016
+# updated based on Parker's 2019 version by Susan Allen and Doug Latornell
 
 import netCDF4 as nc
 import numpy as np
 
 
-def get_basic_info(fn, getG=True, getS=True, getT=True):
+def get_basic_info(fn, only_G=False, only_S=False, only_T=False):
     """
     Gets grid, vertical coordinate, and time info from a ROMS NetCDF
     history file with full name 'fn'
@@ -17,20 +18,14 @@ def get_basic_info(fn, getG=True, getS=True, getT=True):
     Output: dicts G, S, and T
 
     Example calls:
-
-    for more than one the dout list is unpacked automatically
     G, S, T = zfun.get_basic_info(fn)
-
-    for getting just one use [] to just get the dict
-    [T] = zfun.get_basic_info(fn, getG=False, getS=False)
+    T = zfun.get_basic_info(fn, only_T=True)
 
     """
 
     ds = nc.Dataset(fn, 'r')
 
-    dout = []  # initialize an output list
-
-    if getG:
+    def make_G(ds):
         # get grid and bathymetry info
         g_varlist = ['h', 'lon_rho', 'lat_rho', 'lon_u', 'lat_u', 'lon_v',
                      'lat_v', 'mask_rho', 'mask_u', 'mask_v', 'pm', 'pn', ]
@@ -40,22 +35,20 @@ def get_basic_info(fn, getG=True, getS=True, getT=True):
         G['DX'] = 1/G['pm']
         G['DY'] = 1/G['pn']
         G['M'], G['L'] = np.shape(G['lon_rho'])  # M = rows, L = columns
-        # make the masks boolean
+        # make the masks boolean (True = water, False = land, opposite of masked arrays!)
         G['mask_rho'] = G['mask_rho'] == 1
         G['mask_u'] = G['mask_u'] == 1
         G['mask_v'] = G['mask_v'] == 1
-        dout.append(G)
-
-    if getS:
+        return G
+    def make_S(ds):
         # get vertical sigma-coordinate info (vectors are bottom to top)
         s_varlist = ['s_rho', 'hc', 'Cs_r', 'Vtransform']
         S = dict()
         for vv in s_varlist:
             S[vv] = ds.variables[vv][:]
         S['N'] = len(S['s_rho'])  # number of vertical levels
-        dout.append(S)
-
-    if getT:
+        return S
+    def make_T(ds):
         # get time info
         t_varlist = ['ocean_time']
         T = dict()
@@ -64,9 +57,16 @@ def get_basic_info(fn, getG=True, getS=True, getT=True):
         T_units = ds.variables['ocean_time'].units
         tt = nc.num2date(T['ocean_time'][:], T_units)
         T['time'] = tt
-        dout.append(T)
-
-    return dout
+        return T
+    # return results
+    if only_G:
+        return make_G(ds)
+    elif only_S:
+        return make_S(ds)
+    elif only_T:
+        return make_T(ds)
+    else:
+        return make_G(ds), make_S(ds), make_T(ds)
 
 
 def get_z(h, zeta, S):
@@ -86,13 +86,12 @@ def get_z(h, zeta, S):
     calls.
     """
 
-    # input error checking (seems clumsy)
-    if (
-        (type(h) != np.ndarray)
-        or (type(zeta) not in [np.ndarray, np.ma.core.MaskedArray])
-        or (type(S) != dict)
-    ):
+    # input error checking
+    if ( (not isinstance(h, np.ndarray))
+        or (not isinstance(zeta, (np.ndarray, np.ma.core.MaskedArray))) ):
         print('WARNING from get_z(): Inputs must be numpy arrays')
+    if not isinstance(S, dict):
+        print('WARNING from get_z(): S must be a dict')
 
     # number of vertical levels
     N = S['N']
