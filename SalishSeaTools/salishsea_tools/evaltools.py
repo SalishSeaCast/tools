@@ -126,32 +126,13 @@ def matchData(
         filemap_r[filemap[ikey]].append(ikey)
 
     # adjustments to data dataframe
-    with nc.Dataset(meshPath) as fmesh:
-        omask=np.copy(fmesh.variables[maskName])
-        navlon=np.copy(fmesh.variables['nav_lon'][:,:])
-        navlat=np.copy(fmesh.variables['nav_lat'][:,:])
-
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
     data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
     with nc.Dataset(meshPath) as fmesh:
         omask=np.copy(fmesh.variables[maskName])
-        lmask=-1*(omask[0,0,:,:]-1)
-        if wrapSearch:
-            jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,fmesh.variables['nav_lon'], fmesh.variables['nav_lat'], 
-                                                            tol2=wrapTol,land_mask = lmask)
-            data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
-            data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
-        else:
-            data['j']=-1*np.ones((len(data))).astype(int)
-            data['i']=-1*np.ones((len(data))).astype(int)
-            for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
-                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'], 
-                                                fmesh.variables['nav_lat'], land_mask = lmask)
-                if isinstance(jj,int):
-                    data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
-                else:
-                    print('(Lat,Lon)=',la,lo,' not matched to domain')
-    data.drop(data.loc[(data.i==-1)|(data.j==-1)].index, inplace=True)
+        navlon=np.copy(fmesh.variables['nav_lon'][:,:])
+        navlat=np.copy(fmesh.variables['nav_lat'][:,:])
+    data=_gridHoriz(data,omask,navlon,navlat,wrapSearch)
     data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
 
@@ -181,28 +162,26 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
     return data
 
-def _gridHoriz(data,mod_start,mod_end,omask):
-    data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
-    data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
-        lmask=-1*(omask[0,0,:,:]-1)
-        if wrapSearch:
-            jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,fmesh.variables['nav_lon'], fmesh.variables['nav_lat'],
-                                                            tol2=wrapTol,land_mask = lmask)
-            data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
-            data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
-        else:
-            data['j']=-1*np.ones((len(data))).astype(int)
-            data['i']=-1*np.ones((len(data))).astype(int)
-            for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
-                jj, ii = geo_tools.find_closest_model_point(lo, la, fmesh.variables['nav_lon'],
-                                                fmesh.variables['nav_lat'], land_mask = lmask)
-                if isinstance(jj,int):
-                    data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
-                else:
-                    print('(Lat,Lon)=',la,lo,' not matched to domain')
+def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False):
+    lmask=-1*(omask[0,0,:,:]-1)
+    if wrapSearch:
+        jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,navlon,navlat,
+                                                        tol2=wrapTol,land_mask = lmask)
+        data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
+        data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
+    else:
+        data['j']=-1*np.ones((len(data))).astype(int)
+        data['i']=-1*np.ones((len(data))).astype(int)
+        for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
+            jj, ii = geo_tools.find_closest_model_point(lo, la, navlon,
+                                            navlat, land_mask = lmask)
+            if isinstance(jj,int):
+                data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
+            else:
+                print('(Lat,Lon)=',la,lo,' not matched to domain')
     data.drop(data.loc[(data.i==-1)|(data.j==-1)].index, inplace=True)
-    data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
-    data.reset_index(drop=True,inplace=True)
+    if resetIndex==True:
+        data.reset_index(drop=True,inplace=True)
     return data
 
 def _interpvvlZ(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
@@ -290,6 +269,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
         lendat=len(data)
     else: 
         pprint= False
+    data['k']=-1*np.ones((len(data))).astype(int)
     for ind, row in data.iterrows():
         if (pprint==True and ind%5000==0):
             print('progress: {}%'.format(ind/lendat*100))
@@ -309,6 +289,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
             ik=_getZInd_bin(row['Z'],fid[ift])
             # assign values for each var assoc with ift
             if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
+                data.loc[ind,['k']]=int(ik)
                 for ivar in filemap_r[ift]:
                     data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
     return data
@@ -962,20 +943,23 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
         ii=0
         iii=sep0<sepvals[ii]
         if np.sum(iii)>0:
-            ll=u'{} < {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            #ll=u'{} < {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            ll=u'{} $<$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
             p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
             ps.append(p0)
         # between min and max:
         for ii in range(1,len(sepvals)):
             iii=np.logical_and(sep0<sepvals[ii],sep0>=sepvals[ii-1])
             if np.sum(iii)>0:
-                ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
+                #ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
+                ll=u'{} {} $\leq$ {} $<$ {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
                 p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
                 ps.append(p0)
         # greater than max:
         iii=sep0>=sepvals[ii]
         if np.sum(iii)>0:
-            ll=u'{} \u2265 {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            #ll=u'{} \u2265 {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            ll=u'{} $\geq$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
             p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii+1],label=ll)
             ps.append(p0)
     return ps
