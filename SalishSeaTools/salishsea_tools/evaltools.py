@@ -448,7 +448,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     return df1
 
 def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sqlite',
-        datelims=()):
+        datelims=(),excludeSaanich=True):
     """
     load DFO data stored in SQLite database
     basedir is location of database
@@ -530,8 +530,14 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                                                                          and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
                                                                          and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
-                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
-    df1=pd.DataFrame(qry.all())
+                                                                    StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
+                                                                    not_(and_(StationTBL.Lat>48.77,StationTBL.Lat<49.27,
+                                                                              StationTBL.Lon<-123.43))))
+    if excludeSaanich:
+        df1=pd.DataFrame(qry.filter(not_(and_(StationTBL.Lat>48.47,StationTBL.Lat<48.67,
+                                              StationTBL.Lon>-123.6,StationTBL.Lon<-123.43))).all())
+    else:
+        df1=pd.DataFrame(qry.all())
     df1['Z']=np.where(df1['Depth']>=0,df1['Depth'],-1.0*gsw.z_from_p(p=df1['Pressure'],lat=df1['Lat']))
     df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
     session.close()
