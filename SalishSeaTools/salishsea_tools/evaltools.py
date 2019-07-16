@@ -462,7 +462,6 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
         from sqlalchemy.sql import and_, or_, not_, func
     except ImportError:
         raise ImportError('You need to install sqlalchemy in your environment to use this function.')
-
     # definitions
     # if db does not exist, exit
     if not os.path.isfile(os.path.join(basedir, dbname)):
@@ -527,8 +526,8 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
                                                                      or_(StationTBL.StartYear<end_y,
-                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
-                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth<end_m),
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<=end_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
                                                                     not_(and_(StationTBL.Lat>48.77,StationTBL.Lat<49.27,
