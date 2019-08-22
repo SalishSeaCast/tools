@@ -340,7 +340,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
     """
-    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T'):
+    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None'):
         print('ftype={}, are you sure? (if yes, add to list)'.format(ftype))
     if tres==24:
         ftres='1d'
@@ -348,10 +348,13 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         ftres=str(int(tres))+'h'
     ffmt='%Y%m%d'
     dfmt='%d%b%y'
+    wfmt='y%Ym%md%d'
     if nam_fmt=='nowcast':
         stencil='{0}/SalishSea_'+ftres+'_{1}_{1}_'+ftype+'.nc'
     elif nam_fmt=='long':
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
+    elif nam_fmt=='wind':
+       stencil='ops_{3}.nc'
     else:
         raise Exception('nam_fmt '+nam_fmt+' is not defined')
     iits=start
@@ -364,9 +367,9 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
         try:
-            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt)),recursive=True)[0]
+            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
         except:
-            print('file does not exist:  '+basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt)))
+            print('file does not exist:  '+basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
             raise
         inds.append(ind)
         paths.append(iifstr)
