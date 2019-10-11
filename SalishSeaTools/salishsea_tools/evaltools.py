@@ -981,6 +981,22 @@ def _deframe(x):
 def utc_to_pac(timeArray):
     return [pytz.utc.localize(ii).astimezone(pytz.timezone('Canada/Pacific')) for ii in timeArray]
 
+def pac_to_utc(pactime0):
+    # input datetime object without tzinfo in Pacific Time and 
+    # output datetime object (or np array of them) without tzinfo in UTC
+    pactime=np.array(pactime0,ndmin=1)
+    if pactime.ndim>1:
+        raise Exception('Error: ndim>1')
+    out=np.empty(pactime.shape,dtype=object)
+    pac=pytz.timezone('Canada/Pacific')
+    utc=pytz.utc
+    for ii in range(0,len(pactime)):
+        itime=pactime[ii]
+        loc_t=pac.localize(itime)
+        utc_t=loc_t.astimezone(utc)
+        out[ii]=utc_t.replace(tzinfo=None)
+    return (out[0] if np.isscalar(pactime0) else out)
+
 def printstats(datadf,obsvar,modvar):
     N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
     print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
