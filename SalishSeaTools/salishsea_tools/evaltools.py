@@ -997,7 +997,7 @@ def pac_to_utc(pactime0):
         out[ii]=utc_t.replace(tzinfo=None)
     return (out[0] if np.isscalar(pactime0) else out)
 
-def dateTimeToDecDay(dtin):
+def datetimeToDecDay(dtin):
     tdif=dtin-dt.datetime(1900,1,1)
     dd=tdif.days+tdif.seconds/(3600*24)
     return dd
