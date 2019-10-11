@@ -995,12 +995,18 @@ def pac_to_utc(pactime0):
         loc_t=pac.localize(itime)
         utc_t=loc_t.astimezone(utc)
         out[ii]=utc_t.replace(tzinfo=None)
-    return (out[0] if np.isscalar(pactime0) else out)
+    return (out[0] if np.shape(pactime0)==() else out)
 
-def datetimeToDecDay(dtin):
-    tdif=dtin-dt.datetime(1900,1,1)
-    dd=tdif.days+tdif.seconds/(3600*24)
-    return dd
+def datetimeToDecDay(dtin0):
+    # handle single datetimes or arrays
+    dtin=np.array(dtin0,ndim=1)
+    if pactime.ndim>1:
+        raise Exception('Error: ndim>1')
+    out=np.empty(dtin.shape,dtype=object)
+    for ii in range(0,len(dtin)):
+        tdif=dtin[ii]-dt.datetime(1900,1,1)
+        out[ii]=tdif.days+tdif.seconds/(3600*24)
+    return (out[0] if np.shape(dtin0)==() else out)
 
 def printstats(datadf,obsvar,modvar):
     N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
