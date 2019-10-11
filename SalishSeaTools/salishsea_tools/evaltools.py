@@ -999,7 +999,7 @@ def pac_to_utc(pactime0):
 
 def datetimeToDecDay(dtin0):
     # handle single datetimes or arrays
-    dtin=np.array(dtin0,ndim=1)
+    dtin=np.array(dtin0,ndmin=1)
     if pactime.ndim>1:
         raise Exception('Error: ndim>1')
     out=np.empty(dtin.shape,dtype=object)
