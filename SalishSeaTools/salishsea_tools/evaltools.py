@@ -997,6 +997,11 @@ def pac_to_utc(pactime0):
         out[ii]=utc_t.replace(tzinfo=None)
     return (out[0] if np.isscalar(pactime0) else out)
 
+def dateTimeToDecDay(dtin):
+    tdif=dtin-dt.datetime(1900,1,1)
+    dd=tdif.days+tdif.seconds/(3600*24)
+    return dd
+
 def printstats(datadf,obsvar,modvar):
     N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
     print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
