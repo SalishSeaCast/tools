@@ -997,6 +997,40 @@ def pac_to_utc(pactime0):
         out[ii]=utc_t.replace(tzinfo=None)
     return (out[0] if np.shape(pactime0)==() else out)
 
+def pdt_to_utc(pactime0):
+    # input datetime object without tzinfo in Pacific Daylight Time and 
+    # output datetime object (or np array of them) without tzinfo in UTC
+    # verified: PDT is GMT+7 at all times of year
+    pactime=np.array(pactime0,ndmin=1)
+    if pactime.ndim>1:
+        raise Exception('Error: ndim>1')
+    out=np.empty(pactime.shape,dtype=object)
+    pac=pytz.timezone('Etc/GMT+7')
+    utc=pytz.utc
+    for ii in range(0,len(pactime)):
+        itime=pactime[ii]
+        loc_t=pac.localize(itime)
+        utc_t=loc_t.astimezone(utc)
+        out[ii]=utc_t.replace(tzinfo=None)
+    return (out[0] if np.shape(pactime0)==() else out)
+
+def pst_to_utc(pactime0):
+    # input datetime object without tzinfo in Pacific Standard Time and 
+    # output datetime object (or np array of them) without tzinfo in UTC
+    # verified: PST is GMT+8 at all times of year (GMT does not switch)
+    pactime=np.array(pactime0,ndmin=1)
+    if pactime.ndim>1:
+        raise Exception('Error: ndim>1')
+    out=np.empty(pactime.shape,dtype=object)
+    pac=pytz.timezone('Etc/GMT+8')
+    utc=pytz.utc
+    for ii in range(0,len(pactime)):
+        itime=pactime[ii]
+        loc_t=pac.localize(itime)
+        utc_t=loc_t.astimezone(utc)
+        out[ii]=utc_t.replace(tzinfo=None)
+    return (out[0] if np.shape(pactime0)==() else out)
+
 def datetimeToDecDay(dtin0):
     # handle single datetimes or arrays
     dtin=np.array(dtin0,ndmin=1)
