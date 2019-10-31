@@ -174,7 +174,7 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False):
         data['i']=-1*np.ones((len(data))).astype(int)
         for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
             jj, ii = geo_tools.find_closest_model_point(lo, la, navlon,
-                                            navlat, land_mask = lmask)
+                                            navlat, land_mask = lmask,checkTol=True)
             if isinstance(jj,int):
                 data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
             else:
