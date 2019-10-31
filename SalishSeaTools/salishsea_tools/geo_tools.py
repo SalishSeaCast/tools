@@ -118,7 +118,8 @@ def find_closest_model_point(
     tols={
         'NEMO': {'tol_lon': 0.0104, 'tol_lat': 0.00388},
         'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.012},
-        }
+        },
+    checkTol=False
 ):
     """Returns the grid coordinates of the closest model point
     to a specified lon/lat. If land_mask is provided, returns the closest
@@ -154,6 +155,9 @@ def find_closest_model_point(
 
     :arg tols: stored default tols for different grid types
     :type tols: dict
+
+    :arg checkTol: optionally check that nearest ocean point is not
+        outside specified tolerances in case that spiral search is called
 
     :returns: yind, xind
     """
@@ -203,8 +207,17 @@ def find_closest_model_point(
     if land_mask is None or not land_mask[j, i]:
         return j, i
     try:
-        return _spiral_search_for_closest_water_point(
-            j, i, land_mask, lon, lat, model_lons, model_lats)
+        if checkTol:
+            j2,i2=_spiral_search_for_closest_water_point(
+                j, i, land_mask, lon, lat, model_lons, model_lats)
+            if (np.abs(model_lons[j2,i2]-lon)>tols[grid]['tol_lon']) or \
+                (np.abs(model_lats[j2,i2]-lat)>tols[grid]['tol_lat']):
+                return np.nan,np.nan
+            else: 
+                return j2, i2
+        else:
+            return _spiral_search_for_closest_water_point(
+                j, i, land_mask, lon, lat, model_lons, model_lats)
     except ValueError:
         raise ValueError(
             'lat/lon on land and no nearby water point found')
