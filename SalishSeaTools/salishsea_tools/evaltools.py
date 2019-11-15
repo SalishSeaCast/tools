@@ -358,6 +358,24 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     else:
         raise Exception('nam_fmt '+nam_fmt+' is not defined')
     iits=start
+    iite=iits+dt.timedelta(days=(flen-1))
+    # check if start is a file start date and if not, try to identify the file including it
+    nday=0
+    while True:
+        try:
+            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),
+                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
+            if nday>0:
+                print('first file starts on ',iits)
+            break # file has been found
+        except IndexError:
+            nday=nday+1
+            iits=start-dt.timedelta(days=nday)
+            iite=iits+dt.timedelta(days=(flen-1))
+            if nday==flen:
+                raise Exception('no file found including date '+str(start)+\
+                        ' of form:\n '+basedir+stencil.format(iits.strftime(dfmt).lower(),
+                        iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
     ind=0
     inds=list()
     paths=list()
@@ -367,10 +385,11 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
         try:
-            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
-        except:
-            print('file does not exist:  '+basedir+stencil.format(iits.strftime(dfmt).lower(),iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
-            raise
+            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),
+                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
+        except IndexError:
+            raise Exception('file does not exist:  '+basedir+stencil.format(iits.strftime(dfmt).lower(),
+                iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
         inds.append(ind)
         paths.append(iifstr)
         t_0.append(iits)
