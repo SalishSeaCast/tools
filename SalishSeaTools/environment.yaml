@@ -24,7 +24,9 @@ dependencies:
 - basemap
 - bottleneck
 - cliff
+- cmocean
 - coverage
+- gsw
 - ipdb
 - ipython
 - jupyterlab
