@@ -46,6 +46,8 @@ install_requires = [
     'angles',
     'arrow',
     'bottleneck',
+    'cmocean',
+    'gsw',
     'matplotlib',
     'netCDF4',
     'numpy',
