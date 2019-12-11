@@ -41,6 +41,7 @@ except ImportError:
     )
 
 import arrow
+import arrow.parser
 import dateutil.parser as dparser
 from dateutil import tz
 import numpy as np
@@ -51,6 +52,7 @@ import scipy.io
 import xarray
 import pandas as pd
 import zeep
+import zeep.helpers
 
 from salishsea_tools import (
     onc_sog_adcps,
@@ -68,68 +70,68 @@ def load_drifters(
         drifterpath='/ocean/rcostanz/Drifters/data'
 ):
     """Loads drifter coordinates and times from the ODL Drifters Project.
-    
+
     UBC Ocean Dynamics Laboratory Drifters Project
     http://drifters.eoas.ubc.ca/
     Contact Rich Pawlowicz: rich@eos.ubc.ca
     Contact Romain Costanz: rcostanz@eos.ubc.ca
-    
+
     :arg deployments: python iterable containing requested deployment numbers
         (ex. [1, 2, 5], range(1, 9), etc...)
     :type deployments: python iterable of integers
-    
+
     :arg filename: Filename
     :type filename: str
-    
+
     :arg drifterpath: Drifter data storage directory
     :type drifterpath: str
-    
+
     :returns: Nested ordered dictionaries of xarray dataset objects.
     :rtype: :py:class:`collections.OrderedDict` >
             :py:class:`collections.OrderedDict` >
             :py:class:`xarray.Dataset`
     """
-    
+
     # Preallocate output dictionary
     drifters = OrderedDict()
-    
+
     # Iterate through deployment directories
     for deployment_num in deployments:
-        
+
         # Deployment ID
         deployment = 'deployment{}'.format(deployment_num)
-        
+
         # Preallocate deployment dictionary
         drifters[deployment] = OrderedDict()
-        
+
         # Open deployment file
         filepath = os.path.join(drifterpath, deployment, filename)
-        with open(filepath) as data_file:    
+        with open(filepath) as data_file:
             data = json.load(data_file)
-        
+
         # Iterate through drifters in deployment
         for drifter in data['features']:
-            
+
             # Extract lon/lat values
             lon, lat = zip(*drifter['geometry']['coordinates'])
-            
+
             # Parse date strings into python datetime
             pytime = [dparser.parse(t) for t in drifter['properties']['dateTime']]
-            
+
             # Combine lon/lat/time into xarray Dataset
             unsorted = xarray.Dataset({
                 'lon': ('time', list(lon)),
-                'lat': ('time', list(lat))},      
+                'lat': ('time', list(lat))},
                 coords={'time': pytime})
-            
+
             # Get time-sorted indices
             index = unsorted.time.argsort()
-            
+
             # Make a new sorted Dataset for each drifter
             drifters[deployment][drifter['properties']['title']] = xarray.Dataset({
                 'lon': unsorted.lon[index],
                 'lat': unsorted.lat[index]})
-    
+
     return drifters
 
 
@@ -139,26 +141,26 @@ def load_ADCP(
 ):
     """Returns the ONC ADCP velocity profiles at a given station
     over a specified datetime range.
-    
+
     This function uses the nearest neighbor to the specified datetime
     bounds. ONC ADCP data is returned at approximately 15 and 45 minutes
     past the hour, so choose datetime bounds accordingly.
-    
+
     :arg daterange: start and end datetimes for the requested data range.
         (ex. ['yyyy mmm dd HH:MM', 'yyyy mmm dd HH:MM'])
     :type daterange: list or tuple of str
-    
+
     :arg station: Requested profile location ('central', 'east', or 'ddl')
     :type station: str
-    
+
     :arg adcp_data_dir: ADCP file storage location
     :type adcp_data_dir: str
-    
+
     :returns: :py:class:`xarray.Dataset` of zonal u and meridional v velocity
         with time and depth dimensions.
     :rtype: 2-D, 2 element :py:class:`xarray.Dataset`
     """
-    
+
     # Load ADCP data
     grid = scipy.io.loadmat(
                  os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))
@@ -370,7 +372,11 @@ def onc_json_to_dataset(onc_json, teos=True):
     return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
 
 
-def get_chs_tides(data_type, stn_id, begin, end):
+def get_chs_tides(data_type, stn_id, begin, end, retry_args={
+        'wait_exponential_multiplier': 1000,
+        'wait_exponential_max': 30000,
+        'stop_max_delay': 36000,
+    }):
     """Retrieve a time series of observed or predicted water levels for a CHS
     recording tide gauge station from the https://ws-shc.qc.dfo-mpo.gc.ca/
     web service for the date/time range given by begin and end.
@@ -396,6 +402,16 @@ def get_chs_tides(data_type, stn_id, begin, end):
     :param end: UTC end date or date/time for data request.
                 If a date only is used the time defaults to 00:00:00.
     :type end: str or :py:class:`arrow.Arrow`
+
+    :param dict retry_args: Key/value pair arguments to control how the request
+                            is retried should it fail the first time.
+                            The defaults provide a 2^x * 1 second exponential
+                            back-off between each retry, up to 30 seconds,
+                            then 30 seconds afterwards, to a maximum of 10 minutes
+                            of retrying.
+                            See https://pypi.python.org/pypi/retrying for a full
+                            discussion of the parameters available to control
+                            retrying.
 
     :return: Water level time series.
     :rtype: :py:class:`pandas.Series`
@@ -479,7 +495,16 @@ def get_chs_tides(data_type, stn_id, begin, end):
     datetimes, water_levels = [], []
     search_begin = begin
     while search_begin < end:
-        response = client.service.search(
+        @retry(**retry_args)
+        def search_service(
+            data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
+            begin, end, first_value, n_values, metadata, stn_number, order
+        ):
+            return client.service.search(
+                data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
+                begin, end, first_value, n_values, metadata, stn_number, order
+            )
+        response = search_service(
             data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
             search_begin.format('YYYY-MM-DD HH:mm:ss'),
             end.format('YYYY-MM-DD HH:mm:ss'),
@@ -792,17 +817,17 @@ def load_nowcast_station_tracers(
                  "sep": "09", "oct": "10", "nov": "11", "dec": "12" }
     station_names = list(stations.keys())
     station_points = stations.values()
-    model_js = [x[0] for x in station_points] 
-    model_is = [x[1] for x in station_points] 
-    
+    model_js = [x[0] for x in station_points]
+    model_is = [x[1] for x in station_points]
+
     mixed_format_dates = os.listdir(nowcast_dir)
     number_format_dates = ["20" + x[5:7] + month_num[x[2:5]] + x[0:2] for x in mixed_format_dates]
     sorted_dirs = [mixed_format_date for (number_format_date, mixed_format_date) in sorted(zip(number_format_dates,mixed_format_dates))]
-    
+
     dataframe_list = []
     num_files = 0
     start_time = dtm.datetime.now()
-    
+
     for subdir in sorted_dirs:
         if os.path.isdir(nowcast_dir + '/' + subdir) and re.match("[0-9]{2}[a-z]{3}[0-9]{2}", subdir):
             month_str = subdir[2:5]
@@ -813,16 +838,16 @@ def load_nowcast_station_tracers(
                 grid_t = xarray.open_dataset(tracer_path)
                 result_hours = pd.DatetimeIndex(grid_t.time_centered.values).hour
                 time_indices = np.where([(x in hours) for x in result_hours])
-                
+
                 J, T, Z = np.meshgrid(model_js,time_indices,depth_indices, indexing = 'ij')
                 I, T, Z = np.meshgrid(model_is,time_indices,depth_indices, indexing = 'ij')
-                
+
                 tracer_dataframes = []
                 for trc in tracers:
                     station_slice = grid_t[trc].values[T,Z,J,I]
                     slice_xarray = xarray.DataArray(station_slice,
                                      [station_names,result_hours[time_indices], grid_t.deptht.values[depth_indices]],
-                                     ["STATION", "HOUR", "DEPTH"], 
+                                     ["STATION", "HOUR", "DEPTH"],
                                      trc)
                     slice_dataframe = slice_xarray.to_dataframe()
                     slice_dataframe.reset_index(inplace = True)
@@ -831,7 +856,7 @@ def load_nowcast_station_tracers(
                 merged_tracers["DATE"] =  pd.to_datetime(date_str, infer_datetime_format=True)
                 merged_tracers["MONTH"] = int(month_num[month_str])
                 dataframe_list.append(merged_tracers)
-            
+
                 num_files = num_files + 1
                 if verbose:
                     run_time = dtm.datetime.now() - start_time
@@ -843,7 +868,7 @@ def load_nowcast_station_tracers(
         print("Files loaded:" + str(num_files))
 
     nowcast_df = pd.concat(dataframe_list)
-    
+
     if save_path is not None:
         nowcast_df.to_pickle(save_path)
         if verbose:
