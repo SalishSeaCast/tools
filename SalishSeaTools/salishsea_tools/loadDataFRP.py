@@ -174,7 +174,7 @@ def loadDataFRP_init(exp='all'):
     # calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
     x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'].values
     x=x[:,np.newaxis]
-    tcor=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'])[0]
+    tcor=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'],rcond=None)[0]
 
     if exp=='exp1':
         df0=df0.drop(df0.index[df0.Date != 20170410])
