@@ -66,17 +66,17 @@ def contour_thalweg(
     :arg xcoord_distance: plot along thalweg distance (True) or index (False)
     :type xcoord_distance: boolean
 
-    :arg thalweg_pts_file: Path and file name to read the array of
-                           thalweg grid points from.
-    :type thalweg_pts_file: str
+    :arg thalweg_file: Path and file name to read the array of
+                       thalweg grid points from.
+    :type thalweg_file: str
 
-    :arg dict cbar_args: Additional arguments to be passed to the cbar 
+    :arg dict cbar_args: Additional arguments to be passed to the cbar
                          function (fraction, pad, etc.)
 
-    :arg dict mesh_args: Additional arguments to be passed to the contourf 
-                         or pcolormesh function 
+    :arg dict mesh_args: Additional arguments to be passed to the contourf
+                         or pcolormesh function
 
-    : arg string method: method to use for data display: defaults to 
+    : arg string method: method to use for data display: defaults to
                          'contourf' but 'pcolormesh' is also accepted
 
     :returns: matplotlib colorbar object
@@ -235,10 +235,10 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
 
     :arg data: 2D array to be contoured at level k
     :type data: :py:class:`numpy.ndarray`
-    
-    :arg klev: Index of k-level along which to contour 
+
+    :arg klev: Index of k-level along which to contour
     :type klev: int
-    
+
     :arg mask: Mask array with same dimensions as data
     :type mask: :py:class:`numpy.ndarray`
 
@@ -250,25 +250,25 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
 
     :arg lon: Array of longitudes with same length as x dimension of data.
     :type lon: :py:class:`numpy.ndarray`
-    
+
     :arg lat: Array of longitudes with same length as x dimension of data.
     :type lat: :py:class:`numpy.ndarray`
 
     :arg str cmap: matplotlib colormap
-    
+
     :arg str var_name: Name of variable to plot. Necesssary if cmap=None.
-    
+
     :arg str land_colour: matplotlib colour for land
-    
+
     :arg is_depth_avg: True if data is a depth averaged field (default is False).
     :type is_depth_avg: boolean
 
     :arg is_pcolmesh: plot a pcolormesh (True) instead of a contourf (default).
     :type is_pcolmesh: boolean
-    
-    :arg str title: Title string 
-    
-    :arg dict cbar_args: Additional arguments to be passed to the cbar 
+
+    :arg str title: Title string
+
+    :arg dict cbar_args: Additional arguments to be passed to the cbar
                          function (fraction, pad, etc.)
 
     :returns: matplotlib colorbar object
@@ -303,26 +303,26 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
 
 def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
-    
+
     :arg time_ind: Time index (current drifter position, track will be visible
         up until this point, ex. 'YYYY-mmm-dd HH:MM:SS', format is flexible)
     :type time_ind: str or :py:class:`datetime.datetime`
-    
+
     :arg ax: Axis object
     :type ax: :py:class:`matplotlib.pyplot.axes`
-    
+
     :arg DATA: Drifter track dataset
     :type DATA: :py:class:`xarray.Dataset`
-    
+
     :arg color: Drifter track color
     :type color: str
-    
+
     :arg cutoff: Time threshold for color plotting (hours)
     :type cutoff: integer
-    
+
     :arg zorder: Plotting layer specifier
     :type zorder: integer
-    
+
     :returns: Dictionary of line objects
     :rtype: dict > :py:class:`matplotlib.lines.Line2D`
     """
@@ -403,9 +403,9 @@ def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
 
 def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
     """ Boilerplate figure code like coastline, aspect ratio, axis lims, etc.
-    
+
     .. note::
-        
+
         This function is deprecated.
         Call plot formatting functions individually instead.
     """
@@ -419,9 +419,9 @@ def plot_tracers(
     ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1], cmap='jet', zorder=0
 ):
     """Plot a horizontal slice of NEMO tracers as filled contours.
-    
+
     .. note::
-        
+
         This function is deprecated.
         Plot NEMO results directly using `matplotlib.pyplot.contourf` or
         equivalent instead.
@@ -440,9 +440,9 @@ def plot_velocity(
     """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
     Accepts subsampled u and v fields via the **processed** keyword
     argument.
-    
+
     .. note::
-        
+
         This function is deprecated.
         Plot NEMO results directly using `matplotlib.pyplot.quiver` or
         equivalent instead.
