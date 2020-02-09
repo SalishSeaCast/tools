@@ -1781,12 +1781,12 @@ def filter_timeseries(record, winlen=39, method='box'):
     weight = np.zeros(w, dtype=int)
     
     # Select filter method
-    if method is 'doodson':
+    if method == 'doodson':
         # Doodson bandpass filter (winlen must be 39)
         weight[[1, 2, 5, 6, 10, 11, 13, 16, 18]] = 1
         weight[[0, 3, 8]] = 2
         centerval = 0
-    elif method is 'box':
+    elif method == 'box':
         # Box filter
         weight[:] = 1
         centerval = 1

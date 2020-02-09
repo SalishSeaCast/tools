@@ -95,11 +95,11 @@ def plot_coastline(
     """
 
     # Index names based on results server
-    if server is 'local':
+    if server == 'local':
         lon_name = 'nav_lon'
         lat_name = 'nav_lat'
         bathy_name = 'Bathymetry'
-    elif server is 'ERDDAP':
+    elif server == 'ERDDAP':
         lon_name = 'longitude'
         lat_name = 'latitude'
         bathy_name = 'bathymetry'
@@ -201,11 +201,11 @@ def plot_land_mask(
     """
 
     # Index names based on results server
-    if server is 'local':
+    if server == 'local':
         lon_name   = 'nav_lon'
         lat_name   = 'nav_lat'
         bathy_name = 'Bathymetry'
-    elif server is 'ERDDAP':
+    elif server == 'ERDDAP':
         lon_name   = 'longitude'
         lat_name   = 'latitude'
         bathy_name = 'bathymetry'
@@ -289,26 +289,26 @@ def plot_boundary(
     indexslice = index
     
     # Determine coordinate system and orientation
-    if dim is 'depth':
+    if dim == 'depth':
         dimslice = 'z'
         indexslice = abs(depth.values - index).argmin()
-        if coords is 'map':
+        if coords == 'map':
             dim1, dim2 = grid.nav_lon, grid.nav_lat
-        elif coords is 'grid':
+        elif coords == 'grid':
             dim1, dim2 = grid.x, grid.y
         else:
             raise ValueError('Unknown coordinate system: {}'.format(coords))
-    elif dim is 'y':
-        if coords is 'map':
+    elif dim == 'y':
+        if coords == 'map':
             dim1, dim2 = grid.nav_lon.isel(**{dim: index}), depth
-        elif coords is 'grid':
+        elif coords == 'grid':
             dim1, dim2 = grid.x, depth
         else:
             raise ValueError('Unknown coordinate system: {}'.format(coords))
-    elif dim is 'x':
-        if coords is 'map':
+    elif dim == 'x':
+        if coords == 'map':
             dim1, dim2 = grid.nav_lat.isel(**{dim: index}), depth
-        elif coords is 'grid':
+        elif coords == 'grid':
             dim1, dim2 = grid.y, depth
         else:
             raise ValueError('Unknown coordinate system: {}'.format(coords))
@@ -326,7 +326,7 @@ def plot_boundary(
     )
     
     # Invert depth axis
-    if dim is 'x' or dim is 'y':
+    if dim == 'x' or dim == 'y':
         ax.invert_yaxis()
 
     return patch, boundary
@@ -445,9 +445,9 @@ def rotate_vel(u_in, v_in, origin='grid'):
     """
     
     # Determine rotation direction
-    if   origin is 'grid':
+    if   origin == 'grid':
         fac =  1
-    elif origin is 'map':
+    elif origin == 'map':
         fac = -1
     else:
         raise ValueError('Invalid origin value: {origin}'.format(
@@ -493,9 +493,9 @@ def rotate_vel2(u_in, v_in, coords, origin="grid"):
     """
 
     # Determine rotation direction
-    if origin is "grid":
+    if origin == "grid":
         fac = 1
-    elif origin is "map":
+    elif origin == "map":
         fac = -1
     else:
         raise ValueError("Invalid origin value: {origin}".format(origin=origin))
@@ -568,9 +568,9 @@ def rotate_vel_bybearing(u_in, v_in, coords, origin="grid"):
     """
 
     # Determine rotation direction
-    if origin is "grid":
+    if origin == "grid":
         fac = 1
-    elif origin is "map":
+    elif origin == "map":
         fac = -1
     else:
         raise ValueError("Invalid origin value: {origin}".format(origin=origin))
