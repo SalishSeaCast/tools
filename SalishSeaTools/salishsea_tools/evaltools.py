@@ -102,6 +102,9 @@ def matchData(
     :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
 
     """
+    # define dictionaries of mesh lat and lon variables to use with different grids:
+    lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
+    latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
     # check that required columns are in dataframe:
     if method == 'ferry':
         reqsubset=['dtUTC','Lat','Lon']
@@ -130,8 +133,8 @@ def matchData(
     data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
     with nc.Dataset(meshPath) as fmesh:
         omask=np.copy(fmesh.variables[maskName])
-        navlon=np.copy(fmesh.variables['nav_lon'][:,:])
-        navlat=np.copy(fmesh.variables['nav_lat'][:,:])
+        navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
+        navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
     data=_gridHoriz(data,omask,navlon,navlat,wrapSearch)
     data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
@@ -147,7 +150,7 @@ def matchData(
             flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
 
     if method == 'bin':
-        data = _binmatch(data,flist,ftypes,filemap_r,omask)
+        data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName)
     elif method == 'ferry':
         print('data is matched to mean of upper 3 model levels')
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
@@ -155,7 +158,7 @@ def matchData(
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
 
     elif method == 'netmatch':
-        data =  _netmatch(data,fid,filemap.keys(),omask)
+        data =  _netmatch(data,fid,filemap.keys(),omask,maskName=maskName)
     else:
         print('option '+method+' not written yet')
         return
@@ -173,8 +176,12 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False):
         data['j']=-1*np.ones((len(data))).astype(int)
         data['i']=-1*np.ones((len(data))).astype(int)
         for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
-            jj, ii = geo_tools.find_closest_model_point(lo, la, navlon,
+            try:
+                jj, ii = geo_tools.find_closest_model_point(lo, la, navlon,
                                             navlat, land_mask = lmask,checkTol=True)
+            except:
+                print('lo:',lo,'la:',la)
+                raise
             if isinstance(jj,int):
                 data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
             else:
@@ -262,7 +269,7 @@ def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
         #    fid.close()
     return data
 
-def _binmatch(data,flist,ftypes,filemap_r,gridmask):
+def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask'):
     # loop through data, openening and closing model files as needed and storing model data
     if len(data)>5000:
         pprint=True
@@ -286,7 +293,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
             # find time index
             ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig)
             # find depth index
-            ik=_getZInd_bin(row['Z'],fid[ift])
+            ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
             # assign values for each var assoc with ift
             if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
                 data.loc[ind,['k']]=int(ik)
@@ -294,7 +301,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask):
                     data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
     return data
 
-def _netmatch(data,fid,varlist,gridmask):
+def _netmatch(data,fid,varlist,gridmask,maskName='tmask'):
     # match single file to all data
     if len(data)>5000:
         pprint=True
@@ -303,7 +310,7 @@ def _netmatch(data,fid,varlist,gridmask):
         pprint= False
     for ind, row in data.iterrows():
             # find depth index
-            ik=_getZInd_bin(row['Z'],fid,boundsFlag=True)
+            ik=_getZInd_bin(row['Z'],fid,boundsFlag=True,maskName=maskName)
             # assign values for each var assoc with ift
             if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
                 for ivar in varlist:
@@ -323,12 +330,22 @@ def _getTimeInd_bin(idt,ifid,torig):
     ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
     return ih
 
-def _getZInd_bin(idt,ifid,boundsFlag=False):
+def _getZInd_bin(idt,ifid,boundsFlag=False,maskName='tmask'):
     if boundsFlag==True:
-        ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc')
-        tlist=ftemp.variables['deptht_bounds'][:,:]
+        if maskName=='tmask':
+            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc')
+            tlist=ftemp.variables['deptht_bounds'][:,:]
+        elif maskName=='umask':
+            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc')
+            tlist=ftemp.variables['depthu_bounds'][:,:]
+        elif maskName=='vmask':
+            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc')
+            tlist=ftemp.variables['depthv_bounds'][:,:]
+        else:
+            raise('choice not coded')
     else:
-        tlist=ifid.variables['deptht_bounds'][:,:]
+        dboundvar={'tmask':'deptht_bounds','umask':'depthu_bounds','vmask':'depthv_bounds'}
+        tlist=ifid.variables[dboundvar[maskName]][:,:]
     if idt<=np.max(tlist):
         ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>idt][0] # return first index where latter endpoint is larger
     else:
