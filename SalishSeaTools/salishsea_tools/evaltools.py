@@ -345,17 +345,17 @@ def _getTimeInd_bin(idt,ifid,torig):
     ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
     return ih
 
-def _getZInd_bin(idt,ifid,boundsFlag=False,maskName='tmask'):
+def _getZInd_bin(idt,ifid=None,boundsFlag=False,maskName='tmask'):
     if boundsFlag==True:
         if maskName=='tmask':
-            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc')
-            tlist=ftemp.variables['deptht_bounds'][:,:]
+            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc') as ftemp:
+                tlist=ftemp.variables['deptht_bounds'][:,:]
         elif maskName=='umask':
-            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc')
-            tlist=ftemp.variables['depthu_bounds'][:,:]
+            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc') as ftemp:
+                tlist=ftemp.variables['depthu_bounds'][:,:]
         elif maskName=='vmask':
-            ftemp=nc.Dataset('/results/SalishSea/hindcast.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc')
-            tlist=ftemp.variables['depthv_bounds'][:,:]
+            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc') as ftemp:
+                tlist=ftemp.variables['depthv_bounds'][:,:]
         else:
             raise('choice not coded')
     else:
