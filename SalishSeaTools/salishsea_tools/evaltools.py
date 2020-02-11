@@ -48,7 +48,8 @@ def matchData(
     wrapSearch=False,
     wrapTol=1,
     e3tvar='e3t',
-    fid=None
+    fid=None,
+    sdim=3
     ):
     """Given a dataset, find the nearest model matches
 
@@ -101,6 +102,12 @@ def matchData(
 
     :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
 
+    :arg Dataset fid: optionally include name of a single dataset when looping is not necessary and all matches come from
+        a single file
+
+    :arg int sdim: optionally enter number of spatial dimensions (must be the same for all variables per call);
+        defaults to 3
+
     """
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
@@ -150,7 +157,7 @@ def matchData(
             flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
 
     if method == 'bin':
-        data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName)
+        data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName,sdim)
     elif method == 'ferry':
         print('data is matched to mean of upper 3 model levels')
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
@@ -269,7 +276,7 @@ def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
         #    fid.close()
     return data
 
-def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask'):
+def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3):
     # loop through data, openening and closing model files as needed and storing model data
     if len(data)>5000:
         pprint=True
@@ -292,13 +299,21 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask'):
             # now read data
             # find time index
             ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig)
-            # find depth index
-            ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
-            # assign values for each var assoc with ift
-            if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
-                data.loc[ind,['k']]=int(ik)
-                for ivar in filemap_r[ift]:
-                    data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+            # find depth index if vars are 3d
+            if sdim==3:
+                ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
+                # assign values for each var assoc with ift
+                if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
+                    data.loc[ind,['k']]=int(ik)
+                    for ivar in filemap_r[ift]:
+                        data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+            elif sdim==2:
+                # assign values for each var assoc with ift
+                if (gridmask[0,0,row['j'],row['i']]==1):
+                    for ivar in filemap_r[ift]:
+                        data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,row['j'],row['i']]
+            else:
+                raise('invalid sdim')
     return data
 
 def _netmatch(data,fid,varlist,gridmask,maskName='tmask'):
