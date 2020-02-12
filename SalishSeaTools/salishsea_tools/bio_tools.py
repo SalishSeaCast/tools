@@ -67,6 +67,31 @@ def each_limiter(zz_I_par,zz_NO,zz_NH,zz_Si,tmask,
 
     return ILim, NLim, SiLim, limiter,limval
 
+def calc_nutLim(zz_NO,zz_NH,zz_Si,zz_rate_K_Si,zz_rate_kapa,zz_rate_k):
+    # calculate nutrient (si, no3, or nh4) limitation only for calculating 
+    # diatom sinking rates
+    # Si
+    zz_Sc = np.where(zz_Si>0.0,
+                    zz_Si / (zz_rate_K_Si + zz_Si),0.0)
+    SiLim=zz_Sc
+    # Nitrate and Ammonium
+    zz_Oup_cell = np.where(zz_NO > 0.0, 
+                zz_NO * zz_rate_kapa / (zz_rate_k + zz_NO * zz_rate_kapa + zz_NH),0.0)
+    zz_Hup_cell = np.where(zz_NH > 0.0, 
+                zz_NH / (zz_rate_k + zz_NO * zz_rate_kapa + zz_NH),0.0)
+    if (np.any(zz_Oup_cell < 0.)):
+        raise ValueError('zz_Oup_cell<0')
+    if (np.any(zz_Hup_cell < 0.)):
+        raise ValueError('zz_Hup_cell<0')
+    NLim=zz_Oup_cell+zz_Hup_cell
+    nutLim=np.minimum(NLim,SiLim)
+    return nutLim
+
+def calc_diat_sink(zz_w_sink_Pmicro_min,zz_w_sink_Pmicro_max,diatNutLim):
+    # enter min and max rates in m/day as in namelist
+    wsink= zz_w_sink_Pmicro_min*diatNutLim+zz_w_sink_Pmicro_max*(1.0-diatNutLim)
+    return wsink/(24*3600) # diatom sinking rates are converted to m/s during namelist read
+
 def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     """ calculates limiting factor: I, Si, or N based on SMELT output
     arg I: np.array slice of PAR from dia file
