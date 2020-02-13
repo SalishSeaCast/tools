@@ -67,7 +67,7 @@ def each_limiter(zz_I_par,zz_NO,zz_NH,zz_Si,tmask,
 
     return ILim, NLim, SiLim, limiter,limval
 
-def calc_nutLim(zz_NO,zz_NH,zz_Si,zz_rate_K_Si,zz_rate_kapa,zz_rate_k):
+def calc_nutLim_2(zz_NO,zz_NH,zz_Si,zz_rate_K_Si,zz_rate_kapa,zz_rate_k):
     # calculate nutrient (si, no3, or nh4) limitation only for calculating 
     # diatom sinking rates
     # Si
@@ -85,10 +85,11 @@ def calc_nutLim(zz_NO,zz_NH,zz_Si,zz_rate_K_Si,zz_rate_kapa,zz_rate_k):
         raise ValueError('zz_Hup_cell<0')
     NLim=zz_Oup_cell+zz_Hup_cell
     nutLim=np.minimum(NLim,SiLim)
-    return nutLim
+    return np.power(nutLim,0.2)
 
 def calc_diat_sink(zz_w_sink_Pmicro_min,zz_w_sink_Pmicro_max,diatNutLim):
     # enter min and max rates in m/day as in namelist
+    # use calc_nutLim_2 to estimate diatNutLim, which is to power 0.2
     wsink= zz_w_sink_Pmicro_min*diatNutLim+zz_w_sink_Pmicro_max*(1.0-diatNutLim)
     return wsink/(24*3600) # diatom sinking rates are converted to m/s during namelist read
 
