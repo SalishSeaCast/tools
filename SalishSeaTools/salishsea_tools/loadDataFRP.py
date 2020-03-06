@@ -172,10 +172,10 @@ def loadDataFRP_init(exp='all'):
     df0=pd.merge(df0_a,df0_b,how='left',on=['Station','Date'])
 
     # calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
-    x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'].values
+    x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'].values
     x=x[:,np.newaxis]
-    tcor=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'],rcond=None)[0]
-
+    tcor=1.0/np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'],rcond=None)[0]
+    # rewritten in terms of fitting true turb to observed turb for consistency with paper
     if exp=='exp1':
         df0=df0.drop(df0.index[df0.Date != 20170410])
     elif exp=='exp2':
@@ -273,7 +273,7 @@ def loadDataFRP_init(exp='all'):
     return df0, clist, tcor, cast19, cast25
 
 
-def loadDataFRP(exp='all',sel='narrow'):
+def loadDataFRP(exp='all',sel='narrow',dp=1.0):
     if exp not in {'exp1', 'exp2', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
@@ -283,7 +283,6 @@ def loadDataFRP(exp='all',sel='narrow'):
     df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
 
     zCasts=dict()
-    dp=1.0
     for nn in clist:
         ip=np.argmax(cast25[nn].df['prSM'].values)
         ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
