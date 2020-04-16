@@ -29,6 +29,7 @@ import pytz
 import matplotlib.pyplot as plt
 import cmocean as cmo
 import warnings
+import re
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
@@ -49,7 +50,8 @@ def matchData(
     wrapTol=1,
     e3tvar='e3t',
     fid=None,
-    sdim=3
+    sdim=3,
+    quiet=False
     ):
     """Given a dataset, find the nearest model matches
 
@@ -108,6 +110,8 @@ def matchData(
     :arg int sdim: optionally enter number of spatial dimensions (must be the same for all variables per call);
         defaults to 3
 
+    :arg boolean quiet: if True, suppress non-critical warnings
+
     """
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
@@ -142,7 +146,7 @@ def matchData(
         omask=np.copy(fmesh.variables[maskName])
         navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
         navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
-    data=_gridHoriz(data,omask,navlon,navlat,wrapSearch)
+    data=_gridHoriz(data,omask,navlon,navlat,wrapSearch,quiet=quiet)
     data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
 
@@ -172,7 +176,7 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
     return data
 
-def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False):
+def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False,quiet=False):
     lmask=-1*(omask[0,0,:,:]-1)
     if wrapSearch:
         jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,navlon,navlat,
@@ -192,7 +196,8 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False):
             if isinstance(jj,int):
                 data.loc[(data.Lat==la)&(data.Lon==lo),['j','i']]=jj,ii
             else:
-                print('(Lat,Lon)=',la,lo,' not matched to domain')
+                if not quiet:
+                    print('(Lat,Lon)=',la,lo,' not matched to domain')
     data.drop(data.loc[(data.i==-1)|(data.j==-1)].index, inplace=True)
     if resetIndex==True:
         data.reset_index(drop=True,inplace=True)
@@ -382,7 +387,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     dfmt='%d%b%y'
     wfmt='y%Ym%md%d'
     if nam_fmt=='nowcast':
-        stencil='{0}/SalishSea_'+ftres+'_{1}_{1}_'+ftype+'.nc'
+        stencil='{0}/SalishSea_'+ftres+'_{1}_{2}_'+ftype+'.nc'
     elif nam_fmt=='long':
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
     elif nam_fmt=='wind':
@@ -429,6 +434,26 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         iits=iitn
         ind=ind+1
     return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
+
+def index_model_files_flex(basedir,ftype,start=None,end=None):
+    """
+    See inputs for matchData above.
+    outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
+    Requires file naming convention with start date and end date as YYYYMMDD_YYYYMMDD
+    """
+    paths=glob.glob(os.path.join(basedir,'*','*'+ftype+'*'))
+    t_0=list()
+    t_n=list()
+    for ifl in paths:
+        dates=re.findall('\d{8}',re.search('\d{8}_\d{8}',ifl)[0])
+        t_0.append(dt.datetime.strptime(dates[0],'%Y%m%d'))
+        t_n.append(dt.datetime.strptime(dates[1],'%Y%m%d')+dt.timedelta(days=1))
+    idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n']) 
+    if start is not None and end is not None:
+        ilocs=(idf['t_n']>start)&(idf['t_0']<=end)
+        idf=idf.loc[ilocs,:].copy(deep=True)
+    idf=idf.sort_values(['t_0']).reset_index(drop=True)
+    return idf
 
 
 def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_CTD.sqlite',
@@ -985,7 +1010,9 @@ def varvarScatter(ax,df,obsvar,modvar,colvar,vmin=0,vmax=0,cbar=False,cm=cmo.cm.
     return ps
 
 def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepunits='',
-    cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod','coral','tomato','firebrick','mediumvioletred','magenta')):
+    cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod',
+            'coral','tomato','firebrick','mediumvioletred','magenta'),labels=''):
+    # remember labels must include < and > cases 
     if len(lname)==0:
         lname=sepvar
     ps=list()
@@ -1003,7 +1030,10 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
         iii=sep0<sepvals[ii]
         if np.sum(iii)>0:
             #ll=u'{} < {} {}'.format(lname,sepvals[ii],sepunits).strip()
-            ll=u'{} $<$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            if len(labels)>0:
+                ll=labels[0]
+            else:
+                ll=u'{} $<$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
             p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
             ps.append(p0)
         # between min and max:
@@ -1011,14 +1041,20 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
             iii=np.logical_and(sep0<sepvals[ii],sep0>=sepvals[ii-1])
             if np.sum(iii)>0:
                 #ll=u'{} {} \u2264 {} < {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
-                ll=u'{} {} $\leq$ {} $<$ {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
+                if len(labels)>0:
+                    ll=labels[ii]
+                else:
+                    ll=u'{} {} $\leq$ {} $<$ {} {}'.format(sepvals[ii-1],sepunits,lname,sepvals[ii],sepunits).strip()
                 p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii],label=ll)
                 ps.append(p0)
         # greater than max:
         iii=sep0>=sepvals[ii]
         if np.sum(iii)>0:
             #ll=u'{} \u2265 {} {}'.format(lname,sepvals[ii],sepunits).strip()
-            ll=u'{} $\geq$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
+            if len(labels)>0:
+                ll=labels[ii+1]
+            else:
+                ll=u'{} $\geq$ {} {}'.format(lname,sepvals[ii],sepunits).strip()
             p0,=ax.plot(obs0[iii],mod0[iii],'.',color=cols[ii+1],label=ll)
             ps.append(p0)
     return ps
@@ -1028,6 +1064,61 @@ def _deframe(x):
     if isinstance(x,pd.Series) or isinstance(x,pd.DataFrame):
         x=x.values.flatten()
     return x
+
+def _flatten_nested_dict(tdic0):
+    # tdic argument is nested dictionary of consistent structure
+    def _flatten_nested_dict_inner(tdic,ilist,data):
+        # necessary because mutable defaults instantiated when function is defined;
+        # need different entry point at start 
+        for el in tdic.keys():
+            if isinstance(tdic[el],dict):
+                data=_flatten_nested_dict_inner(tdic[el],ilist+list((el,)),data)
+            else:
+                data.append(ilist+list((el,tdic[el])))
+        return data
+    ilist0=list()
+    data0=list()
+    data0=_flatten_nested_dict_inner(tdic0,ilist0,data0)
+    return data0
+
+def displayStats(statdict,level='Subset',suborder=None):
+    # stats dict starting from variable level
+    cols={'Subset':('Subset','Metric',''),
+          'Variable':('Variable','Subset','Metric',''),
+          'Year':('Year','Variable','Subset','Metric','')}
+    ind={'Subset':['Order','Subset','Metric'],
+         'Variable':['Variable','Order','Subset','Metric'],
+         'Year':['Variable','Subset','Metric']}
+    pcols={'Subset':['Metric'],
+           'Variable':['Metric'],
+           'Year':['Year','Metric']}
+    allrows=_flatten_nested_dict(statdict)
+    tdf=pd.DataFrame(allrows,columns=cols[level])
+    if suborder is not None:
+        subD={suborder[ii]: ii for ii in range(0,len(suborder))}
+        tdf['Order']=[subD[tdf['Subset'][ii]] for ii in range(0,len(tdf['Subset']))]
+    tdf.set_index(ind[level],inplace=True)
+    tbl=pd.pivot_table(tdf,index=ind[level][:-1],columns=pcols[level]).rename_axis(index={'Order':None},columns={'Metric':None}).style.format({
+        'N': '{:d}',
+        'Bias':'{:.3f}',
+        'WSS':'{:.3f}',
+        'RMSE':'{:.3f}'})
+    return tbl,tdf
+
+def displayStatsFlex(statdict,cols,ind,pcols,suborder=None):
+    # stats dict starting from variable level
+    allrows=_flatten_nested_dict(statdict)
+    tdf=pd.DataFrame(allrows,columns=cols)
+    if suborder is not None:
+        subD={suborder[ii]: ii for ii in range(0,len(suborder))}
+        tdf['Order']=[subD[tdf['Subset'][ii]] for ii in range(0,len(tdf['Subset']))]
+    tdf.set_index(ind,inplace=True)
+    tbl=pd.pivot_table(tdf,index=ind[:-1],columns=pcols).rename_axis(index={'Order':None},columns={'Metric':None}).style.format({
+        'N': '{:d}',
+        'Bias':'{:.3f}',
+        'WSS':'{:.3f}',
+        'RMSE':'{:.3f}'})
+    return tbl,tdf
 
 def utc_to_pac(timeArray):
     return [pytz.utc.localize(ii).astimezone(pytz.timezone('Canada/Pacific')) for ii in timeArray]
