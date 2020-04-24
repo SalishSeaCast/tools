@@ -6,9 +6,9 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[LookAtDianeWendysFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
+* ##[LookAtDianeWendysFile.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
 
-* ##[LookatInitialForcingFiles.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
+* ##[LookatInitialForcingFiles.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
 
     This notebook opens NetCDF input files from JPP.
 

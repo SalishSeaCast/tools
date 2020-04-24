@@ -14,9 +14,9 @@
 # limitations under the License.
 
 #Script to correct CGRF pressure to sea level.
-#Assumes atmosphere is a dry ideal gas in hydrostatic balance and has a 
+#Assumes atmosphere is a dry ideal gas in hydrostatic balance and has a
 #constant lapse rate. See this notebook:
-#  http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
+#  https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
 
 # Call like this: python correct_pressure.py pressure_file temperature_file save_directory
 

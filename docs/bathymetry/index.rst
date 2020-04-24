@@ -35,7 +35,7 @@ Full Salish Sea Domain Bathymetry
 
   * Algorithmic smoothing
 
-.. _SalishSeaBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaBathy.ipynb
+.. _SalishSeaBathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/SalishSeaBathy.ipynb
 
 
 Initial Sub-domain Test Bathymetry
@@ -48,13 +48,13 @@ Initial Sub-domain Test Bathymetry
   * Manual smoothing based on depth adjustments at the locations where test runs failed
   * Algorithmic smoothing applied to the entire sub-domain
 
-.. _SalishSeaSubdomainBathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/SalishSeaSubdomainBathy.ipynb
+.. _SalishSeaSubdomainBathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/SalishSeaSubdomainBathy.ipynb
 
 * `netCDF4bathy.ipynb`_: Documents the creation of a netCDF4 bathymetry file from the algorithmic smoothed bathymetry with zlib compression enabled for all variables.
   The resulting file is about 1/6 the size
   (227 kb in contrast to 1.6 Mb)
 
-.. _netCDF4bathy.ipynb: http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/bathymetry/netCDF4bathy.ipynb
+.. _netCDF4bathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/netCDF4bathy.ipynb
 
 
 Bathymetric Attributed Grid (BAG) Datasets

@@ -6,26 +6,26 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[AtmosphereGridSelection.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/AtmosphereGridSelection.ipynb)
+* ##[AtmosphereGridSelection.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/AtmosphereGridSelection.ipynb)
 
     Notebook to Look at Atmosphereic Domains and Choose Ours
 
-* ##[CheckAltitude.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/CheckAltitude.ipynb)
+* ##[CheckAltitude.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/CheckAltitude.ipynb)
 
     This notebook checks that the altitude.py script generates a files that are reasonable.
 
     It also combines the monthly altitude calculation into one file by averaging.
 
-* ##[GetGrib.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/GetGrib.ipynb)
+* ##[GetGrib.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/GetGrib.ipynb)
 
     Notebook to design script to download GRIB2 data from EC webpage
 
-* ##[gribTnetcdf.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)
+* ##[gribTnetcdf.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)
 
     Notebook to convert grib2 files to netCDF files that can be used in NEMO
     Makes use of wgrib2
 
-* ##[ImproveWeightsFile.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/ImproveWeightsFile.ipynb)
+* ##[ImproveWeightsFile.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/ImproveWeightsFile.ipynb)
 
     **Improve Atmospheric Forcing Weights File**
 
@@ -34,16 +34,16 @@ Descriptions below the links are from the first cell of the notebooks
     into a netCDF4 file with zlib compression on variables
     and CF-1.6 conventions conformant attributes.
 
-* ##[InitialGEMCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)
+* ##[InitialGEMCheck.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)
 
     **Initial Check of GEM Products Forcing Data**
 
     This notebook is about initial checks and exploration of the 2.5 km grid GEM products
     atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.
 
-* ##[NegativePrecip.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/NegativePrecip.ipynb)
+* ##[NegativePrecip.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/NegativePrecip.ipynb)
 
-* ##[netCDF4weights-CGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)
+* ##[netCDF4weights-CGRF.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)
 
     **Convert Atmospheric Forcing Weights to netCDF4**
 
@@ -52,14 +52,14 @@ Descriptions below the links are from the first cell of the notebooks
     into a netCDF4 file with zlib compression on variables
     and CF-1.6 conventions conformant attributes.
 
-* ##[NoSnow.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/NoSnow.ipynb)
+* ##[NoSnow.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/NoSnow.ipynb)
 
     **No Snow on the Salish Sea**
 
     Create an annual climatology CGRF-like atmospheric forcing file for NEMO
     that always supplies zero as the solid precipitation value.
 
-* ##[RadiationCheck.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/RadiationCheck.ipynb)
+* ##[RadiationCheck.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/RadiationCheck.ipynb)
 
     This notebook compares the longwave/shortwave radiation from the GEM2.5 model provided by
 
@@ -73,7 +73,7 @@ Descriptions below the links are from the first cell of the notebooks
 
     Plan: Comapre Pramod's radiation variables to Kao Shen's.
 
-* ##[RebaseCGRF.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)
+* ##[RebaseCGRF.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)
 
     **Rebasing CGRF Atmospheric Forcing Files**
 
@@ -103,7 +103,7 @@ Descriptions below the links are from the first cell of the notebooks
 
     [salishsea get_cgrf]: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command
 
-* ##[VerifyAtmosphericForcing.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)
+* ##[VerifyAtmosphericForcing.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)
 
     **Verification of Atmospheric Forcing**
 

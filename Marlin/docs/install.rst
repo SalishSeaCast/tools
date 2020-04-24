@@ -70,10 +70,10 @@ Basic Installation
 Source Code
 ===========
 
-The source code is hosted on Bitbucket: https://bitbucket.org/salishsea/tools/src/tip/Marlin/.
+The source code is hosted on GitHub: https://github.com/SalishSeaCast/tools/blob/master/Marlin/.
 
 
 Reporting Bugs
 ==============
 
-Please report bugs through the Bitbucket project: https://bitbucket.org/salishsea/tools/issues?component=Marlin marked with "Marlin" in the component field.
+Please report bugs through the GitHub project: https://github.com/SalishSeaCast/tools/issues?q=label:Marlin marked with "Marlin" as a label.

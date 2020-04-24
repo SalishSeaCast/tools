@@ -6,11 +6,11 @@ The links below are to static renderings of the notebooks via
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[TestingContourThalweg.ipynb](http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/tools/raw/tip/SalishSeaTools/notebooks/visualisations/TestingContourThalweg.ipynb)  
-    
-    This is a notebook to test the use of salishsea_tools.visualisations.contour_thalweg().  
-      
-    It also provides examples about how to use this function.  
+* ##[TestingContourThalweg.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/SalishSeaTools/notebooks/visualisations/TestingContourThalweg.ipynb)
+
+    This is a notebook to test the use of salishsea_tools.visualisations.contour_thalweg().
+
+    It also provides examples about how to use this function.
 
 
 ##License

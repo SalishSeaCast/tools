@@ -9,7 +9,7 @@ manipulating,
 and visualizing initial conditions and forcing netCDF files.
 Links to statically rendered versions of these notebooks can be found in the :ref:`tools-repo` repo :file:`I_ForcingFiles/` directory README_.
 
-.. _README: https://bitbucket.org/salishsea/tools/src/tip/I_ForcingFiles/
+.. _README: https://github.com/SalishSeaCast/tools/blob/master/I_ForcingFiles/
 
 Many of these notebooks use modules from the :ref:`SalishSeaToolsPackage` so please ensure that you have it installed correctly.
 

@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#A script to calculate the average grid cell height from CGRF atmospheric 
-#forcing files. One month of data should be given at a time. Saves a netcdf 
+#A script to calculate the average grid cell height from CGRF atmospheric
+#forcing files. One month of data should be given at a time. Saves a netcdf
 #file with the averagre grid cell height.
 
-#Assumes atmosphere is a dry ideal gas in hydrostatic balance and has a 
+#Assumes atmosphere is a dry ideal gas in hydrostatic balance and has a
 #constant lapse rate. See this notebook:
-#  http://nbviewer.ipython.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
+#  https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
 
 from __future__ import division
 import netCDF4 as NC
@@ -79,7 +79,7 @@ alt_str= 'altitude_y' +str(year) +'m'+str(m)+'.nc'
 alt_file = NC.Dataset(alt_str, 'w', zlib=True)
 # dataset attributes - can't get this to work
 #nc_tools.init_dataset_attrs(
-#    alt_file, 
+#    alt_file,
 #    title='Average monthly altitude',
 #    notebook='altitude.py',
 #    nc_filepath=alt_str,
