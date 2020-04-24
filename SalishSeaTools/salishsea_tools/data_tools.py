@@ -392,7 +392,7 @@ def get_chs_tides(data_type, stn_id, begin, end, retry_args={
 
     :param int or str stn_id: Tide gauge station number or name.
                               Names use
-                              :py:object:`~salishsea_tools.places.PLACES` to
+                              :py:obj:`~salishsea_tools.places.PLACES` to
                               look up the station number.
 
     :param begin: UTC beginning date or date/time for data request.

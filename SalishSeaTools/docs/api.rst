@@ -64,7 +64,7 @@ These API docs provide function signatures and docstrings derived directly from 
 :py:mod:`ellipse_tools` Module
 ================================
 
-.. automodule:: salishsea_tools.ellipse_tools
+.. automodule:: salishsea_tools.ellipse
     :members:
 
 

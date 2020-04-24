@@ -17,14 +17,14 @@
 
 import numpy as np
 import netCDF4 as nc
-from salishsea_tools import (tidetools)
+from salishsea_tools import tidetools
 from nowcast import analyze
 from nowcast.figures import research_VENUS
 
 
 def ellipse_params(uamp, upha, vamp, vpha):
     """Calculates ellipse parameters based on the amplitude
-        and phase for a tidal constituent.
+    and phase for a tidal constituent.
 
     :arg uamp: u fitted amplitude of the chosen constituent
     :type uamp: :py:class:`numpy.ndarray`
@@ -38,9 +38,9 @@ def ellipse_params(uamp, upha, vamp, vpha):
     :arg vpha: v fitted phase of the chosen constituent
     :type vpha: :py:class:`numpy.ndarray`
 
-    :returns CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
-        The positively and negatively rotating amplitude and phase.
-        As well as the major and minor axis and the axis tilt.
+    :returns: CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
+              The positively and negatively rotating amplitude and phase.
+              As well as the major and minor axis and the axis tilt.
    """
 
     CX = uamp*np.cos(np.pi*upha/180.)
@@ -259,7 +259,7 @@ def get_params_nowcast_15(
         path, nconst,
         depthrange='None',
         depav=False, tidecorr=tidetools.CorrTides):
-    """ This function loads all the data between the start and the end date that
+    """This function loads all the data between the start and the end date that
     contains quater houlry velocities in the netCDF4 nowcast files in the
     depth range. Then masks, rotates and unstaggers the time series. The
     unstaggering causes the shapes of the returned arrays to be 1 less than
@@ -280,22 +280,22 @@ def get_params_nowcast_15(
     :type path: string
 
     :arg depthrange: Depth values of interest in meters as a float for a single
-        depth or a list for a range. A float will find the closest depth that
-        is <= the value given. Default is 'None' for the whole water column
-        (0-441m).
+                     depth or a list for a range. A float will find the closest depth that
+                     is <= the value given. Default is 'None' for the whole water column
+                     (0-441m).
     :type depav: float, string or list.
 
     :arg depav: True will depth average over the whole depth profile given.
-        Default is False.
+                Default is False.
     :type depav: boolean
 
     :arg depth: depth vector corresponding to the depth of the velocities, only
-         requiered if depav=True.
+                required if depav=True.
     :type depth: :py:class:'np.ndarray' or string
 
     :returns: params, dep
-    params is dictionary object of the ellipse parameters for each constituent
-    dep is the depths of the ellipse paramters
+              params is dictionary object of the ellipse parameters for each constituent
+              dep is the depths of the ellipse paramters
     """
 
     u, v, time, dep = ellipse_files_nowcast(
@@ -315,7 +315,7 @@ def get_params_nowcast(
         path, nconst,
         depthrange='None',
         depav=False, tidecorr=tidetools.CorrTides):
-    """ This function loads all the data between the start and the end date that
+    """This function loads all the data between the start and the end date that
     contains hourly velocities in the netCDF4 nowcast files in the specified
     depth range. Then masks, rotates and unstaggers the time series. The
     unstaggering causes the shapes of the returned arrays to be 1 less than
@@ -330,33 +330,33 @@ def get_params_nowcast(
     :type tf: datetime object
 
     :arg i: x index, must have at least 2 values for unstaggering, will loose
-        the first i during the unstaggering in prepare_vel.
+            the first i during the unstaggering in prepare_vel.
     :type i: float or list
 
     :arg j: y index, must have at least 2 values for unstaggering, will loose
-        the first j during the unstaggering in prepare_vel.
+            the first j during the unstaggering in prepare_vel.
     :type j: float or list
 
     :arg path: Defines the path used(eg. nowcast)
     :type path: string
 
     :arg depthrange: Depth values of interest in meters as a float for a single
-        depth or a list for a range. A float will find the closest depth that
-        is <= the value given. Default is 'None' for the whole water column
-        (0-441m).
+                     depth or a list for a range. A float will find the closest depth that
+                     is <= the value given. Default is 'None' for the whole water column
+                     (0-441m).
     :type depav: float, string or list.
 
     :arg depav: True will depth average over the whole depth profile given.
-        Default is False.
+                Default is False.
     :type depav: boolean
 
     :arg depth: depth vector corresponding to the depth of the velocities, only
-         requiered if depav=True.
+                requiered if depav=True.
     :type depth: :py:class:'np.ndarray' or string
 
     :returns: params, dep
-    params is dictionary object of the ellipse parameters for each constituent
-    dep is the depths of the ellipse paramters
+              params is dictionary object of the ellipse parameters for each constituent
+              dep is the depths of the ellipse paramters
     """
 
     u, v, time, dep = ellipse_files_nowcast(
