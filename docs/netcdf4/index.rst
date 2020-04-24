@@ -230,7 +230,7 @@ See that documentation for more details of the intent behind these attributes.
 
 :kbd:`source`
   The method of production of the original dataset.
-  For datasets created via IPython Notebooks or code modules this should be the URL of the source code in the :ref:`tools-repo` on Bitbucket.
+  For datasets created via IPython Notebooks or code modules this should be the URL of the source code in the :ref:`tools-repo` on GitHub.
 
   Example:
 
@@ -242,7 +242,7 @@ See that documentation for more details of the intent behind these attributes.
   Published or web-based references that describe the dataset or methods used to produce it.
   This should include the URL of the dataset in the appropriate repo
   (typically :ref:`NEMO-forcing-repo`)
-  on Bitbucket.
+  on GitHub.
 
   Example:
 
