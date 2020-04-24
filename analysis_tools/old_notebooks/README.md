@@ -1,4 +1,4 @@
-The IPython Notebooks in this directory are notebooks from
+The Jupyter Notebooks in this directory are notebooks from
 initial experiments around visualization of NEMO results.
 The best practices from these notebooks have been collected,
 explained,

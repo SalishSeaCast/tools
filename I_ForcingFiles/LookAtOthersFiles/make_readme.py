@@ -1,4 +1,4 @@
-"""Salish Sea NEMO IPython Notebook collection README generator
+"""Salish Sea NEMO Jupyter Notebook collection README generator
 
 
 Copyright 2013-2016 The Salish Sea MEOPAR Contributors
@@ -27,7 +27,7 @@ repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/LookAtOthersFiles'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
-readme = """This is a collection of IPython Notebooks for
+readme = """This is a collection of Jupyter Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 The links below are to static renderings of the notebooks via

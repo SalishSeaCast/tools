@@ -1,4 +1,4 @@
-This is a collection of IPython Notebooks for
+This is a collection of Jupyter Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 The links below are to static renderings of the notebooks via

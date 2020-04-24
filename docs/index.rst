@@ -28,7 +28,7 @@ Also documented here are:
 
 * How to build and use the :ref:`rebuild-nemo-tool` that we use to combine per-processor results files from NEMO-3.4 runs
 
-* Some of the IPython Notebooks and Python scripts that we use to prepare :ref:`bathymetry <BathymetryNotebooksAndTools>` and :ref:`initial conditions & forcing <InitialConditionsAndForcingNotebooksAndTools>` files for NEMO runs
+* Some of the Jupyter Notebooks and Python scripts that we use to prepare :ref:`bathymetry <BathymetryNotebooksAndTools>` and :ref:`initial conditions & forcing <InitialConditionsAndForcingNotebooksAndTools>` files for NEMO runs
 
 There is also some :ref:`LegacyDocs` from our early days of learning to configure and run NEMO.
 

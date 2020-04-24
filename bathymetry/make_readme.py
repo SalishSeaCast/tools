@@ -31,7 +31,7 @@ TITLE_PATTERN = re.compile('#{1,6} ?')
 def main():
     url = os.path.join(NBVIEWER, REPO, REPO_DIR)
     readme = """\
-The IPython Notebooks in this directory are for manipulating
+The Jupyter Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
 The links below are to static renderings of the notebooks via

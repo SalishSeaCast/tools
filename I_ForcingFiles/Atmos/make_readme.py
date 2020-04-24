@@ -1,4 +1,4 @@
-"""Salish Sea NEMO IPython Notebook collection README generator
+"""Salish Sea NEMO Jupyter Notebook collection README generator
 
 
 Copyright 2013-2016 The Salish Sea MEOPAR Contributors
@@ -27,7 +27,7 @@ repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/Atmos'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
-readme = """This is a collection of IPython Notebooks for creating,
+readme = """This is a collection of Jupyter Notebooks for creating,
 manipulating, and visualizing atmospheric forcing netCDF files.
 
 The links below are to static renderings of the notebooks via

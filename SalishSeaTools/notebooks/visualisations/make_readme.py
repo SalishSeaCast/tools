@@ -1,4 +1,4 @@
-"""Salish Sea NEMO IPython Notebook collection README generator
+"""Salish Sea NEMO Jupyter Notebook collection README generator
 
 
 Copyright 2013-2016 The Salish Sea MEOPAR Contributors
@@ -27,7 +27,7 @@ repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'SalishSeaTools/notebooks/visualisations'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
-readme = """The IPython Notebooks in this directory are made by for testing
+readme = """The Jupyter Notebooks in this directory are made by for testing
 functions in visualisations.py.
 
 The links below are to static renderings of the notebooks via

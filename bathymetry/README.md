@@ -1,4 +1,4 @@
-The IPython Notebooks in this directory are for manipulating
+The Jupyter Notebooks in this directory are for manipulating
 and visualizing bathymetry netCDF files.
 
 The links below are to static renderings of the notebooks via

@@ -1,4 +1,4 @@
-"""Salish Sea NEMO IPython Notebook collection README generator
+"""Salish Sea NEMO Jupyter Notebook collection README generator
 
 
 Copyright 2013-2016 The Salish Sea MEOPAR Contributors
@@ -32,13 +32,13 @@ TITLE_PATTERN = re.compile('#{1,6} ?')
 def main():
     url = os.path.join(NBVIEWER, REPO, REPO_DIR)
     readme = """\
-The IPython Notebooks in this directory provide discussion,
+The Jupyter Notebooks in this directory provide discussion,
 examples, and best practices for plotting various kinds of model results
 from netCDF files. There are code examples in the notebooks and also
 examples of the use of functions from the
 [`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
 package.
-If you are new to the Salish Sea MEOPAR project or to IPython Notebook,
+If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
 in the following order:
 

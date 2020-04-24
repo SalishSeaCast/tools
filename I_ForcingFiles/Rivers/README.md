@@ -1,4 +1,4 @@
-This is a collection of IPython Notebooks for creating,
+This is a collection of Jupyter Notebooks for creating,
 manipulating, and visualizing netCDF files to do with Rivers.
 
 The links below are to static renderings of the notebooks via

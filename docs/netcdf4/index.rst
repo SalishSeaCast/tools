@@ -230,7 +230,7 @@ See that documentation for more details of the intent behind these attributes.
 
 :kbd:`source`
   The method of production of the original dataset.
-  For datasets created via IPython Notebooks or code modules this should be the URL of the source code in the :ref:`tools-repo` on GitHub.
+  For datasets created via Jupyter Notebooks or code modules this should be the URL of the source code in the :ref:`tools-repo` on GitHub.
 
   Example:
 

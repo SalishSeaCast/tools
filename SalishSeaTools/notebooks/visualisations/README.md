@@ -1,4 +1,4 @@
-The IPython Notebooks in this directory are made by for testing
+The Jupyter Notebooks in this directory are made by for testing
 functions in visualisations.py.
 
 The links below are to static renderings of the notebooks via

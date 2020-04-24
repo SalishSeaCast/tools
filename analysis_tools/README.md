@@ -1,10 +1,10 @@
-The IPython Notebooks in this directory provide discussion,
+The Jupyter Notebooks in this directory provide discussion,
 examples, and best practices for plotting various kinds of model results
 from netCDF files. There are code examples in the notebooks and also
 examples of the use of functions from the
 [`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
 package.
-If you are new to the Salish Sea MEOPAR project or to IPython Notebook,
+If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
 in the following order:
 
@@ -28,7 +28,7 @@ Descriptions under the links below are from the first cell of the notebooks
 
     * The [matplotlib](http://matplotlib.org/) library and its `pyplot` and `pylab` interfaces
     * The [`salishsea_tools.viz_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-viz_tools) code module
-    * Making plots appear below the code cells that create them in IPython Notebooks
+    * Making plots appear below the code cells that create them in Jupyter Notebooks
     * Figure and Axes objects
     * Plotting bathymetry depth data as 2-D pseudocolour mesh plots
     * Controlling the size and aspect ratio of plots,
