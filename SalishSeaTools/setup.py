@@ -47,6 +47,7 @@ install_requires = [
     'arrow',
     'bottleneck',
     'cmocean',
+    'f90nml',
     'gsw',
     'matplotlib',
     'netCDF4',

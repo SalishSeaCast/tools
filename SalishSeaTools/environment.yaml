@@ -26,6 +26,7 @@ dependencies:
 - cliff
 - cmocean
 - coverage
+- f90nml
 - gsw
 - ipdb
 - ipython

@@ -11,7 +11,7 @@ basemap==1.2.1
 bleach==3.1.0
 Bottleneck==1.3.1
 cached-property==1.5.1
-certifi==2019.11.28
+certifi==2020.4.5.1
 cffi==1.13.2
 cftime==1.0.4.2
 chardet==3.0.4
@@ -27,6 +27,7 @@ decorator==4.4.1
 defusedxml==0.6.0
 docutils==0.15.2
 entrypoints==0.3
+f90nml==1.1.2
 gsw==3.3.1
 idna==2.8
 imagesize==1.1.0
