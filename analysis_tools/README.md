@@ -15,7 +15,7 @@ in the following order:
 * [Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
 
 The links above and below are to static renderings of the notebooks via
-[nbviewer.ipython.org](https://nbviewer.jupyter.org/).
+[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 

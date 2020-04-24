@@ -2,7 +2,7 @@ This is a collection of IPython Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.ipython.org](http://nbviewer.ipython.org/).
+[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
