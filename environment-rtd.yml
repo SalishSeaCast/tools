@@ -12,5 +12,12 @@ dependencies:
 - matplotlib
 - pip
 - python>=3.6
+
+# RTD packages
+- mock
+- pillow
+- sphinx
+- sphinx_rtd_theme
+
 - pip:
   - nbsphinx
