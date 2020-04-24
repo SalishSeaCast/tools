@@ -61,6 +61,8 @@ autodoc_mock_imports = [
     'arrow',
     'driftwood',
     'driftwood.formatters',
+    'f90nml',
+    'gsw',
     'netCDF4',
     'mpl_toolkits.basemap',
     'pandas',
