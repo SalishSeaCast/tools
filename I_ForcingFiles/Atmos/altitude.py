@@ -21,10 +21,8 @@
 #constant lapse rate. See this notebook:
 #  https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
 
-from __future__ import division
 import netCDF4 as NC
 import numpy as np
-from salishsea_tools import nc_tools
 
 #define the month and year.
 start_day = 1
@@ -51,11 +49,11 @@ def altitude(P,T,p0):
 #an array to store cumulative grid cell height
 zcum =0
 
-for d in xrange(start_day,end_day+1):
+for d in range(start_day,end_day+1):
     #load CGRF data
     m = "%02d" % (month,); da= "%02d" % (d,)
     pstr = 'slp_y'+str(year)+'m' + str(m) +'d'+str(da)+'.nc'
-    print pstr
+    print(pstr)
     Tstr =  't2_y'+str(year)+'m' + str(m) +'d'+str(da)+'.nc'
     C = NC.Dataset(CGRF+pstr,'r')
     press=C.variables['atmpres'][:]
