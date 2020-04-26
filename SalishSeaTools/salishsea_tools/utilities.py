@@ -41,7 +41,7 @@ def findnamelist(namelist, year, month, day,
     directory = myday.format('DDMMMYY').lower()
     mynamelist = glob.glob(os.path.join(pathname, directory, namelist))
     while not mynamelist:
-        myday = myday.replace(days=-1)
+        myday = myday.shift(days=-1)
         directory = myday.format('DDMMMYY').lower()
         mynamelist = glob.glob(os.path.join(pathname, directory, namelist))
     return mynamelist[0]

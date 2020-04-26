@@ -115,7 +115,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     if date_time.hour < abs(avg_hrs):
         grid_weather = nc_tools.dataset_from_path(
             weather_file.with_name(
-                weather_filename_tmpl.format(date_time.replace(days=-1))))
+                weather_filename_tmpl.format(date_time.shift(days=-1))))
         wind_prev_day = nc_tools.uv_wind_timeseries_at_point(
             grid_weather, *windji)
         wind_u = np.concatenate((wind_prev_day.u, wind_u))
@@ -128,7 +128,3 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
     wind_avg = namedtuple('wind_avg', 'u, v')
     return wind_avg(u_avg, v_avg)
-
-
-
-    

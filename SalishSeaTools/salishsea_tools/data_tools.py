@@ -609,7 +609,7 @@ def _build_adcp_query(data_date, node, userid):
         'dataformatid': MAT_FILE_FORMAT,
         'timefrom': data_date.replace(hour=0).format('DD-MMM-YYYY HH:mm:ss'),
         'timeto':
-            data_date.replace(hour=0, days=+1).format('DD-MMM-YYYY HH:mm:ss'),
+            data_date.replace(hour=0).shift(days=+1).format('DD-MMM-YYYY HH:mm:ss'),
         'deviceid': device_id,
         'sensorid': sensor_id,
         'regionid': REGION_ID,
