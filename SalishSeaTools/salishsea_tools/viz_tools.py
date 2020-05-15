@@ -505,8 +505,8 @@ def rotate_vel2(u_in, v_in, coords, origin="grid"):
         cnc = coords
     else:
         cnc = nc.Dataset(coords)
-    glamu = cnc["glamu"][0, ...]
-    gphiu = cnc["gphiu"][0, ...]
+    glamu = cnc["glamu"][0, ...].astype(np.float64)
+    gphiu = cnc["gphiu"][0, ...].astype(np.float64)
 
     # Get the value of R that geo_tools.haversine() uses
     R = geo_tools.haversine(0, 0, 0, 1) / np.deg2rad(1)
