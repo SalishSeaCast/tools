@@ -435,13 +435,14 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         ind=ind+1
     return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
 
-def index_model_files_flex(basedir,ftype,start=None,end=None):
+def index_model_files_flex(basedir,ftype,freq='1d',start=None,end=None):
     """
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
     Requires file naming convention with start date and end date as YYYYMMDD_YYYYMMDD
     """
     paths=glob.glob(os.path.join(basedir,'*','*'+ftype+'*'))
+    paths=[el for el in paths if re.search(freq,el)] # restrict to files with desired output frequency
     t_0=list()
     t_n=list()
     for ifl in paths:
