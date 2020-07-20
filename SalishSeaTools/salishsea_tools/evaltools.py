@@ -435,18 +435,25 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         ind=ind+1
     return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
 
-def index_model_files_flex(basedir,ftype,freq='1d',start=None,end=None):
+def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,end=None):
     """
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
     Requires file naming convention with start date and end date as YYYYMMDD_YYYYMMDD
     """
-    paths=glob.glob(os.path.join(basedir,'*','*'+ftype+'*'))
+    paths=glob.glob(os.path.join(basedir,'???????','*'+ftype+'*')) # assume if there are subdirectories, they must have nowcast yymmmdd format
+    if len(paths)==0: # in case of no subdirectories
+        paths=glob.glob(os.path.join(basedir,'*'+ftype+'*'))
     paths=[el for el in paths if re.search(freq,el)] # restrict to files with desired output frequency
     t_0=list()
     t_n=list()
     for ifl in paths:
-        dates=re.findall('\d{8}',re.search('\d{8}_\d{8}',ifl)[0])
+        if nam_fmt=='nowcast':
+            dates=re.findall('\d{8}',re.search('\d{8}_\d{8}',ifl)[0])
+        elif nam_fmt=='long':
+            dates=re.findall('\d{8}',re.search('\d{8}-\d{8}',ifl)[0])
+        else:
+            raise Exception('option not implemented: nam_fmt=',nam_fmt)
         t_0.append(dt.datetime.strptime(dates[0],'%Y%m%d'))
         t_n.append(dt.datetime.strptime(dates[1],'%Y%m%d')+dt.timedelta(days=1))
     idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n']) 
