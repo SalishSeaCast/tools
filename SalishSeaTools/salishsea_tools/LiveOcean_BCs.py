@@ -21,7 +21,6 @@ import logging
 import os
 
 import gsw
-import mpl_toolkits.basemap as Basemap
 import netCDF4 as nc
 import numpy as np
 import xarray as xr
@@ -309,16 +308,17 @@ def interpolate_to_NEMO_lateral(interps, dataset, NEMOlon, NEMOlat, shape):
               interpolated values
     """
     # LiveOcean grid
-    lonsLO = dataset.lon_rho.values[0, :]
-    latsLO = dataset.lat_rho.values[:, 0]
+    lonsLO = dataset.lon_rho.values.ravel()
+    latsLO = dataset.lat_rho.values.ravel()
     # interpolate each variable
     interpl = {}
     for var in interps.keys():
         var_new = np.zeros((interps[var].shape[0], shape[0], shape[1]))
         for k in range(var_new.shape[0]):
-            var_grid = interps[var][k, :, :]
-            var_new[k, ...] = Basemap.interp(
-                var_grid, lonsLO, latsLO, NEMOlon, NEMOlat
+            var_grid = interps[var][k, :, :].ravel()
+            var_new[k, ...] = interpolate.griddata(
+                (lonsLO, latsLO), var_grid,
+                (NEMOlon, NEMOlat), method='linear'
             )
         interpl[var] = var_new
     return interpl
