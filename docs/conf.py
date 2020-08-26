@@ -63,7 +63,6 @@ autodoc_mock_imports = [
     'driftwood.formatters',
     'f90nml',
     'gsw',
-    'mpl_toolkits.basemap',
     'netCDF4',
     'nowcast',
     'nowcast.figures',
