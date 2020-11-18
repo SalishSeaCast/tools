@@ -52,7 +52,7 @@ Python 3
 ========
 
 The Salish Sea project uses Python 3.
-Your should write and test your code using Python 3.
+You should write and test your code using Python 3.
 See :ref:`AnacondaPythonDistro` for instructions on how to install a Python 3 working environment,
 or :ref:`Python3Enviro` if you want to set up a Python 3 environment within your Anaconda Python 2 installation.
 
