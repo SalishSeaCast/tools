@@ -50,12 +50,18 @@ def put_watershed_into_runoff(
                 flux * river['prop'], river['i'],
                 river['di'], river['j'], river['dj'],
                 river['depth'], runoff, run_depth, area)
-        if rivertype == 'monthly':
+        elif rivertype == 'monthly':
             fill_runoff_array_monthly(
                 flux * river['prop'], river['i'],
                 river['di'], river['j'], river['dj'],
                 river['depth'], runoff, run_depth,
-                run_temp, area)
+                run_temp, area, numtimes=12)
+        elif rivertype == 'daily':
+            fill_runoff_array_monthly(
+                flux * river['prop'], river['i'],
+                river['di'], river['j'], river['dj'],
+                river['depth'], runoff, run_depth,
+                run_temp, area, numtimes=365)
     return runoff, run_depth, run_temp
 
 
@@ -122,20 +128,25 @@ def fill_runoff_array(
 
 def fill_runoff_array_monthly(
         flux, istart, di, jstart, dj,
-        depth_of_flux, runoff, run_depth, run_temp, area):
+        depth_of_flux, runoff, run_depth, run_temp, area, numtimes=12):
     """Fill the monthly runoff array.
     """
     number_cells = di * dj
     total_area = number_cells * area[istart, jstart]
-    for month in range(1, 13):
-        w = flux[month - 1] / total_area * 1000.   # w is in kg/s not m/s
-        runoff[(month - 1), istart:istart + di, jstart:jstart + dj] = w
-        run_depth[(month - 1),
+    for ntime in range(1, numtimes+1):
+        w = flux[ntime - 1] / total_area * 1000.   # w is in kg/s not m/s
+        runoff[(ntime - 1), istart:istart + di, jstart:jstart + dj] = w
+        run_depth[(ntime - 1),
                   istart:istart + di,
                   jstart:jstart + dj] = depth_of_flux
-        run_temp[(month - 1),
-                 istart:istart + di,
-                 jstart:jstart + dj] = rivertemp(month)
+        if numtimes == 12:
+            run_temp[(ntime - 1),
+                     istart:istart + di,
+                     jstart:jstart + dj] = rivertemp(month=ntime)
+        else:
+            run_temp[(ntime - 1),
+                     istart:istart + di,
+                     jstart:jstart + dj] = rivertemp_yday(yearday=ntime)
     return runoff, run_depth, run_temp
 
 
@@ -147,13 +158,26 @@ def check_sum(runoff_orig, runoff_new, flux, area):
     print (new_flux, flux, new_flux/flux)
 
 
-def check_sum_monthly(runoff_orig, runoff_new, flux, area):
+def check_sum_monthly(runoff_orig, runoff_new, flux, area, numtimes=12):
     """Check that the runoff adds up per month to what it should.
     """
     new_flux = (np.sum(runoff_new * area)/1000.
                 -np.sum(runoff_orig * area)/1000.)
-    print (new_flux/12., np.sum(flux)/12., new_flux/np.sum(flux))
+    print (new_flux/numtimes, np.sum(flux)/numtimes, new_flux/np.sum(flux))
 
+
+def rivertemp_yday(yearday):
+    """River temperature, based on Fraser River, see Allen and Wolfe (2013).
+
+       Temperature in NEMO is in Celsius.
+    """
+    if (yearday < 52.8 or yearday > 334.4):
+        river_temp = 2.5
+    elif (yearday < 232.9):
+        river_temp = 2.5 + (yearday - 52.8) * (19.3 - 2.5) / (232.9 - 52.8)
+    else:
+        river_temp = 19.3 + (yearday - 232.9) * (2.5 - 19.3) / (334.4 - 232.9)
+    return river_temp
 
 
 def rivertemp(month):
@@ -175,13 +199,9 @@ def rivertemp(month):
         31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 15,
         31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 15.5]
     yearday = centerday[month - 1]
-    if (yearday < 52.8 or yearday > 334.4):
-        river_temp = 2.5
-    elif (yearday < 232.9):
-        river_temp = 2.5 + (yearday - 52.8) * (19.3 - 2.5) / (232.9 - 52.8)
-    else:
-        river_temp = 19.3 + (yearday - 232.9) * (2.5 - 19.3) / (334.4 - 232.9)
+    river_temp = rivertemp_yday(yearday)
     return river_temp
+
 
 def get_watershed_prop_dict_long_fraser(watershedname):
     """get the proportion that each river occupies in the watershed.
