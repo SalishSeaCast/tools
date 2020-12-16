@@ -51,7 +51,8 @@ def matchData(
     e3tvar='e3t',
     fid=None,
     sdim=3,
-    quiet=False
+    quiet=False,
+    preIndexed=False
     ):
     """Given a dataset, find the nearest model matches
 
@@ -97,6 +98,7 @@ def matchData(
     :arg str meshPath: path to mesh file
 
     :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
+                       for ops vars use 'ops'
 
     :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes nearness of values
 
@@ -112,15 +114,21 @@ def matchData(
 
     :arg boolean quiet: if True, suppress non-critical warnings
 
+    :arg boolean preIndexed: if True, use existing spatial indices; not implemented with all options
+
     """
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
     latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
     # check that required columns are in dataframe:
-    if method == 'ferry':
+    if method == 'ferry' or sdim==2:
         reqsubset=['dtUTC','Lat','Lon']
+        if preIndexed:
+            reqsubset=['dtUTC','i','j']
     else:
         reqsubset=['dtUTC','Lat','Lon','Z']
+        if preIndexed:
+            reqsubset=['dtUTC','i','j','k']
     if not set(reqsubset) <= set(data.keys()):
         raise Exception('{} missing from data'.format([el for el in set(reqsubset)-set(data.keys())],'%s'))
     fkeysVar=list(filemap.keys())
@@ -142,14 +150,27 @@ def matchData(
     # adjustments to data dataframe
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
     data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
-    with nc.Dataset(meshPath) as fmesh:
-        omask=np.copy(fmesh.variables[maskName])
-        navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
-        navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
-    data=_gridHoriz(data,omask,navlon,navlat,wrapSearch,quiet=quiet)
-    data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
+    if maskName=='ops':
+        #if default meshPath, set it to an ops file instead:
+        if meshPath=='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc':
+            meshPath='/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc'
+        with nc.Dataset(meshPath) as fmesh:
+            navlon=np.squeeze(np.copy(fmesh.variables['nav_lon'][:,:]-360))
+            navlat=np.squeeze(np.copy(fmesh.variables['nav_lat'][:,:]))
+        omask=np.expand_dims(np.ones(np.shape(navlon)),axis=(0,1))
+        nemops='GEM2.5'
+    else:
+        with nc.Dataset(meshPath) as fmesh:
+            omask=np.copy(fmesh.variables[maskName])
+            navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
+            navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
+        nemops='NEMO'
+    if not preIndexed:
+        data=_gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,quiet=quiet,nemops=nemops)
+        data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
+    else:
+        data=data.sort_values(by=[ix for ix in ['dtUTC','k','j','i'] if ix in reqsubset]) # preserve list order
     data.reset_index(drop=True,inplace=True)
-
     # set up columns to accept model values
     for ivar in filemap.keys():
         data['mod_'+ivar]=np.full(len(data),np.nan)
@@ -159,15 +180,16 @@ def matchData(
         flist=dict()
         for ift in ftypes:
             flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
-
+    
     if method == 'bin':
-        data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName,sdim)
+        data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName,sdim,preIndexed=preIndexed)
     elif method == 'ferry':
         print('data is matched to mean of upper 3 model levels')
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
     elif method == 'vvlZ':
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
-
+    elif method == 'vvlBin':
+        data= _vvlBin(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
     elif method == 'netmatch':
         data =  _netmatch(data,fid,filemap.keys(),omask,maskName=maskName)
     else:
@@ -176,7 +198,7 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
     return data
 
-def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False,quiet=False):
+def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quiet=False,nemops='NEMO'):
     lmask=-1*(omask[0,0,:,:]-1)
     if wrapSearch:
         jj,ii = geo_tools.closestPointArray(data['Lon'].values,data['Lat'].values,navlon,navlat,
@@ -189,7 +211,7 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,resetIndex=False,quiet=False)
         for la,lo in np.unique(data.loc[:,['Lat','Lon']].values,axis=0):
             try:
                 jj, ii = geo_tools.find_closest_model_point(lo, la, navlon,
-                                            navlat, land_mask = lmask,checkTol=True)
+                                            navlat, grid=nemops,land_mask = lmask,checkTol=True)
             except:
                 print('lo:',lo,'la:',la)
                 raise
@@ -281,37 +303,114 @@ def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
         #    fid.close()
     return data
 
-def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3):
+def _vvlBin(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
+    data['k']=-1*np.ones((len(data))).astype(int)
+    ifte3t=filemap[e3tvar]
+    pere3t=fdict[ifte3t]
+    pers=np.unique([i for i in fdict.values()])
+    # reverse fdict
+    fdict_r=dict()
+    for iii in pers:
+        fdict_r[iii]=list()
+    for ikey in fdict:
+        fdict_r[fdict[ikey]].append(ikey)
+    # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
+    # also, we are only dealing with data saved at same interval as e3t
+    test=fdict_r.copy()
+    test.pop(pere3t)
+    if len(test)>0: # loop through and print eliminated variables
+        print('Warning: variables excluded because save interval mismatched with e3t:')
+        for aa in test:
+            for bb in fdict_r[aa]:
+                print(filemap_r[bb])
+
+    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0]) 
+                        for aa in data['dtUTC']]
+    t2=[flist[ifte3t].loc[aa,['t_0']].values[0] for aa in data['indf'].values]
+    data['ih']=[int(np.floor((aa-bb).total_seconds()/(pere3t*3600))) for aa,bb in zip(data['dtUTC'],t2)]
+    # now get appropriate e3t for each set of data points:
+    for indf,grp0 in data.groupby(['indf']):
+        with nc.Dataset(flist[ifte3t].loc[indf,['paths']].values[0]) as fe3t:
+            ff=dict()
+            for ift in fdict_r[pere3t]:
+                ff[ift]=nc.Dataset(flist[ift].loc[indf,['paths']].values[0])
+            for (ih,jj,ii),grp1 in grp0.groupby(['ih','j','i']):
+                e3t=fe3t.variables[e3tvar][ih,:,jj,ii][tmask[0,:,jj,ii]==1]
+                zl=np.zeros((len(e3t),2))
+                zl[1:,0]=np.cumsum(e3t[:-1])
+                zl[:,1]=np.cumsum(e3t)
+                ztar=grp1['Z'].values
+                for ift in fdict_r[pere3t]:
+                    for iz, iind in zip(ztar,grp1.index):
+                        ik=[iii for iii,hhh in enumerate(zl) if hhh[1]>iz][0] # return first index where latter endpoint is larger
+                        # assign values for each var assoc with ift
+                        if (not np.isnan(ik)) and (tmask[0,ik,jj,ii]==1):
+                            data.loc[iind,['k']]=int(ik)
+                            for ivar in filemap_r[ift]:
+                                data.loc[iind,['mod_'+ivar]]=ff[ift].variables[ivar][ih,ik,jj,ii]
+            for ift in fdict_r[pere3t]:
+                ff[ift].close()
+    return data
+
+def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIndexed=False):
     # loop through data, openening and closing model files as needed and storing model data
     if len(data)>5000:
         pprint=True
         lendat=len(data)
     else: 
         pprint= False
-    data['k']=-1*np.ones((len(data))).astype(int)
+    if not preIndexed:
+        data['k']=-1*np.ones((len(data))).astype(int)
     for ind, row in data.iterrows():
         if (pprint==True and ind%5000==0):
             print('progress: {}%'.format(ind/lendat*100))
         if ind==0: # load first files
             fid=dict()
             fend=dict()
+            torig=dict()
             for ift in ftypes:
                 fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
-            torig=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') # assumes same for all files in run
+                if ift=='ops': # specially handle time origin for ops forcing files 
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%b-%d %H:%M:%S') # assumes same for all files in run
+                else: # handle NEMO files
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') # assumes same for all files in run
         for ift in ftypes:
             if row['dtUTC']>=fend[ift]:
                 fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
             # now read data
             # find time index
-            ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig)
+            if ift=='ops': # special handling for ops atm forcing files
+                ih=_getTimeInd_bin_ops(row['dtUTC'],fid[ift],torig[ift])
+            else: # NEMO files
+                try:
+                    ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+                except:
+                    print(row['dtUTC'],ift,torig[ift])
+                    tlist=fid[ift].variables['time_centered_bounds'][:,:]
+                    for el in tlist:
+                        print(el)
+                    print((row['dtUTC']-torig[ift]).total_seconds())
+                    print(tlist[-1,1])
+                    raise
             # find depth index if vars are 3d
             if sdim==3:
-                ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
-                # assign values for each var assoc with ift
-                if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
-                    data.loc[ind,['k']]=int(ik)
-                    for ivar in filemap_r[ift]:
-                        data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+                if preIndexed:
+                    ik=row['k']
+                    # assign values for each var assoc with ift
+                    if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
+                        for ivar in filemap_r[ift]:
+                            try:
+                                data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
+                            except:
+                                print(ind,ift,ih,ik,row['j'],row['i'])
+                                raise
+                else:
+                    ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
+                    # assign values for each var assoc with ift
+                    if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
+                        data.loc[ind,['k']]=int(ik)
+                        for ivar in filemap_r[ift]:
+                            data.loc[ind,['mod_'+ivar]]=fid[ift].variables[ivar][ih,ik,row['j'],row['i']]
             elif sdim==2:
                 # assign values for each var assoc with ift
                 if (gridmask[0,0,row['j'],row['i']]==1):
@@ -337,7 +436,7 @@ def _netmatch(data,fid,varlist,gridmask,maskName='tmask'):
                     data.loc[ind,['mod_'+ivar]]=fid.variables[ivar][0,ik,row['j'],row['i']]
     return data
 
-def _nextfile_bin(ift,idt,ifind,fid,fend,flist):
+def _nextfile_bin(ift,idt,ifind,fid,fend,flist): # replace flist[ift] with ifind and get rid of flist argument
     if ift in fid.keys():
         fid[ift].close()
     frow=flist[ift].loc[(ifind.t_0<=idt)&(ifind.t_n>idt)]
@@ -350,16 +449,24 @@ def _getTimeInd_bin(idt,ifid,torig):
     ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
     return ih
 
+def _getTimeInd_bin_ops(idt,ifid,torig):
+    tlist=ifid.variables['time_counter'][:].data
+    tinterval=ifid.variables['time_counter'].time_step
+    #ih=[iii for iii,hhh in enumerate(tlist) if (hhh+tinterval/2)>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
+    ## NEMO is reading in files as if they were on the half hour so do the same:
+    ih=[iii for iii,hhh in enumerate(tlist) if (hhh+tinterval)>(idt-torig).total_seconds()][0] # return first index where latter endpoint is larger
+    return ih
+
 def _getZInd_bin(idt,ifid=None,boundsFlag=False,maskName='tmask'):
     if boundsFlag==True:
         if maskName=='tmask':
-            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc') as ftemp:
+            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc') as ftemp:
                 tlist=ftemp.variables['deptht_bounds'][:,:]
         elif maskName=='umask':
-            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc') as ftemp:
+            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc') as ftemp:
                 tlist=ftemp.variables['depthu_bounds'][:,:]
         elif maskName=='vmask':
-            with nc.Dataset('/results2/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc') as ftemp:
+            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc') as ftemp:
                 tlist=ftemp.variables['depthv_bounds'][:,:]
         else:
             raise('choice not coded')
@@ -392,6 +499,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
     elif nam_fmt=='wind':
        stencil='ops_{3}.nc'
+    elif nam_fmt=='forcing': # use ftype as prefix
+       stencil=ftype+'_{3}.nc'
     else:
         raise Exception('nam_fmt '+nam_fmt+' is not defined')
     iits=start
@@ -400,8 +509,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     nday=0
     while True:
         try:
-            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),
-                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
+            iifstr=glob.glob(os.path.join(basedir,stencil.format(iits.strftime(dfmt).lower(),
+                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt))),recursive=True)[0]
             if nday>0:
                 print('first file starts on ',iits)
             break # file has been found
@@ -411,8 +520,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
             iite=iits+dt.timedelta(days=(flen-1))
             if nday==flen:
                 raise Exception('no file found including date '+str(start)+\
-                        ' of form:\n '+basedir+stencil.format(iits.strftime(dfmt).lower(),
-                        iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
+                        ' of form:\n '+os.path.join(basedir,stencil.format(iits.strftime(dfmt).lower(),
+                        iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt))))
     ind=0
     inds=list()
     paths=list()
@@ -422,11 +531,11 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
         try:
-            iifstr=glob.glob(basedir+stencil.format(iits.strftime(dfmt).lower(),
-                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)),recursive=True)[0]
+            iifstr=glob.glob(os.path.join(basedir,stencil.format(iits.strftime(dfmt).lower(),
+                    iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt))),recursive=True)[0]
         except IndexError:
-            raise Exception('file does not exist:  '+basedir+stencil.format(iits.strftime(dfmt).lower(),
-                iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt)))
+            raise Exception('file does not exist:  '+os.path.join(basedir,stencil.format(iits.strftime(dfmt).lower(),
+                iits.strftime(ffmt),iite.strftime(ffmt),iits.strftime(wfmt))))
         inds.append(ind)
         paths.append(iifstr)
         t_0.append(iits)
@@ -522,9 +631,9 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
                 join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
-                                                                     or_(StationTBL.StartYear<end_y,
-                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth<start_m),
-                                                                         and_(StationTBL.StartYear==start_y,StationTBL.StartMonth==start_m, StationTBL.StartDay<=start_d)),
+                                                                        or_(StationTBL.StartYear<end_y,
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth<end_m),
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<=end_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
                                                                     StationTBL.Include==True,ObsTBL.Include==True,CalcsTBL.Include==True))
