@@ -497,6 +497,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
         stencil='{0}/SalishSea_'+ftres+'_{1}_{2}_'+ftype+'.nc'
     elif nam_fmt=='long':
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
+    elif nam_fmt=='sockeye':
+       stencil=f'SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
     elif nam_fmt=='wind':
        stencil='ops_{3}.nc'
     elif nam_fmt=='forcing': # use ftype as prefix
@@ -592,7 +594,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     # definitions
     # if db does not exist, exit
     if not os.path.isfile(os.path.join(basedir, dbname)):
-        raise Exception('ERROR: {}.sqlite does not exist'.format(dbname))
+        raise Exception(f'ERROR: {dbname} does not exist in {basedir}')
     engine = create_engine('sqlite:///' + basedir + dbname, echo = False)
     Base = automap_base()
     # reflect the tables in salish.sqlite:
