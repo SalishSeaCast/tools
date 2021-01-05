@@ -1307,3 +1307,10 @@ def printstats(datadf,obsvar,modvar):
     N, modmean, obsmean, bias, RMSE, WSS = stats(datadf.loc[:,[obsvar]],datadf.loc[:,[modvar]])
     print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
     return
+
+def datetimeToYD(dtin0):
+    if type(idt)==dt.datetime:
+        yd=(idt-dt.datetime(idt.year-1,12,31)).days
+    else: # assume array or pandas, or acts like it
+        yd=[(ii-dt.datetime(ii.year-1,12,31)).days for ii in idt]
+    return yd
