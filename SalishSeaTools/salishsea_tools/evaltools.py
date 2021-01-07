@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 import cmocean as cmo
 import warnings
 import re
+import f90nml
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
@@ -1308,9 +1309,23 @@ def printstats(datadf,obsvar,modvar):
     print('  N: {}\n  bias: {}\n  RMSE: {}\n  WSS: {}'.format(N,bias,RMSE,WSS))
     return
 
-def datetimeToYD(dtin0):
+def datetimeToYD(idt):
     if type(idt)==dt.datetime:
         yd=(idt-dt.datetime(idt.year-1,12,31)).days
     else: # assume array or pandas, or acts like it
         yd=[(ii-dt.datetime(ii.year-1,12,31)).days for ii in idt]
     return yd
+
+def getChlNRatio(nmlfile='namelist_smelt_cfg',basedir=None,nam_fmt=None,idt=dt.datetime(2015,1,1)):
+    if not ((basedir and nam_fmt) or os.path.isfile(nmlfile)):
+        raise Exception('nmlfile must contain full namelist path or basedir and nam_fmt must be defined')
+    if basedir:
+        if nam_fmt=='nowcast':
+            nmlfile=os.path.join(basedir,idt.strftime('%d%b%y').lower(),nmlfile)
+        elif nam_fmt=='long':
+            nmlfile=os.path.join(basedir,nmlfile)
+        else:
+            raise Exception('Invalid nam_fmt')
+    with open(nmlfile) as nmlf:
+        nml=f90nml.read(nmlf)
+    return nml['nampisprod']['zz_rate_si_ratio_diat']
