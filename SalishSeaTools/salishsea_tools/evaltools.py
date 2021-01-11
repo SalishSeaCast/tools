@@ -31,6 +31,19 @@ import cmocean as cmo
 import warnings
 import re
 import f90nml
+import sys
+
+# Check which Excel reader engine is available, if any, and set variable excelEngine
+try:
+    import openpyxl
+    excelEngine='openpyxl'
+except ImportError as iE:
+    try:
+        import xlrd
+        excelEngine='xlrd'
+    except ImportError as iE:
+        excelEngine=None
+        warnings.warn("Neither Python Excel module ('openpyxl','xlrd') found",UserWarning)
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
@@ -759,7 +772,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     if datelims[0].year<2016:
         # load 2015
         f2015 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheet_name = '2015 N+P+Si',dtype={'date (dd/mm/yyyy)':str})
+                         sheet_name = '2015 N+P+Si',dtype={'date (dd/mm/yyyy)':str},engine=excelEngine)
         f2015=f2015.drop(f2015.loc[(f2015['lon']<-360)|(f2015['lon']>360)].index)
         f2015 = f2015.dropna(subset = ['date (dd/mm/yyyy)', 'Time (Local)', 'lat', 'lon', 'depth'], how='any')
         ds=f2015['date (dd/mm/yyyy)'].values
@@ -807,7 +820,8 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     if (datelims[0].year<2017) and (datelims[1].year>2015):
         # load 2016
         f2016N = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheet_name = '2016 N+P',dtypes={'NO3+NO':str,'PO4':str},na_values=('nan','NaN','30..09'))
+                         sheet_name = '2016 N+P',dtype={'NO3+NO':str,'PO4':str},na_values=('nan','NaN','30..09'),
+                         engine=excelEngine)
         f2016N = f2016N.drop(f2016N.keys()[11:], axis=1)
         f2016N['NO23']=[_lt0convert(ii) for ii in f2016N['NO3+NO']]
         f2016N['PO4_2']=[_lt0convert(ii) for ii in f2016N['PO4']]
@@ -822,7 +836,8 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
         f2016N.rename(columns={'PO4_2':'PO4','Latitude':'Lat','Longitude':'Lon','Depth':'Z'},inplace=True)
         f2016N_g=f2016N.groupby(['Station','Lat','Lon','dtUTC','Z'],as_index=False)
         f2016N_m=f2016N_g.mean()
-        f2016Si = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',sheet_name = '2016 SiO2')
+        f2016Si = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
+                                sheet_name = '2016 SiO2',engine=excelEngine)
         f2016Si = f2016Si.drop(f2016Si.keys()[9:], axis=1)
         f2016Si = f2016Si.dropna(subset = ['DDMMYYYY', 'Time (Local)', 'Latitude', 'Longitude', 'Depth'], how='any')
         ds=f2016Si['DDMMYYYY']
@@ -870,8 +885,8 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     if (datelims[1].year>2016):
         # load 2017
         f2017 = pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx',
-                         sheet_name = '2017 N+P+Si',skiprows=3,dtypes={'Date (dd/mm/yyyy)':dt.date,'Time (Local)':dt.time,
-                                                                      'NO3+NO':str,'PO4':str,'Si':str})
+                         sheet_name = '2017 N+P+Si',skiprows=3,dtype={'Date (dd/mm/yyyy)':dt.date,'Time (Local)':dt.time,
+                                                                      'NO3+NO':str,'PO4':str,'Si':str},engine=excelEngine)
         f2017['NO23']=[_lt0convert(ii) for ii in f2017['NO3+NO']]
         f2017['PO4_2']=[_lt0convert(ii) for ii in f2017['PO4']]
         f2017['Si_2']=[_lt0convert(ii) for ii in f2017['Si']]
@@ -894,7 +909,8 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
         if loadChl:
             # load 2017 chl
             Chl2017=pd.read_excel('/ocean/eolson/MEOPAR/obs/PSFCitSci/PSF 2017 Chla_Data_Final_v-January 22-2018_CN_edits.xlsx',
-                                  sheet_name='avg-mean-cv%',skiprows=15,usecols=[1,3,4,5,7,9,11],names=['Date','Station','Time','Z0','Chl','Qflag','Phaeo'])
+                                  sheet_name='avg-mean-cv%',skiprows=15,usecols=[1,3,4,5,7,9,11],
+                                  names=['Date','Station','Time','Z0','Chl','Qflag','Phaeo'],engine=excelEngine)
             Chl2017.dropna(subset=['Station','Date','Time','Z0'],how='any',inplace=True)
             Chl2017.dropna(subset=['Chl','Phaeo'],how='all',inplace=True)
             Chl2017.drop(Chl2017.loc[Chl2017.Qflag>3].index,axis=0,inplace=True)
@@ -1001,7 +1017,7 @@ def loadHakai(datelims=(),loadCTD=False):
     end_date=datelims[1]    
 
     f0 = pd.read_excel('/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/2018-09-11_144804_HakaiData_nutrients.xlsx',
-                     sheet_name = 'Hakai Data')
+                     sheet_name = 'Hakai Data',engine=excelEngine)
     f0.drop(['ACTION','Lat', 'Long', 'Collection Method', 'Installed', 'Lab Technician', 'NH4+', 'NO2+NO3 (ug/L)',
            'no2_no3_units', 'TP', 'TDP', 'TN', 'TDN', 'SRP', 'Project Specific ID', 'Hakai ID', 'Source',
            'po4pfilt', 'no3nfilt', 'po4punfl', 'no3nunfl', 'nh4nunfl', 'NH4+ Flag',
