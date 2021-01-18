@@ -648,10 +648,11 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     CT=case([(CalcsTBL.Temperature_Primary_CT!=None, CalcsTBL.Temperature_Primary_CT)], else_=
              case([(CalcsTBL.Temperature_Secondary_CT!=None, CalcsTBL.Temperature_Secondary_CT)], else_=CalcsTBL.Temperature_CT))
     ZD=case([(ObsTBL.Depth!=None,ObsTBL.Depth)], else_= CalcsTBL.Z)
+    FL=case([(ObsTBL.Fluorescence_URU_Seapoint!=None,ObsTBL.Fluorescence_URU_Seapoint)], else_= ObsTBL.Fluorescence_URU_Wetlabs)
     if len(datelims)<2:
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
-                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT')).\
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT'),FL.label('Fluor')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
@@ -665,7 +666,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
         end_d=datelims[1].day
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
-                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT')).\
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT'),FL.label('Fluor')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
