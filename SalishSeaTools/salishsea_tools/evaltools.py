@@ -638,9 +638,9 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     Base.prepare(engine, reflect=True)
     # mapped classes have been created
     # existing tables:
-    StationTBL=Base.classes.StationTBL
-    ObsTBL=Base.classes.ObsTBL
-    CalcsTBL=Base.classes.CalcsTBL
+    StationTBL=Base.classes.CTDStationTBL
+    ObsTBL=Base.classes.CTDObsTBL
+    CalcsTBL=Base.classes.CTDCalcsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
              case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
@@ -708,10 +708,9 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     Base.prepare(engine, reflect=True)
     # mapped classes have been created
     # existing tables:
-    StationTBL=Base.classes.StationTBL
-    ObsTBL=Base.classes.ObsTBL
-    CalcsTBL=Base.classes.CalcsTBL
-    JDFLocsTBL=Base.classes.JDFLocsTBL
+    StationTBL=Base.classes.BOTStationTBL
+    ObsTBL=Base.classes.BOTObsTBL
+    CalcsTBL=Base.classes.BOTCalcsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_Bottle_SA!=None, CalcsTBL.Salinity_Bottle_SA)], else_=
              case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
@@ -1143,11 +1142,18 @@ def stats(obs0,mod0):
     obs=obs0[iii]
     mod=mod0[iii]
     N=len(obs)
-    modmean=np.mean(mod)
-    obsmean=np.mean(obs)
-    bias=modmean-obsmean
-    vRMSE=RMSE(obs,mod)
-    vWSS=WSS(obs,mod)
+    if N>0:
+        modmean=np.mean(mod)
+        obsmean=np.mean(obs)
+        bias=modmean-obsmean
+        vRMSE=RMSE(obs,mod)
+        vWSS=WSS(obs,mod)
+    else:
+        modmean=np.nan
+        obsmean=np.nan
+        bias=np.nan
+        vRMSE=np.nan
+        vWSS=np.nan
     return N, modmean, obsmean, bias, vRMSE, vWSS
 
 def varvarScatter(ax,df,obsvar,modvar,colvar,vmin=0,vmax=0,cbar=False,cm=cmo.cm.thermal,args={}):
