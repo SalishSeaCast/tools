@@ -503,13 +503,13 @@ def _getZInd_bin(idt,ifid=None,boundsFlag=False,maskName='tmask'):
         ih=np.nan
     return ih
 
-def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
+def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     """
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
     where paths are all the model output files of a given type in the timer interval (start,end)
     """
-    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None'):
+    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None',None):
         print('ftype={}, are you sure? (if yes, add to list)'.format(ftype))
     if tres==24:
         ftres='1d'
@@ -525,6 +525,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     elif nam_fmt=='sockeye':
        stencil=f'SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
     elif nam_fmt=='wind':
+       stencil='ops_{3}.nc'
+    elif nam_fmt=='ops':
        stencil='ops_{3}.nc'
     elif nam_fmt=='forcing': # use ftype as prefix
        stencil=ftype+'_{3}.nc'
