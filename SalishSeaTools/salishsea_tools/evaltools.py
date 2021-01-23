@@ -324,13 +324,14 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
                     mask=gridmask[0,ik_u:(ik_l+1),row['j'],row['i']]
                     meanvar=np.sum(var*e3t*mask)/np.sum(e3t*mask)
                     data.loc[ind,['mod_'+ivar]]=meanvar
-                    print(f"Warning: lower limit is not an ocean value:",
-                         " i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
-                         "Lon={row['Lon']},dtUTC={row['dtUTC']}")
+                    if gridmask[0,ik_l,row['j'],row['i']]==0:
+                        print(f"Warning: lower limit is not an ocean value:",
+                             f" i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
+                             f"Lon={row['Lon']},dtUTC={row['dtUTC']}")
             else:
                 print(f"Warning: upper limit is not an ocean value:",
-                     " i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
-                     "Lon={row['Lon']},dtUTC={row['dtUTC']}")
+                     f" i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
+                     f"Lon={row['Lon']},dtUTC={row['dtUTC']}")
     return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIndexed=False):
