@@ -102,6 +102,9 @@ def matchData(
         'vvlBin' - same as 'bin' but consider tidal change in vertical grid
         'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
         'ferry' - match observations to mean of upper 3 model layers 
+        'vertNet' - match observations to mean over a vertical range defined by 
+                    Z_upper and Z_lower; first try will include entire cell containing end points
+                    and use e3t_0 rather than time-varying e3t
 
     :arg str meshPath: path to mesh file; defaults to None, in which case set to:
             '/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc' if maskName is 'ops'
@@ -138,6 +141,10 @@ def matchData(
         reqsubset=['dtUTC','Lat','Lon']
         if preIndexed:
             reqsubset=['dtUTC','i','j']
+    if method == 'vertNet':
+        reqsubset=['dtUTC','Lat','Lon','Z_upper','Z_lower']
+        if preIndexed:
+            reqsubset=['dtUTC','i','j','Z_upper','Z_lower']
     else:
         reqsubset=['dtUTC','Lat','Lon','Z']
         if preIndexed:
@@ -184,6 +191,10 @@ def matchData(
             omask=np.copy(fmesh.variables[maskName])
             navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
             navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
+            if method == 'vertNet':
+                e3t0=np.squeeze(np.copy(fmesh.variables['e3t_0'][0,:,:,:]))
+                if maskName != 'tmask':
+                    print('Warning: Using tmask thickness for variable on different grid')
         nemops='NEMO'
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
@@ -214,6 +225,8 @@ def matchData(
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
     elif method == 'vvlBin':
         data= _vvlBin(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
+    elif method == 'vertNet':
+        data = _vertNetmatch(data,flist,ftypes,filemap_r,omask,e3t0,maskName)
     else:
         print('option '+method+' not written yet')
         return
@@ -254,6 +267,71 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quie
         data.reset_index(drop=True,inplace=True)
     return data
 
+def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
+    """ basic vertical matching of model output to data
+        returns model value from model grid cell that would contain the observation point with
+        no interpolation; no consideration of the changing of grid thickenss with the tides (vvl)
+        strategy: loop through data, openening and closing model files as needed and storing model data
+    """
+    if len(data)>5000:
+        pprint=True
+        lendat=len(data)
+    else: 
+        pprint= False
+    # set up columns to hold indices for upper and lower end of range to average over
+    data['k_upper']=-1*np.ones((len(data))).astype(int)
+    data['k_lower']=-1*np.ones((len(data))).astype(int)
+    for ind, row in data.iterrows():
+        if (pprint==True and ind%5000==0):
+            print('progress: {}%'.format(ind/lendat*100))
+        if ind==0: # special case for start of loop; load first files
+            fid=dict()
+            fend=dict()
+            torig=dict()
+            for ift in ftypes:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+                # handle NEMO files time reference
+                torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') 
+        # loop through each file type to extract data from the appropriate time and location
+        for ift in ftypes:
+            if row['dtUTC']>=fend[ift]:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+            # now read data
+            # find time index
+            try:
+                ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+            except:
+                print(row['dtUTC'],ift,torig[ift])
+                tlist=fid[ift].variables['time_centered_bounds'][:,:]
+                for el in tlist:
+                    print(el)
+                print((row['dtUTC']-torig[ift]).total_seconds())
+                print(tlist[-1,1])
+                raise
+            # find depth indices (assume they may be reversed)
+            z_l=max(row['Z_upper'],row['Z_lower'])
+            z_u=min(row['Z_upper'],row['Z_lower'])
+            ik_l=_getZInd_bin(z_l,fid[ift],maskName=maskName)
+            ik_u=_getZInd_bin(z_u,fid[ift],maskName=maskName)
+            # assign values for each var assoc with ift
+            if (not np.isnan(ik_l)) and (not np.isnan(ik_u)) and \
+                         (gridmask[0,ik_u,row['j'],row['i']]==1):
+                data.loc[ind,['k_upper']]=int(ik_u)
+                data.loc[ind,['k_lower']]=int(ik_l)
+                for ivar in filemap_r[ift]:
+                    var=fid[ift].variables[ivar][ih,ik_u:(ik_l+1),row['j'],row['i']]
+                    e3t=e3t0[ik_u:(ik_l+1),row['j'],row['i']]
+                    mask=gridmask[0,ik_u:(ik_l+1),row['j'],row['i']]
+                    meanvar=np.sum(var*e3t*mask)/np.sum(e3t*mask)
+                    data.loc[ind,['mod_'+ivar]]=meanvar
+                    print(f"Warning: lower limit is not an ocean value:",
+                         " i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
+                         "Lon={row['Lon']},dtUTC={row['dtUTC']}")
+            else:
+                print(f"Warning: upper limit is not an ocean value:",
+                     " i={row['i']}, j={row['j']}, k_upper={k_upper},Lat={row['Lat']},",
+                     "Lon={row['Lon']},dtUTC={row['dtUTC']}")
+    return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIndexed=False):
     """ basic vertical matching of model output to data
