@@ -321,13 +321,14 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
                 for ivar in filemap_r[ift]:
                     var=fid[ift].variables[ivar][ih,ik_u:(ik_l+1),row['j'],row['i']]
                     e3t=e3t0[ik_u:(ik_l+1),row['j'],row['i']]
-                    mask=gridmask[0,ik_u:(ik_l+1),row['j'],row['i']]
-                    meanvar=np.sum(var*e3t*mask)/np.sum(e3t*mask)
+                    imask=gridmask[0,ik_u:(ik_l+1),row['j'],row['i']]
+                    meanvar=np.sum(var*e3t*imask)/np.sum(e3t*imask)
                     data.loc[ind,['mod_'+ivar]]=meanvar
                     if gridmask[0,ik_l,row['j'],row['i']]==0:
                         print(f"Warning: lower limit is not an ocean value:",
-                             f" i={row['i']}, j={row['j']}, k_upper={ik_u}, k_lower={ik_l}, Lat={row['Lat']},",
-                             f"Lon={row['Lon']},dtUTC={row['dtUTC']}")
+                             f" i={row['i']}, j={row['j']}, k_upper={ik_u}, k_lower={ik_l},",
+                             f"k_seafloor={np.sum(imask)}",
+                             f"Lon={row['Lon']}, Lat={row['Lat']}, dtUTC={row['dtUTC']}")
             else:
                 print(f"Warning: upper limit is not an ocean value:",
                      f" i={row['i']}, j={row['j']}, k_upper={ik_u},Lat={row['Lat']},",
