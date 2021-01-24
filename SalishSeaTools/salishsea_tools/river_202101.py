@@ -21,13 +21,46 @@ For Bathymetry 201702
 
 prop_dict = {}
 # dictionary of rivers in Howe watershed
+# depth at First Narrows, Fig 4.5 Isachsen thesis
 prop_dict['howe'] = {
     'Squamish': {
-        'prop': 0.9, 'i': 534, 'j': 384, 'di': 1, 'dj': 2, 'depth': 2,
+        'prop': 0.706947808647832, 'i': 534, 'j': 384, 'di': 1, 'dj': 2, 'depth': 2,
             },
-    'Burrard': {
-        'prop': 0.1, 'i': 457, 'j': 343, 'di': 3, 'dj': 1, 'depth': 3,
-            }}
+    'Jericho': {'prop': 0.002474317330267412, 'i': 453, 'j': 329, 'di': 1, 'dj': 1, 'depth': 1},
+    'FalseCreek': {'prop': 0.005054676831831999, 'i': 450, 'j': 337, 'di': 1, 'dj': 1, 'depth': 1},
+    'FirstNarrows': {'prop': 0.1294681892089998, 'i': 457, 'j': 343, 'di': 1, 'dj': 1, 'depth': 8},
+    'Capilano': {'prop': 0.00918474034551144, 'i': 458, 'j': 343, 'di': 1, 'dj': 1, 'depth': 1},
+    'Lawson': {'prop': 0.0013338988915802515, 'i': 461, 'j': 341, 'di': 1, 'dj': 1, 'depth': 1},
+    'Marr': {'prop': 0.0011794866070598039, 'i': 464, 'j': 338, 'di': 1, 'dj': 1, 'depth': 1},
+    'Rodgers': {'prop':0.0009074233240685963, 'i': 465, 'j': 337, 'di': 2, 'dj': 1, 'depth': 1},
+    'Westmount': {'prop': 0.00044693984618303996, 'i': 467, 'j': 336, 'di': 1, 'dj': 1, 'depth': 1},
+    'Cypress': {'prop': 0.0029598788514702654, 'i': 469, 'j': 331, 'di': 1, 'dj': 1, 'depth': 1},
+    'Eagle': {'prop': 0.0018306227466038597, 'i': 474, 'j': 329, 'di': 1, 'dj': 1, 'depth': 1},
+    'Whyte': {'prop': 0.0010827463806132587, 'i': 478, 'j': 332, 'di': 1, 'dj': 1, 'depth': 1},
+    'Disbrow': {'prop': 0.0005525355241273846, 'i': 481, 'j': 337, 'di': 1, 'dj': 1, 'depth': 1},
+    'Sclufield': {'prop': 0.00044835374180033564, 'i': 482, 'j': 339, 'di': 1, 'dj': 1, 'depth': 1},
+    'Turpin': {'prop': 0.0014176163952359158, 'i': 485, 'j': 343, 'di': 1, 'dj': 1, 'depth': 1},
+    'Harvey': {'prop': 0.0038900733365332023, 'i': 492, 'j': 346, 'di': 1, 'dj': 1, 'depth': 1},
+    'Deeks': {'prop': 0.0032407975859592725, 'i': 501, 'j': 350, 'di': 1, 'dj': 1, 'depth': 1},
+    'Kallahn': {'prop': 0.0024854796640881673, 'i': 510, 'j': 358, 'di': 1, 'dj': 1, 'depth': 1},
+    'Furry': {'prop': 0.012349261983695549, 'i': 515, 'j': 364, 'di': 1, 'dj': 1, 'depth': 1},
+    'Britannia': {'prop': 0.006394156890322628, 'i': 523, 'j': 373, 'di': 1, 'dj': 1, 'depth': 1},
+    'Gonzalos': {'prop': 0.002790583455188811, 'i': 527, 'j': 381, 'di': 1, 'dj': 1, 'depth': 1},
+    'Shannon': {'prop': 0.0033375378124058178, 'i': 529, 'j': 386, 'di': 1, 'dj': 1, 'depth': 1},
+    'Stawanus': {'prop': 0.010745606691447047, 'i': 530, 'j': 387, 'di': 1, 'dj': 1, 'depth': 1},
+    'Woodfibre': {'prop': 0.013573397926038377, 'i': 533, 'j': 370, 'di': 1, 'dj': 2, 'depth': 1},
+    'Foulger': {'prop': 0.0032147521403775104, 'i': 530, 'j': 367, 'di': 1, 'dj': 1, 'depth': 1},
+    'Ellesmere': {'prop': 0.0028538366801730904, 'i': 521, 'j': 361, 'di': 1, 'dj': 1, 'depth': 1},
+    'Potlatch': {'prop': 0.006500199061619803, 'i': 522, 'j': 350, 'di': 1, 'dj': 1, 'depth': 1},
+    'McNab': {'prop': 0.013525027812815104, 'i': 522, 'j': 338, 'di': 1, 'dj': 1, 'depth': 1},
+    'Bain': {'prop': 0.0024817588861479156, 'i': 522, 'j': 326, 'di': 1, 'dj': 1, 'depth': 1},
+    'Rainy': {'prop': 0.013266433745967606, 'i': 522, 'j': 319, 'di': 1, 'dj': 1, 'depth': 1},
+    'McNair': {'prop': 0.010051681605590097, 'i': 520, 'j': 316, 'di': 1, 'dj': 1, 'depth': 1},
+    'Twin': {'prop': 0.003638920825566209, 'i': 513, 'j': 313, 'di': 1, 'dj': 1, 'depth': 1},
+    'Langdale': {'prop': 0.005008167107578853, 'i': 504, 'j': 309, 'di': 1, 'dj': 1, 'depth': 1},
+    'Chester': {'prop': 0.004572836088569398, 'i': 501, 'j': 291, 'di': 1, 'dj': 1, 'depth': 1},
+    'Roberts': {'prop': 0.009084279341124641, 'i': 512, 'j': 282, 'di': 1, 'dj': 1, 'depth': 1},
+    'Rume': {'prop': 0.0017059766856054263, 'i': 517, 'j': 279, 'di': 1, 'dj': 1, 'depth': 1}}
 
 # Assume that 50% of the area of the JdF watershed defined by Morrison
 # et al (2011) is on north side of JdF (Canada side)
@@ -470,7 +503,7 @@ prop_dict['jervis'] = {
             },
     'Treat': {
         'prop': Jervis * 0.05, 'i': 612, 'j': 302, 'di': 1, 'dj': 1, 'depth': 1,
-            },
+ S            },
     'Sechelt': {
         'prop': 0.17, 'i': 593, 'j': 285, 'di': 1, 'dj': 1, 'depth': 3,
             },
@@ -484,7 +517,7 @@ prop_dict['jervis'] = {
         'prop': 0.02, 'i': 633, 'j': 219, 'di': 1, 'dj': 1, 'depth': 1,
             },
     'Chapman': {
-        'prop': 0.02, 'i': 522, 'j': 273, 'di': 1, 'dj': 1, 'depth': 1,
+        'prop': 0.016, 'i': 522, 'j': 273, 'di': 1, 'dj': 1, 'depth': 1,
             },
     'Lapan': {
         'prop': 0.02, 'i': 620, 'j': 283, 'di': 1, 'dj': 1, 'depth': 1,
@@ -500,7 +533,11 @@ prop_dict['jervis'] = {
             },
     'MyersKleindaleAnderson': {
         'prop': 0.04, 'i': 571, 'j': 248, 'di': 1, 'dj': 1, 'depth': 1,
-            }}
+            },
+    'Wilson': {
+        'prop': 0.004, 'i': 521, 'j': 274, 'di': 1, 'dj': 1, 'depth': 1,
+        }}
+# Wilson area = 24.58 km2, Jervis ws is 5785 km2 so 0.004 (take out of Chapman)
 
 prop_dict['toba'] = {
     'Toba': {
