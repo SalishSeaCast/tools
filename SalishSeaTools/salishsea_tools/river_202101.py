@@ -28,7 +28,7 @@ prop_dict['howe'] = {
             },
     'Jericho': {'prop': 0.002474317330267412, 'i': 453, 'j': 329, 'di': 1, 'dj': 1, 'depth': 1},
     'FalseCreek': {'prop': 0.005054676831831999, 'i': 450, 'j': 337, 'di': 1, 'dj': 1, 'depth': 1},
-    'FirstNarrows': {'prop': 0.1294681892089998, 'i': 457, 'j': 343, 'di': 3, 'dj': 1, 'depth': 8},
+    'FirstNarrows': {'prop': 0.1294681892089998, 'i': 457, 'j': 343, 'di': 1, 'dj': 1, 'depth': 8},
     'Capilano': {'prop': 0.00918474034551144, 'i': 458, 'j': 343, 'di': 1, 'dj': 1, 'depth': 1},
     'Lawson': {'prop': 0.0013338988915802515, 'i': 461, 'j': 341, 'di': 1, 'dj': 1, 'depth': 1},
     'Marr': {'prop': 0.0011794866070598039, 'i': 464, 'j': 338, 'di': 1, 'dj': 1, 'depth': 1},
@@ -503,7 +503,7 @@ prop_dict['jervis'] = {
             },
     'Treat': {
         'prop': Jervis * 0.05, 'i': 612, 'j': 302, 'di': 1, 'dj': 1, 'depth': 1,
- S            },
+             },
     'Sechelt': {
         'prop': 0.17, 'i': 593, 'j': 285, 'di': 1, 'dj': 1, 'depth': 3,
             },
