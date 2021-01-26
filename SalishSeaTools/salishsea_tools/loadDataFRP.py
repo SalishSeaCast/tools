@@ -8,6 +8,59 @@ import string
 from salishsea_tools import geo_tools
 import netCDF4 as nc
 
+# list CTD cnv files associated with cast numbers 
+cnvlist19={1:'fraser2017101.cnv',
+        2:'fraser2017102.cnv',
+        3:'fraser2017103.cnv',
+        4:'fraser2017104.cnv',
+        5:'fraser2017105.cnv',
+        6:'fraser2017106.cnv',
+        7:'fraser2017107.cnv',
+        8:'fraser2017108.cnv',
+        9:'fraser2017109.cnv',
+        10:'fraser2017110.cnv',
+        11:'fraser2017111.cnv',
+        12:'fraser2017112.cnv',
+        13:'fraser2017113.cnv',
+        14.1:'fraser2017114.cnv',
+        14.2:'fraser2017114.cnv',
+        15:'fraser2017115.cnv',
+        16:'fraser2017116.cnv',
+        17:'fraser2017117.cnv',
+        18:'fraser2017118.cnv',
+        19:'fraser2017119.cnv',
+        20:'fraser2017120.cnv',
+        21:'fraser2017121.cnv',
+        22:'fraser2017122.cnv',
+        23:'fraser2017123.cnv',
+        24:'fraser2017124.cnv'}
+
+cnvlist25={1:'fraser2017001.cnv',
+        2:'fraser2017002.cnv',
+        3:'fraser2017003.cnv',
+        4:'fraser2017004.cnv',
+        5:'fraser2017005.cnv',
+        6:'fraser2017006.cnv',
+        7:'fraser2017007.cnv',
+        8:'fraser2017008.cnv',
+        9:'fraser2017009.cnv',
+        10:'fraser2017010.cnv',
+        11:'fraser2017011.cnv',
+        12:'fraser2017012.cnv',
+        13:'fraser2017013.cnv',
+        14.1:'fraser2017014.cnv',
+        14.2:'fraser2017014.cnv',
+        15:'fraser2017015.cnv',
+        16:'fraser2017016.cnv',
+        17:'fraser2017017.cnv',
+        18:'fraser2017018.cnv',
+        19:'fraser2017019.cnv',
+        20:'fraser2017020.cnv',
+        21:'fraser2017021.cnv',
+        22:'fraser2017022.cnv',
+        23:'fraser2017023.cnv',
+        24:'fraser2017024.cnv'}
+
 class Cast:
     def __init__(self,fpath):
         mSta,mLat,mLon,df=readcnv(fpath)
@@ -63,15 +116,21 @@ def rolling_window_padded(a,window):
 def amp(var,dim=0):
     return np.nanmax(var,dim)-np.nanmin(var,dim)
 
-#def remSurfTurb(val,z,dz):
-#    edges=np.arange(0,dz,2)
-#    binned=np.digitize(z,edges)
-#    for jj in range(1,len(edges)):
-#        ll=(binned==jj)&(~np.isnan(val))
-#        if np.sum(ll)>0:
-#            if amp(val[ll])>.5*np.nanmax(val):
-#                val[ll]=np.nan
-#    return val
+def turbQC(x):
+    # turbidity sensor produced erroneous zero readings interspersed with real data when too close to surface
+    # remove suspect values from analysis
+    # - median filter alone was not enough
+
+    # remove a point if the max-min of the surrounding 5 point window 
+    # is greater than 1/3 the maximum turbidity value of the cast 
+    # (remove data within 5 points of a large jump)
+    ii1=amp(rolling_window_padded(x,5),-1)>.33*np.nanmax(x)
+    # remove data within 5 points of a near-zero turbidity value
+    ii2=np.nanmin(rolling_window_padded(x,5),-1)<.3
+    y=np.copy(x)
+    y[np.logical_or(ii1,ii2,)]=np.nan
+    y=ssig.medfilt(y,3) 
+    return y
 
 def readcnv(fpath):
     alphnumlist=list(string.ascii_letters)+list(string.digits)
@@ -171,11 +230,15 @@ def loadDataFRP_init(exp='all'):
     	df0_b=pd.read_csv(fb,header=0,na_values='None')
     df0=pd.merge(df0_a,df0_b,how='left',on=['Station','Date'])
 
-    # calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
-    x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'].values
-    x=x[:,np.newaxis]
-    tcor=1.0/np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'],rcond=None)[0]
-    # rewritten in terms of fitting true turb to observed turb for consistency with paper
+    # if values present, calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
+    # fit true turb to observed turb
+    if np.sum(df0.sb19Turb_uncorrected>0)>0:
+        x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'].values
+        x=x[:,np.newaxis]
+        tinv=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'],rcond=None)[0]
+        tcor=1.0/tinv
+    else:
+        tcor=np.nan
     if exp=='exp1':
         df0=df0.drop(df0.index[df0.Date != 20170410])
     elif exp=='exp2':
@@ -190,80 +253,27 @@ def loadDataFRP_init(exp='all'):
     dir25='25-0363/4_derive'
     dir19T10='19-4561/4b_deriveTEOS10'
     dir25T10='25-0363/4a_deriveTEOS10'
-    f19=dict()
-    f25=dict()
     
+    clist=[]
     if (exp=='exp1' or exp=='all'):
-        f19[1]='fraser2017101.cnv'
-        f19[2]='fraser2017102.cnv'
-        f19[3]='fraser2017103.cnv'
-        f19[4]='fraser2017104.cnv'
-        f19[5]='fraser2017105.cnv'
-        f19[6]='fraser2017106.cnv'
-        f19[7]='fraser2017107.cnv'
-        f19[8]='fraser2017108.cnv'
-        f19[9]='fraser2017109.cnv'
-
-        f25[1]='fraser2017001.cnv'
-        f25[2]='fraser2017002.cnv'
-        f25[3]='fraser2017003.cnv'
-        f25[4]='fraser2017004.cnv'
-        f25[5]='fraser2017005.cnv'
-        f25[6]='fraser2017006.cnv'
-        f25[7]='fraser2017007.cnv'
-        f25[8]='fraser2017008.cnv'
-        f25[9]='fraser2017009.cnv'
+        clist = clist + list(range(1,10))
     if (exp=='exp2' or exp=='all'):
-        f19[10]='fraser2017110.cnv'
-        f19[11]='fraser2017111.cnv'
-        f19[12]='fraser2017112.cnv'
-        f19[13]='fraser2017113.cnv'
-        f19[14.1]='fraser2017114.cnv'
-        f19[14.2]='fraser2017114.cnv'
-        f19[15]='fraser2017115.cnv'
-        f19[16]='fraser2017116.cnv'
-        f19[17]='fraser2017117.cnv'
-        f19[18]='fraser2017118.cnv'
-
-        f25[10]='fraser2017010.cnv'
-        f25[11]='fraser2017011.cnv'
-        f25[12]='fraser2017012.cnv'
-        f25[13]='fraser2017013.cnv'
-        f25[14.1]='fraser2017014.cnv'
-        f25[14.2]='fraser2017014.cnv'
-        f25[15]='fraser2017015.cnv'
-        f25[16]='fraser2017016.cnv'
-        f25[17]='fraser2017017.cnv'
-        f25[18]='fraser2017018.cnv'
+        clist = clist + [10,11,12,13,14.1,14.2,15,16,17,18]
     if (exp=='exp3' or exp=='all'):
-        f19[19]='fraser2017119.cnv'
-        f19[20]='fraser2017120.cnv'
-        f19[21]='fraser2017121.cnv'
-        f19[22]='fraser2017122.cnv'
-        f19[23]='fraser2017123.cnv'
-        f19[24]='fraser2017124.cnv'
+        clist = clist + list(range(19,25))
 
-        f25[19]='fraser2017019.cnv'
-        f25[20]='fraser2017020.cnv'
-        f25[21]='fraser2017021.cnv'
-        f25[22]='fraser2017022.cnv'
-        f25[23]='fraser2017023.cnv'
-        f25[24]='fraser2017024.cnv'
-
-    
     fpath19=dict()
     fpath25=dict()
-    clist=np.sort([ii for ii in f19.keys()])
     for ii in clist:
         if ii<10:
-            fpath19[ii]=os.path.join(basedir1,dir19T10,f19[ii])
-            fpath25[ii]=os.path.join(basedir1,dir25T10,f25[ii])
+            fpath19[ii]=os.path.join(basedir1,dir19T10,cnvlist19[ii])
+            fpath25[ii]=os.path.join(basedir1,dir25T10,cnvlist25[ii])
         elif ii<19:
-            fpath19[ii]=os.path.join(basedir2,dir19T10,f19[ii])
-            fpath25[ii]=os.path.join(basedir2,dir25T10,f25[ii])
+            fpath19[ii]=os.path.join(basedir2,dir19T10,cnvlist19[ii])
+            fpath25[ii]=os.path.join(basedir2,dir25T10,cnvlist25[ii])
         else:
-            fpath19[ii]=os.path.join(basedir3,dir19T10,f19[ii])
-            fpath25[ii]=os.path.join(basedir3,dir25T10,f25[ii])
+            fpath19[ii]=os.path.join(basedir3,dir19T10,cnvlist19[ii])
+            fpath25[ii]=os.path.join(basedir3,dir25T10,cnvlist25[ii])
         
     cast19=dict()
     cast25=dict()
@@ -492,7 +502,7 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             if not nn==14.2:
                 #downcast
                 inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-zshiftdict[var] # down z
                 inV=cast25[nn].df.loc[pS:ip][var].values # down var
                 if sel=='wide':
                     inV[inP<.1]=np.nan
@@ -502,7 +512,7 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             if not nn==14.1:
                 #upcast    
                 inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-zshiftdict[var] # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-zshiftdict[var] # down z
                 inV=cast25[nn].df.loc[ip:pE][var].values # down var
                 if sel=='wide':
                     inV[inP<.1]=np.nan
@@ -512,7 +522,7 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
         if not nn==14.2:
             #turbidity downcast
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-turbDZ # down z
             inV0=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values # down var
             if sel=='wide':
                 # additional QC for broader data selection
@@ -532,7 +542,7 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
         if not nn==14.1:
             #turbidity upcast
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-turbDZ # up z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-turbDZ # up z
             inV0=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values # up var
             if sel=='wide':
                 # additional QC for broader data selection
@@ -570,14 +580,14 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             ##temperature
             #downcast
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg']) # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0]) # down z
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_ctA0'].values # down var
             if sel=='wide':
                 inV[inP<.1]=np.nan
             zCasts[nn].dCast['gsw_ctA0']=dataPair(inP,inV)
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg']) # up z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0]) # up z
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_ctA0'].values # up var
             if sel=='wide':
                 inV[inP<.1]=np.nan
@@ -586,14 +596,14 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             ##sal
             #downcast
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg']) # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0]) # down z
             inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_srA0'].values # down var
             if sel=='wide':
                 inV[inP<.1]=np.nan
             zCasts[nn].dCast['gsw_srA0']=dataPair(inP,inV)
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg']) # up z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0]) # up z
             inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_srA0'].values # up var
             if sel=='wide':
                 inV[inP<.1]=np.nan
@@ -602,14 +612,14 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             ##xmiss: xmis25=1.14099414691*xmis19+-1.6910134322
             #downcast
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[pS:ip]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # down z
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-xmisDZ # down z
             inV=1.14099414691*cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['CStarTr0'].values-1.6910134322 # down var
             if sel=='wide':
                 inV[inP<.1]=np.nan
             zCasts[nn].dCast['xmiss']=dataPair(inP,inV)
             #upcast    
             inP=-1*gsw.z_from_p(cast25[nn].df.loc[ip:pE]['prSM'].values,
-                                    df0.loc[df0.Station==nn]['LatDecDeg'])-xmisDZ # up p
+                                    df0.loc[df0.Station==nn]['LatDecDeg'].values[0])-xmisDZ # up p
             inV=1.14099414691*cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['CStarTr0'].values-1.6910134322 # up var
             if sel=='wide':
                 inV[inP<.1]=np.nan
