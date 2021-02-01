@@ -189,7 +189,7 @@ PLACES = {
         'stn number': 7724,
         'mean sea lvl': 3.001,  # same as Vancouver Harbour; from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
-        # 'wind grid ji': TODO
+        'wind grid ji': (456, 344),
         'ww3 grid ji': None,
     },
     'Vancouver Harbour': {
@@ -197,7 +197,7 @@ PLACES = {
         'stn number': 7735,
         'mean sea lvl': 3.001,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
-        # 'wind grid ji': TODO
+        'wind grid ji': (143, 159),
         'ww3 grid ji': None,
     },
     'Port Moody': {
@@ -205,7 +205,7 @@ PLACES = {
         'stn number': 7755,
         'mean sea lvl': 3.143,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
-        # 'wind grid ji': TODO
+        'wind grid ji': (142, 166),
         'ww3 grid ji': None,
     },
     'Indian Arm Head': {
@@ -213,7 +213,7 @@ PLACES = {
         'stn number': 7774,
         'mean sea lvl': 3.052,  # from Marlene Jefferies via 20mar18 email from Michael Dunphy
         'NEMO grid ji': None,
-        # 'wind grid ji': TODO
+        'wind grid ji': (150, 167),
         'ww3 grid ji': None,
     },
 
@@ -221,25 +221,54 @@ PLACES = {
     '2nd Narrows Rail Bridge': {
         'lon lat': (-123.0247222, 49.2938889),
         'stn number': 3160171  # AIS MMSI (Maritime Mobile Service Identity)
+        'mean sea lvl': None,
+        'NEMO grid ji': None,
+        'wind grid ji': (143, 161),
+        'ww3 grid ji': None,
     },
 
     # Ferry terminals
     'Tsawwassen': {
         'lon lat': (-123.132722, 49.006165),
+        'stn number': None,
+        'mean sea lvl': None,
+        'NEMO grid ji': (396, 305),
+        'wind grid ji': (130, 155),
+        'ww3 grid ji': None,
         'in berth radius': 0.0015,
     },
     'Duke Pt.': {
         'lon lat': (-123.89095676900132, 49.16340592936349),
+        'stn number': None,
+        'mean sea lvl': None,
+        'NEMO grid ji': (481, 213),
+        'wind grid ji': (142, 134),
+        'ww3 grid ji': None,
         'in berth radius': 0.002,
     },
     'Horseshoe Bay': {
         'lon lat': (-123.2728, 49.3742),
+        'stn number': None,
+        'mean sea lvl': None,
+        'NEMO grid ji': (478, 331),
+        'wind grid ji': (148, 154),
+        'ww3 grid ji': None,
     },
     'Departure Bay': {
         'lon lat': (-123.8909, 49.1632),
+        'stn number': None,
+        'mean sea lvl': None,
+        'NEMO grid ji': (481, 213),
+        'wind grid ji': (142, 134),
+        'ww3 grid ji': None,
     },
     'Swartz Bay': {
         'lon lat': (-123.4102, 48.6882),
+        'stn number': None,
+        'mean sea lvl': None,
+        'NEMO grid ji': (354, 225),
+        'wind grid ji': (117, 144),
+        'ww3 grid ji': None,
     },
 
     # Cities
@@ -339,6 +368,8 @@ PLACES = {
         'depth': 294,
         # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (424, 266),
+        # HRDPS python grid indices: j in y direction, i in x direction                                     
+        'wind grid ji': (133, 147),
         # ONC data web services API station code
         'ONC stationCode': 'SCVIP',
     },
@@ -347,6 +378,7 @@ PLACES = {
         'lon lat': (-123.339633, 49.074766),
         'depth': 143,
         'NEMO grid ji': (424, 283),
+        'wind grid ji': (134, 150),
         'ONC stationCode': 'LSBBL',
     },
     'Delta DDL node': {
@@ -354,16 +386,38 @@ PLACES = {
         'lon lat': (-123.32972, 49.08495),
         'depth': 107,
         'NEMO grid ji': (426, 286),
+        'wind grid ji': (135, 150),
         'ONC stationCode': 'USDDL',
     },
     'East node': {
         'lon lat': (-123.316836666, 49.04316),
         'depth': 164,
         'NEMO grid ji': (417, 283),
+        'wind grid ji': (133, 150),
         'ONC stationCode': 'SEVIP',
     },
 
     # Lightstations
+    'Ballenas Islands': {
+        'lon lat': (-124.160, 49.350),
+        'NEMO grid ji': (536, 197),
+        'wind grid ji': (152, 127),
+    },
+    'Discovery Island': {
+        'lon lat': (-123.226, 48.425),
+        'NEMO grid ji': (291, 219),
+        'wind grid ji': (104, 148),
+    },
+    'Entrance Island': {
+        'lon lat': (-123.811, 49.209),
+        'NEMO grid ji': (484, 231),
+        'wind grid ji': (143, 137),
+    },
+    'Race Rocks': {
+        'lon lat': (-123.531, 48.298),
+        'NEMO grid ji': (288, 159),
+        'wind grid ji': (99, 137),
+    },
     'Sand Heads': {
         'lon lat': (-123.30, 49.10),
         'stn number': 7594,  # Marlene's coordinates for Tide Station are slightly different.  Leaving as is.
@@ -374,10 +428,28 @@ PLACES = {
         'wind grid ji': (135, 151),
         'ww3 grid ji': (246, 385),
     },
+    'Saturna Island': {
+        'lon lat': (-123.045, 48.784),
+        'NEMO grid ji': (347, 290),
+        'wind grid ji': (119, 156),
+    },
     'Sisters Islet': {
         'lon lat': (-124.43, 49.49),
         'NEMO grid ji': (582, 175),
         'GEM2.5 grid ji': (160, 120),
+        'wind grid ji': (160, 120),
+    },
+
+    # Wind stations                                                                                        
+    'Esquimalt': {
+        'lon lat': (-123.439, 48.432),
+        'NEMO grid ji': (307, 189),
+        'wind grid ji': (105, 141),
+    },
+    'Pam Rocks': {
+        'lon lat': (-123.299, 49.488),
+        'NEMO grid ji': (502, 341),
+        'wind grid ji': (153, 154),
     },
 
     # Wave buoys
@@ -385,12 +457,14 @@ PLACES = {
         'lon lat': (-123.72, 49.34),
         'NEMO grid ji': (503, 261),
         'GEM2.5 grid ji': (149, 141),
+        'wind grid ji': (149, 141),
         'EC buoy number': 46146,
     },
     'Sentry Shoal': {
         'lon lat': (-125.0, 49.92),
         'NEMO grid ji': (707, 145),
         'GEM2.5 grid ji': (183, 107),
+        'wind grid ji': (183, 107),
         'EC buoy number': 46131,
     },
 
@@ -401,9 +475,19 @@ PLACES = {
     },
 
     # Airports
+    'Comox Airport': {
+        'lon lat': (-124.900, 49.717),
+        'NEMO grid ji': (660, 134),
+        'wind grid ji' : (173, 108),
+    },
+    'Squamish Airport': {
+        'lon lat': (-123.161, 49.783),
+        'wind grid ji' : (166, 161),
+    },
     'YVR': {
         'lon lat': (-123.184, 49.195),
         'GEM2.5 grid ji' : (139, 155),
+        'wind grid ji' : (139, 155),
     },
 }
 # Aliases:

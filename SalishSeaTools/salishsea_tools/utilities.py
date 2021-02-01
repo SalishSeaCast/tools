@@ -19,7 +19,6 @@
 import arrow
 import glob
 import os
-import progressbar
 
 def findnamelist(namelist, year, month, day,
                  pathname = '/results/SalishSea/nowcast-green'):
@@ -45,22 +44,3 @@ def findnamelist(namelist, year, month, day,
         directory = myday.format('DDMMMYY').lower()
         mynamelist = glob.glob(os.path.join(pathname, directory, namelist))
     return mynamelist[0]
-
-
-def statusbar(message, width=None, maxval=None):
-    """
-    """
-
-    # Construct status bar
-    widgets = [
-        message, ' ', progressbar.Percentage(),
-        ' (', progressbar.SimpleProgress(), ') ',
-        progressbar.Bar(), progressbar.ETA(),
-    ]
-
-    # Invoke status bar
-    bar = progressbar.ProgressBar(
-        widgets=widgets, term_width=width, max_value=maxval,
-    )
-
-    return bar

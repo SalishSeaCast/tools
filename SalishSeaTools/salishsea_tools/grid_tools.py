@@ -24,7 +24,8 @@ http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/
 NKS nsoontie@eos.ubc.ca 08-2016
 """
 
-from salishsea_tools import geo_tools, utilities
+from salishsea_tools import geo_tools
+from tqdm import tqdm
 import numpy as np
 import netCDF4 as nc
 import scipy.interpolate as spi
@@ -258,28 +259,28 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
     """
     """
 
-    # Preallocate
-    ngrid_GEM = grid_GEM['gridX'].shape[0] * grid_GEM['gridY'].shape[0]
-    mask_GEM = np.zeros(ngrid_GEM, dtype=int)
-
     # Evaluate each point on GEM grid
-    bar = utilities.statusbar('Building GEM mask', width=90, maxval=ngrid_GEM)
-    for index, coords in enumerate(bar(zip(
-            grid_GEM['longitude'].values.reshape(ngrid_GEM) - 360,
-            grid_GEM['latitude'].values.reshape(ngrid_GEM),
+    mask_GEM = []
+    msg = 'Building HRDPS mask'
+    for lon, lat in zip(
+        tqdm(grid_GEM['longitude'].values.flatten() - 360, desc=msg),
+        grid_GEM['latitude'].values.flatten(),
     ))):
 
+        # Find closest NEMO ji point
         j, i = geo_tools.find_closest_model_point(
             coords[0], coords[1],
             grid_NEMO['longitude'], grid_NEMO['latitude'],
         )
+
+        # Append to list
         if j is np.nan or i is np.nan:
-            mask_GEM[index] = 0
+            mask_GEM.append(0)
         else:
-            mask_GEM[index] = mask_NEMO[j, i].values
+            mask_GEM.append(mask_NEMO[j, i].values)
 
     # Reshape
-    mask_GEM = mask_GEM.reshape(grid_GEM['longitude'].shape)
+    mask_GEM = np.array(mask_GEM, dtype='int').reshape(grid_GEM['longitude'].shape)
 
     return mask_GEM
 
