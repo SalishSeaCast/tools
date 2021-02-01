@@ -220,6 +220,16 @@ def cXfromX(X):
 def turbReg(m,Cx,fl):
     return np.maximum(0.0,m[0]*Cx-m[1]*fl-m[2])
 
+def turbFit(df0):
+    # calculate conversion factor for sb19 ctd turbidity to ALS bottle turbidity
+    # force through (0,0)
+    x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'].values
+    x=x[:,np.newaxis]
+    y=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU']
+    tinv=np.linalg.lstsq(x,y,rcond=None)[0]
+    tcor=1.0/tinv
+    return tcor
+
 def loadDataFRP_init(exp='all'):
     if exp not in {'exp1', 'exp2', 'exp3', 'all'}:
         print('option exp='+exp+' is not defined.')
@@ -232,11 +242,9 @@ def loadDataFRP_init(exp='all'):
 
     # if values present, calculate correction factor for sb19 turbidity (divide sb19 turbidity by tcor)
     # fit true turb to observed turb
+    # calculate here while all values present
     if np.sum(df0.sb19Turb_uncorrected>0)>0:
-        x=df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['sb19Turb_uncorrected'].values
-        x=x[:,np.newaxis]
-        tinv=np.linalg.lstsq(x,df0.loc[(df0.ALS_Turb_NTU>0)&(df0.sb19Turb_uncorrected>0)]['ALS_Turb_NTU'],rcond=None)[0]
-        tcor=1.0/tinv
+        tcor=turbfit(df0)
     else:
         tcor=np.nan
     if exp=='exp1':
