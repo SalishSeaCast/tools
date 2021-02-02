@@ -220,7 +220,7 @@ PLACES = {
     # VHFR FVCOM model HADCP station
     '2nd Narrows Rail Bridge': {
         'lon lat': (-123.0247222, 49.2938889),
-        'stn number': 3160171  # AIS MMSI (Maritime Mobile Service Identity)
+        'stn number': 3160171,  # AIS MMSI (Maritime Mobile Service Identity)
         'mean sea lvl': None,
         'NEMO grid ji': None,
         'wind grid ji': (143, 161),
@@ -368,7 +368,7 @@ PLACES = {
         'depth': 294,
         # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (424, 266),
-        # HRDPS python grid indices: j in y direction, i in x direction                                     
+        # HRDPS python grid indices: j in y direction, i in x direction
         'wind grid ji': (133, 147),
         # ONC data web services API station code
         'ONC stationCode': 'SCVIP',
@@ -440,7 +440,7 @@ PLACES = {
         'wind grid ji': (160, 120),
     },
 
-    # Wind stations                                                                                        
+    # Wind stations
     'Esquimalt': {
         'lon lat': (-123.439, 48.432),
         'NEMO grid ji': (307, 189),
