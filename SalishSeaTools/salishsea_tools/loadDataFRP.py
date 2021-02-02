@@ -244,7 +244,7 @@ def loadDataFRP_init(exp='all'):
     # fit true turb to observed turb
     # calculate here while all values present
     if np.sum(df0.sb19Turb_uncorrected>0)>0:
-        tcor=turbfit(df0)
+        tcor=turbFit(df0)
     else:
         tcor=np.nan
     if exp=='exp1':
