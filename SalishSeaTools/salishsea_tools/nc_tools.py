@@ -27,21 +27,72 @@ Included are functions for:
 from __future__ import division
 
 from collections import namedtuple, OrderedDict
-from datetime import (
-    datetime,
-    timedelta,
-)
+from datetime import datetime, timedelta
 from resource import getrlimit, RLIMIT_NOFILE
 import os
 
 import arrow
 import netCDF4 as nc
-import pandas as pd
 import numpy as np
 
 import warnings
 
 from salishsea_tools import hg_commands as hg
+
+
+def get_hindcast_prefix(date, res='h', version='201905'):
+    """Construct hindcast results prefix given the date, resolution and version
+    e.g., /results/SalishSea/nowcast-green.201905/ddmmmyy/SalishSea_1h_YYYYMMDD_YYYYMMDD
+
+    :arg date: date of hindcast record
+    :type date: :py:class:`datetime.datetime`
+
+    :arg res: time resolution (h=hourly, d=daily)
+    :type res: str
+    
+    :arg version: hindcast version (e.g., 201905)
+    :type version: str
+    
+    :returns: hindcast prefix
+    :rtype: str
+    """
+
+    # Make NEMO hindcast path
+    path, datestr = f'SalishSea/nowcast-green.{version}', date.strftime('%d%b%y').lower()
+    for root in ['/results', '/results2']:
+        testpath = os.path.join(root, path, datestr)
+        if os.path.exists(testpath):
+            path = testpath
+            break
+    else:
+        raise ValueError(f"No hindcast {version} record found for the specified date {date.strftime('%Y-%b-%d')}")
+    prefix = os.path.join(path, f"SalishSea_1{res}_{date.strftime('%Y%m%d_%Y%m%d')}")
+    
+    return prefix
+
+
+def get_GEM_path(date):
+    """Construct GEM results path given the date
+    e.g., /results/forcing/atmospheric/GEM2.5/operational/ops_yYYYYmMMdDD.nc
+
+    :arg date: date of GEM record
+    :type date: :py:class:`datetime.datetime`
+    
+    :returns: GEM path
+    :rtype: str
+    """
+    
+    # Make GEM path
+    path, datestr = '/results/forcing/atmospheric/GEM2.5', date.strftime('y%Ym%md%d')
+    for config, prefix in zip(['operational', 'gemlam'], ['ops', 'gemlam']):
+        testpath = os.path.join(path, config, f'{prefix}_{datestr}.nc')
+        if os.path.exists(testpath):
+            path = testpath
+            break
+    else:
+        raise ValueError(f"No GEM2.5 record found for the specified date {date.strftime('%Y-%b-%d')}")
+    
+    return path
 
 
 def dataset_from_path(path, *args, **kwargs):
@@ -234,17 +285,17 @@ def get_datetimes(dataset, time_var='time_counter'):
 
 
 def xarraytime_to_datetime(xarraytime):
-    """Convert an `xarray.DataArray` `numpy.datetime64` object to a
-    `datetime.datetime` object.
+    """Convert an `xarray.DataArray` of `numpy.datetime64` times to a
+    `numpy.ndarray` of `datetime.datetime` times
     
-    :arg xarraytime: `xarray` time object
+    :arg xarraytime: DataArray of datetime64
     :type xarraytime: :py:class:`xarray.DataArray` of :py:class:`numpy.datetime64`
     
-    :returns: `datetime` time object
-    :rtype: :py:class:`datetime.datetime`
+    :returns: array of datetimes
+    :rtype: :py:class:`numpy.ndarray` of :py:class:`datetime.datetime`
     """
     
-    datetime_obj = pd.Timestamp(xarraytime.to_pandas()).to_pydatetime()
+    datetime_obj = xarraytime.values.astype('datetime64[s]').astype(datetime)
     
     return datetime_obj
 
@@ -844,163 +895,6 @@ def _concatentate_variables(filenames, shapes, variables):
             y2 = shapes[name]['jee']
             if 'x' in newvar.dimensions:
                 newvar[..., y1:y2, x1:x2] = oldvar[..., :, :]
-
-
-def make_filename_list(timerange, qty, model='nowcast', resolution='h',
-                       path='/results/SalishSea'):
-    """Return a sequential list of Nowcast results filenames to be passed into
-    `xarray.open_mfdataset` or `timeseries_tools.load_NEMO_timeseries`.
-    
-    .. note::
-        
-        This function has migrated to `timeseries_tools.make_filename_list`.
-    
-    :arg timerange: list or tuple of date strings
-        (e.g., ['2017 Jan 1 00:00', '2017 Jan 31 23:00'])
-    :type timerange: list or tuple of str
-
-    :arg qty: quantity type
-        ('U' for zonal velocity, 'V' for meridional velocity,
-        'W' for vertical velocity, 'T' for tracers)
-    :type qty: str
-    
-    :arg model: forecast type
-        (e.g., 'nowcast', 'nowcast-green', 'forecast')
-    :type model: str
-    
-    :arg resolution: time resolution ('h' for hourly, 'd', for daily)
-    :type resolution: str
-    
-    :arg path: path to results archive
-    :type path: str
-
-    :returns: Sequential list of Nowcast results filenames
-    :rtype: list of str
-    """
-
-    warnings.warn(
-        "nc_tools.make_filename_list has migrated to"
-        + " timeseries_tools.make_filename_list",
-        DeprecationWarning
-    )
-
-    filenames = timeseries_tools.make_filename_list(
-        timerange, qty, model='nowcast', resolution='h',
-        path='/results/SalishSea'
-    )
-    
-    return filenames
-
-
-def load_GEM_from_erddap(
-        timerange, window=[None, None, None, None],
-        fields=['u_wind', 'v_wind'],
-        gridpath=(
-            'https://salishsea.eos.ubc.ca/erddap/'
-            'griddap/ubcSSaAtmosphereGridV1'),
-        datapath=(
-            'https://salishsea.eos.ubc.ca/erddap/'
-            'griddap/ubcSSaSurfaceAtmosphereFieldsV1'),
-):
-    """Returns surface atmospheric variables from the Environment Canada GEM
-    2.5 km HRDPS atmospheric model, accessed through the ERDDAP server.
-    
-    .. note::
-    
-        This function is deprecated.
-        Load HRDPS results directly from the ERDDAP server instead.
-    """
-
-    warnings.warn(
-        "load_GEM_from_erddap has been deprecated. Please load HRDPS"
-        + " results directly from the ERDDAP server",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
-
-
-def load_GEM_from_path(
-        timerange, window=[None, None, None, None],
-        fields=['u_wind', 'v_wind'], model='operational',
-        path='/results/forcing/atmospheric/GEM2.5',
-):
-    """Returns surface atmospheric variables from the Environment Canada GEM
-    2.5 km HRDPS atmospheric model, accessed through the local filesystem.
-
-    .. note::
-        
-        This function is deprecated.
-        Load HRDPS results directly from the filesystem on Skookum instead.
-    """
-    
-    warnings.warn(
-        "load_GEM_from_path has been deprecated. Please load HRDPS"
-        + " results directly from the filesystem on Skookum",
-        DeprecationWarning
-    )
-    
-    out = None
-
-    return out
-
-
-def load_NEMO_from_erddap(
-        timerange, depth=[None, None], window=[None, None, None, None],
-        fields=['salinity', 'temperature', 'u_vel', 'v_vel'],
-        path='https://salishsea.eos.ubc.ca/erddap/griddap',
-        bathy_dataset='ubcSSnBathymetry2V1',
-):
-    """Returns vector and tracer variables from the Salish Sea NEMO model,
-    accessed through the ERDDAP server.
-
-    .. note::
-        
-        This function is deprecated.
-        Load NEMO results directly from the ERDDAP server instead, or use
-        `timeseries_tools.load_NEMO_timeseries`.
-    """
-    
-    warnings.warn(
-        "load_NEMO_from_erddap has been deprecated. Please load NEMO"
-        + " results directly from the ERDDAP server. If loading long timeseries"
-        + " consider using the timeseries_tools module",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
-
-
-def load_NEMO_from_path(
-        timerange, depth=[None, None], window=[None, None, None, None],
-        model='nowcast', resolution='h', path='/results/SalishSea',
-        bathy_meter='/results/SalishSea/nowcast/01aug16/bathy_meter.nc',
-        fields=['salinity', 'temperature', 'u_vel', 'v_vel']
-):
-    """Returns vector and tracer variables from the Salish Sea
-    NEMO model, accessed through the local filesystem.
-    
-    .. note::
-        
-        This function is deprecated.
-        Load NEMO results directly from the filesystem on Skookum instead, or
-        use `timeseries_tools.load_NEMO_timeseries`.
-    """
-    
-    warnings.warn(
-        "load_NEMO_from_path has been deprecated. Please load NEMO results"
-        + " directly from the filesystem on Skookum. If loading long timeseries"
-        + " consider using the timeseries_tools module",
-        DeprecationWarning
-    )
-    
-    out = None
-    
-    return out
 
 
 class scDataset(object):
