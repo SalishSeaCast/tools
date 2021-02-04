@@ -135,13 +135,13 @@ def matchData(
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
     latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
-
+    print('ferry')
     # check that required columns are in dataframe:
     if method == 'ferry' or sdim==2:
         reqsubset=['dtUTC','Lat','Lon']
         if preIndexed:
             reqsubset=['dtUTC','i','j']
-    if method == 'vertNet':
+    elif method == 'vertNet':
         reqsubset=['dtUTC','Lat','Lon','Z_upper','Z_lower']
         if preIndexed:
             reqsubset=['dtUTC','i','j','Z_upper','Z_lower']
@@ -790,9 +790,9 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     Base.prepare(engine, reflect=True)
     # mapped classes have been created
     # existing tables:
-    StationTBL=Base.classes.BOTStationTBL
-    ObsTBL=Base.classes.BOTObsTBL
-    CalcsTBL=Base.classes.BOTCalcsTBL
+    StationTBL=Base.classes.StationTBL
+    ObsTBL=Base.classes.ObsTBL
+    CalcsTBL=Base.classes.CalcsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_Bottle_SA!=None, CalcsTBL.Salinity_Bottle_SA)], else_=
              case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
