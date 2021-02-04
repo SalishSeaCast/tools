@@ -265,7 +265,7 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
     for lon, lat in zip(
         tqdm(grid_GEM['longitude'].values.flatten() - 360, desc=msg),
         grid_GEM['latitude'].values.flatten(),
-    ))):
+    ):
 
         # Find closest NEMO ji point
         j, i = geo_tools.find_closest_model_point(
