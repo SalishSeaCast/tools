@@ -85,7 +85,7 @@ def matchData(
     :arg mod_start: first date of time range to match
     :type :py:class:`datetime.datetime`
 
-    :arg mod_end: last date of time range to match
+    :arg mod_end: end of date range to match (not included)
     :type :py:class:`datetime.datetime`
 
     :arg str mod_nam_fmt: naming format for model files. options are 'nowcast' or 'long'
@@ -587,7 +587,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     """
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
-    where paths are all the model output files of a given type in the timer interval (start,end)
+    where paths are all the model output files of a given type in the time interval (start,end)
+    with end not included
     """
     if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None',None):
         print('ftype={}, are you sure? (if yes, add to list)'.format(ftype))
@@ -646,7 +647,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     paths=list()
     t_0=list()
     t_n=list()
-    while iits<=end:
+    while iits<end:
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
         try:
@@ -670,6 +671,7 @@ def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,
     Requires file naming convention with start date and end date as YYYYMMDD_YYYYMMDD
     lists all files of a particular filetype and output frequency from a given results file structure
     useful if there are missing files
+    If start and end are provided, date start is included but end is not.
     """
     paths=glob.glob(os.path.join(basedir,'???????','*'+ftype+'*')) # assume if there are subdirectories, they must have nowcast yymmmdd format
     if len(paths)==0: # in case of no subdirectories
@@ -688,7 +690,7 @@ def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,
         t_n.append(dt.datetime.strptime(dates[1],'%Y%m%d')+dt.timedelta(days=1))
     idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n']) 
     if start is not None and end is not None:
-        ilocs=(idf['t_n']>start)&(idf['t_0']<=end)
+        ilocs=(idf['t_n']>start)&(idf['t_0']<end)
         idf=idf.loc[ilocs,:].copy(deep=True)
     idf=idf.sort_values(['t_0']).reset_index(drop=True)
     return idf
