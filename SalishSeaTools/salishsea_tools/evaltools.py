@@ -1057,7 +1057,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     # set surface sample to more likely value of 0.55 m to aid matching with CTD data
     # extra 0.01 is to make np.round round up to 1 so that CTD data can match
     df.loc[df.Z==0,['Z']]=0.51
-    df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<=datelims[1])].copy(deep=True)
+    df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<datelims[1])].copy(deep=True)
     if loadCTD:
         df1=df.copy(deep=True)
         for ik in ctddfs.keys():
