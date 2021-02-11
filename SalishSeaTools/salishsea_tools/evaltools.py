@@ -135,7 +135,7 @@ def matchData(
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
     latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
-    print('ferry')
+
     # check that required columns are in dataframe:
     if method == 'ferry' or sdim==2:
         reqsubset=['dtUTC','Lat','Lon']
