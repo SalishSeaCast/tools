@@ -42,7 +42,7 @@ try:
 except IOError:
     long_description = ''
 install_requires = [
-    # see requirements.pip for versions most recently used in development
+    # see requirements.txt for versions most recently used in development
     'angles',
     'arrow',
     'bottleneck',
@@ -53,12 +53,12 @@ install_requires = [
     'netCDF4',
     'numpy',
     'pandas',
-    "progressbar",
     'python-dateutil',
     'pytz',
     'requests',
     'retrying',
     'scipy',
+    'tqdm',
     'xarray',
 ]
 

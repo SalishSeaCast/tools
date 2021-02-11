@@ -20,9 +20,12 @@ from __future__ import division
 
 from collections import namedtuple
 from pathlib import Path
+from datetime import datetime
+import os
 
 import numpy as np
-from salishsea_tools import nc_tools
+import pandas as pd
+from salishsea_tools import nc_tools, stormtools
 
 # For convenience we import the wind speed conversion factors
 # and functions and wind direction manipulation functions so that they
@@ -44,6 +47,137 @@ __all__ = [
     'wind_to_from', 'bearing_heading',
     'wind_speed_dir',
 ]
+
+
+def get_EC_observations(station, start_day, end_day):
+    """Gather hourly Environment Canada (EC) weather observations for the
+    station and dates indicated.
+
+    This function is a wrapper for stormtools.get_EC_observations, which
+    should be migrated to this module at some point
+
+    The hourly EC data is stored in monthly files, so only a single month can
+    be downloaded at a time.
+
+    :arg station: Station name (no spaces). e.g. 'PointAtkinson'
+    :type station: str
+
+    :arg start_day: Start date in the format '01-Dec-2006'.
+    :type start_day: str
+
+    :arg end_day: End date in the format '01-Dec-2006'.
+    :type end_day: str
+
+    :returns: wind_speed, wind_dir, temperature, times, lat and lon:
+              wind speed is in m/s
+              wind_dir is direction wind is blowing to in degrees measured
+              counterclockwise from East
+              temperature is in Kelvin
+              time is UTC
+              Also returns latitude and longitude of the station.
+    """
+
+    # Call get_EC_observations from stormtools
+    wind_spd, wind_dir, temp, times, lat, lon = stormtools.get_EC_observations(
+        station, start_day, end_day,
+    )
+
+    return wind_spd, wind_dir, temp, times, lat, lon
+
+
+def parse_DFO_buoy_date(line):
+    """Parse the DFO buoy date from a list of data block header strings
+
+    :arg line: list of data block header strings (containing datetime info)
+
+    :returns: parsed datetime object
+
+    :rtype: :py:class:`datetime.datetime`
+    """
+
+    # The date format changes throughout the record
+    # -- thus the multiple cases
+    if (int(line[3]) > 2020) & (int(line[3]) < 202020):
+        year, month, day = int(line[3][:4]), int(line[3][4:]), int(line[4])
+        HHMM = f'{int(line[5]):04d}'
+    elif int(line[3]) > 202020:
+        year, month, day = int(line[3][:4]), int(line[3][4:6]), int(line[3][6:])
+        HHMM = f'{int(line[4]):04d}'
+    elif int(line[4]) > 12:
+        year = int(line[3])
+        MMDD, HHMM = [f'{int(l):04d}' for l in line[4:6]]
+        month, day = int(MMDD[:2]), int(MMDD[2:])
+    else:
+        year = int(line[3])
+        HHMM = f'{int(line[6]):04d}'
+        month, day = int(line[4]), int(line[5])
+    hour, minute = int(HHMM[:2]), int(HHMM[2:])
+    date = datetime(year, month, day, hour, minute, 0)
+
+    return date
+
+
+def read_DFO_buoy(station, year):
+    """Reads the data from a DFO *.fb buoy data file and appends to a timeseries dict
+    
+    :arg station: station name string
+
+    :arg year: integer year requested
+
+    :returns: wsp, wdir and time arrays
+
+    :rtype: :py:class:`numpy.ndarray`
+    """
+
+    # Station ID dict
+    station_ids = {
+        'Halibut Bank': 46146,
+        'Sentry Shoal': 46131,
+    }
+
+    # Data url
+    url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/alphapro/wave/waveshare/fbyears'
+
+    # Open the *.zip file from url using Pandas
+    ID = f'C{station_ids[station]}'
+    file = os.path.join(url, ID, f'{ID.lower()}_{year}.zip')
+    csv = pd.read_csv(file, header=None)
+
+    # Initialize parsing booleans
+    gotdate, gotwind = True, True
+
+    # Initialize storage dict
+    wspd, wdir, time = [], [], []
+
+    # Read file line by line
+    for line in csv.values:
+
+        # Parse line to list of strings
+        line_parsed = line[0].strip().split()
+
+        # Ignore lines shorter than 4
+        if len(line_parsed) > 3:
+
+            # Begin new entry
+            if line_parsed[3] == ID:
+                gotdate = False
+
+            # Parse date
+            elif gotdate == False:
+                gotdate, gotwind = True, False
+                time.append(parse_DFO_buoy_date(line_parsed))
+
+            # Read wind data
+            elif gotwind == False:
+                gotwind = True
+                wdir.append(float(line_parsed[0].split('W')[0]))
+                wspd.append(float(line_parsed[1].split('W')[0]))
+
+    # Transform angle to deg CCW from east
+    wdir = 270 - np.array(wdir)
+    wdir[wdir < 0] += 360
+
+    return np.array(wspd), wdir, np.array(time)
 
 
 def wind_speed_dir(u_wind, v_wind):

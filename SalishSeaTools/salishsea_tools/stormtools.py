@@ -329,20 +329,39 @@ def get_EC_observations(station, start_day, end_day):
     # These ids have been identified as interesting locations in the SoG.
     # It is not necessarily a complete list.
     station_ids = {
-        'PamRocks': 6817,
-        'SistersIsland': 6813,
-        'EntranceIsland': 29411,
-        'Sandheads': 6831,
+        'Pam Rocks': 6817,
+        'Sisters Islet': 6813,
+        'Entrance Island': 29411,
+        'Sand Heads': 6831,
         # NOTE: YVR station name changed in 2013. Older data use 889.
         'YVR': 51442,
         'YVR_old': 889,
-        'PointAtkinson': 844,
+        'Point Atkinson': 844,
         'Victoria': 10944,
-        'CampbellRiver': 145,
+        'Campbell River': 145,
         # NOTE: not exactly Patricia Bay. The EC name is Victoria Hartland CS
-        'PatriciaBay': 11007,
-        'Esquimalt': 52
+        'Patricia Bay': 11007,
+        'Esquimalt': 52,
+        'Discovery Island': 27226,
+        'Race Rocks': 10943,
+        'Saturna Island': 96,
+        'Tsawwassen': 50228,
+        'Ballenas Islands': 138,
+        'Comox Airport': 155,
+        'Squamish Airport': 336,
     }
+
+    # Create aliases to recognize places.py definitions
+    names = [
+        'Campbell River', 'Entrance Island', 'Pam Rocks', 'Patricia Bay',
+        'Point Atkinson', 'Sand Heads', 'Sisters Islet',
+    ]
+    aliases = [
+        'CampbellRiver', 'EntranceIsland', 'PamRocks', 'PatriciaBay',
+        'PointAtkinson', 'Sandheads', 'SistersIsland',
+    ]
+    for alias, name in zip(aliases, names):
+        station_ids[alias] = station_ids[name]
 
     st_ar = arrow.Arrow.strptime(start_day, '%d-%b-%Y')
     end_ar = arrow.Arrow.strptime(end_day, '%d-%b-%Y')

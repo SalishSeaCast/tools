@@ -17,9 +17,10 @@
 conserving memory.
 """
 
-from salishsea_tools import viz_tools, utilities
+from salishsea_tools import viz_tools
 from dateutil.parser import parse
 from datetime import timedelta
+from tqdm import tqdm
 import xarray as xr
 import numpy as np
 import os
@@ -41,10 +42,7 @@ def load_NEMO_timeseries(
     data = np.empty((0, ngrid_water))
 
     # Loop through filenames
-    bar = utilities.statusbar(
-        'Loading {}, {}={}'.format(field, dim, index), width=90
-    )
-    for findex, filename in enumerate(bar(filenames)):
+    for filename in tqdm(filenames):
         # Open NEMO results and flatten (depth averages added here)
         data_grid = xr.open_dataset(filename)[field].isel(**{dim: index})
 

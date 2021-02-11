@@ -9,7 +9,7 @@
 #   $ source activate salishsea-tools
 #   (salishsea-tools)$ pip install --editable SalishSeaTools
 #
-# See the requirements.pip file for an exhaustive list of all of the
+# See the requirements.txt file for an exhaustive list of all of the
 # packages installed in the environment and their versions used in
 # recent development.
 
@@ -37,7 +37,6 @@ dependencies:
 - numpy
 - pandas
 - pip
-- progressbar
 - pytest
 - python=3
 - pytz
@@ -48,6 +47,7 @@ dependencies:
 - scipy
 - sphinx
 - sphinx_rtd_theme
+- tqdm
 - xarray
 - zeep
 - pip:

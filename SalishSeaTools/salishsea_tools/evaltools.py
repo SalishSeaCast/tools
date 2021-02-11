@@ -85,7 +85,7 @@ def matchData(
     :arg mod_start: first date of time range to match
     :type :py:class:`datetime.datetime`
 
-    :arg mod_end: last date of time range to match
+    :arg mod_end: end of date range to match (not included)
     :type :py:class:`datetime.datetime`
 
     :arg str mod_nam_fmt: naming format for model files. options are 'nowcast' or 'long'
@@ -102,6 +102,9 @@ def matchData(
         'vvlBin' - same as 'bin' but consider tidal change in vertical grid
         'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
         'ferry' - match observations to mean of upper 3 model layers 
+        'vertNet' - match observations to mean over a vertical range defined by 
+                    Z_upper and Z_lower; first try will include entire cell containing end points
+                    and use e3t_0 rather than time-varying e3t
 
     :arg str meshPath: path to mesh file; defaults to None, in which case set to:
             '/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc' if maskName is 'ops'
@@ -132,12 +135,16 @@ def matchData(
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
     latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
-
+    print('ferry')
     # check that required columns are in dataframe:
     if method == 'ferry' or sdim==2:
         reqsubset=['dtUTC','Lat','Lon']
         if preIndexed:
             reqsubset=['dtUTC','i','j']
+    elif method == 'vertNet':
+        reqsubset=['dtUTC','Lat','Lon','Z_upper','Z_lower']
+        if preIndexed:
+            reqsubset=['dtUTC','i','j','Z_upper','Z_lower']
     else:
         reqsubset=['dtUTC','Lat','Lon','Z']
         if preIndexed:
@@ -184,6 +191,10 @@ def matchData(
             omask=np.copy(fmesh.variables[maskName])
             navlon=np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:,:]))
             navlat=np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:,:]))
+            if method == 'vertNet':
+                e3t0=np.squeeze(np.copy(fmesh.variables['e3t_0'][0,:,:,:]))
+                if maskName != 'tmask':
+                    print('Warning: Using tmask thickness for variable on different grid')
         nemops='NEMO'
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
@@ -214,6 +225,8 @@ def matchData(
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
     elif method == 'vvlBin':
         data= _vvlBin(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
+    elif method == 'vertNet':
+        data = _vertNetmatch(data,flist,ftypes,filemap_r,omask,e3t0,maskName)
     else:
         print('option '+method+' not written yet')
         return
@@ -254,6 +267,73 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quie
         data.reset_index(drop=True,inplace=True)
     return data
 
+def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
+    """ basic vertical matching of model output to data
+        returns model value from model grid cell that would contain the observation point with
+        no interpolation; no consideration of the changing of grid thickenss with the tides (vvl)
+        strategy: loop through data, openening and closing model files as needed and storing model data
+    """
+    if len(data)>5000:
+        pprint=True
+        lendat=len(data)
+    else: 
+        pprint= False
+    # set up columns to hold indices for upper and lower end of range to average over
+    data['k_upper']=-1*np.ones((len(data))).astype(int)
+    data['k_lower']=-1*np.ones((len(data))).astype(int)
+    for ind, row in data.iterrows():
+        if (pprint==True and ind%5000==0):
+            print('progress: {}%'.format(ind/lendat*100))
+        if ind==0: # special case for start of loop; load first files
+            fid=dict()
+            fend=dict()
+            torig=dict()
+            for ift in ftypes:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+                # handle NEMO files time reference
+                torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') 
+        # loop through each file type to extract data from the appropriate time and location
+        for ift in ftypes:
+            if row['dtUTC']>=fend[ift]:
+                fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
+            # now read data
+            # find time index
+            try:
+                ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+            except:
+                print(row['dtUTC'],ift,torig[ift])
+                tlist=fid[ift].variables['time_centered_bounds'][:,:]
+                for el in tlist:
+                    print(el)
+                print((row['dtUTC']-torig[ift]).total_seconds())
+                print(tlist[-1,1])
+                raise
+            # find depth indices (assume they may be reversed)
+            z_l=max(row['Z_upper'],row['Z_lower'])
+            z_u=min(row['Z_upper'],row['Z_lower'])
+            ik_l=_getZInd_bin(z_l,fid[ift],maskName=maskName)
+            ik_u=_getZInd_bin(z_u,fid[ift],maskName=maskName)
+            # assign values for each var assoc with ift
+            if (not np.isnan(ik_l)) and (not np.isnan(ik_u)) and \
+                         (gridmask[0,ik_u,row['j'],row['i']]==1):
+                data.loc[ind,['k_upper']]=int(ik_u)
+                data.loc[ind,['k_lower']]=int(ik_l)
+                for ivar in filemap_r[ift]:
+                    var=fid[ift].variables[ivar][ih,ik_u:(ik_l+1),row['j'],row['i']]
+                    e3t=e3t0[ik_u:(ik_l+1),row['j'],row['i']]
+                    imask=gridmask[0,ik_u:(ik_l+1),row['j'],row['i']]
+                    meanvar=np.sum(var*e3t*imask)/np.sum(e3t*imask)
+                    data.loc[ind,['mod_'+ivar]]=meanvar
+                    if gridmask[0,ik_l,row['j'],row['i']]==0:
+                        print(f"Warning: lower limit is not an ocean value:",
+                             f" i={row['i']}, j={row['j']}, k_upper={ik_u}, k_lower={ik_l},",
+                             f"k_seafloor={np.sum(imask)}",
+                             f"Lon={row['Lon']}, Lat={row['Lat']}, dtUTC={row['dtUTC']}")
+            else:
+                print(f"Warning: upper limit is not an ocean value:",
+                     f" i={row['i']}, j={row['j']}, k_upper={ik_u},Lat={row['Lat']},",
+                     f"Lon={row['Lon']},dtUTC={row['dtUTC']}")
+    return data
 
 def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIndexed=False):
     """ basic vertical matching of model output to data
@@ -503,13 +583,14 @@ def _getZInd_bin(idt,ifid=None,boundsFlag=False,maskName='tmask'):
         ih=np.nan
     return ih
 
-def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
+def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     """
     See inputs for matchData above.
     outputs pandas dataframe containing columns 'paths','t_0', and 't_1'
-    where paths are all the model output files of a given type in the timer interval (start,end)
+    where paths are all the model output files of a given type in the time interval (start,end)
+    with end not included
     """
-    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None'):
+    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None',None):
         print('ftype={}, are you sure? (if yes, add to list)'.format(ftype))
     if tres==24:
         ftres='1d'
@@ -525,6 +606,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     elif nam_fmt=='sockeye':
        stencil=f'SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
     elif nam_fmt=='wind':
+       stencil='ops_{3}.nc'
+    elif nam_fmt=='ops':
        stencil='ops_{3}.nc'
     elif nam_fmt=='forcing': # use ftype as prefix
        stencil=ftype+'_{3}.nc'
@@ -564,7 +647,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype,tres):
     paths=list()
     t_0=list()
     t_n=list()
-    while iits<=end:
+    while iits<end:
         iite=iits+dt.timedelta(days=(flen-1))
         iitn=iits+dt.timedelta(days=flen)
         try:
@@ -588,6 +671,7 @@ def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,
     Requires file naming convention with start date and end date as YYYYMMDD_YYYYMMDD
     lists all files of a particular filetype and output frequency from a given results file structure
     useful if there are missing files
+    If start and end are provided, date start is included but end is not.
     """
     paths=glob.glob(os.path.join(basedir,'???????','*'+ftype+'*')) # assume if there are subdirectories, they must have nowcast yymmmdd format
     if len(paths)==0: # in case of no subdirectories
@@ -606,7 +690,7 @@ def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,
         t_n.append(dt.datetime.strptime(dates[1],'%Y%m%d')+dt.timedelta(days=1))
     idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n']) 
     if start is not None and end is not None:
-        ilocs=(idf['t_n']>start)&(idf['t_0']<=end)
+        ilocs=(idf['t_n']>start)&(idf['t_0']<end)
         idf=idf.loc[ilocs,:].copy(deep=True)
     idf=idf.sort_values(['t_0']).reset_index(drop=True)
     return idf
@@ -638,9 +722,9 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     Base.prepare(engine, reflect=True)
     # mapped classes have been created
     # existing tables:
-    StationTBL=Base.classes.StationTBL
-    ObsTBL=Base.classes.ObsTBL
-    CalcsTBL=Base.classes.CalcsTBL
+    StationTBL=Base.classes.CTDStationTBL
+    ObsTBL=Base.classes.CTDObsTBL
+    CalcsTBL=Base.classes.CTDCalcsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
              case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
@@ -673,7 +757,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
                                                                         or_(StationTBL.StartYear<end_y,
                                                                          and_(StationTBL.StartYear==end_y,StationTBL.StartMonth<end_m),
-                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<=end_d)),
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<end_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
                                                                     StationTBL.Include==True,ObsTBL.Include==True,CalcsTBL.Include==True))
@@ -711,7 +795,6 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     StationTBL=Base.classes.StationTBL
     ObsTBL=Base.classes.ObsTBL
     CalcsTBL=Base.classes.CalcsTBL
-    JDFLocsTBL=Base.classes.JDFLocsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_Bottle_SA!=None, CalcsTBL.Salinity_Bottle_SA)], else_=
              case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
@@ -763,7 +846,7 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth==start_m, StationTBL.StartDay>=start_d)),
                                                                      or_(StationTBL.StartYear<end_y,
                                                                          and_(StationTBL.StartYear==end_y,StationTBL.StartMonth<end_m),
-                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<=end_d)),
+                                                                         and_(StationTBL.StartYear==end_y,StationTBL.StartMonth==end_m, StationTBL.StartDay<end_d)),
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))#,
                                                                     #not_(and_(StationTBL.Lat>48.77,StationTBL.Lat<49.27,
@@ -974,7 +1057,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
     # set surface sample to more likely value of 0.55 m to aid matching with CTD data
     # extra 0.01 is to make np.round round up to 1 so that CTD data can match
     df.loc[df.Z==0,['Z']]=0.51
-    df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<=datelims[1])].copy(deep=True)
+    df=df.loc[(df.dtUTC>=datelims[0])&(df.dtUTC<datelims[1])].copy(deep=True)
     if loadCTD:
         df1=df.copy(deep=True)
         for ik in ctddfs.keys():
@@ -1122,7 +1205,7 @@ def loadHakai(datelims=(),loadCTD=False):
             fdata.at[i,'CT']=tem
             fdata.at[i,'pZ']=idfZ['Depth (m)'].values[0]
 
-    fdata2=fdata.loc[(fdata['dtUTC']>start_date)&(fdata['dtUTC']<end_date)&(fdata['Z']>=0)&(fdata['Z']<440)&(fdata['Lon']<360)&(fdata['Lat']<=90)].copy(deep=True).reset_index()
+    fdata2=fdata.loc[(fdata['dtUTC']>=start_date)&(fdata['dtUTC']<end_date)&(fdata['Z']>=0)&(fdata['Z']<440)&(fdata['Lon']<360)&(fdata['Lat']<=90)].copy(deep=True).reset_index()
     fdata2.drop(['no','event_pk','Date','Sampling Bout','Latitude','Longitude','index','Gather Lat','Gather Long', 'Pressure Transducer Depth (m)',
                 'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)    
     return fdata2
@@ -1143,11 +1226,18 @@ def stats(obs0,mod0):
     obs=obs0[iii]
     mod=mod0[iii]
     N=len(obs)
-    modmean=np.mean(mod)
-    obsmean=np.mean(obs)
-    bias=modmean-obsmean
-    vRMSE=RMSE(obs,mod)
-    vWSS=WSS(obs,mod)
+    if N>0:
+        modmean=np.mean(mod)
+        obsmean=np.mean(obs)
+        bias=modmean-obsmean
+        vRMSE=RMSE(obs,mod)
+        vWSS=WSS(obs,mod)
+    else:
+        modmean=np.nan
+        obsmean=np.nan
+        bias=np.nan
+        vRMSE=np.nan
+        vWSS=np.nan
     return N, modmean, obsmean, bias, vRMSE, vWSS
 
 def varvarScatter(ax,df,obsvar,modvar,colvar,vmin=0,vmax=0,cbar=False,cm=cmo.cm.thermal,args={}):
