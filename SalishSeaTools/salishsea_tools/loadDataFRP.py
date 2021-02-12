@@ -299,6 +299,11 @@ def loadDataFRP(exp='all',sel='narrow',dp=1.0):
         print('option sel='+sel+' is not defined.')
         raise
     df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
+    parDZ=.78
+    xmisDZ=.36
+    turbDZ=.67
+    pshiftdict={'gsw_ctA0':0.0,'gsw_srA0':0.0,'xmiss':xmisDZ,'seaTurbMtr':turbDZ,'par':parDZ,
+                'wetStar':0.0,'sbeox0ML_L':0.0,'seaTurbMtrnoQC':turbDZ}
 
     zCasts=dict()
     for nn in clist:
@@ -319,160 +324,83 @@ def loadDataFRP(exp='all',sel='narrow',dp=1.0):
         pmax=cast25[nn].df.loc[ip,'prSM']
         edges=np.arange(dp/2,pmax+dp,dp)
         #edges=np.arange(0,pmax+dp,dp)
-        parDZ=.78
-        xmisDZ=.36
-        turbDZ=.67
-        pshiftdict={'gsw_ctA0':0.0,'gsw_srA0':0.0,'xmiss':xmisDZ,'seaTurbMtr':turbDZ,'par':parDZ,
-                    'wetStar':0.0,'sbeox0ML_L':0.0}
         dCast=pd.DataFrame()
         uCast=pd.DataFrame()
-        for var in ('gsw_ctA0','gsw_srA0','xmiss','par','wetStar','sbeox0ML_L'):
-            if not nn==14.2:
-                #downcast
-                inP=cast25[nn].df.loc[pS:ip]['prSM'].values-pshiftdict[var] # down p
-                inV=cast25[nn].df.loc[pS:ip][var].values # down var
-                if sel=='wide':
-                    inV[inP<.1]=np.nan
-                p, out=bindepth(inP,inV,edges,prebin=prebin)
-                if var=='gsw_ctA0':
-                    dCast=pd.DataFrame(p,columns=['prSM'])
-                dCast[var]=out
-            else:# special case where there is no downcast
-                if var=='gsw_ctA0':
-                    dCast=pd.DataFrame(np.nan*np.ones(10),columns=['prSM'])
-                dCast[var]=np.nan*np.ones(10)
-            if not nn==14.1:
-                #upcast    
-                inP=cast25[nn].df.loc[ip:pE]['prSM'].values-pshiftdict[var] # down p
-                inV=cast25[nn].df.loc[ip:pE][var].values # down var
-                if sel=='wide':
-                    inV[inP<.1]=np.nan
-                p, out=bindepth(inP,inV,edges,prebin=prebin)
-                if var=='gsw_ctA0':
-                    uCast=pd.DataFrame(p,columns=['prSM'])
-                uCast[var]=out
-            else:# special case where there is no upcast
-                if var=='gsw_ctA0':
-                    uCast=pd.DataFrame(np.nan*np.ones(10),columns=['prSM'])
-                uCast[var]=np.nan*np.ones(10)
-        if not nn==14.2:
-            #turbidity downcast
-            inP=cast25[nn].df.loc[pS:ip]['prSM'].values-turbDZ # down p
-            inV0=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values # down var
-            if sel=='wide':
-                # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
-                # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
-                inV0[np.logical_or(ii1,ii2)]=np.nan
-            inV=ssig.medfilt(inV0,3) # down var
-            if sel=='wide': # exclude above surface data
-                with np.errstate(invalid='ignore'):
-                    inV[inP<.1]=np.nan
-            p, tur=bindepth(inP,inV,edges,prebin=prebin)
-            dCast['turb']=tur*1.0/tcor
-        else: # special case where there is no downcast
-            dCast['turb']=np.nan*np.ones(10)
-        if not nn==14.1:
-            #turbidity upcast
-            inP=cast25[nn].df.loc[ip:pE]['prSM'].values-turbDZ # up p
-            inV0=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values # up var
-            if sel=='wide':
-                # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
-                # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
-                inV0[np.logical_or(ii1,ii2)]=np.nan
-            inV=ssig.medfilt(inV0,3) # down var
-            if sel=='wide': # exclude above surface data
-                with np.errstate(invalid='ignore'):
-                    inV[inP<.1]=np.nan
-            p, tur=bindepth(inP,inV,edges,prebin=prebin)
-            uCast['turb']=tur*1.0/tcor
-        else: # special case where there is no upcasts
-            uCast['turb']=np.nan*np.ones(10)
+        
+        cast19[nn].df['seaTurbMtrnoQC']=cast19[nn].df['seaTurbMtr']
+        cast19[nn].df['seaTurbMtr']=turbQC(cast19[nn].df['seaTurbMtr'])
 
-        zCasts[nn]=zCast(uCast,dCast)
-
-    # fix first 2 casts for which sb25 pump did not turn on. use sb19
-    if (exp=='exp1' or exp=='all'):
-        for nn in range(1,3):
-
-            uCast=zCasts[nn].uCast
-            dCast=zCasts[nn].dCast
-
-            ip=np.argmax(cast25[nn].df['prSM'].values)
-            ilag=df0.loc[df0.Station==nn,'ishift_sub19'].values[0]
-            pS_pr=df0.loc[df0.Station==nn,'pS_pr'].values[0]
-            pE_pr=df0.loc[df0.Station==nn,'pE_pr'].values[0]
-            pS_tur=df0.loc[df0.Station==nn,'pStart25'].values[0]
-            pE_tur=df0.loc[df0.Station==nn,'pEnd25'].values[0]
-            if sel=='narrow':
-                pS=pS_tur
-                pE=pE_tur
-            elif sel=='wide':
-                pS=pS_pr
-                pE=pE_pr
-
-            pmax=cast25[nn].df.loc[ip,'prSM']
-            edges=np.arange(dp/2,pmax+dp,dp)
-            #edges=np.arange(0,pmax+dp,dp)
-
-            ##temperature
-            #downcast
-            inP=cast25[nn].df.loc[pS:ip]['prSM'].values # down p
-            inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_ctA0'].values # down var
+        def makeVCol(incast_p,outcast,var,i0,i1,incast_v=None):
+            # incast_p: [cast25[nn]] cast to get pressure from; also used for var unless incast_v specified
+            # outcast: [dCast or uCast] cast to save resulting aligned data to
+            # i0, i1: [pS:ip/ip:pE] starting and ending indices for data to include relative to incast_p
+            # var: variable name to extract
+            # incast_v [cast19[nn]] if variables are from sbe19, specify that cast; otherwise get variable from incast_p (25)
+            # vplag: ilag to align sbe19 to sbe25 in case where var is from sbe19; defaults to 0 for sbe25
+            # NOTE: dataframes are mutable; changes to outcast propagate to its input df
+            if incast_v is None:
+                incast_v=incast_p
+                vplag=0
+            else:
+                vplag=ilag
+            inP=incast_p.df.loc[i0:i1]['prSM'].values-pshiftdict[var] # p
+            inV=incast_v.df.loc[(i0+vplag):(i1+vplag)][var].values # var
             if sel=='wide':
                 inV[inP<.1]=np.nan
             p, out=bindepth(inP,inV,edges,prebin=prebin)
-            dCast['gsw_ctA0']=out
-            #upcast    
-            inP=cast25[nn].df.loc[ip:pE]['prSM'].values # up p
-            inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_ctA0'].values # up var
-            if sel=='wide':
-                inV[inP<.1]=np.nan
-            p, out=bindepth(inP,inV,edges,prebin=prebin)
-            uCast['gsw_ctA0']=out
+            if len(outcast) == 0: # pressure not added yet
+                outcast['prSM']=p
+            outcast[var]=out
+            return 
 
-            ##sal
-            #downcast
-            inP=cast25[nn].df.loc[pS:ip]['prSM'].values # down p
-            inV=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['gsw_srA0'].values # down var
-            if sel=='wide':
-                inV[inP<.1]=np.nan
-            p, out=bindepth(inP,inV,edges,prebin=prebin)
-            dCast['gsw_srA0']=out
-            #upcast    
-            inP=cast25[nn].df.loc[ip:pE]['prSM'].values # up p
-            inV=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['gsw_srA0'].values # up var
-            if sel=='wide':
-                inV[inP<.1]=np.nan
-            p, out=bindepth(inP,inV,edges,prebin=prebin)
-            uCast['gsw_srA0']=out
-
+        # fix first 2 casts for which sb25 pump did not turn on. use sb19
+        if nn==1 or nn==2:
             ##xmiss: xmis25=1.14099414691*xmis19+-1.6910134322
-            #downcast
-            inP=cast25[nn].df.loc[pS:ip]['prSM'].values-xmisDZ # down p
-            inV=1.14099414691*cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['CStarTr0'].values-1.6910134322 # down var
-            if sel=='wide':
-                inV[inP<.1]=np.nan
-            p, out=bindepth(inP,inV,edges,prebin=prebin)
-            dCast['xmiss']=out
-            #upcast    
-            inP=cast25[nn].df.loc[ip:pE]['prSM'].values-xmisDZ # up p
-            inV=1.14099414691*cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['CStarTr0'].values-1.6910134322 # up var
-            if sel=='wide':
-                inV[inP<.1]=np.nan
-            p, out=bindepth(inP,inV,edges,prebin=prebin)
-            uCast['xmiss']=out
-
+            cast19[nn].df['xmiss']=1.14099414691*cast19[nn].df['CStarTr0']-1.6910134322 # down var
+            for var in ('gsw_ctA0','gsw_srA0','xmiss'):
+                #downcast
+                makeVCol(cast25[nn],dCast,var,pS,ip,incast_v=cast19[nn])
+                #upcast
+                makeVCol(cast25[nn],uCast,var,ip,pE,incast_v=cast19[nn]) 
+            makeVCol(cast25[nn],dCast,'par',pS,ip)
+            makeVCol(cast25[nn],uCast,'par',ip,pE)
             uCast['wetStar']=np.nan
             dCast['wetStar']=np.nan
             uCast['sbeox0ML_L']=np.nan
             dCast['sbeox0ML_L']=np.nan
+        else:
+            for var in ('gsw_ctA0','gsw_srA0','xmiss','par','wetStar','sbeox0ML_L'):
+                if not nn==14.2:
+                    #downcast
+                    makeVCol(cast25[nn],dCast,var,pS,ip)
+                else:# special case where there is no downcast
+                    if len(dCast)==0: # pressure not added yet
+                        dCast=pd.DataFrame(np.nan*np.ones(10),columns=['prSM'])
+                    dCast[var]=np.nan*np.ones(10)
+                if not nn==14.1:
+                    #upcast    
+                    makeVCol(cast25[nn],uCast,var,ip,pE)
+                else:# special case where there is no upcast
+                    if len(uCast)==0: # pressure not added yet
+                        uCast=pd.DataFrame(np.nan*np.ones(10),columns=['prSM'])
+                    uCast[var]=np.nan*np.ones(10)
+        if not nn==14.2:
+            #turbidity downcast
+            makeVCol(cast25[nn],dCast,'seaTurbMtr',pS,ip,incast_v=cast19[nn])
+            makeVCol(cast25[nn],dCast,'seaTurbMtrnoQC',pS,ip,incast_v=cast19[nn])
+            dCast['turb']=dCast['seaTurbMtr']*1.0/tcor
+        else: # special case where there is no downcast
+            dCast['turb']=np.nan*np.ones(10)
+        if not nn==14.1:
+            #turbidity upcast
+            makeVCol(cast25[nn],uCast,'seaTurbMtr',ip,pE,incast_v=cast19[nn])
+            makeVCol(cast25[nn],uCast,'seaTurbMtrnoQC',ip,pE,incast_v=cast19[nn])
+            uCast['turb']=uCast['seaTurbMtr']*1.0/tcor
+        else: # special case where there is no upcast
+            uCast['turb']=np.nan*np.ones(10)
 
-            zCasts[nn]=zCast(uCast,dCast)
-    
+        zCasts[nn]=zCast(uCast,dCast)
+
     return df0, zCasts
 
 def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
