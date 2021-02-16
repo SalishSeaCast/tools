@@ -94,24 +94,48 @@ def fmtVarName(strx):
         vName='_'+vName
     return vName
 
-def rolling_window(a, window):
-    # source: http://www.rigtorp.se/2011/01/01/rolling-statistics-numpy.html
-    # use example: np.mean(rolling_window(x, 3), -1)
-    shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-    strides = a.strides + (a.strides[-1],)
-    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+#def rolling_window(a, window):
+#    # source: http://www.rigtorp.se/2011/01/01/rolling-statistics-numpy.html
+#    # use example: np.mean(rolling_window(x, 3), -1)
+#    shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
+#    strides = a.strides + (a.strides[-1],)
+#    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+#
+#def rolling_window_padded(a,window):
+#    # extend rolling window to be same lenth as input array by duplicating first and last values
+#    # even values not symmetric
+#    test=rolling_window(a,window)
+#    while window>1:
+#        if window%2==0:
+#            test=np.concatenate(([test[0,:]],test),axis=0)
+#        else:
+#            test=np.concatenate((test,[test[-1,:]]),axis=0)
+#        window+=-1
+#    return test
 
-def rolling_window_padded(a,window):
-    # extend rolling window to be same lenth as input array by duplicating first and last values
-    # even values not symmetric
-    test=rolling_window(a,window)
-    while window>1:
-        if window%2==0:
-            test=np.concatenate(([test[0,:]],test),axis=0)
-        else:
-            test=np.concatenate((test,[test[-1,:]]),axis=0)
-        window+=-1
-    return test
+def slidingWindowEval(x,func,window,axis=0):
+    # x is input array
+    # func is function to carry out over window
+    # window is window size
+    # axis is axis to act along, in case of multiple
+    # if window is even, results will be shifted left by 1/2 unit
+    x1=np.lib.stride_tricks.sliding_window_view(x, window, axis)
+    b=func(x1,-1)
+
+    # the rest of the code pads the front and back to return an array of the same shape as the original
+    nfront=np.floor((window-1)/2)
+    nback=np.floor((window-1)/2)+(window-1)%2
+    inxf=[slice(None)]*np.ndim(b)
+    inxf[axis]=slice(0,1,1)
+    inxb=[slice(None)]*np.ndim(b)
+    inxb[axis]=slice(np.shape(b)[axis]-1,np.shape(b)[axis],1)
+    repsf=np.ones(np.ndim(b),dtype=int)
+    repsf[axis]=int(nfront)
+    repsb=np.ones(np.ndim(b),dtype=int)
+    repsb[axis]=int(nback)
+    x2=np.concatenate((np.tile(b[tuple(inxf)],repsf),b,np.tile(b[tuple(inxb)],repsb)),axis=axis)
+    return x2
+
 
 def amp(var,dim=0):
     return np.nanmax(var,dim)-np.nanmin(var,dim)
@@ -124,9 +148,11 @@ def turbQC(x):
     # remove a point if the max-min of the surrounding 5 point window 
     # is greater than 1/3 the maximum turbidity value of the cast 
     # (remove data within 5 points of a large jump)
-    ii1=amp(rolling_window_padded(x,5),-1)>.33*np.nanmax(x)
+    #ii1=amp(rolling_window_padded(x,5),-1)>.33*np.nanmax(x)
+    ii1=slidingWindowEval(x,amp,5)>.33*np.nanmax(x)
     # remove data within 5 points of a near-zero turbidity value
-    ii2=np.nanmin(rolling_window_padded(x,5),-1)<.3
+    #ii2=np.nanmin(rolling_window_padded(x,5),-1)<.3
+    ii2=slidingWindowEval(x,np.nanmin,5)<.3
     y=np.copy(x)
     y[np.logical_or(ii1,ii2,)]=np.nan
     y=ssig.medfilt(y,3) 
@@ -462,9 +488,11 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             inV0=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values # down var
             if sel=='wide':
                 # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                #ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                ii1=slidingWindowEval(inV0,amp,5)>.5*np.nanmax(inV0)
                 # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                #ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                ii2=slidingWindowEval(inV0,np.nanmin,5)<.3
                 inV0[np.logical_or(ii1,ii2)]=np.nan
             inV=ssig.medfilt(inV0,3) # down var
             if sel=='wide': # exclude above surface data
@@ -482,9 +510,11 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
             inV0=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values # up var
             if sel=='wide':
                 # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                #ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                ii1=slidingWindowEval(inV0,amp,5)>.5*np.nanmax(inV0)
                 # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                #ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                ii2=slidingWindowEval(inV0,np.nanmin,5)<.3
                 inV0[np.logical_or(ii1,ii2)]=np.nan
             inV=ssig.medfilt(inV0,3) # down var
             if sel=='wide': # exclude above surface data
@@ -662,9 +692,11 @@ def loadDataFRP_SSGrid(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEM
             inV0=cast19[nn].df.loc[(pS+ilag):(ip+ilag)]['seaTurbMtr'].values # down var
             if sel=='wide':
                 # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                #ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                ii1=slidingWindowEval(inV0,amp,5)>.5*np.nanmax(inV0)
                 # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                #ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                ii2=slidingWindowEval(inV0,np.nanmin,5)<.3
                 inV0[np.logical_or(ii1,ii2)]=np.nan
             inV=ssig.medfilt(inV0,3) # down var
             if sel=='wide': # exclude above surface data
@@ -681,9 +713,11 @@ def loadDataFRP_SSGrid(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEM
             inV0=cast19[nn].df.loc[(ip+ilag):(pE+ilag)]['seaTurbMtr'].values # up var
             if sel=='wide':
                 # additional QC for broader data selection
-                ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                #ii1=amp(rolling_window_padded(inV0,5),-1)>.5*np.nanmax(inV0)
+                ii1=slidingWindowEval(inV0,amp,5)>.5*np.nanmax(inV0)
                 # get rid of near-zero turbidity values; seem to be dropped signal
-                ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                #ii2=np.nanmin(rolling_window_padded(inV0,5),-1)<.3
+                ii2=slidingWindowEval(inV0,np.nanmin,5)<.3
                 inV0[np.logical_or(ii1,ii2)]=np.nan
             inV=ssig.medfilt(inV0,3) # down var
             if sel=='wide': # exclude above surface data
