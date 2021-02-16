@@ -609,6 +609,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
        stencil='ops_{3}.nc'
     elif nam_fmt=='ops':
        stencil='ops_{3}.nc'
+    elif nam_fmt=='gemlam':
+       stencil='gemlam_{3}.nc'
     elif nam_fmt=='forcing': # use ftype as prefix
        stencil=ftype+'_{3}.nc'
     else:
