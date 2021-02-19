@@ -1324,18 +1324,18 @@ def tsertser_graph(ax,df,obsvar,modvar,start_date,end_date,sepvar='',sepvals=([]
         lname=sepvar
     ps=list()
     if len(sepvals)==0:
-        obs0=et._deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[obsvar]])
-        mod0=et._deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[modvar]])
-        time0=et._deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),['dtUTC']])
+        obs0=_deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[obsvar]])
+        mod0=_deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[modvar]])
+        time0=_deframe(df.loc[(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),['dtUTC']])
         p0,=ax.plot(time0,obs0,'.',color=ocols[0],label=f'Observed {lname}')
         ps.append(p0)
         p0,=ax.plot(time0,mod0,'.',color=mcols[0],label=f'Modeled {lname}')
         ps.append(p0)
     else:
-        obs0=et._deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[obsvar]])
-        mod0=et._deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[modvar]])
-        time0=et._deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),['dtUTC']])
-        sep0=et._deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[sepvar]])
+        obs0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[obsvar]])
+        mod0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[modvar]])
+        time0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),['dtUTC']])
+        sep0=_deframe(df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])&(df[sepvar]==df[sepvar])&(df['dtUTC'] >= start_date)&(df['dtUTC']<= end_date),[sepvar]])
         sepvals=np.sort(sepvals)
                 # less than min case:
         ii=0
@@ -1551,7 +1551,7 @@ def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
     print(dfTime.keys())
     dfTime['dtPac']=[dt.datetime.combine(idate, itime) for idate, itime \
              in zip(dfTime['FlightDate'],dfTime['TimeDown \n(Local - PST or PDT)'])]
-    dfTime['dtUTC']=[et.pac_to_utc(ii) for ii in dfTime['dtPac']]
+    dfTime['dtUTC']=[pac_to_utc(ii) for ii in dfTime['dtPac']]
     # PROCESS STATION LOCATION INFO (based on Parker's code)
     sta_fn='/ocean/eolson/MEOPAR/obs/WADE/WDE_Data/OlsonSuchyAllen_UBC_PDR_P003790-010721.xlsx'
     sheetname='Site Info'
@@ -1579,7 +1579,7 @@ def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
     chlPheo3=pd.merge(left=sta_df,right=chlPheo2,how='right',
                      left_on='Station',right_on='Station')
     # join to date/time
-    dfTime['dtUTC']=[et.pac_to_utc(dt.datetime.combine(idate,itime)) for idate,itime in \
+    dfTime['dtUTC']=[pac_to_utc(dt.datetime.combine(idate,itime)) for idate,itime in \
                     zip(dfTime['FlightDate'],dfTime['TimeDown \n(Local - PST or PDT)'])]
     dfTime2=dfTime.loc[:,['FlightDate','SiteCode','dtUTC']]
     chlPheoFinal=pd.merge(left=chlPheo3,right=dfTime2,how='left',
@@ -1589,7 +1589,7 @@ def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
     #Add extra columns for later use
     chlPheoFinal['Z']=chlPheoFinal['SamplingDepth']
     chlPheoFinal['Year']=[ii.year for ii in chlPheoFinal['dtUTC']]
-    chlPheoFinal['YD']=et.datetimeToYD(chlPheoFinal['dtUTC'])
+    chlPheoFinal['YD']=datetimeToYD(chlPheoFinal['dtUTC'])
     chlPheoYear=pd.DataFrame(chlPheoFinal.loc[chlPheoFinal.Year==year])
     return chlPheoYear
 
@@ -1623,7 +1623,7 @@ def load_WADE_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
     df['Amm']=df['NH4(uM)D']
     df['Si']=df['SiOH4(uM)D']
     df['Year']=[ii.year for ii in df['dtUTC']]
-    df['YD']=et.datetimeToYD(df['dtUTC'])
+    df['YD']=datetimeToYD(df['dtUTC'])
     return(df)
    
     
@@ -1650,5 +1650,5 @@ def load_CTD_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolog
                            dfCTD['Lon'],dfCTD['Lat'])
     dfCTD['CT']=gsw.CT_from_t(dfCTD['SA'],dfCTD['Temperature'],press)
     dfCTD['Year']=[ii.year for ii in dfCTD['dtUTC']]
-    dfCTD['YD']=et.datetimeToYD(dfCTD['dtUTC'])
+    dfCTD['YD']=datetimeToYD(dfCTD['dtUTC'])
     return(dfCTD)
