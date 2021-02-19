@@ -135,7 +135,7 @@ def matchData(
     # define dictionaries of mesh lat and lon variables to use with different grids:
     lonvar={'tmask':'nav_lon','umask':'glamu','vmask':'glamv','fmask':'glamf'}
     latvar={'tmask':'nav_lat','umask':'gphiu','vmask':'gphiv','fmask':'gphif'}
-    print('ferry')
+
     # check that required columns are in dataframe:
     if method == 'ferry' or sdim==2:
         reqsubset=['dtUTC','Lat','Lon']
@@ -609,6 +609,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
        stencil='ops_{3}.nc'
     elif nam_fmt=='ops':
        stencil='ops_{3}.nc'
+    elif nam_fmt=='gemlam':
+       stencil='gemlam_{3}.nc'
     elif nam_fmt=='forcing': # use ftype as prefix
        stencil=ftype+'_{3}.nc'
     else:
