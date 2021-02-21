@@ -7,6 +7,7 @@ import re
 import string
 from salishsea_tools import geo_tools
 import netCDF4 as nc
+import gsw
 
 # list CTD cnv files associated with cast numbers 
 cnvlist19={1:'fraser2017101.cnv',
@@ -317,11 +318,24 @@ def loadDataFRP_init(exp='all'):
     return df0, clist, tcor, cast19, cast25
 
 
-def loadDataFRP(exp='all',sel='narrow',dp=1.0):
-    if exp not in {'exp1', 'exp2', 'all'}:
+def loadDataFRP(exp='all',sel='narrow',dp=1.0,form='binned',vert='p',
+        meshPath='/data/eolson/results/MEOPAR/NEMO-forcing-new/grid/mesh_mask201702.nc'):
+    # exp determines which sampling date to load (or all)
+    # sel determines whether to use narrow data selection, which is a more conservative estimate,
+    #       or 'wide' data selection, which includes more near-surface data but can include
+    #       some time the intstruments were parked near-surface
+    # dp determines bin interval in terms of depth variable vert (only if form='binned')
+    # form can be 'binned','raw' or 'SSCgrid' and determines if binned and how
+    # vert determines vertical variable: 'p' or 'z'
+    # meshPath is SSC mesh file location for binning to model grid (form='SSCgrid')
+    if exp not in {'exp1', 'exp2', 'exp3', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
-    if sel not in {'narrow', 'wide'}:
+    if sel == 'narrow':
+        prebin=False
+    elif sel == 'wide':
+        prebin=True
+    else:
         print('option sel='+sel+' is not defined.')
         raise
     df0, clist, tcor, cast19, cast25 = loadDataFRP_init(exp=exp)
@@ -342,11 +356,9 @@ def loadDataFRP(exp='all',sel='narrow',dp=1.0):
         if sel=='narrow':
             pS=pS_tur
             pE=pE_tur
-            prebin=False
         elif sel=='wide':
             pS=pS_pr
             pE=pE_pr
-            prebin=True
         pmax=cast25[nn].df.loc[ip,'prSM']
         edges=np.arange(dp/2,pmax+dp,dp)
         #edges=np.arange(0,pmax+dp,dp)
@@ -598,7 +610,7 @@ def loadDataFRP_raw(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-f
 
 def loadDataFRP_SSGrid(exp='all',sel='narrow',meshPath='/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702.nc'):
     import gsw # only in this function; use to convert p to z
-    if exp not in {'exp1', 'exp2', 'all'}:
+    if exp not in {'exp1', 'exp2', 'exp3', 'all'}:
         print('option exp='+exp+' is not defined.')
         raise
     if sel not in {'narrow', 'wide'}:
