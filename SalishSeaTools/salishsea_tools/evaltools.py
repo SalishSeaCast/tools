@@ -375,6 +375,8 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
                 try:
                     ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
                 except:
+                    print('fend',fend)
+                    print('flist[ift]',flist[ift]['paths'][0])
                     print(row['dtUTC'],ift,torig[ift])
                     tlist=fid[ift].variables['time_centered_bounds'][:,:]
                     for el in tlist:
@@ -541,6 +543,9 @@ def _nextfile_bin(ift,idt,ifind,fid,fend,flist): # to do: replace flist[ift] wit
     if ift in fid.keys():
         fid[ift].close()
     frow=flist[ift].loc[(ifind.t_0<=idt)&(ifind.t_n>idt)]
+    #print('idt:',idt)
+    #print(frow)
+    #print('switched files: ',frow['paths'].values[0])
     fid[ift]=nc.Dataset(frow['paths'].values[0])
     fend[ift]=frow['t_n'].values[0]
     return fid, fend
@@ -617,7 +622,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
        stencil=ftype+'_{3}.nc'
     else:
         raise Exception('nam_fmt '+nam_fmt+' is not defined')
-    iits=start
+    #Note fix: to avoid errors if hour and second included with start and end time, strip them!
+    iits=dt.datetime(start.year,start.month,start.day)
     iite=iits+dt.timedelta(days=(flen-1))
     # check if start is a file start date and if not, try to identify the file including it
     # (in case start date is in the middle of a multi-day file)
