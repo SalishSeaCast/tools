@@ -860,8 +860,8 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                                               StationTBL.Lon>-123.6,StationTBL.Lon<-123.43))).all())
     else:
         df1=pd.DataFrame(qry.all())
-    df1['Z']=np.where(df1['Depth']>=0,df1['Depth'],-1.0*gsw.z_from_p(p=df1['Pressure'],lat=df1['Lat']))
-    df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
+    df1['Z']=np.where(df1['Depth']>=0,df1['Depth'],-1.0*gsw.z_from_p(p=df1['Pressure'].values,lat=df1['Lat'].values))
+    df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for ind, (y,m,d,h) in df1.loc[:,['Year','Month','Day','Hour']].iterrows()]
     session.close()
     engine.dispose()
     return df1
