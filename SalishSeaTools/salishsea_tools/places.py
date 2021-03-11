@@ -489,6 +489,22 @@ PLACES = {
         'GEM2.5 grid ji' : (139, 155),
         'wind grid ji' : (139, 155),
     },
+    # ORCA Buoys
+    'Hoodsport': {
+        'lon lat': (-123.1126, 47.4218)
+    },
+    'Twanoh': {
+        'lon lat': (-123.0083, 47.3750)
+    },
+    'Dabob Bay': {
+        'lon lat': (-122.8029, 47.8031)
+    },
+    'Point Wells': {
+        'lon lat': (-122.3972, 47.7612)
+    },
+    'Carr Inlet': {
+        'lon lat': (-122.7300, 47.2800)
+    }
 }
 # Aliases:
 PLACES['Sandheads'] = PLACES['Sand Heads']
