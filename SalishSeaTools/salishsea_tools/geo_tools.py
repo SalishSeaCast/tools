@@ -16,6 +16,7 @@
 """Functions for working with geographical data and model results.
 """
 import numpy as np
+import xarray as xr
 
 
 def distance_along_curve(lons, lats):
