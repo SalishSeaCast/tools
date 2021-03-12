@@ -496,13 +496,13 @@ PLACES = {
     'Twanoh': {
         'lon lat': (-123.0083, 47.3750)
     },
-    'Dabob Bay': {
+    'DabobBay': {
         'lon lat': (-122.8029, 47.8031)
     },
-    'Point Wells': {
+    'PointWells': {
         'lon lat': (-122.3972, 47.7612)
     },
-    'Carr Inlet': {
+    'CarrInlet': {
         'lon lat': (-122.7300, 47.2800)
     }
 }
