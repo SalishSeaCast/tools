@@ -228,7 +228,7 @@ def plot_land_mask(
         lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(
-                np.array(lons), np.array(lats), np.array(depths), 
+                np.array(lons), np.array(lats), np.array(depths),
                 contour_interval, colors=color, zorder=zorder)
         else:
             contour_fills = axes.contourf(
@@ -237,7 +237,7 @@ def plot_land_mask(
                 zorder=zorder)
     else:
         if xslice is None and yslice is None:
-            contour_fills = axes.contourf(np.array(depths), 
+            contour_fills = axes.contourf(np.array(depths),
                                           contour_interval, colors=color,
                                           zorder=zorder)
         else:
@@ -254,40 +254,40 @@ def plot_boundary(
         color='burlywood', zorder=10
 ):
     """Plot the land boundary for a given NEMO domain slice.
-    
+
     :arg ax: axes object handle
     :type ax: :py:class:`matplotlib.axes._subplots.AxesSubplot`
-    
+
     :arg grid: NEMO grid variables
     :type grid: :py:class:`xarray.DataSet`
-    
+
     :arg mask: NEMO mask variables
     :type mask: :py:class:`xarray.DataSet`
-    
+
     :arg dim: dimension for slice (one of 'depth', 'x', or 'y')
     :type dim: str
-    
+
     :arg index: slice index (integer for 'x' or 'y', float for 'depth')
     :type index: int or float
-    
+
     :arg coords: 'map' or 'grid'
     :type coords: str
-    
+
     :arg color: land color
     :type color: str
-    
+
     :arg zorder: desired vertical plot layer
     :type zorder: int
-    
+
     :returns: land and coastline contour object handles
     :rtype: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    
+
     # Define depth array and slices
     depth = mask.gdept_1d.isel(t=0)
     dimslice = dim
     indexslice = index
-    
+
     # Determine coordinate system and orientation
     if dim == 'depth':
         dimslice = 'z'
@@ -324,7 +324,7 @@ def plot_boundary(
         dim1, dim2, mask.tmask.isel(**{'t': 0, dimslice: indexslice}),
         [0], colors='k', zorder=zorder
     )
-    
+
     # Invert depth axis
     if dim == 'x' or dim == 'y':
         ax.invert_yaxis()
@@ -406,12 +406,12 @@ def unstagger(ugrid, vgrid):
 
 def unstagger_xarray(qty, index):
     """Interpolate u, v, or w component values to values at grid cell centres.
-    
+
     Named indexing requires that input arrays are XArray DataArrays.
 
     :arg qty: u, v, or w component values
     :type qty: :py:class:`xarray.DataArray`
-    
+
     :arg index: index name along which to centre
         (generally one of 'gridX', 'gridY', or 'depth')
     :type index: str
@@ -419,9 +419,9 @@ def unstagger_xarray(qty, index):
     :returns qty: u, v, or w component values at grid cell centres
     :rtype: :py:class:`xarray.DataArray`
     """
-    
+
     qty = (qty + qty.shift(**{index: 1})) / 2
-    
+
     return qty
 
 
@@ -435,7 +435,7 @@ def rotate_vel(u_in, v_in, origin='grid'):
 
     :arg v_in: v velocity component values
     :type v_in: :py:class:`numpy.ndarray`
-    
+
     :arg origin: Input coordinate system
                  (either 'grid' or 'map', output will be the other)
     :type origin: str
@@ -443,7 +443,7 @@ def rotate_vel(u_in, v_in, origin='grid'):
     :returns u_out, v_out: rotated u and v component values
     :rtype: :py:class:`numpy.ndarray`
     """
-    
+
     # Determine rotation direction
     if   origin == 'grid':
         fac =  1
@@ -455,10 +455,10 @@ def rotate_vel(u_in, v_in, origin='grid'):
 
     # Rotate velocities
     theta_rad = 29 * np.pi / 180
-    
+
     u_out = u_in * np.cos(theta_rad) - fac * v_in * np.sin(theta_rad)
     v_out = u_in * np.sin(theta_rad) * fac + v_in * np.cos(theta_rad)
-    
+
     return u_out, v_out
 
 
@@ -600,13 +600,13 @@ def rotate_vel_bybearing(u_in, v_in, coords, origin="grid"):
 
 def clear_contours(C):
     """Clear contours from an existing plot.
-    
+
     :arg C: contour object handle
     :type C: :py:class:`matplotlib.contour.QuadContourSet`
     """
-    
+
     # Clear previous contours
     for C_obj in C.collections:
         C_obj.remove()
-    
+
     return

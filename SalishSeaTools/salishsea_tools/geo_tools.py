@@ -112,17 +112,17 @@ def _spiral_search_for_closest_water_point(
         return closest_point
     else:
         raise ValueError('lat/lon on land and no nearby water point found')
-        
+
 def get_ij_coordinates(lat,lon,grid_loc='~/MEOPAR/grid/grid_from_lat_lon_mask999.nc'):
-    """ Finds the closest ii and jj model coordinates by matching Latitude and 
+    """ Finds the closest ii and jj model coordinates by matching Latitude and
         Longitude to the new grid_from_lat_lon_mask999.nc file
-        
+
         :arg lat: The Latittude of the point in question in decimal degrees.
         :type : float
-        
+
         :arg lon: The Longitude of the point in question in decimal degrees.
         :type : float
-        
+
         :arg grid_loc: The location of the grid_from_lat_lon nc file on your system.
         :type : string
     """
@@ -234,7 +234,7 @@ def find_closest_model_point(
             if (np.abs(model_lons[j2,i2]-lon)>tols[grid]['tol_lon']) or \
                 (np.abs(model_lats[j2,i2]-lat)>tols[grid]['tol_lat']):
                 return np.nan,np.nan
-            else: 
+            else:
                 return j2, i2
         else:
             return _spiral_search_for_closest_water_point(
@@ -253,7 +253,7 @@ def closestPointArray(lons,lats,
 ):
     """Wrapper on find_closest_model_point that is faster if you have many points to locate AND
     you expect the points to be ordered such that each point is likely close to the point ahead
-    (eg ship track). 
+    (eg ship track).
     Returns the grid coordinates of the closest model points as numpy arrays of lons and lats.
     See find_closest_model_point for more details.
     For a list of 5000 points on ONC ferry path, speed up was ~95%.

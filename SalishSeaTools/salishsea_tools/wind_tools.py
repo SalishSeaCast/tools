@@ -119,7 +119,7 @@ def parse_DFO_buoy_date(line):
 
 def read_DFO_buoy(station, year):
     """Reads the data from a DFO *.fb buoy data file and appends to a timeseries dict
-    
+
     :arg station: station name string
 
     :arg year: integer year requested

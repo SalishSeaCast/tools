@@ -80,7 +80,7 @@ def matchData(
         'Z': depth, positive     NOT  required if method='ferry' or sdim=2
     :type :py:class:`pandas.DataFrame`
 
-    :arg dict filemap: dictionary mapping names of model variables to filetypes containing them 
+    :arg dict filemap: dictionary mapping names of model variables to filetypes containing them
 
     :arg dict fdict: dictionary mapping filetypes to their time resolution in hours
 
@@ -103,8 +103,8 @@ def matchData(
         'bin'- return model value from grid/time interval containing observation
         'vvlBin' - same as 'bin' but consider tidal change in vertical grid
         'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
-        'ferry' - match observations to mean of upper 3 model layers 
-        'vertNet' - match observations to mean over a vertical range defined by 
+        'ferry' - match observations to mean of upper 3 model layers
+        'vertNet' - match observations to mean over a vertical range defined by
                     Z_upper and Z_lower; first try will include entire cell containing end points
                     and use e3t_0 rather than time-varying e3t
 
@@ -115,7 +115,7 @@ def matchData(
     :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
                        for ops vars use 'ops'
 
-    :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes 
+    :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes
                              nearness of subsequent values
 
     :arg int wrapTol: assumed search radius from previous grid point if wrapSearch=True
@@ -130,7 +130,7 @@ def matchData(
 
     :arg boolean quiet: if True, suppress non-critical warnings
 
-    :arg boolean preIndexed: set True if horizontal  grid indices already in input dataframe; for 
+    :arg boolean preIndexed: set True if horizontal  grid indices already in input dataframe; for
                speed; not implemented with all options
 
     """
@@ -156,10 +156,10 @@ def matchData(
 
     fkeysVar=list(filemap.keys()) # list of model variables to return
     # don't load more files than necessary:
-    ftypes=list(fdict.keys())     
+    ftypes=list(fdict.keys())
     for ikey in ftypes:
         if ikey not in set(filemap.values()):
-            fdict.pop(ikey) 
+            fdict.pop(ikey)
     if len(set(filemap.values())-set(fdict.keys()))>0:
         print('Error: file(s) missing from fdict:',set(filemap.values())-set(fdict.keys()))
     ftypes=list(fdict.keys()) # list of filetypes to containing the desired model variables
@@ -216,7 +216,7 @@ def matchData(
     flist=dict()
     for ift in ftypes:
         flist[ift]=index_model_files(mod_start,mod_end,mod_basedir,mod_nam_fmt,mod_flen,ift,fdict[ift])
-    
+
     # call a function to carry out vertical matching based on specified method
     if method == 'bin':
         data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName,sdim,preIndexed=preIndexed)
@@ -236,7 +236,7 @@ def matchData(
     return data
 
 def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quiet=False,nemops='NEMO'):
-    """ this function finds the horizontal grid (i,j) indices for each model point and adds them 
+    """ this function finds the horizontal grid (i,j) indices for each model point and adds them
         to the dataframe 'data' as additional columns
         NOTE: points that are matched are dropped from the dataFrame; with quite=False, the unmatched
         lats and lons are printed
@@ -278,7 +278,7 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
     if len(data)>5000:
         pprint=True
         lendat=len(data)
-    else: 
+    else:
         pprint= False
     # set up columns to hold indices for upper and lower end of range to average over
     data['k_upper']=-1*np.ones((len(data))).astype(int)
@@ -293,7 +293,7 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
             for ift in ftypes:
                 fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
                 # handle NEMO files time reference
-                torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') 
+                torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
         # loop through each file type to extract data from the appropriate time and location
         for ift in ftypes:
             if row['dtUTC']>=fend[ift]:
@@ -346,7 +346,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
     if len(data)>5000:
         pprint=True
         lendat=len(data)
-    else: 
+    else:
         pprint= False
     if not preIndexed:
         data['k']=-1*np.ones((len(data))).astype(int)
@@ -359,10 +359,10 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
             torig=dict()
             for ift in ftypes:
                 fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
-                if ift=='ops': # specially handle time origin for ops forcing files 
-                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%b-%d %H:%M:%S') 
+                if ift=='ops': # specially handle time origin for ops forcing files
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%b-%d %H:%M:%S')
                 else: # handle NEMO files time reference
-                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S') 
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
         # loop through each file type to extract data from the appropriate time and location
         for ift in ftypes:
             if row['dtUTC']>=fend[ift]:
@@ -436,7 +436,7 @@ def _vvlBin(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
             for bb in fdict_r[aa]:
                 print(filemap_r[bb])
 
-    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0]) 
+    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0])
                         for aa in data['dtUTC']]
     t2=[flist[ifte3t].loc[aa,['t_0']].values[0] for aa in data['indf'].values]
     data['ih']=[int(np.floor((aa-bb).total_seconds()/(pere3t*3600))) for aa,bb in zip(data['dtUTC'],t2)]
@@ -487,7 +487,7 @@ def _interpvvlZ(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
             for bb in fdict_r[aa]:
                 print(filemap_r[bb])
 
-    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0]) 
+    data['indf'] = [int(flist[ifte3t].loc[(aa>=flist[ifte3t].t_0)&(aa<flist[ifte3t].t_n)].index[0])
                         for aa in data['dtUTC']]
     t2=[flist[ifte3t].loc[aa,['t_0']].values[0] for aa in data['indf'].values]
     data['ih']=[int(np.floor((aa-bb).total_seconds()/(pere3t*3600))) for aa,bb in zip(data['dtUTC'],t2)]
@@ -518,7 +518,7 @@ def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
     if len(data)>5000:
         pprint=True
         lendat=len(data)
-    else: 
+    else:
         pprint= False
     for ift in ftypes:
         data['indf_'+ift] = [int(flist[ift].loc[(aa>=flist[ift].t_0)&(aa<flist[ift].t_n)].index[0]) for aa in data['dtUTC']]
@@ -554,14 +554,14 @@ def _getTimeInd_bin(idt,ifid,torig):
     """ find time index for SalishSeaCast output interval including observation time """
     tlist=ifid.variables['time_centered_bounds'][:,:]
     # return first index where latter endpoint is larger
-    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0] 
+    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0]
     return ih
 
 def _getTimeInd_bin_ops(idt,ifid,torig):
     """ find time index for ops file"""
     tlist=ifid.variables['time_counter'][:].data
     tinterval=ifid.variables['time_counter'].time_step
-    #ih=[iii for iii,hhh in enumerate(tlist) if (hhh+tinterval/2)>(idt-torig).total_seconds()][0] 
+    #ih=[iii for iii,hhh in enumerate(tlist) if (hhh+tinterval/2)>(idt-torig).total_seconds()][0]
     ## NEMO is reading in files as if they were on the half hour so do the same:
     #           return first index where latter endpoint is larger
     ih=[iii for iii,hhh in enumerate(tlist) if (hhh+tinterval)>(idt-torig).total_seconds()][0]
@@ -672,7 +672,7 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
         t_n.append(iitn)
         iits=iitn
         ind=ind+1
-    return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n']) 
+    return pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=inds,columns=['paths','t_0','t_n'])
 
 def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,end=None):
     """
@@ -698,7 +698,7 @@ def index_model_files_flex(basedir,ftype,freq='1d',nam_fmt='nowcast',start=None,
             raise Exception('option not implemented: nam_fmt=',nam_fmt)
         t_0.append(dt.datetime.strptime(dates[0],'%Y%m%d'))
         t_n.append(dt.datetime.strptime(dates[1],'%Y%m%d')+dt.timedelta(days=1))
-    idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n']) 
+    idf=pd.DataFrame(data=np.swapaxes([paths,t_0,t_n],0,1),index=range(0,len(paths)),columns=['paths','t_0','t_n'])
     if start is not None and end is not None:
         ilocs=(idf['t_n']>start)&(idf['t_0']<end)
         idf=idf.loc[ilocs,:].copy(deep=True)
@@ -716,7 +716,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     """
     try:
         from sqlalchemy import create_engine, case
-        from sqlalchemy.orm import create_session 
+        from sqlalchemy.orm import create_session
         from sqlalchemy.ext.automap import automap_base
         from sqlalchemy.sql import and_, or_, not_, func
     except ImportError:
@@ -787,7 +787,7 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
     """
     try:
         from sqlalchemy import create_engine, case
-        from sqlalchemy.orm import create_session 
+        from sqlalchemy.orm import create_session
         from sqlalchemy.ext.automap import automap_base
         from sqlalchemy.sql import and_, or_, not_, func
     except ImportError:
@@ -810,7 +810,7 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
              case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
              case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
              case([(CalcsTBL.Salinity_SA!=None, CalcsTBL.Salinity_SA)], else_=
-             case([(CalcsTBL.Salinity__Unknown_SA!=None, CalcsTBL.Salinity__Unknown_SA)], 
+             case([(CalcsTBL.Salinity__Unknown_SA!=None, CalcsTBL.Salinity__Unknown_SA)],
                   else_=CalcsTBL.Salinity__Pre1978_SA)
             ))))
     Tem=case([(ObsTBL.Temperature!=None, ObsTBL.Temperature)], else_=
@@ -818,12 +818,12 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
              case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary)], else_=ObsTBL.Temperature_Reversing)))
     TemUnits=case([(ObsTBL.Temperature!=None, ObsTBL.Temperature_units)], else_=
              case([(ObsTBL.Temperature_Primary!=None, ObsTBL.Temperature_Primary_units)], else_=
-             case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary_units)], 
+             case([(ObsTBL.Temperature_Secondary!=None, ObsTBL.Temperature_Secondary_units)],
                   else_=ObsTBL.Temperature_Reversing_units)))
     TemFlag=ObsTBL.Quality_Flag_Temp
     CT=case([(CalcsTBL.Temperature_CT!=None, CalcsTBL.Temperature_CT)], else_=
          case([(CalcsTBL.Temperature_Primary_CT!=None, CalcsTBL.Temperature_Primary_CT)], else_=
-         case([(CalcsTBL.Temperature_Secondary_CT!=None, CalcsTBL.Temperature_Secondary_CT)], 
+         case([(CalcsTBL.Temperature_Secondary_CT!=None, CalcsTBL.Temperature_Secondary_CT)],
               else_=CalcsTBL.Temperature_Reversing_CT)
         ))
 
@@ -917,7 +917,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
             Chl2015 = Chl2015.dropna(subset = ['Date sampled (mm/dd/yyyy)', 'Time of Day (Local)', 'Lat', 'Lon', 'Depth'], how='any')
             ds=Chl2015['Date sampled (mm/dd/yyyy)']
             ts=Chl2015['Time of Day (Local)']
-            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m/%d/%yT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None) 
+            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m/%d/%yT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None)
                  for ii,jj in zip(ds,ts)]
             Chl2015['dtUTC']=dts
             Chl2015['Z']=[float(ii) for ii in Chl2015['Depth']]
@@ -987,7 +987,7 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
             Chl2016['Z']=[float(ii) for ii in Chl2016['Depth_m']]
             ds=Chl2016['DateCollected']
             ts=Chl2016['TimeCollected']
-            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m-%d-%YT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None) 
+            dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(ii+'T'+jj,'%m-%d-%YT%I:%M:%S %p')).astimezone(pytz.utc).replace(tzinfo=None)
                  for ii,jj in zip(ds,ts)]
             Chl2016['dtUTC']=dts
             Chl2016.drop(['DateCollected','TimeCollected','CV'],axis=1,inplace=True)
@@ -1118,7 +1118,7 @@ def loadHakai(datelims=(),loadCTD=False):
     if len(datelims)<2:
         datelims=(dt.datetime(1900,1,1),dt.datetime(2100,1,1))
     start_date=datelims[0]
-    end_date=datelims[1]    
+    end_date=datelims[1]
 
     f0 = pd.read_excel('/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/2018-09-11_144804_HakaiData_nutrients.xlsx',
                      sheet_name = 'Hakai Data',engine=excelEngine)
@@ -1132,7 +1132,7 @@ def loadHakai(datelims=(),loadCTD=False):
     dts0=[pytz.timezone('Canada/Pacific').localize(i).astimezone(pytz.utc).replace(tzinfo=None)
             for i in f0['Collected']]
     f0['dtUTC']=dts0
-    
+
     fc = pd.read_csv('/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/ctd-bulk-1536702711696.csv',
                     usecols=['Cast PK','Cruise','Station', 'Drop number','Start time', 'Bottom time',
                              'Latitude', 'Longitude', 'Depth (m)', 'Temperature (deg C)', 'Temperature flag', 'Pressure (dbar)',
@@ -1140,7 +1140,7 @@ def loadHakai(datelims=(),loadCTD=False):
                              'Turbidity (FTU)', 'Turbidity flag',
                              'Salinity (PSU)', 'Salinity flag'],
                     dtype={'Drop number':np.float64,'PAR flag':str,'Fluorometry Chlorophyll flag':str},na_values=('null','-9.99e-29'))
-    
+
     ## fix apparent typos:
     # reversed lats and lons
     iii=fc['Latitude']>90
@@ -1148,11 +1148,11 @@ def loadHakai(datelims=(),loadCTD=False):
     lats=-1*fc.loc[iii,'Longitude'].values
     fc.loc[iii,'Longitude']=lons
     fc.loc[iii,'Latitude']=lats
-    
+
     # remove data with missing lats and lons
     nans=fc.loc[(fc['Latitude'].isnull())|(fc['Longitude'].isnull())]
     fc=fc.drop(nans.index)
-    
+
     # apparently bad lats/lons
     QU16bad=fc.loc[(fc['Station']=='QU16')&(fc['Latitude']>50.3)]
     fc=fc.drop(QU16bad.index)
@@ -1168,24 +1168,24 @@ def loadHakai(datelims=(),loadCTD=False):
     # remove data with suspicious 0 temperature and salinity
     iind=(fc['Temperature (deg C)']==0)&(fc['Salinity (PSU)']==0)
     fc.loc[iind,['Temperature (deg C)', 'Pressure (dbar)', 'PAR', 'Fluorometry Chlorophyll (ug/L)', 'Turbidity (FTU)', 'Salinity (PSU)']]=np.nan
-    
+
     fc['dt']=[dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S') for i in fc['Start time']]
     dts=[pytz.timezone('Canada/Pacific').localize(dt.datetime.strptime(i.split('.')[0],'%Y-%m-%d %H:%M:%S')).astimezone(pytz.utc).replace(tzinfo=None)
             for i in fc['Start time']]
     fc['dtUTC']=dts
-    
+
     dloc=[dt.datetime(i.year,i.month,i.day) for i in fc['dt']]
     fc['dloc']=dloc
-    
+
     fcS=fc.loc[:,['Latitude','Longitude']].groupby([fc['Station'],fc['dloc']]).mean().reset_index()
-    
+
     f0['Station']=f0['Site ID']
     #f0['dt']=[dt.datetime.strptime(i,'%Y-%m-%d %H:%M:%S') for i in f0['Collected']]
     dloc0=[dt.datetime(i.year,i.month,i.day) for i in f0['Collected']]
     f0['dloc']=dloc0
-    
+
     fdata=f0.merge(fcS,how='left')
-    
+
     fdata['Lat']=fdata['Latitude']
     fdata['Lon']=fdata['Longitude']
     fdata['Z']=fdata['Line Out Depth']
@@ -1194,7 +1194,7 @@ def loadHakai(datelims=(),loadCTD=False):
     fdata['CT']=np.nan
     fdata['pZ']=np.nan
     df2=fdata.copy(deep=True)
-    
+
     zthresh=1.5
     print("Note: CTD depths (pZ) may vary from bottle depths (Z) by up to ",str(zthresh)," m.")
     for i, row in df2.iterrows():
@@ -1206,7 +1206,7 @@ def loadHakai(datelims=(),loadCTD=False):
             # if there are multiple minimum distance rows, just take the first
             idfZ=idf.loc[np.abs(idf['Depth (m)']-zrow)==zdifmin]
             isna = (not np.isnan(idfZ['Salinity (PSU)'].values[0])) and (not np.isnan(idfZ['Pressure (dbar)'].values[0])) and \
-                    (not np.isnan(idfZ['Longitude'].values[0])) and (not np.isnan(idfZ['Latitude'].values[0])) 
+                    (not np.isnan(idfZ['Longitude'].values[0])) and (not np.isnan(idfZ['Latitude'].values[0]))
             isnat = (not np.isnan(idfZ['Temperature (deg C)'].values[0]))
             sal=gsw.SA_from_SP(idfZ['Salinity (PSU)'].values[0],idfZ['Pressure (dbar)'].values[0],idfZ['Longitude'].values[0],
                                 idfZ['Latitude'].values[0]) if isna else np.nan
@@ -1217,7 +1217,7 @@ def loadHakai(datelims=(),loadCTD=False):
 
     fdata2=fdata.loc[(fdata['dtUTC']>=start_date)&(fdata['dtUTC']<end_date)&(fdata['Z']>=0)&(fdata['Z']<440)&(fdata['Lon']<360)&(fdata['Lat']<=90)].copy(deep=True).reset_index()
     fdata2.drop(['no','event_pk','Date','Sampling Bout','Latitude','Longitude','index','Gather Lat','Gather Long', 'Pressure Transducer Depth (m)',
-                'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)    
+                'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)
     return fdata2
 
 def WSS(obs,mod):
@@ -1274,7 +1274,7 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
             'coral','tomato','firebrick','mediumvioletred','magenta'),labels=''):
     """ model vs obs plot like varvarScatter but colors taken from a list
         as determined by determined from df[sepvar] and a list of bin edges, sepvals """
-    # remember labels must include < and > cases 
+    # remember labels must include < and > cases
     if len(lname)==0:
         lname=sepvar
     ps=list()
@@ -1324,8 +1324,8 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
 def tsertser_graph(ax,df,obsvar,modvar,start_date,end_date,sepvar='',sepvals=([]),lname='',sepunits='',
                   ocols=('blue','darkviolet','teal','green','deepskyblue'),
                   mcols=('fuchsia','firebrick','orange','darkgoldenrod','maroon'),labels=''):
-    """ Creates timeseries by adding scatter plot to axes ax with df['dtUTC'] on x-axis, 
-        df[obsvar] and df[modvar] on y axis, and colors taken from a listas determined from 
+    """ Creates timeseries by adding scatter plot to axes ax with df['dtUTC'] on x-axis,
+        df[obsvar] and df[modvar] on y axis, and colors taken from a listas determined from
         df[sepvar] and a list of bin edges, sepvals
     """
     if len(lname)==0:
@@ -1399,7 +1399,7 @@ def _flatten_nested_dict(tdic0):
     # tdic argument is nested dictionary of consistent structure
     def _flatten_nested_dict_inner(tdic,ilist,data):
         # necessary because mutable defaults instantiated when function is defined;
-        # need different entry point at start 
+        # need different entry point at start
         for el in tdic.keys():
             if isinstance(tdic[el],dict):
                 data=_flatten_nested_dict_inner(tdic[el],ilist+list((el,)),data)
@@ -1456,7 +1456,7 @@ def utc_to_pac(timeArray):
     return [pytz.utc.localize(ii).astimezone(pytz.timezone('Canada/Pacific')) for ii in timeArray]
 
 def pac_to_utc(pactime0):
-    # input datetime object without tzinfo in Pacific Time and 
+    # input datetime object without tzinfo in Pacific Time and
     # output datetime object (or np array of them) without tzinfo in UTC
     pactime=np.array(pactime0,ndmin=1)
     if pactime.ndim>1:
@@ -1472,7 +1472,7 @@ def pac_to_utc(pactime0):
     return (out[0] if np.shape(pactime0)==() else out)
 
 def pdt_to_utc(pactime0):
-    # input datetime object without tzinfo in Pacific Daylight Time and 
+    # input datetime object without tzinfo in Pacific Daylight Time and
     # output datetime object (or np array of them) without tzinfo in UTC
     # verified: PDT is GMT+7 at all times of year
     pactime=np.array(pactime0,ndmin=1)
@@ -1489,7 +1489,7 @@ def pdt_to_utc(pactime0):
     return (out[0] if np.shape(pactime0)==() else out)
 
 def pst_to_utc(pactime0):
-    # input datetime object without tzinfo in Pacific Standard Time and 
+    # input datetime object without tzinfo in Pacific Standard Time and
     # output datetime object (or np array of them) without tzinfo in UTC
     # verified: PST is GMT+8 at all times of year (GMT does not switch)
     pactime=np.array(pactime0,ndmin=1)
@@ -1545,11 +1545,11 @@ def getChlNRatio(nmlfile='namelist_smelt_cfg',basedir=None,nam_fmt=None,idt=dt.d
     return nml['nampisprod']['zz_rate_si_ratio_diat']
 
 def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecology'):
-    """ This function automatically loads the chlorophyll bottle data from WADE for a 
-        given year specified by the user. The output is a pandas dataframe with all of 
-        the necessary columns and groups needed for matching to the model data. 
+    """ This function automatically loads the chlorophyll bottle data from WADE for a
+        given year specified by the user. The output is a pandas dataframe with all of
+        the necessary columns and groups needed for matching to the model data.
     """
-    ## duplicate Station/Date entries with different times seem to be always within a couple of hours, 
+    ## duplicate Station/Date entries with different times seem to be always within a couple of hours,
     # so just take the first (next cell)
     dfTime=pd.read_excel('/ocean/eolson/MEOPAR/obs/WADE/WDE_Data/OlsonSuchyAllen_UBC_PDR_P003790-010721.xlsx',
                         engine='openpyxl',sheet_name='EventDateTime')
@@ -1574,7 +1574,7 @@ def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
         #
         lon_str = sta_df.loc[sta, 'Long_NAD83 (deg / dec_min)']
         lon_deg = float(lon_str.split()[0]) + float(lon_str.split()[1])/60
-        sta_df.loc[sta,'Lon'] = -lon_deg    
+        sta_df.loc[sta,'Lon'] = -lon_deg
     sta_df.pop('Lat_NAD83 (deg / dec_min)');
     sta_df.pop('Long_NAD83 (deg / dec_min)');
     fn='/ocean/eolson/MEOPAR/obs/WADE/WDE_Data/OlsonSuchyAllen_UBC_PDR_P003790-010721.xlsx'
@@ -1603,8 +1603,8 @@ def load_Pheo_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
 
 def load_WADE_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecology'):
     """ This function automatically loads the nutrient bottle data from WADE for a given year
-        specified by the user. The output is a pandas dataframe with all of te necessary 
-        columns and groups needed for matching to the model data. 
+        specified by the user. The output is a pandas dataframe with all of te necessary
+        columns and groups needed for matching to the model data.
     """
     dfSta=pickle.load(open(os.path.join(datadir,'sta_df.p'),'rb'))
     dfBot=pickle.load(open(os.path.join(datadir,f'Bottles_{str(year)}.p'),'rb'))
@@ -1633,8 +1633,8 @@ def load_WADE_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolo
     df['Year']=[ii.year for ii in df['dtUTC']]
     df['YD']=datetimeToYD(df['dtUTC'])
     return(df)
-   
-    
+
+
 def load_CTD_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecology'):
     """ Returns a dataframe containing CTD data for a given year merged with station data
     """
@@ -1651,7 +1651,7 @@ def load_CTD_data(year,datadir='/ocean/eolson/MEOPAR/obs/WADE/ptools_data/ecolog
     dfCTD['dtUTC']=[iiD+dt.timedelta(hours=20) for iiD in dfCTD['Date']] #Does this mean it also has that flaw where we are not sure when the data was collected?
     dfCTD.rename(columns={'Latitude':'Lat','Longitude':'Lon'},inplace=True)
     dfCTD['Z']=-1*dfCTD['Z']
-    # Calculate Absolute (Reference) Salinity (g/kg) and Conservative Temperature (deg C) from 
+    # Calculate Absolute (Reference) Salinity (g/kg) and Conservative Temperature (deg C) from
     # Salinity (psu) and Temperature (deg C):
     press=gsw.p_from_z(-1*dfCTD['Z'],dfCTD['Lat'])
     dfCTD['SA']=gsw.SA_from_SP(dfCTD['Salinity'],press,
