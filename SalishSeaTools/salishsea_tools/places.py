@@ -491,19 +491,36 @@ PLACES = {
     },
     # ORCA Buoys
     'Hoodsport': {
-        'lon lat': (-123.1126, 47.4218)
+        'lon lat': (-123.1126, 47.4218),
+        'NEMO grid ji': (89, 114),
     },
     'Twanoh': {
-        'lon lat': (-123.0083, 47.3750)
+        'lon lat': (-123.0083, 47.3750),
+        'NEMO grid ji': (72, 123),
     },
     'DabobBay': {
-        'lon lat': (-122.8029, 47.8031)
+        'lon lat': (-122.8029, 47.8031),
+        'NEMO grid ji': (141, 205),
     },
     'PointWells': {
-        'lon lat': (-122.3972, 47.7612)
+        'lon lat': (-122.3972, 47.7612),
+        'NEMO grid ji': (104, 259),
     },
     'CarrInlet': {
-        'lon lat': (-122.7300, 47.2800)
+        'lon lat': (-122.7300, 47.2800),
+        'NEMO grid ji': (34, 152),
+    },
+    'Hansville': {
+        'lon lat': (-122.627, 47.90733),
+        'NEMO grid ji': (148, 243),
+    },
+    'Dockton': {
+        'lon lat': (-122.45722, 47.37611),
+        'NEMO grid ji': (34, 204),
+    },
+    'PointWilliams': {
+        'lon lat': (-122.40612, 47.53716),
+        'NEMO grid ji': (62, 231),
     }
 }
 # Aliases:
