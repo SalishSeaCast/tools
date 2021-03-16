@@ -1,4 +1,4 @@
-# Copyright 2013-2016 The Salish Sea MEOPAR Contributors
+# Copyright 2013-2021 The Salish Sea MEOPAR Contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +52,7 @@ install_requires = [
     'matplotlib',
     'netCDF4',
     'numpy',
+    'openpyxl',
     'pandas',
     'python-dateutil',
     'pytz',

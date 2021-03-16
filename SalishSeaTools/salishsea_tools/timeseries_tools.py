@@ -1,4 +1,4 @@
-# Copyright 2013-2017 The Salish Sea MEOPAR contributors
+# Copyright 2013-2021 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -235,9 +235,9 @@ def reshape_to_grid(data_flat, coords, shape):
 
     :arg coords: List of form [Ycoords, Xcoords] for each data point given.
 
-    :arg shape: 2d tuple corresponding to desired grid shape. For Salish Sea model, shape would be (898,398). 
+    :arg shape: 2d tuple corresponding to desired grid shape. For Salish Sea model, shape would be (898,398).
 
-    :returns: Array of with dimensions corresponding to shape given with data in coordinates given.  
+    :returns: Array of with dimensions corresponding to shape given with data in coordinates given.
     """
 
     # Preallocate gridded array

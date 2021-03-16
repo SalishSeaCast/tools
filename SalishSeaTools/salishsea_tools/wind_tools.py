@@ -1,4 +1,4 @@
-# Copyright 2013-2016 The Salish Sea MEOPAR contributors
+# Copyright 2013-2021 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,7 +119,7 @@ def parse_DFO_buoy_date(line):
 
 def read_DFO_buoy(station, year):
     """Reads the data from a DFO *.fb buoy data file and appends to a timeseries dict
-    
+
     :arg station: station name string
 
     :arg year: integer year requested

@@ -1,4 +1,4 @@
-# Copyright 2013-2017 The Salish Sea MEOPAR contributors
+# Copyright 2013-2021 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,10 +49,10 @@ def get_hindcast_prefix(date, res='h', version='201905'):
 
     :arg res: time resolution (h=hourly, d=daily)
     :type res: str
-    
+
     :arg version: hindcast version (e.g., 201905)
     :type version: str
-    
+
     :returns: hindcast prefix
     :rtype: str
     """
@@ -67,7 +67,7 @@ def get_hindcast_prefix(date, res='h', version='201905'):
     else:
         raise ValueError(f"No hindcast {version} record found for the specified date {date.strftime('%Y-%b-%d')}")
     prefix = os.path.join(path, f"SalishSea_1{res}_{date.strftime('%Y%m%d_%Y%m%d')}")
-    
+
     return prefix
 
 
@@ -77,11 +77,11 @@ def get_GEM_path(date):
 
     :arg date: date of GEM record
     :type date: :py:class:`datetime.datetime`
-    
+
     :returns: GEM path
     :rtype: str
     """
-    
+
     # Make GEM path
     path, datestr = '/results/forcing/atmospheric/GEM2.5', date.strftime('y%Ym%md%d')
     for config, prefix in zip(['operational', 'gemlam'], ['ops', 'gemlam']):
@@ -91,7 +91,7 @@ def get_GEM_path(date):
             break
     else:
         raise ValueError(f"No GEM2.5 record found for the specified date {date.strftime('%Y-%b-%d')}")
-    
+
     return path
 
 
@@ -258,45 +258,45 @@ def timestamp(dataset, tindex, time_var='time_counter'):
 
 def get_datetimes(dataset, time_var='time_counter'):
     """Return the datetime array for a dataset
-    
+
     This is a wrapper around nc_tools.timestamp that automatically
     handles all timesteps and converts the arrow objects to a numpy
     datetime object array.
-    
+
     :arg dataset: netcdf dataset object.
     :type dataset: :py:class:`netCDF4.Dataset`
-    
+
     :arg time_var: name of time variable.
     :type time_var: str
-    
+
     :returns: datetime values at each timestep in the dataset.
     :rtype: :py:class:`Numpy` array of :py:class:`Datetime` instances
     """
-    
+
     # Get arrow objects
     time_stamps = timestamp(dataset,
                     np.arange(dataset.variables['time_counter'].shape[0]),
                     time_var=time_var)
-    
+
     # Get datetime.datetime objects
     datetimes = np.array([time_stamp.datetime for time_stamp in time_stamps])
-    
+
     return datetimes
 
 
 def xarraytime_to_datetime(xarraytime):
     """Convert an `xarray.DataArray` of `numpy.datetime64` times to a
     `numpy.ndarray` of `datetime.datetime` times
-    
+
     :arg xarraytime: DataArray of datetime64
     :type xarraytime: :py:class:`xarray.DataArray` of :py:class:`numpy.datetime64`
-    
+
     :returns: array of datetimes
     :rtype: :py:class:`numpy.ndarray` of :py:class:`datetime.datetime`
     """
-    
+
     datetime_obj = xarraytime.values.astype('datetime64[s]').astype(datetime)
-    
+
     return datetime_obj
 
 

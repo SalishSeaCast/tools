@@ -1,4 +1,4 @@
-.. Copyright 2013-2016 The Salish Sea MEOPAR conttributors
+.. Copyright 2013-2021 The Salish Sea MEOPAR conttributors
 .. and The University of British Columbia
 ..
 .. Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +73,7 @@ Standard Copyright Header Block
 
 Every Python library module show start with our standard copyright notice::
 
-  # Copyright 2013-2017 The Salish Sea MEOPAR contributors
+  # Copyright 2013-2021 The Salish Sea MEOPAR contributors
   # and The University of British Columbia
 
   # Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,7 +100,7 @@ The :ref:`salishsea_tools.namelist` is a (rare) example of differently licensed 
 
 Sphinx documentation files in the :ref:`tools-repo` repo should also start with the same standard copyright notice::
 
-  .. Copyright 2013-2017 The Salish Sea MEOPAR conttributors
+  .. Copyright 2013-2021 The Salish Sea MEOPAR conttributors
   .. and The University of British Columbia
   ..
   .. Licensed under the Apache License, Version 2.0 (the "License");

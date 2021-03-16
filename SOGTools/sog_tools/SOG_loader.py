@@ -1,4 +1,4 @@
-# Copyright 2015-2016 Ben Moore-Maley and The University of British Columbia
+# Copyright 2015-2021 Ben Moore-Maley and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,12 +120,12 @@ def loadSOG(filepath):
     bio_TS  = load_TS(filepath + 'timeseries/std_bio_SOG.out')
     chem_TS = load_TS(filepath + 'timeseries/std_chem_SOG.out')
     hoff    = load_hoff(filepath + 'profiles/hoff-SOG.dat')
-    
+
     # Construct depth array for calcs
     depth_array = hoff.minor_axis.values
     date_array  = hoff.major_axis.values
     depth, dummy = np.meshgrid(depth_array, np.ones(date_array.size))
-    
+
     # Calculate surface pH and Omega_A
     pH_sur, Omega_A_sur = carb.calc_carbonate(
        chem_TS['surface alkalinity'],                # TAlk [uM]
@@ -137,7 +137,7 @@ def loadSOG(filepath):
        0.0,                                          # pressure [dbar]
        bio_TS['surface nitrate concentration'] / 16, # phosphate [uM]
        bio_TS['surface silicon concentration'])      # silicate [uM]
-    
+
     # Calculate 3 m avg pH and Omega_A
     pH_3m, Omega_A_3m   = carb.calc_carbonate(
        chem_TS['3 m avg alkalinity'],                # TAlk [uM]
@@ -149,7 +149,7 @@ def loadSOG(filepath):
        0.0,                                          # pressure [dbar]
        bio_TS['3 m avg nitrate concentration'] / 16, # phosphate [uM]
        bio_TS['3 m avg silicon concentration'])      # silicate [uM]
-    
+
     # Calculate hoffmueller pH and Omega_A
     hoff['pH'], hoff['Omega_A'] = carb.calc_carbonate(
        hoff.ix['alkalinity', :, :],                  # TAlk [uM]
@@ -160,7 +160,7 @@ def loadSOG(filepath):
        depth,                                        # pressure [dbar]
        hoff.ix['nitrate', :, :] / 16,                # phosphate [uM]
        hoff.ix['silicon', :, :])                     # silicate [uM]
-    
+
     # Append pH and Omega timeseries to CHEM_TS
     chem_TS = pd.concat([chem_TS, pd.DataFrame({
                     'surface pH': pH_sur,
@@ -180,10 +180,10 @@ def loadSOG_batch(filesystem, bloomyear, filestr):
     filepath = '/ocean/bmoorema/research/SOG/{0}/{1}/{2}/{3}/{3}_{4}/'.format(
         filesystem['category'], filesystem['test'], filesystem['type'],
         bloomyear, filestr)
-    
+
     # Load timeseries and hoffmueller files from FILEPATH
     phys_TS, bio_TS, chem_TS, hoff = loadSOG(filepath)
-    
+
     return phys_TS, bio_TS, chem_TS, hoff
 
 
@@ -191,7 +191,7 @@ def calc_sigma(T, S):
     '''Calculate and return density anomaly SIGMA_T given temperature T and
     salinity S
     '''
-    
+
     # Calculate the square root of the salinities
     sqrtS = np.sqrt(S)
 
@@ -200,21 +200,21 @@ def calc_sigma(T, S):
     # (Bigg P.H., (1967) Br. J. Applied Physics 8 pp 521-537)
     R1 = ((((6.536332e-9 * T - 1.120083e-6) * T + 1.001685e-4) * T
            - 9.095290e-3) * T + 6.793952e-2) * T - 28.263737
-    
+
     # Seawater density at atmospheric pressure
     # Coefficients of salinity
     R2 = (((5.3875e-9 * T - 8.2467e-7) * T + 7.6438e-5) * T
           - 4.0899e-3) * T + 8.24493e-1
     R3 = (-1.6546e-6 * T + 1.0227e-4) * T - 5.72466e-3
-    
+
     # International one-atmosphere equation of state of seawater
     sig = (4.8314e-4 * S + R3 * sqrtS + R2) * S + R1
-    
+
     # Specific volume at atmospheric pressure
     V350P = 1.0 / 1028.1063
     sva = -sig * V350P / (1028.1063 + sig)
-    
+
     # Density anomoly at atmospheric pressure
     sigma = 28.106331 - sva / (V350P * (V350P + sva))
-    
+
     return sigma
