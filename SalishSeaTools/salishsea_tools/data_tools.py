@@ -23,6 +23,7 @@ import json
 import logging
 import re
 import os
+
 try:
     from pathlib import Path
 except ImportError:
@@ -65,9 +66,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def load_drifters(
-        deployments=range(1, 10),
-        filename='driftersPositions.geojson',
-        drifterpath='/ocean/rcostanz/Drifters/data'
+    deployments=range(1, 10),
+    filename="driftersPositions.geojson",
+    drifterpath="/ocean/rcostanz/Drifters/data",
 ):
     """Loads drifter coordinates and times from the ODL Drifters Project.
 
@@ -99,7 +100,7 @@ def load_drifters(
     for deployment_num in deployments:
 
         # Deployment ID
-        deployment = 'deployment{}'.format(deployment_num)
+        deployment = "deployment{}".format(deployment_num)
 
         # Preallocate deployment dictionary
         drifters[deployment] = OrderedDict()
@@ -110,34 +111,35 @@ def load_drifters(
             data = json.load(data_file)
 
         # Iterate through drifters in deployment
-        for drifter in data['features']:
+        for drifter in data["features"]:
 
             # Extract lon/lat values
-            lon, lat = zip(*drifter['geometry']['coordinates'])
+            lon, lat = zip(*drifter["geometry"]["coordinates"])
 
             # Parse date strings into python datetime
-            pytime = [dparser.parse(t) for t in drifter['properties']['dateTime']]
+            pytime = [dparser.parse(t) for t in drifter["properties"]["dateTime"]]
 
             # Combine lon/lat/time into xarray Dataset
-            unsorted = xarray.Dataset({
-                'lon': ('time', list(lon)),
-                'lat': ('time', list(lat))},
-                coords={'time': pytime})
+            unsorted = xarray.Dataset(
+                {"lon": ("time", list(lon)), "lat": ("time", list(lat))},
+                coords={"time": pytime},
+            )
 
             # Get time-sorted indices
             index = unsorted.time.argsort()
 
             # Make a new sorted Dataset for each drifter
-            drifters[deployment][drifter['properties']['title']] = xarray.Dataset({
-                'lon': unsorted.lon[index],
-                'lat': unsorted.lat[index]})
+            drifters[deployment][drifter["properties"]["title"]] = xarray.Dataset(
+                {"lon": unsorted.lon[index], "lat": unsorted.lat[index]}
+            )
 
     return drifters
 
 
 def load_ADCP(
-        daterange, station='central',
-        adcp_data_dir='/ocean/dlatorne/MEOPAR/ONC_ADCP/',
+    daterange,
+    station="central",
+    adcp_data_dir="/ocean/dlatorne/MEOPAR/ONC_ADCP/",
 ):
     """Returns the ONC ADCP velocity profiles at a given station
     over a specified datetime range.
@@ -162,31 +164,50 @@ def load_ADCP(
     """
 
     # Load ADCP data
-    grid = scipy.io.loadmat(
-                 os.path.join(adcp_data_dir, 'ADCP{}.mat'.format(station)))
+    grid = scipy.io.loadmat(os.path.join(adcp_data_dir, "ADCP{}.mat".format(station)))
 
     # Generate datetime array
-    mtimes = grid['mtime'][0]
-    datetimes = np.array([dtm.datetime.fromordinal(int(mtime)) +
-                          dtm.timedelta(days=mtime % 1) -
-                          dtm.timedelta(days=366) for mtime in mtimes])
+    mtimes = grid["mtime"][0]
+    datetimes = np.array(
+        [
+            dtm.datetime.fromordinal(int(mtime))
+            + dtm.timedelta(days=mtime % 1)
+            - dtm.timedelta(days=366)
+            for mtime in mtimes
+        ]
+    )
     # Find daterange indices
     index = [abs(datetimes - dparser.parse(date)).argmin() for date in daterange]
     # Create xarray output object
-    ADCP = xarray.Dataset({
-        'u': (['time', 'depth'],
-              np.ma.masked_invalid(
-                  grid['utrue'][:, index[0]:index[1] + 1] / 100).transpose()),
-        'v': (['time', 'depth'],
-              np.ma.masked_invalid(
-                  grid['vtrue'][:, index[0]:index[1] + 1] / 100).transpose())},
-        coords={'time': datetimes[index[0]:index[1] + 1],
-                'depth': grid['chartdepth'][0]})
+    ADCP = xarray.Dataset(
+        {
+            "u": (
+                ["time", "depth"],
+                np.ma.masked_invalid(
+                    grid["utrue"][:, index[0] : index[1] + 1] / 100
+                ).transpose(),
+            ),
+            "v": (
+                ["time", "depth"],
+                np.ma.masked_invalid(
+                    grid["vtrue"][:, index[0] : index[1] + 1] / 100
+                ).transpose(),
+            ),
+        },
+        coords={
+            "time": datetimes[index[0] : index[1] + 1],
+            "depth": grid["chartdepth"][0],
+        },
+    )
     return ADCP
 
 
 def interpolate_to_depth(
-    var, var_depths, interp_depths, var_mask=0, var_depth_mask=0,
+    var,
+    var_depths,
+    interp_depths,
+    var_mask=0,
+    var_depth_mask=0,
 ):
     """Calculate the interpolated value of var at interp_depth using linear
     interpolation.
@@ -226,10 +247,10 @@ def interpolate_to_depth(
     :rtype: :py:class:`numpy.ndarray` or number
     """
     raise NotImplementedError(
-        'Implementation of this function turns out to be complicated that '
-        'expected, especially for variables other than tracers. Please see '
-        'nowcast.figures.interpolate_depth or '
-        'nowcast.figures.shared.interpolate_tracer_to_depths.'
+        "Implementation of this function turns out to be complicated that "
+        "expected, especially for variables other than tracers. Please see "
+        "nowcast.figures.interpolate_depth or "
+        "nowcast.figures.shared.interpolate_tracer_to_depths."
     )
     # var_mask = (
     #     np.logical_not(var_mask) if hasattr(var_mask, 'shape')
@@ -240,15 +261,17 @@ def interpolate_to_depth(
     #     np.logical_not(var_depth_mask) if hasattr(var_depth_mask, 'shape')
     #     else var_depth_mask == var_depth_mask)
     depth_interp = scipy.interpolate.interp1d(
-        var_depths[var_depth_mask == True], var[var_mask == True],
+        var_depths[var_depth_mask == True],
+        var[var_mask == True],
         # np.ma.array(var_depths, mask=var_depth_mask),
         # np.ma.array(var, mask=var_mask),
-        fill_value='extrapolate',
-        assume_sorted=True)
+        fill_value="extrapolate",
+        assume_sorted=True,
+    )
     return depth_interp(interp_depths)
 
 
-def onc_datetime(date_time, timezone='Canada/Pacific'):
+def onc_datetime(date_time, timezone="Canada/Pacific"):
     """Return a string representation of a date/time in the particular
     ISO-8601 extended format required by the Ocean Networks Canada (ONC)
     data web services API.
@@ -266,17 +289,20 @@ def onc_datetime(date_time, timezone='Canada/Pacific'):
     """
     d = arrow.get(date_time)
     d_tz = arrow.get(d.datetime, timezone)
-    d_utc = d_tz.to('utc')
-    return '{}Z'.format(d_utc.format('YYYY-MM-DDTHH:mm:ss.SSS'))
+    d_utc = d_tz.to("utc")
+    return "{}Z".format(d_utc.format("YYYY-MM-DDTHH:mm:ss.SSS"))
 
 
 def get_onc_data(
-    endpoint, method, token,
+    endpoint,
+    method,
+    token,
     retry_args={
-        'wait_exponential_multiplier': 1000,
-        'wait_exponential_max': 30000,
+        "wait_exponential_multiplier": 1000,
+        "wait_exponential_max": 30000,
     },
-    **query_params):
+    **query_params
+):
     """Request data from one of the Ocean Networks Canada (ONC) web services.
 
     See https://wiki.oceannetworks.ca/display/help/API for documentation
@@ -314,15 +340,17 @@ def get_onc_data(
               data web service
     :rtype: dict
     """
-    url_tmpl = 'https://data.oceannetworks.ca/api/{endpoint}?{query}'
-    query = {'method': method, 'token': token}
+    url_tmpl = "https://data.oceannetworks.ca/api/{endpoint}?{query}"
+    query = {"method": method, "token": token}
     query.update(query_params)
     data_url = url_tmpl.format(
-        endpoint=endpoint,
-        query=urlencode(query, quote_via=quote, safe='/:'))
+        endpoint=endpoint, query=urlencode(query, quote_via=quote, safe="/:")
+    )
+
     @retry(**retry_args)
     def requests_get(data_url):
         return requests.get(data_url)
+
     response = requests_get(data_url)
     response.raise_for_status()
     return response.json()
@@ -348,35 +376,43 @@ def onc_json_to_dataset(onc_json, teos=True):
     :rtype: :py:class:`xarray.Dataset`
     """
     data_vars = {}
-    for sensor in onc_json['sensorData']:
-        if sensor['sensorName'] == 'Practical Salinity' and teos:
-            data = teos_tools.psu_teos([d['value'] for d in sensor['data']])
-            sensor['sensorName'] = 'Reference Salinity'
-            sensor['unitOfMeasure'] = 'g/kg'
+    for sensor in onc_json["sensorData"]:
+        if sensor["sensorName"] == "Practical Salinity" and teos:
+            data = teos_tools.psu_teos([d["value"] for d in sensor["data"]])
+            sensor["sensorName"] = "Reference Salinity"
+            sensor["unitOfMeasure"] = "g/kg"
         else:
-            data = [d['value'] for d in sensor['data']]
-        data_vars[sensor['sensor']] = xarray.DataArray(
-            name=sensor['sensor'],
+            data = [d["value"] for d in sensor["data"]]
+        data_vars[sensor["sensor"]] = xarray.DataArray(
+            name=sensor["sensor"],
             data=data,
             coords={
-                'sampleTime': [arrow.get(d['sampleTime']).naive for d in sensor['data']],
+                "sampleTime": [
+                    arrow.get(d["sampleTime"]).naive for d in sensor["data"]
+                ],
             },
-            dims=('sampleTime',),
+            dims=("sampleTime",),
             attrs={
-                'qaqcFlag': np.array([d['qaqcFlag'] for d in sensor['data']]),
-                'sensorName': sensor['sensorName'],
-                'unitOfMeasure': sensor['unitOfMeasure'],
-                'actualSamples': sensor['actualSamples'],
-            }
+                "qaqcFlag": np.array([d["qaqcFlag"] for d in sensor["data"]]),
+                "sensorName": sensor["sensorName"],
+                "unitOfMeasure": sensor["unitOfMeasure"],
+                "actualSamples": sensor["actualSamples"],
+            },
         )
-    return xarray.Dataset(data_vars, attrs=onc_json['serviceMetadata'])
+    return xarray.Dataset(data_vars, attrs=onc_json["serviceMetadata"])
 
 
-def get_chs_tides(data_type, stn_id, begin, end, retry_args={
-        'wait_exponential_multiplier': 1000,
-        'wait_exponential_max': 30000,
-        'stop_max_delay': 36000,
-    }):
+def get_chs_tides(
+    data_type,
+    stn_id,
+    begin,
+    end,
+    retry_args={
+        "wait_exponential_multiplier": 1000,
+        "wait_exponential_max": 30000,
+        "stop_max_delay": 36000,
+    },
+):
     """Retrieve a time series of observed or predicted water levels for a CHS
     recording tide gauge station from the https://ws-shc.qc.dfo-mpo.gc.ca/
     web service for the date/time range given by begin and end.
@@ -418,72 +454,75 @@ def get_chs_tides(data_type, stn_id, begin, end, retry_args={
     """
     valid_data_types = {
         # keyed by data_type arg value
-        'obs': {
+        "obs": {
             # endpoint data type word
-            'endpoint': 'observations',
+            "endpoint": "observations",
             # search service data name
-            'data name': 'wl',
+            "data name": "wl",
         },
-        'pred': {
-            'endpoint': 'predictions',
-            'data name': 'wl15',
+        "pred": {
+            "endpoint": "predictions",
+            "data name": "wl15",
         },
     }
     if data_type not in valid_data_types:
         raise ValueError(
-            'invalid data_type: {data_type}; please use one of '
-            '{valid_data_types}'.format(
-                data_type=data_type,
-                valid_data_types=set(valid_data_types.keys())))
-    endpoint_tmpl = 'https://ws-shc.qc.dfo-mpo.gc.ca/{data_type}?WSDL'
-    endpoint = endpoint_tmpl.format(
-        data_type=valid_data_types[data_type]['endpoint'])
-    data_name = valid_data_types[data_type]['data name']
-    msg = (
-        'retrieving {data_type} water level data from {endpoint}'.format(
-            data_type=data_type, endpoint=endpoint)
+            "invalid data_type: {data_type}; please use one of "
+            "{valid_data_types}".format(
+                data_type=data_type, valid_data_types=set(valid_data_types.keys())
+            )
+        )
+    endpoint_tmpl = "https://ws-shc.qc.dfo-mpo.gc.ca/{data_type}?WSDL"
+    endpoint = endpoint_tmpl.format(data_type=valid_data_types[data_type]["endpoint"])
+    data_name = valid_data_types[data_type]["data name"]
+    msg = "retrieving {data_type} water level data from {endpoint}".format(
+        data_type=data_type, endpoint=endpoint
     )
     try:
-        stn_number = '{:05d}'.format(stn_id)
+        stn_number = "{:05d}".format(stn_id)
     except ValueError:
         try:
-            stn_number = '{:05d}'.format(PLACES[stn_id]['stn number'])
+            stn_number = "{:05d}".format(PLACES[stn_id]["stn number"])
         except KeyError as e:
             logging.error(
-                'station id not found in places.PLACES: {station_id}; '
-                'maybe try an integer station number?'.format(
-                    station_id=stn_id))
+                "station id not found in places.PLACES: {station_id}; "
+                "maybe try an integer station number?".format(station_id=stn_id)
+            )
             return
     if int(stn_number) == stn_id:
-        msg = ' '.join((
-            msg,
-            'for station {stn_number}'.format(
-                endpoint=endpoint, stn_number=stn_number))
+        msg = " ".join(
+            (
+                msg,
+                "for station {stn_number}".format(
+                    endpoint=endpoint, stn_number=stn_number
+                ),
+            )
         )
     else:
-        msg = ' '.join((
-            msg,
-            'for station {stn_number} {stn_id}'.format(
-                endpoint=endpoint, stn_number=stn_number, stn_id=stn_id))
+        msg = " ".join(
+            (
+                msg,
+                "for station {stn_number} {stn_id}".format(
+                    endpoint=endpoint, stn_number=stn_number, stn_id=stn_id
+                ),
+            )
         )
     try:
-        if not hasattr(begin, 'range'):
+        if not hasattr(begin, "range"):
             begin = arrow.get(begin)
     except arrow.parser.ParserError:
-        logging.error('invalid start date/time: {}'.format(begin))
+        logging.error("invalid start date/time: {}".format(begin))
         return
-    msg = ' '.join((
-        msg, 'from {begin}'.format(begin=begin.format('YYYY-MM-DD HH:mm:ss'))
-    ))
+    msg = " ".join(
+        (msg, "from {begin}".format(begin=begin.format("YYYY-MM-DD HH:mm:ss")))
+    )
     try:
-        if not hasattr(end, 'range'):
+        if not hasattr(end, "range"):
             end = arrow.get(end)
     except arrow.parser.ParserError:
-        logging.error('invalid end date/time: {}'.format(end))
+        logging.error("invalid end date/time: {}".format(end))
         return
-    msg = ' '.join((
-        msg, 'to {end}'.format(end=end.format('YYYY-MM-DD HH:mm:ss'))
-    ))
+    msg = " ".join((msg, "to {end}".format(end=end.format("YYYY-MM-DD HH:mm:ss"))))
     logging.info(msg)
     client = zeep.Client(endpoint)
     lat_min, lat_max = -90, 90
@@ -491,36 +530,72 @@ def get_chs_tides(data_type, stn_id, begin, end, retry_args={
     depth_min, depth_max = 0, 0
     first_value = 1
     n_values = 1000
-    metadata, order = True, 'asc'
+    metadata, order = True, "asc"
     datetimes, water_levels = [], []
     search_begin = begin
     while search_begin < end:
+
         @retry(**retry_args)
         def search_service(
-            data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
-            begin, end, first_value, n_values, metadata, stn_number, order
+            data_name,
+            lat_min,
+            lat_max,
+            lon_min,
+            lon_max,
+            depth_min,
+            depth_max,
+            begin,
+            end,
+            first_value,
+            n_values,
+            metadata,
+            stn_number,
+            order,
         ):
             return client.service.search(
-                data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
-                begin, end, first_value, n_values, metadata, stn_number, order
+                data_name,
+                lat_min,
+                lat_max,
+                lon_min,
+                lon_max,
+                depth_min,
+                depth_max,
+                begin,
+                end,
+                first_value,
+                n_values,
+                metadata,
+                stn_number,
+                order,
             )
+
         response = search_service(
-            data_name, lat_min, lat_max, lon_min, lon_max, depth_min, depth_max,
-            search_begin.format('YYYY-MM-DD HH:mm:ss'),
-            end.format('YYYY-MM-DD HH:mm:ss'),
-            first_value, n_values, metadata, 'station_id={}'.format(stn_number),
-            order
+            data_name,
+            lat_min,
+            lat_max,
+            lon_min,
+            lon_max,
+            depth_min,
+            depth_max,
+            search_begin.format("YYYY-MM-DD HH:mm:ss"),
+            end.format("YYYY-MM-DD HH:mm:ss"),
+            first_value,
+            n_values,
+            metadata,
+            "station_id={}".format(stn_number),
+            order,
         )
         response = zeep.helpers.serialize_object(response)
-        if response['size'] <= 1:
+        if response["size"] <= 1:
             break
-        datetimes.extend(d['boundaryDate']['min'] for d in response['data'])
-        water_levels.extend(float(d['value']) for d in response['data'])
+        datetimes.extend(d["boundaryDate"]["min"] for d in response["data"])
+        water_levels.extend(float(d["value"]) for d in response["data"])
         search_begin = arrow.get(datetimes[-1])
     name = (
-        '{stn_number} water levels' if int(stn_number) == stn_id
-        else '{stn_number} {stn_id} water levels').format(
-        stn_number=stn_number, stn_id=stn_id)
+        "{stn_number} water levels"
+        if int(stn_number) == stn_id
+        else "{stn_number} {stn_id} water levels"
+    ).format(stn_number=stn_number, stn_id=stn_id)
     time_series = pd.Series(
         data=water_levels, index=pd.to_datetime(datetimes), name=name
     )
@@ -550,16 +625,17 @@ def request_onc_sog_adcp(date, node, userid):
               contains search header id.
     :rtype: dict
     """
-    SERVICE_URL = 'https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax'
-    data_date = arrow.get(
-        *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
+    SERVICE_URL = "https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax"
+    data_date = arrow.get(*map(int, date.split("-")), tzinfo=tz.gettz("Canada/Pacific"))
     query = _build_adcp_query(data_date, node, userid)
-    @retry(wait_exponential_multiplier=1*1000, wait_exponential_max=30*1000)
+
+    @retry(wait_exponential_multiplier=1 * 1000, wait_exponential_max=30 * 1000)
     def _requests_get():
         return requests.get(SERVICE_URL, query)
+
     response = _requests_get()
     response.raise_for_status()
-    search_info = json.loads(response.text.lstrip('(').rstrip().rstrip(')'))
+    search_info = json.loads(response.text.lstrip("(").rstrip().rstrip(")"))
     return search_info
 
 
@@ -584,39 +660,45 @@ def _build_adcp_query(data_date, node, userid):
     REGION_ID = 2  # Strait of Georgia
     META = 23  # HTML metadata
     try:
-        location_id = onc_sog_adcps.deployments[node]['location id']
+        location_id = onc_sog_adcps.deployments[node]["location id"]
     except KeyError:
         raise KeyError(
-            'Unrecognized node name: {}; must be one of {}'
-            .format(node, set(onc_sog_adcps.deployments.keys())))
-    for depl in onc_sog_adcps.deployments[node]['history']:
+            "Unrecognized node name: {}; must be one of {}".format(
+                node, set(onc_sog_adcps.deployments.keys())
+            )
+        )
+    for depl in onc_sog_adcps.deployments[node]["history"]:
         if depl.start < data_date <= depl.end:
             deployment = depl
             break
     else:
         raise ValueError(
-            'No ADCP deployment found for {} on {}'.format(node, data_date))
+            "No ADCP deployment found for {} on {}".format(node, data_date)
+        )
     try:
         device_id = onc_sog_adcps.adcps[deployment.serial_no].device_id
         sensor_id = onc_sog_adcps.adcps[deployment.serial_no].sensor_id
     except KeyError:
         raise KeyError(
-            'Unrecognized ADCP serial number: {}; must be one of {}'
-                .format(deployment.serial_no, set(onc_sog_adcps.adcps.keys())))
+            "Unrecognized ADCP serial number: {}; must be one of {}".format(
+                deployment.serial_no, set(onc_sog_adcps.adcps.keys())
+            )
+        )
     query = {
-        'operation': OPERATION,
-        'userid': userid,
-        'dataformatid': MAT_FILE_FORMAT,
-        'timefrom': data_date.replace(hour=0).format('DD-MMM-YYYY HH:mm:ss'),
-        'timeto':
-            data_date.replace(hour=0).shift(days=+1).format('DD-MMM-YYYY HH:mm:ss'),
-        'deviceid': device_id,
-        'sensorid': sensor_id,
-        'regionid': REGION_ID,
-        'locationid': location_id,
-        'siteid': deployment.site_id,
-        'meta': META,
-        'params': '{"qc":"1","avg":"0","rotVar":"0"}',
+        "operation": OPERATION,
+        "userid": userid,
+        "dataformatid": MAT_FILE_FORMAT,
+        "timefrom": data_date.replace(hour=0).format("DD-MMM-YYYY HH:mm:ss"),
+        "timeto": data_date.replace(hour=0)
+        .shift(days=+1)
+        .format("DD-MMM-YYYY HH:mm:ss"),
+        "deviceid": device_id,
+        "sensorid": sensor_id,
+        "regionid": REGION_ID,
+        "locationid": location_id,
+        "siteid": deployment.site_id,
+        "meta": META,
+        "params": '{"qc":"1","avg":"0","rotVar":"0"}',
     }
     return query
 
@@ -635,19 +717,21 @@ def get_onc_sog_adcp_search_status(search_hdr_id, userid):
     It is primarily intended for debugging requests produced by
     :py:func:`~salishsea_tools.data_tools.get_onc_sog_adcp_mat`.
     """
-    SERVICE_URL = 'https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax'
+    SERVICE_URL = "https://data.oceannetworks.ca/VSearchByInstrumentServiceAjax"
     OPERATION = 1  # getSearchResult()
     query = {
-        'operation': OPERATION,
-        'userid': userid,
-        'searchHdrId': search_hdr_id,
+        "operation": OPERATION,
+        "userid": userid,
+        "searchHdrId": search_hdr_id,
     }
-    @retry(wait_exponential_multiplier=1*1000, wait_exponential_max=30*1000)
+
+    @retry(wait_exponential_multiplier=1 * 1000, wait_exponential_max=30 * 1000)
     def _requests_get():
         return requests.get(SERVICE_URL, query)
+
     response = _requests_get()
     response.raise_for_status()
-    search_info = json.loads(response.text.lstrip('(').rstrip().rstrip(')'))
+    search_info = json.loads(response.text.lstrip("(").rstrip().rstrip(")"))
     return search_info
 
 
@@ -674,21 +758,20 @@ def get_onc_sog_adcp_mat(date, search_info, dest_path, userno):
 
     :rtype: str
     """
-    FTP_SERVER = 'ftp.neptunecanada.ca'
+    FTP_SERVER = "ftp.neptunecanada.ca"
     FTP_PATH_TMPL = (
-        'pub/user{userno}/searchHeader{searchHdrId}/'
-        '{data_date.year}/{data_date.month:02d}')
-    data_date = arrow.get(
-        *map(int, date.split('-')), tzinfo=tz.gettz('Canada/Pacific'))
+        "pub/user{userno}/searchHeader{searchHdrId}/"
+        "{data_date.year}/{data_date.month:02d}"
+    )
+    data_date = arrow.get(*map(int, date.split("-")), tzinfo=tz.gettz("Canada/Pacific"))
     ftp_path = FTP_PATH_TMPL.format(
-        data_date=data_date, userno=userno,
-        searchHdrId=search_info['searchHdrId'])
+        data_date=data_date, userno=userno, searchHdrId=search_info["searchHdrId"]
+    )
     with ftplib.FTP(FTP_SERVER) as ftp:
         ftp.login()
         _poll_onc_ftp_path(ftp, ftp_path)
         filepath = _get_onc_adcp_matfile_name(ftp, ftp_path)
-        downloaded_file = _get_onc_sog_adcp_matfile(
-            ftp, filepath, Path(dest_path))
+        downloaded_file = _get_onc_sog_adcp_matfile(ftp, filepath, Path(dest_path))
     return str(downloaded_file)
 
 
@@ -700,8 +783,8 @@ def _retry_if_not_matfile(mlsd):
     For use by :py:func:`~salishsea_tools.data_tools_get_onc_sog_adcp_mat`.
     """
     for filename, facts in mlsd:
-        if not filename.startswith('.'):
-            return os.path.splitext(filename)[1] != '.mat'
+        if not filename.startswith("."):
+            return os.path.splitext(filename)[1] != ".mat"
     return True
 
 
@@ -711,24 +794,26 @@ def _retry_if_ftp_error(exception):
 
     For use by :py:func:`~salishsea_tools.data_tools_get_onc_sog_adcp_mat`.
     """
-    return any((
-        isinstance(exception, ftplib.error_reply),
-        isinstance(exception, ftplib.error_temp),
-        isinstance(exception, ftplib.error_perm),
-        isinstance(exception, ftplib.error_proto),
-    ))
+    return any(
+        (
+            isinstance(exception, ftplib.error_reply),
+            isinstance(exception, ftplib.error_temp),
+            isinstance(exception, ftplib.error_perm),
+            isinstance(exception, ftplib.error_proto),
+        )
+    )
 
 
 @retry(
     retry_on_exception=_retry_if_ftp_error,
     wrap_exception=True,
-    wait_fixed=60*1000,
-    stop_max_delay=120*60*1000,
+    wait_fixed=60 * 1000,
+    stop_max_delay=120 * 60 * 1000,
 )
 @retry(
     retry_on_result=_retry_if_not_matfile,
-    wait_fixed=60*1000,
-    stop_max_delay=120*60*1000,
+    wait_fixed=60 * 1000,
+    stop_max_delay=120 * 60 * 1000,
 )
 def _poll_onc_ftp_path(ftp, path):
     """Return a generator that yields elements of a directory listing in a
@@ -742,8 +827,8 @@ def _poll_onc_ftp_path(ftp, path):
 @retry(
     retry_on_exception=_retry_if_ftp_error,
     wrap_exception=True,
-    wait_exponential_multiplier=5*1000,
-    wait_exponential_max=60*1000,
+    wait_exponential_multiplier=5 * 1000,
+    wait_exponential_max=60 * 1000,
 )
 def _get_onc_adcp_matfile_name(ftp, path):
     """Return the file path and name of the requested ADCP :kbd:`.mat` file.
@@ -753,15 +838,15 @@ def _get_onc_adcp_matfile_name(ftp, path):
     :rtype: :py:class:`pathlib.Path`
     """
     for filename, facts in ftp.mlsd(path):
-        if os.path.splitext(filename)[1] == '.mat':
-            return Path(path)/filename
+        if os.path.splitext(filename)[1] == ".mat":
+            return Path(path) / filename
 
 
 @retry(
     retry_on_exception=_retry_if_ftp_error,
     wrap_exception=True,
-    wait_exponential_multiplier=5*1000,
-    wait_exponential_max=60*1000,
+    wait_exponential_multiplier=5 * 1000,
+    wait_exponential_max=60 * 1000,
 )
 def _get_onc_sog_adcp_matfile(ftp, filepath, dest):
     """Download the ADCP :kbd:`.mat` file to the directory given by dest.
@@ -770,8 +855,8 @@ def _get_onc_sog_adcp_matfile(ftp, filepath, dest):
 
     :rtype: :py:class:`pathlib.Path`
     """
-    dest_path = dest/filepath.name
-    ftp.retrbinary('RETR {}'.format(filepath), dest_path.open('wb').write)
+    dest_path = dest / filepath.name
+    ftp.retrbinary("RETR {}".format(filepath), dest_path.open("wb").write)
     return dest_path
 
 
@@ -781,10 +866,10 @@ def load_nowcast_station_tracers(
     months,
     hours,
     depth_indices,
-    file_ending = "ptrc_T.nc",
+    file_ending="ptrc_T.nc",
     nowcast_dir="/results/SalishSea/nowcast-green/",
     save_path=None,
-    verbose = True,
+    verbose=True,
 ):
     """Iterate through nowcast results directory, return tracer data that
     matches request in pandas dataframe.
@@ -812,48 +897,87 @@ def load_nowcast_station_tracers(
         5      BS11     0   5.500151  5.030882 2016-04-06      4
         6      BS11     0   6.500310  4.975801 2016-04-06      4
     """
-    month_num = {"jan": "01","feb": "02", "mar": "03", "apr": "04",
-                 "may": "05", "jun": "06", "jul": "07", "aug": "08",
-                 "sep": "09", "oct": "10", "nov": "11", "dec": "12" }
+    month_num = {
+        "jan": "01",
+        "feb": "02",
+        "mar": "03",
+        "apr": "04",
+        "may": "05",
+        "jun": "06",
+        "jul": "07",
+        "aug": "08",
+        "sep": "09",
+        "oct": "10",
+        "nov": "11",
+        "dec": "12",
+    }
     station_names = list(stations.keys())
     station_points = stations.values()
     model_js = [x[0] for x in station_points]
     model_is = [x[1] for x in station_points]
 
     mixed_format_dates = os.listdir(nowcast_dir)
-    number_format_dates = ["20" + x[5:7] + month_num[x[2:5]] + x[0:2] for x in mixed_format_dates]
-    sorted_dirs = [mixed_format_date for (number_format_date, mixed_format_date) in sorted(zip(number_format_dates,mixed_format_dates))]
+    number_format_dates = [
+        "20" + x[5:7] + month_num[x[2:5]] + x[0:2] for x in mixed_format_dates
+    ]
+    sorted_dirs = [
+        mixed_format_date
+        for (number_format_date, mixed_format_date) in sorted(
+            zip(number_format_dates, mixed_format_dates)
+        )
+    ]
 
     dataframe_list = []
     num_files = 0
     start_time = dtm.datetime.now()
 
     for subdir in sorted_dirs:
-        if os.path.isdir(nowcast_dir + '/' + subdir) and re.match("[0-9]{2}[a-z]{3}[0-9]{2}", subdir):
+        if os.path.isdir(nowcast_dir + "/" + subdir) and re.match(
+            "[0-9]{2}[a-z]{3}[0-9]{2}", subdir
+        ):
             month_str = subdir[2:5]
             date_str = "20" + subdir[5:7] + month_num[month_str] + subdir[0:2]
-            tracer_file = "SalishSea_1h_" + date_str + "_" + date_str + "_" + file_ending
+            tracer_file = (
+                "SalishSea_1h_" + date_str + "_" + date_str + "_" + file_ending
+            )
             tracer_path = nowcast_dir + "/" + subdir + "/" + tracer_file
             if os.path.isfile(tracer_path) and month_str in months:
                 grid_t = xarray.open_dataset(tracer_path)
                 result_hours = pd.DatetimeIndex(grid_t.time_centered.values).hour
                 time_indices = np.where([(x in hours) for x in result_hours])
 
-                J, T, Z = np.meshgrid(model_js,time_indices,depth_indices, indexing = 'ij')
-                I, T, Z = np.meshgrid(model_is,time_indices,depth_indices, indexing = 'ij')
+                J, T, Z = np.meshgrid(
+                    model_js, time_indices, depth_indices, indexing="ij"
+                )
+                I, T, Z = np.meshgrid(
+                    model_is, time_indices, depth_indices, indexing="ij"
+                )
 
                 tracer_dataframes = []
                 for trc in tracers:
-                    station_slice = grid_t[trc].values[T,Z,J,I]
-                    slice_xarray = xarray.DataArray(station_slice,
-                                     [station_names,result_hours[time_indices], grid_t.deptht.values[depth_indices]],
-                                     ["STATION", "HOUR", "DEPTH"],
-                                     trc)
+                    station_slice = grid_t[trc].values[T, Z, J, I]
+                    slice_xarray = xarray.DataArray(
+                        station_slice,
+                        [
+                            station_names,
+                            result_hours[time_indices],
+                            grid_t.deptht.values[depth_indices],
+                        ],
+                        ["STATION", "HOUR", "DEPTH"],
+                        trc,
+                    )
                     slice_dataframe = slice_xarray.to_dataframe()
-                    slice_dataframe.reset_index(inplace = True)
+                    slice_dataframe.reset_index(inplace=True)
                     tracer_dataframes.append(slice_dataframe)
-                merged_tracers = functools.reduce(lambda left,right: pd.merge(left,right,on=["STATION", "HOUR", "DEPTH"]), tracer_dataframes)
-                merged_tracers["DATE"] =  pd.to_datetime(date_str, infer_datetime_format=True)
+                merged_tracers = functools.reduce(
+                    lambda left, right: pd.merge(
+                        left, right, on=["STATION", "HOUR", "DEPTH"]
+                    ),
+                    tracer_dataframes,
+                )
+                merged_tracers["DATE"] = pd.to_datetime(
+                    date_str, infer_datetime_format=True
+                )
                 merged_tracers["MONTH"] = int(month_num[month_str])
                 dataframe_list.append(merged_tracers)
 
@@ -873,4 +997,4 @@ def load_nowcast_station_tracers(
         nowcast_df.to_pickle(save_path)
         if verbose:
             print("Done, dataframe saved to: " + save_path)
-    return(nowcast_df)
+    return nowcast_df
