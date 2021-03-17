@@ -95,6 +95,27 @@ def get_GEM_path(date):
     return path
 
 
+def get_WW3_path(date):
+    """Construct WW3 results path given the date
+    e.g., /opp/wwatch3/nowcast/SoG_ww3_fields_YYYYMMDD_YYYYMMDD.nc
+
+    :arg date: date of WW3 record
+    :type date: :py:class:`datetime.datetime`
+
+    :returns: WW3 path
+    :rtype: str
+    """
+
+    # Make WW3 path
+    path = '/opp/wwatch3/nowcast'
+    datestr = [date.strftime(fmt) for fmt in ('%d%b%y', '%Y%m%d_%Y%m%d')]
+    path = os.path.join(path, datestr[0].lower(), f'SoG_ww3_fields_{datestr[1]}.nc')
+    if not os.path.exists(path):
+        raise ValueError(f"No WW3 record found for the specified date {date.strftime('%Y-%b-%d')}")
+
+    return path
+
+
 def dataset_from_path(path, *args, **kwargs):
     """Return a dataset constructed from the file given by :kbd:`path`.
 

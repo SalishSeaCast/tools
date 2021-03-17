@@ -275,6 +275,9 @@ PLACES = {
     'Vancouver': {
         'lon lat': (-123.1207, 49.2827),
     },
+    'Hope': {
+        'lon lat': (-121.4419, 49.3858),
+    },
 
     # Provinces and states
     'British Columbia': {

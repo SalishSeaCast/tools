@@ -137,9 +137,9 @@ def get_ij_coordinates(lat,lon,grid_loc='~/MEOPAR/grid/grid_from_lat_lon_mask999
 def find_closest_model_point(
     lon, lat, model_lons, model_lats, grid='NEMO', land_mask=None,
     tols={
-        'NEMO': {'tol_lon': 0.0104, 'tol_lat': 0.00388},
-        'GEM2.5': {'tol_lon': 0.016, 'tol_lat': 0.012},
-        },
+        'NEMO': {'tol_lon': 0.007, 'tol_lat': 0.004},
+        'GEM2.5': {'tol_lon': 0.018, 'tol_lat': 0.013},
+    },
     checkTol=False
 ):
     """Returns the grid coordinates of the closest model point
@@ -200,12 +200,9 @@ def find_closest_model_point(
     )
 
     if len(j_list) == 0:
-        # Added by BMM March 2017
-        # If including points outside of domain:
-        return np.nan, np.nan
-        # raise ValueError(
-        #    'No model point found. tol_lon/tol_lat too small or '
-        #    'lon/lat outside of domain.')
+        raise ValueError(
+            'No model point found. tol_lon/tol_lat too small or '
+            'lon/lat outside of domain.')
     try:
         j, i = map(np.asscalar, (j_list, i_list))
     except ValueError:
