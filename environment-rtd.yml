@@ -4,20 +4,19 @@
 name: sphinx-build
 
 channels:
-  - defaults
+  - conda-forge
+  - nodefaults
 
 dependencies:
 - ipython
 - jupyter
 - matplotlib
+- nbsphinx
 - pip
-- python>=3.6
+- python=3.9
 
-# RTD packages
+  # RTD packages
 - mock
 - pillow
 - sphinx
 - sphinx_rtd_theme
-
-- pip:
-  - nbsphinx

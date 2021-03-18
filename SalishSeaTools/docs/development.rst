@@ -25,9 +25,17 @@
 Python Versions
 ===============
 
-The :kbd:`SalishSeaTools` package is developed and tested using `Python`_ 3.5 or later.
-However,
-the package must also run under `Python`_ 2.7 for use on the Westgrid HPC platform.
+The :kbd:`SalishSeaTools` package is developed and tested using `Python`_ 3.9.
+The package uses some Python language features that are not available in versions prior to 3.6,
+in particular:
+
+* `formatted string literals`_
+  (aka *f-strings*)
+* the `file system path protocol`_
+
+.. _Python: https://www.python.org/
+.. _formatted string literals: https://docs.python.org/3/reference/lexical_analysis.html#f-strings
+.. _file system path protocol: https://docs.python.org/3/whatsnew/3.6.html#whatsnew36-pep519
 
 
 .. _SalishSeaToolsGettingTheCode:

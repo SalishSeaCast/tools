@@ -22,7 +22,7 @@ import __pkg_metadata__
 
 python_classifiers = [
     'Programming Language :: Python :: {0}'.format(py_version)
-    for py_version in ['3.5', '3.6', '3.7', '3.8']
+    for py_version in ['3.8', '3.9']
 ]
 other_classifiers = [
     'Development Status :: ' + __pkg_metadata__.DEV_STATUS,
