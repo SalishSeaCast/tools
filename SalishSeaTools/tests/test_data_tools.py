@@ -16,9 +16,13 @@
 """Uni tests for salishsea_tools.data_tools module.
 """
 from datetime import datetime
+import json as stdlib_json
 import logging
+import textwrap
+from types import SimpleNamespace
 
 import arrow
+import pandas
 import pytest
 
 from salishsea_tools import data_tools
@@ -92,7 +96,264 @@ class TestGetCHSTideStnId:
         assert caplog.messages[0] == expected
         assert stn_id is None
 
-    def test_get_chs_tide_stn_id(self):
+    def test_get_chs_tide_stn_id(self, monkeypatch):
+        def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
+            class MockResponse:
+                def json(self):
+                    return stdlib_json.loads(
+                        textwrap.dedent(
+                            """\
+                        [
+                          {
+                            "id": "5cebf1de3d0f4a073c4bb996",
+                            "code": "08074",
+                            "officialName": "Campbell River",
+                            "operating": true,
+                            "latitude": 50.042,
+                            "longitude": -125.247,
+                            "type": "PERMANENT",
+                            "timeSeries": []
+                          }
+                       ]
+                    """
+                        )
+                    )
+
+            return MockResponse()
+
+        monkeypatch.setattr(
+            data_tools, "_do_chs_iwls_api_request", mock_do_chs_iwls_api_request
+        )
+
         stn_id = data_tools.get_chs_tide_stn_id(8074)
 
         assert stn_id == "5cebf1de3d0f4a073c4bb996"
+
+
+class TestGetCHSTides:
+    """Unit tests for get_chs_tides() function."""
+
+    @pytest.mark.parametrize("data_type", ("obs", "pred"))
+    def test_stn_name_not_found(self, data_type, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return None
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+
+        with pytest.raises(KeyError):
+            data_tools.get_chs_tides(
+                data_type, "Rimouski", begin="2021-03-18 00:00", end="2021-03-18 23:59"
+            )
+
+    def test_invalid_data_type(self, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return "5cebf1de3d0f4a073c4bb996"
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+
+        with pytest.raises(ValueError):
+            data_tools.get_chs_tides(
+                "foo",
+                "Campbell River",
+                begin="2021-03-18 00:00",
+                end="2021-03-18 23:59",
+            )
+
+    @pytest.mark.parametrize("data_type", ("obs", "pred"))
+    def test_invalid_start_date_time(self, data_type, caplog, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return "5cebf1de3d0f4a073c4bb996"
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+        caplog.set_level(logging.DEBUG)
+
+        time_series = data_tools.get_chs_tides(
+            data_type,
+            "Campbell River",
+            begin="2021-18-03",
+            end="2021-03-18 23:59",
+        )
+
+        assert caplog.records[0].levelname == "ERROR"
+        assert caplog.messages[0] == "invalid start date/time: 2021-18-03"
+        assert time_series is None
+
+    @pytest.mark.parametrize("data_type", ("obs", "pred"))
+    def test_invalid_end_date_time(self, data_type, caplog, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return "5cebf1de3d0f4a073c4bb996"
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+        caplog.set_level(logging.DEBUG)
+
+        time_series = data_tools.get_chs_tides(
+            data_type,
+            "Campbell River",
+            begin="2021-03-18",
+            end="2021-18-03 23:59",
+        )
+
+        assert caplog.records[0].levelname == "ERROR"
+        assert caplog.messages[0] == "invalid end date/time: 2021-18-03 23:59"
+        assert time_series is None
+
+    def test_get_chs_tides_obs(self, caplog, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return "5cebf1de3d0f4a073c4bb996"
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+
+        def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
+            class MockResponse:
+                def json(self):
+                    return stdlib_json.loads(
+                        textwrap.dedent(
+                            """\
+                            [
+                              {
+                                "eventDate": "2021-03-18T00:00:00Z",
+                                "qcFlagCode": "1",
+                                "value": 1.871,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                              },
+                              {
+                                "eventDate": "2021-03-18T00:01:00Z",
+                                "qcFlagCode": "1",
+                                "value": 1.885,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                              },
+                              {
+                                "eventDate": "2021-03-18T00:02:00Z",
+                                "qcFlagCode": "1",
+                                "value": 1.898,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                              },
+                              {
+                                "eventDate": "2021-03-18T00:03:00Z",
+                                "qcFlagCode": "1",
+                                "value": 1.91,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                              }
+                            ]
+                            """
+                        )
+                    )
+
+            return MockResponse()
+
+        monkeypatch.setattr(
+            data_tools, "_do_chs_iwls_api_request", mock_do_chs_iwls_api_request
+        )
+        caplog.set_level(logging.DEBUG)
+
+        time_series = data_tools.get_chs_tides(
+            "obs",
+            "Campbell River",
+            begin="2021-03-18 00:00",
+            end="2021-03-18 00:03",
+        )
+
+        assert caplog.records[0].levelname == "INFO"
+        expected = (
+            "retrieving obs water level data from "
+            "https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/5cebf1de3d0f4a073c4bb996/data "
+            "for station 08074 Campbell River from 2021-03-18 00:00:00Z to 2021-03-18 00:03:00Z"
+        )
+        assert caplog.messages[0] == expected
+        expected = pandas.Series(
+            data=[1.871, 1.885, 1.898, 1.91],
+            index=pandas.to_datetime(
+                [
+                    "2021-03-18T00:00:00Z",
+                    "2021-03-18T00:01:00Z",
+                    "2021-03-18T00:02:00Z",
+                    "2021-03-18T00:03:00Z",
+                ]
+            ),
+            name="08074 Campbell River water levels",
+        )
+        pandas.testing.assert_series_equal(time_series, expected)
+
+    def test_get_chs_tides_pred(self, caplog, monkeypatch):
+        def mock_get_chs_tide_stn_id(stn):
+            return "5cebf1de3d0f4a073c4bb996"
+
+        monkeypatch.setattr(data_tools, "get_chs_tide_stn_id", mock_get_chs_tide_stn_id)
+
+        def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
+            class MockResponse:
+                def json(self):
+                    return stdlib_json.loads(
+                        textwrap.dedent(
+                            """\
+                            [
+                              {
+                                "eventDate": "2021-03-19T00:00:00Z",
+                                "qcFlagCode": "2",
+                                "value": 1.757,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                              },
+                              {
+                                "eventDate": "2021-03-19T00:15:00Z",
+                                "qcFlagCode": "2",
+                                "value": 1.811,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                              },
+                              {
+                                "eventDate": "2021-03-19T00:30:00Z",
+                                "qcFlagCode": "2",
+                                "value": 1.878,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                              },
+                              {
+                                "eventDate": "2021-03-19T00:45:00Z",
+                                "qcFlagCode": "2",
+                                "value": 1.959,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                              },
+                              {
+                                "eventDate": "2021-03-19T01:00:00Z",
+                                "qcFlagCode": "2",
+                                "value": 2.053,
+                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                              }
+                            ]
+                            """
+                        )
+                    )
+
+            return MockResponse()
+
+        monkeypatch.setattr(
+            data_tools, "_do_chs_iwls_api_request", mock_do_chs_iwls_api_request
+        )
+        caplog.set_level(logging.DEBUG)
+
+        time_series = data_tools.get_chs_tides(
+            "obs",
+            "Campbell River",
+            begin="2021-03-18 00:00",
+            end="2021-03-18 00:03",
+        )
+
+        assert caplog.records[0].levelname == "INFO"
+        expected = (
+            "retrieving obs water level data from "
+            "https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/5cebf1de3d0f4a073c4bb996/data "
+            "for station 08074 Campbell River from 2021-03-18 00:00:00Z to 2021-03-18 00:03:00Z"
+        )
+        assert caplog.messages[0] == expected
+        expected = pandas.Series(
+            data=[1.757, 1.811, 1.878, 1.959, 2.053],
+            index=pandas.to_datetime(
+                [
+                    "2021-03-19T00:00:00Z",
+                    "2021-03-19T00:15:00Z",
+                    "2021-03-19T00:30:00Z",
+                    "2021-03-19T00:45:00Z",
+                    "2021-03-19T01:00:00Z",
+                ]
+            ),
+            name="08074 Campbell River water levels",
+        )
+        pandas.testing.assert_series_equal(time_series, expected)

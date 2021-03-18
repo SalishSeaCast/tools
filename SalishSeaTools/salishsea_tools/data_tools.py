@@ -52,8 +52,6 @@ import scipy.interpolate
 import scipy.io
 import xarray
 import pandas as pd
-import zeep
-import zeep.helpers
 
 from salishsea_tools import (
     onc_sog_adcps,
@@ -404,9 +402,11 @@ def onc_json_to_dataset(onc_json, teos=True):
 
 def get_chs_tides(
     data_type,
-    stn_id,
+    stn,
     begin,
     end,
+    api_server="https://api-iwls.dfo-mpo.gc.ca",
+    api_version="v1",
     retry_args={
         "wait_exponential_multiplier": 1000,
         "wait_exponential_max": 30000,
@@ -414,22 +414,24 @@ def get_chs_tides(
     },
 ):
     """Retrieve a time series of observed or predicted water levels for a CHS
-    recording tide gauge station from the https://ws-shc.qc.dfo-mpo.gc.ca/
+    recording tide gauge station from the Integrated Water Level System API
     web service for the date/time range given by begin and end.
 
-    The time series is returned as a :py:class:`pandas.Series` object.
+    API docs: https://api-iwls.dfo-mpo.gc.ca/v3/api-docs/v1
 
     The values of begin and end, and the returned time series date/time index
     are all UTC.
 
     Water levels are relative to chart datum for the station requested.
 
+    The time series is returned as a :py:class:`pandas.Series` object.
+
     :param str data_type: Type of data to retrieve; :kbd:`obs` or :kbd:`pred`.
 
-    :param int or str stn_id: Tide gauge station number or name.
-                              Names use
-                              :py:obj:`~salishsea_tools.places.PLACES` to
-                              look up the station number.
+    :param int or str stn: Tide gauge station number or name.
+                           Names use
+                           :py:obj:`~salishsea_tools.places.PLACES` to
+                           look up the station number.
 
     :param begin: UTC beginning date or date/time for data request.
                   If a date only is used the time defaults to 00:00:00.
@@ -438,6 +440,10 @@ def get_chs_tides(
     :param end: UTC end date or date/time for data request.
                 If a date only is used the time defaults to 00:00:00.
     :type end: str or :py:class:`arrow.Arrow`
+
+    :param str api_server: API server URL.
+
+    :param str api_version: API version identifier.
 
     :param dict retry_args: Key/value pair arguments to control how the request
                             is retried should it fail the first time.
@@ -452,167 +458,60 @@ def get_chs_tides(
     :return: Water level time series.
     :rtype: :py:class:`pandas.Series`
     """
-    valid_data_types = {
+    stn_id = get_chs_tide_stn_id(stn)
+    if stn_id is None:
+        raise KeyError(
+            f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
+        )
+    endpoint = f"{api_server}/api/{api_version}/stations/{stn_id}/data"
+    valid_time_series_codes = {
         # keyed by data_type arg value
-        "obs": {
-            # endpoint data type word
-            "endpoint": "observations",
-            # search service data name
-            "data name": "wl",
-        },
-        "pred": {
-            "endpoint": "predictions",
-            "data name": "wl15",
-        },
+        "obs": "wlo",
+        "pred": "wlp",
     }
-    if data_type not in valid_data_types:
+    if data_type not in valid_time_series_codes:
         raise ValueError(
-            "invalid data_type: {data_type}; please use one of "
-            "{valid_data_types}".format(
-                data_type=data_type, valid_data_types=set(valid_data_types.keys())
-            )
+            f"invalid data_type: {data_type}; please use one of {set(valid_time_series_codes.keys())}"
         )
-    endpoint_tmpl = "https://ws-shc.qc.dfo-mpo.gc.ca/{data_type}?WSDL"
-    endpoint = endpoint_tmpl.format(data_type=valid_data_types[data_type]["endpoint"])
-    data_name = valid_data_types[data_type]["data name"]
-    msg = "retrieving {data_type} water level data from {endpoint}".format(
-        data_type=data_type, endpoint=endpoint
+    query_params = {
+        "time-series-code": valid_time_series_codes[data_type],
+    }
+
+    msg = f"retrieving {data_type} water level data from {endpoint}"
+    stn_number = resolve_chs_tide_stn(stn)
+    msg = (
+        f"{msg} for station {stn_number}"
+        if int(stn_number) == stn
+        else f"{msg} for station {stn_number} {stn}"
     )
-    stn_number = resolve_chs_tide_stn(stn_id)
-    if int(stn_number) == stn_id:
-        msg = " ".join(
-            (
-                msg,
-                "for station {stn_number}".format(
-                    endpoint=endpoint, stn_number=stn_number
-                ),
-            )
-        )
-    else:
-        msg = " ".join(
-            (
-                msg,
-                "for station {stn_number} {stn_id}".format(
-                    endpoint=endpoint, stn_number=stn_number, stn_id=stn_id
-                ),
-            )
-        )
     try:
         if not hasattr(begin, "range"):
             begin = arrow.get(begin)
-    except arrow.parser.ParserError:
-        logging.error("invalid start date/time: {}".format(begin))
+    except ValueError:
+        logging.error(f"invalid start date/time: {begin}")
         return
-    msg = " ".join(
-        (msg, "from {begin}".format(begin=begin.format("YYYY-MM-DD HH:mm:ss")))
-    )
+    query_params.update({"from": f"{begin.format('YYYY-MM-DDTHH:mm:ss')}Z"})
+    msg = f"{msg} from {begin.format('YYYY-MM-DD HH:mm:ss')}Z"
     try:
         if not hasattr(end, "range"):
             end = arrow.get(end)
-    except arrow.parser.ParserError:
-        logging.error("invalid end date/time: {}".format(end))
+    except ValueError:
+        logging.error(f"invalid end date/time: {end}")
         return
-    msg = " ".join((msg, "to {end}".format(end=end.format("YYYY-MM-DD HH:mm:ss"))))
+    query_params.update({"to": f"{end.format('YYYY-MM-DDTHH:mm:ss')}Z"})
+    msg = f"{msg} to {end.format('YYYY-MM-DD HH:mm:ss')}Z"
     logging.info(msg)
-    client = zeep.Client(endpoint)
-    lat_min, lat_max = -90, 90
-    lon_min, lon_max = -180, 180
-    depth_min, depth_max = 0, 0
-    first_value = 1
-    n_values = 1000
-    metadata, order = True, "asc"
-    datetimes, water_levels = [], []
-    search_begin = begin
-    while search_begin < end:
-
-        @retry(**retry_args)
-        def search_service(
-            data_name,
-            lat_min,
-            lat_max,
-            lon_min,
-            lon_max,
-            depth_min,
-            depth_max,
-            begin,
-            end,
-            first_value,
-            n_values,
-            metadata,
-            stn_number,
-            order,
-        ):
-            return client.service.search(
-                data_name,
-                lat_min,
-                lat_max,
-                lon_min,
-                lon_max,
-                depth_min,
-                depth_max,
-                begin,
-                end,
-                first_value,
-                n_values,
-                metadata,
-                stn_number,
-                order,
-            )
-
-        response = search_service(
-            data_name,
-            lat_min,
-            lat_max,
-            lon_min,
-            lon_max,
-            depth_min,
-            depth_max,
-            search_begin.format("YYYY-MM-DD HH:mm:ss"),
-            end.format("YYYY-MM-DD HH:mm:ss"),
-            first_value,
-            n_values,
-            metadata,
-            "station_id={}".format(stn_number),
-            order,
-        )
-        response = zeep.helpers.serialize_object(response)
-        if response["size"] <= 1:
-            break
-        datetimes.extend(d["boundaryDate"]["min"] for d in response["data"])
-        water_levels.extend(float(d["value"]) for d in response["data"])
-        search_begin = arrow.get(datetimes[-1])
-    name = (
-        "{stn_number} water levels"
-        if int(stn_number) == stn_id
-        else "{stn_number} {stn_id} water levels"
-    ).format(stn_number=stn_number, stn_id=stn_id)
+    response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
     time_series = pd.Series(
-        data=water_levels, index=pd.to_datetime(datetimes), name=name
+        data=[event["value"] for event in response.json()],
+        index=pd.to_datetime([event["eventDate"] for event in response.json()]),
+        name=(
+            f"{stn_number} water levels"
+            if int(stn_number) == stn
+            else f"{stn_number} {stn} water levels"
+        )
     )
     return time_series
-
-
-def resolve_chs_tide_stn(stn):
-    """Resolve a CHS tide gauge station number or name to a station code for use in API requests.
-
-    Station names are resolved by lookup in :py:obj:`~salishsea_tools.places.PLACES`.
-
-    :param int or str stn: Tide gauge station number or name.
-
-    :return: Station code formatted for API requests,
-             or none if station name cannot be resolved.
-    :rtype: str or None
-    """
-    try:
-        return f"{stn:05d}"
-    except ValueError:
-        try:
-            return f"{PLACES[stn]['stn number']:05d}"
-        except KeyError:
-            logging.error(
-                f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
-            )
-            return
 
 
 def get_chs_tide_stn_id(
@@ -663,13 +562,53 @@ def get_chs_tide_stn_id(
         )
         return
     query_params = {"code": stn_code}
+    response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
+    return response.json()[0]["id"]
 
+
+def _do_chs_iwls_api_request(endpoint, query_params, retry_args):
+    """
+    :param str endpoint: API endpoint URL.
+
+    :param dict query_params: API request query parameters.
+
+    :param dict retry_args: Key/value pair arguments to control how the request
+                            is retried should it fail the first time.
+                            See https://pypi.python.org/pypi/retrying for a full
+                            discussion of the parameters available to control
+                            retrying.
+
+    :return: API response
+    :rtype: :py:class:`requests.Response`
+    """
     @retry(**retry_args)
     def do_api_request(endpoint, quer_params):
         return requests.get(endpoint, query_params)
 
-    response = do_api_request(endpoint, query_params)
-    return response.json()[0]["id"]
+    return do_api_request(endpoint, query_params)
+
+
+def resolve_chs_tide_stn(stn):
+    """Resolve a CHS tide gauge station number or name to a station code for use in API requests.
+
+    Station names are resolved by lookup in :py:obj:`~salishsea_tools.places.PLACES`.
+
+    :param int or str stn: Tide gauge station number or name.
+
+    :return: Station code formatted for API requests,
+             or none if station name cannot be resolved.
+    :rtype: str or None
+    """
+    try:
+        return f"{stn:05d}"
+    except ValueError:
+        try:
+            return f"{PLACES[stn]['stn number']:05d}"
+        except KeyError:
+            logging.error(
+                f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
+            )
+            return
 
 
 def request_onc_sog_adcp(date, node, userid):
