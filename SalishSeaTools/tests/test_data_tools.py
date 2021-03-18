@@ -16,6 +16,7 @@
 """Uni tests for salishsea_tools.data_tools module.
 """
 from datetime import datetime
+import logging
 
 import arrow
 import pytest
@@ -23,7 +24,7 @@ import pytest
 from salishsea_tools import data_tools
 
 
-class TestOncDatetime(object):
+class TestOncDatetime:
     """Unit tests for onc_datetime function."""
 
     @pytest.mark.parametrize(
@@ -52,3 +53,27 @@ class TestOncDatetime(object):
     def test_onc_datetime_timzone(self, date_time, timezone):
         result = data_tools.onc_datetime(date_time, timezone)
         assert result == "2016-06-27T23:49:42.000Z"
+
+
+class TestResolveCHSTideStn:
+    """Unit tests for resolve_chs_tide_stn() function."""
+
+    def test_stn_number(self):
+        stn_code = data_tools.resolve_chs_tide_stn(8074)
+
+        assert stn_code == "08074"
+
+    def test_stn_name(self):
+        stn_code = data_tools.resolve_chs_tide_stn("Campbell River")
+
+        assert stn_code == "08074"
+
+    def test_stn_name_not_found(self, caplog):
+        caplog.set_level(logging.DEBUG)
+
+        stn_code = data_tools.resolve_chs_tide_stn("Rimouski")
+
+        assert caplog.records[0].levelname == "ERROR"
+        expected = "station name not found in places.PLACES: Rimouski; maybe try an integer station number?"
+        assert caplog.messages[0] == expected
+        assert stn_code is None

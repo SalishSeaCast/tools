@@ -478,17 +478,7 @@ def get_chs_tides(
     msg = "retrieving {data_type} water level data from {endpoint}".format(
         data_type=data_type, endpoint=endpoint
     )
-    try:
-        stn_number = "{:05d}".format(stn_id)
-    except ValueError:
-        try:
-            stn_number = "{:05d}".format(PLACES[stn_id]["stn number"])
-        except KeyError as e:
-            logging.error(
-                "station id not found in places.PLACES: {station_id}; "
-                "maybe try an integer station number?".format(station_id=stn_id)
-            )
-            return
+    stn_number = resolve_chs_tide_stn(stn_id)
     if int(stn_number) == stn_id:
         msg = " ".join(
             (
@@ -600,6 +590,29 @@ def get_chs_tides(
         data=water_levels, index=pd.to_datetime(datetimes), name=name
     )
     return time_series
+
+
+def resolve_chs_tide_stn(stn):
+    """Resolve a CHS tide station number or name to a station code for use in API requests.
+
+    Station names are resolved by lookup in :py:obj:`~salishsea_tools.places.PLACES`.
+
+    :param int or str stn: Tide gauge station number or name.
+
+    :return: Station code formatted for API requests,
+             or none if station name cannot be resolved.
+    :rtype: str or None
+    """
+    try:
+        return f"{stn:05d}"
+    except ValueError:
+        try:
+            return f"{PLACES[stn]['stn number']:05d}"
+        except KeyError:
+            logging.error(
+                f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
+            )
+            return
 
 
 def request_onc_sog_adcp(date, node, userid):
