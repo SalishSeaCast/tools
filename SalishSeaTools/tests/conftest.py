@@ -21,7 +21,7 @@ import netCDF4 as nc
 import pytest
 
 
-@pytest.yield_fixture()
+@pytest.fixture
 def nc_dataset():
     """Return a netCDF4.Dataset instance called foo that is open for writing.
 
