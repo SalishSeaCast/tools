@@ -43,23 +43,13 @@ in particular:
 Getting the Code
 ================
 
-Clone the :ref:`tools-repo` code and documentation `repository`_ from Bitbucket with:
+Clone the code and documentation `repository`_ from GitHub with:
 
-.. _repository: https://bitbucket.org/salishsea/tools/
-
-.. code-block:: bash
-
-    $ hg clone ssh://hg@bitbucket.org/salishsea/tools
-
-or
+.. _repository: https://github.com/SalishSeaCast/tools
 
 .. code-block:: bash
 
-    $ hg clone https://<your_userid>@bitbucket.org/salishsea/tools
-
-if you don't have `ssh key authentication`_ set up on Bitbucket.
-
-.. _ssh key authentication: https://confluence.atlassian.com/bitbucket/set-up-ssh-for-mercurial-728138122.html
+    $ git clone git@github.com:SalishSeaCast/tools.git
 
 
 .. _SalishSeaToolsDevelopmentEnvironment:
@@ -68,29 +58,28 @@ Development Environment
 =======================
 
 Setting up an isolated development environment using `Conda`_ is recommended.
-Assuming that you have :ref:`AnacondaPythonDistro` or `Miniconda3`_ installed,
+Assuming that you have `Miniconda`_ installed,
 you can create and activate an environment called :kbd:`salishsea-tools` that will have all of the Python packages necessary for development,
 testing,
 and building the documentation with the commands:
 
-.. _Python: https://www.python.org/
-.. _Conda: http://conda.pydata.org/docs/
-.. _Miniconda3: http://conda.pydata.org/docs/install/quick.html
+.. _Conda: https://conda.io/en/latest/
+.. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
 
 .. code-block:: bash
 
     $ cd tools
     $ conda env create -f SalishSeaTools/environment.yaml
-    $ source activate salishsea-tools
+    $ conda activate salishsea-tools
     (salishsea-tools)$ pip install --editable SalishSeaTools
 
-The :kbd:`--editable` option in the :command:`pip install` commands above installs the :kbd:`SalishSeaTools` and :kbd:`SalishSeaTools` packaged from the :ref:`tools-repo` via symlinks so that :program:`salishsea` in the :kbd:`salishsea-tools` environment will be automatically updated as the repo evolves.
+The :kbd:`--editable` option in the :command:`pip install` commands above installs the :kbd:`SalishSeaTools` from the cloned repo via symlinks so that it will be automatically updated as the repos evolve.
 
 To deactivate the environment use:
 
 .. code-block:: bash
 
-    (salishsea-tools)$ source deactivate
+    (salishsea-tools)$ conda deactivate
 
 
 .. _SalishSeaToolsBuildingTheDocumentation:
@@ -105,8 +94,8 @@ Building the documentation is driven by :file:`tools/docs/Makefile`.
 With your :kbd:`salishsea-tools` development environment activated,
 use:
 
-.. _reStructuredText: http://sphinx-doc.org/rest.html
-.. _Sphinx: http://sphinx-doc.org/
+.. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+.. _Sphinx: https://www.sphinx-doc.org/en/master/
 
 .. code-block:: bash
 
@@ -158,8 +147,6 @@ The `pytest`_ tools is used for test fixtures and as the test runner for the sui
 
 With your :kbd:`salishsea-tools` development environment activated,
 use:
-
-.. _Mercurial: https://mercurial-scm.org/
 
 .. code-block:: bash
 
@@ -220,7 +207,9 @@ create a Python 2.7 :ref:`SalishSeaToolsDevelopmentEnvironment`.
 Version Control Repository
 ==========================
 
-The :kbd:`SalishSeaTools` package code and documentation source files are available as part of the :ref:`tools-repo` `Mercurial`_ repository at https://bitbucket.org/salishsea/tools.
+The :kbd:`SalishSeaTools` package code and documentation source files are available as part of the :ref:`tools-repo` `Git`_ repository at https://github.com/SalishSeaCast/tools.
+
+.. _Git: https://git-scm.com/
 
 
 .. _SalishSeaToolsIssueTracker:
@@ -230,4 +219,4 @@ Issue Tracker
 
 Development tasks,
 bug reports,
-and enhancement ideas are recorded and managed in the issue tracker at https://bitbucket.org/salishsea/tools/issues using the component tag :kbd:`SalishSeaTools`.
+and enhancement ideas are recorded and managed in the issue tracker at https://github.com/SalishSeaCast/tools/issues using the component tag :kbd:`SalishSeaTools`.
