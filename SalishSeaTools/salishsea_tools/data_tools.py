@@ -15,50 +15,31 @@
 
 """Functions for loading and processing observational data
 """
-from collections import OrderedDict
 import datetime as dtm
 import ftplib
 import functools
 import json
 import logging
-import re
 import os
-
-try:
-    from pathlib import Path
-except ImportError:
-    from pathlib2 import Path
-
-try:
-    from urllib.parse import (
-        quote,
-        urlencode,
-    )
-except ImportError:
-    # Python 2.7
-    from urllib import (
-        quote,
-        urlencode,
-    )
+import re
+from collections import OrderedDict
+from pathlib import Path
+from urllib.parse import quote, urlencode
 
 import arrow
 import arrow.parser
 import dateutil.parser as dparser
-from dateutil import tz
 import numpy as np
+import pandas as pd
 import requests
-from retrying import retry
 import scipy.interpolate
 import scipy.io
 import xarray
-import pandas as pd
+from dateutil import tz
+from retrying import retry
 
-from salishsea_tools import (
-    onc_sog_adcps,
-    teos_tools,
-)
+from salishsea_tools import onc_sog_adcps, teos_tools
 from salishsea_tools.places import PLACES
-
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 

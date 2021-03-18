@@ -15,11 +15,10 @@
 
 """Uni tests for salishsea_tools.data_tools module.
 """
-from datetime import datetime
 import json as stdlib_json
 import logging
 import textwrap
-from types import SimpleNamespace
+from datetime import datetime
 
 import arrow
 import pandas
