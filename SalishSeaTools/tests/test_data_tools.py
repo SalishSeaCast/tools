@@ -77,3 +77,22 @@ class TestResolveCHSTideStn:
         expected = "station name not found in places.PLACES: Rimouski; maybe try an integer station number?"
         assert caplog.messages[0] == expected
         assert stn_code is None
+
+
+class TestGetCHSTideStnId:
+    """Unit tests for get_chs_tide_stn_id() function."""
+
+    def test_stn_name_not_found(self, caplog):
+        caplog.set_level(logging.DEBUG)
+
+        stn_id = data_tools.get_chs_tide_stn_id("Rimouski")
+
+        assert caplog.records[0].levelname == "ERROR"
+        expected = "station name not found in places.PLACES: Rimouski; maybe try an integer station number?"
+        assert caplog.messages[0] == expected
+        assert stn_id is None
+
+    def test_get_chs_tide_stn_id(self):
+        stn_id = data_tools.get_chs_tide_stn_id(8074)
+
+        assert stn_id == "5cebf1de3d0f4a073c4bb996"

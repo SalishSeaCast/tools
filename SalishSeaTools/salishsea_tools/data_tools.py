@@ -301,7 +301,7 @@ def get_onc_data(
         "wait_exponential_multiplier": 1000,
         "wait_exponential_max": 30000,
     },
-    **query_params
+    **query_params,
 ):
     """Request data from one of the Ocean Networks Canada (ONC) web services.
 
@@ -593,7 +593,7 @@ def get_chs_tides(
 
 
 def resolve_chs_tide_stn(stn):
-    """Resolve a CHS tide station number or name to a station code for use in API requests.
+    """Resolve a CHS tide gauge station number or name to a station code for use in API requests.
 
     Station names are resolved by lookup in :py:obj:`~salishsea_tools.places.PLACES`.
 
@@ -613,6 +613,63 @@ def resolve_chs_tide_stn(stn):
                 f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
             )
             return
+
+
+def get_chs_tide_stn_id(
+    stn,
+    api_server="https://api-iwls.dfo-mpo.gc.ca",
+    api_version="v1",
+    retry_args={
+        "wait_exponential_multiplier": 1000,
+        "wait_exponential_max": 30000,
+        "stop_max_delay": 36000,
+    },
+):
+    """Get a CHS tide gauge station id corresponding to a station number or name.
+
+    Station names are resolved to station codes by
+    :py:func:`~salishsea_tools.data_tools.resolve_chs_tide_stn`.
+    Station codes are resolved to station ids by requests to the
+    CHS Integrated Water Level System API :kbd:`stations` endpoint.
+
+    API docs: https://api-iwls.dfo-mpo.gc.ca/v3/api-docs/v1
+
+    The station id returned is a UUID hash string for use in other API requests.
+
+    :param int or str stn: Tide gauge station number or name.
+
+    :param str api_server: API server URL.
+
+    :param str api_version: API version identifier.
+
+    :param dict retry_args: Key/value pair arguments to control how the request
+                            is retried should it fail the first time.
+                            The defaults provide a 2^x * 1 second exponential
+                            back-off between each retry, up to 30 seconds,
+                            then 30 seconds afterwards, to a maximum of 10 minutes
+                            of retrying.
+                            See https://pypi.python.org/pypi/retrying for a full
+                            discussion of the parameters available to control
+                            retrying.
+
+    :return: Station id, or none if station name cannot be resolved.
+    :rtype: str or None
+    """
+    endpoint = f"{api_server}/api/{api_version}/stations"
+    stn_code = resolve_chs_tide_stn(stn)
+    if stn_code is None:
+        logging.error(
+            f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
+        )
+        return
+    query_params = {"code": stn_code}
+
+    @retry(**retry_args)
+    def do_api_request(endpoint, quer_params):
+        return requests.get(endpoint, query_params)
+
+    response = do_api_request(endpoint, query_params)
+    return response.json()[0]["id"]
 
 
 def request_onc_sog_adcp(date, node, userid):
