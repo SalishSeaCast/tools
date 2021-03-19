@@ -50,6 +50,5 @@ dependencies:
 - sphinx_rtd_theme
 - tqdm
 - xarray
-- zeep
 - pip:
   - angles
