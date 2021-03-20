@@ -20,7 +20,7 @@ channels:
   - nodefaults
 
 dependencies:
-- arrow
+- arrow>=1.0.0
 - bottleneck
 - cliff
 - cmocean

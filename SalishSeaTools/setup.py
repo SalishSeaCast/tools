@@ -44,7 +44,7 @@ except IOError:
 install_requires = [
     # see requirements.txt for versions most recently used in development
     'angles',
-    'arrow',
+    'arrow>=1.0.0',
     'bottleneck',
     'cmocean',
     'f90nml',
