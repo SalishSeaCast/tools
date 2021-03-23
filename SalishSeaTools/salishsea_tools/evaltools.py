@@ -52,8 +52,8 @@ def matchData(
     data,
     filemap,
     fdict,
-    mod_start,
-    mod_end,
+    mod_start=None,
+    mod_end=None,
     mod_nam_fmt='nowcast',
     mod_basedir='/results/SalishSea/nowcast-green/',
     mod_flen=1,
@@ -170,6 +170,13 @@ def matchData(
     for ikey in filemap:
         filemap_r[filemap[ikey]].append(ikey)
 
+    # if mod_start and mod_end not provided, use min and max of data datetimes
+    if mod_start is None:
+        mod_start=np.min(data['dtUTC'])
+        print(mod_start)
+    if mod_end is None:
+        mod_end=np.max(data['dtUTC'])
+        print(mod_end)
     # adjustments to data dataframe to avoid unnecessary calculations
     data=data.loc[(data.dtUTC>=mod_start)&(data.dtUTC<mod_end)].copy(deep=True)
     data=data.dropna(how='any',subset=reqsubset) #.dropna(how='all',subset=[*varmap.keys()])
