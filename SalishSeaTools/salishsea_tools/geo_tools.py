@@ -140,7 +140,8 @@ def find_closest_model_point(
         'NEMO': {'tol_lon': 0.007, 'tol_lat': 0.004},
         'GEM2.5': {'tol_lon': 0.018, 'tol_lat': 0.013},
     },
-    checkTol=False
+    checkTol=False,
+    raiseOutOfBounds=False
 ):
     """Returns the grid coordinates of the closest model point
     to a specified lon/lat. If land_mask is provided, returns the closest
@@ -179,6 +180,10 @@ def find_closest_model_point(
 
     :arg checkTol: optionally check that nearest ocean point is not
         outside specified tolerances in case that spiral search is called
+        Note: NEMO tols may not be appropriate for warped Fraser R area
+
+    :arg raiseOutOfBounds: optionally raise exception when no point found,
+        but default to previous behaviour (return NaN)
 
     :returns: yind, xind
     """
@@ -200,9 +205,12 @@ def find_closest_model_point(
     )
 
     if len(j_list) == 0:
-        raise ValueError(
-            'No model point found. tol_lon/tol_lat too small or '
-            'lon/lat outside of domain.')
+        if raiseOutOfBounds:
+            raise ValueError(
+                f'No model point found at ({lon,lat}). tol_lon/tol_lat too small or '
+                'lon/lat outside of domain.')
+        else:
+            return np.nan, np.nan
     try:
         j, i = map(np.asscalar, (j_list, i_list))
     except ValueError:
@@ -236,10 +244,12 @@ def find_closest_model_point(
         else:
             return _spiral_search_for_closest_water_point(
                 j, i, land_mask, lon, lat, model_lons, model_lats)
-    except ValueError:
-        raise ValueError(
-            'lat/lon on land and no nearby water point found')
-
+    except ValueError: 
+        if raiseOutOfBounds:
+            raise ValueError(
+                'lat/lon on land and no nearby water point found')
+        else: 
+            return np.nan, np.nan
 
 def closestPointArray(lons,lats,
     model_lons, model_lats, tol2=1, grid='NEMO', land_mask=None,
