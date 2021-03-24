@@ -619,6 +619,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
     elif nam_fmt=='sockeye':
        stencil=f'SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
+    elif nam_fmt == 'optimum':
+       stencil = f'???????/SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
     elif nam_fmt=='wind':
        stencil='ops_{3}.nc'
     elif nam_fmt=='ops':
