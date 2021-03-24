@@ -739,9 +739,9 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
     Base.prepare(engine, reflect=True)
     # mapped classes have been created
     # existing tables:
-    StationTBL=Base.classes.CTDStationTBL
-    ObsTBL=Base.classes.CTDObsTBL
-    CalcsTBL=Base.classes.CTDCalcsTBL
+    StationTBL=Base.classes.StationTBL
+    ObsTBL=Base.classes.ObsTBL
+    CalcsTBL=Base.classes.CalcsTBL
     session = create_session(bind = engine, autocommit = False, autoflush = True)
     SA=case([(CalcsTBL.Salinity_T0_C0_SA!=None, CalcsTBL.Salinity_T0_C0_SA)], else_=
              case([(CalcsTBL.Salinity_T1_C1_SA!=None, CalcsTBL.Salinity_T1_C1_SA)], else_=
