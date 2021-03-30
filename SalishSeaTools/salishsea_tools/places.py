@@ -317,6 +317,12 @@ PLACES = {
         'NEMO grid ji': (450, 258),
         'GEM2.5 grid ji': (138, 144),
     },
+    # Hakai STATION QU39 (lat,lon)=(50.0307 N, 125.0992 W)
+    'QU39': {
+        'lon lat': (-125.0992, 50.0307),
+        'NEMO grid ji': (736, 144),
+        'GEM2.5 grid ji': (189, 106),
+    },
     # Tereza's cluster stations, aligned with Vector Stations where possible.
     'Cluster_1': {
         'NEMO grid ji': (241, 212),
