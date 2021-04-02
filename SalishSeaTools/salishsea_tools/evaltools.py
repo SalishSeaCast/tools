@@ -35,6 +35,7 @@ import warnings
 import re
 import f90nml
 import sys
+import xarray as xr
 
 # Check which Excel reader engine is available, if any, and set variable excelEngine
 try:
@@ -62,6 +63,7 @@ def matchData(
     meshPath=None,
     maskName='tmask',
     wrapSearch=False,
+    fastSearch=False,
     wrapTol=1,
     e3tvar='e3t',
     fid=None,
@@ -210,7 +212,7 @@ def matchData(
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
     if not preIndexed:
         # find location of each obs on model grid and add to data as additional columns 'i' and 'j'
-        data=_gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,quiet=quiet,nemops=nemops)
+        data=_gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,fastSearch, quiet=quiet,nemops=nemops)
         data=data.sort_values(by=[ix for ix in ['dtUTC','Z','j','i'] if ix in reqsubset]) # preserve list order
     else:
         data=data.sort_values(by=[ix for ix in ['dtUTC','k','j','i'] if ix in reqsubset]) # preserve list order
@@ -243,10 +245,10 @@ def matchData(
     data.reset_index(drop=True,inplace=True)
     return data
 
-def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quiet=False,nemops='NEMO'):
+def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,fastSearch=False, resetIndex=False,quiet=False,nemops='NEMO'):
     """ this function finds the horizontal grid (i,j) indices for each model point and adds them
         to the dataframe 'data' as additional columns
-        NOTE: points that are matched are dropped from the dataFrame; with quite=False, the unmatched
+        NOTE: points that are matched are dropped from the dataFrame; with quiet=False, the unmatched
         lats and lons are printed
     """
     lmask=-1*(omask[0,0,:,:]-1) # NEMO masks have ocean = 1, but the functions called below require land = 1
@@ -257,6 +259,16 @@ def _gridHoriz(data,omask,navlon,navlat,wrapSearch,wrapTol,resetIndex=False,quie
                                                         tol2=wrapTol,land_mask = lmask)
         data['j']=[-1 if np.isnan(mm) else int(mm) for mm in jj]
         data['i']=[-1 if np.isnan(mm) else int(mm) for mm in ii]
+    elif fastSearch:
+        jjii = xr.open_dataset('~/MEOPAR/grid/grid_from_lat_lon_mask999.nc')
+        print (data['Lat'])
+        mylats = xr.DataArray(data['Lat'])
+        mylons = xr.DataArray(data['Lon'])
+        jj = jjii.jj.sel(lats=mylats, lons=mylons, method='nearest').values
+        ii = jjii.ii.sel(lats=mylats, lons=mylons, method='nearest').values
+        print (jj.shape, jj)
+        data['j'] = [-1 if mm==-999 else mm for mm in jj]
+        data['i'] = [-1 if mm==-999 else mm for mm in ii]
     else:
         data['j']=-1*np.ones((len(data))).astype(int)
         data['i']=-1*np.ones((len(data))).astype(int)
