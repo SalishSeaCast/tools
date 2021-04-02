@@ -18,6 +18,7 @@
 """
 
 import datetime as dt
+from erddapy import ERDDAP
 import numpy as np
 import netCDF4 as nc
 import pandas as pd
@@ -1228,6 +1229,67 @@ def loadHakai(datelims=(),loadCTD=False):
     fdata2.drop(['no','event_pk','Date','Sampling Bout','Latitude','Longitude','index','Gather Lat','Gather Long', 'Pressure Transducer Depth (m)',
                 'Filter Type','dloc','Collected','Line Out Depth','Replicate Number','Work Area','Survey','Site ID','NO2+NO3 Flag','SiO2 Flag'],axis=1,inplace=True)
     return fdata2
+
+
+def load_ferry_ERDDAP(datelims, variables=None):
+    """ load ferry data from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
+    conservative temperature, oxygen to uMol and rename grid i and grid j columns
+
+    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    :type datelims: tuple
+
+    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
+    :type variables: list
+
+    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
+    :rtype: :py:class:`pandas.dataframe`
+    """
+
+    server = "https://salishsea.eos.ubc.ca/erddap"
+
+    protocol = "tabledap"
+    dataset_id = "ubcONCTWDP1mV18-01"
+
+    if variables == None:
+        variables = [
+            "latitude",
+            "longitude",
+            "chlorophyll",
+            "temperature",
+            "salinity",
+            "turbidity",
+            "o2_concentration_corrected",
+            "time",
+            "nemo_grid_j",
+            "nemo_grid_i"
+        ]
+
+    start_date = datelims[0].strftime('%Y-%m-%dT00:00:00Z')
+    end_date = datelims[1].strftime('%Y-%m-%dT00:00:00Z')
+
+    constraints = {
+    "time>=": start_date,
+    "time<=": end_date,
+    "nemo_grid_j>=": 0,
+    "on_crossing_mask=": 1,
+    }
+
+    obs = ERDDAP(server=server, protocol=protocol)
+    obs.dataset_id = dataset_id
+    obs.variables = variables
+    obs.constraints = constraints
+
+    obs_pd = obs.to_pandas(index_col="time (UTC)", parse_dates=True,).dropna()
+
+    obs_pd['oxygen (uM)'] = 44.661 * obs_pd['o2_concentration_corrected (ml/l)']
+    obs_pd['conservative temperature (oC)'] = gsw.CT_from_pt(obs_pd['salinity (g/kg)'], obs_pd['temperature (degrees_Celcius)'] )
+    obs_pd['dtUTC'] = obs_pd.index.tz_localize(None)
+    obs_pd.reset_index(inplace=True)
+    obs_pd.rename(columns={"latitude (degrees_north)": "Lat", "longitude (degrees_east)": "Lon",
+                      "nemo_grid_j (count)": "j", "nemo_grid_i (count)": "i"}, inplace=True)
+
+    return obs_pd
+
 
 def WSS(obs,mod):
     # Willmott skill core, cannot include any NaN values
