@@ -793,7 +793,7 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
                                                                     StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121),
                                                                     StationTBL.Include==True,ObsTBL.Include==True,CalcsTBL.Include==True))
-    df1=pd.DataFrame(qry.all())
+    df1=pd.read_sql_query(qry.statement, engine)
     df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for y,m,d,h in zip(df1['Year'],df1['Month'],df1['Day'],df1['Hour'])]
     session.close()
     engine.dispose()
@@ -884,10 +884,11 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                                                                     #not_(and_(StationTBL.Lat>48.77,StationTBL.Lat<49.27,
                                                                     #          StationTBL.Lon<-123.43))))
     if excludeSaanich:
-        df1=pd.DataFrame(qry.filter(not_(and_(StationTBL.Lat>48.47,StationTBL.Lat<48.67,
-                                              StationTBL.Lon>-123.6,StationTBL.Lon<-123.43))).all())
+        qry1=qry.filter(not_(and_(StationTBL.Lat>48.47,StationTBL.Lat<48.67,
+                                              StationTBL.Lon>-123.6,StationTBL.Lon<-123.43)))
+        df1=pd.read_sql_query(qry1.statement, engine)
     else:
-        df1=pd.DataFrame(qry.all())
+        df1=pd.read_sql_query(qry.statement, engine)
     df1['Z']=np.where(df1['Depth']>=0,df1['Depth'],-1.0*gsw.z_from_p(p=df1['Pressure'].values,lat=df1['Lat'].values))
     df1['dtUTC']=[dt.datetime(int(y),int(m),int(d))+dt.timedelta(hours=h) for ind, (y,m,d,h) in df1.loc[:,['Year','Month','Day','Hour']].iterrows()]
     session.close()
