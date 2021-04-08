@@ -630,13 +630,9 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     elif nam_fmt=='long':
        stencil='**/SalishSea_'+ftres+'*'+ftype+'_{1}-{2}.nc'
     elif nam_fmt=='sockeye':
-<<<<<<< HEAD
-       stencil=f'SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
+       stencil=f'*/SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
     elif nam_fmt == 'optimum':
        stencil = f'???????/SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
-=======
-       stencil=f'*/SalishSea_{ftres}*{ftype}_{{1}}-{{2}}.nc'
->>>>>>> Update filefmt structure for sockeye
     elif nam_fmt=='wind':
        stencil='ops_{3}.nc'
     elif nam_fmt=='ops':
