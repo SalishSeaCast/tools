@@ -18,7 +18,6 @@
 """
 
 import datetime as dt
-from erddapy import ERDDAP
 import numpy as np
 import netCDF4 as nc
 import pandas as pd
@@ -1257,6 +1256,9 @@ def load_ferry_ERDDAP(datelims, variables=None):
     :returns: variable values from ERDDAP for time period requested: as pandas dataframe
     :rtype: :py:class:`pandas.dataframe`
     """
+
+    # load erddapy here so your can use the tools on computers without web access (sockeye)
+    from erddapy import ERDDAP
 
     server = "https://salishsea.eos.ubc.ca/erddap"
 
