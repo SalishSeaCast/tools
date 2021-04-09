@@ -99,7 +99,7 @@ def metric1_bloomtime(phyto_alld,no3_alld,bio_time):
 
 
 # Metric 2: 
-def metric2b_bloomtime(phyto_alld,no3_alld,bio_time):
+def metric2_bloomtime(phyto_alld,no3_alld,bio_time):
     ''' Given datetime array and two 2D arrays of phytoplankton and nitrate concentrations, over time
         and depth, returns a datetime value of the spring phytoplankton bloom date according to the 
         following definition (now called 'metric 2'):
