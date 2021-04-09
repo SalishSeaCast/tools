@@ -99,12 +99,12 @@ def metric1_bloomtime(phyto_alld,no3_alld,bio_time):
 
 
 # Metric 2: 
-def metric2_bloomtime(sphyto,sno3,bio_time):
-    ''' Given datetime array and two 1D arrays of surface phytplankton and nitrate concentrations 
-        over time, returns a datetime value of the spring phytoplankton bloom date according to the 
+def metric2b_bloomtime(phyto_alld,no3_alld,bio_time):
+    ''' Given datetime array and two 2D arrays of phytoplankton and nitrate concentrations, over time
+        and depth, returns a datetime value of the spring phytoplankton bloom date according to the 
         following definition (now called 'metric 2'):
             
-            'The first peak in which chlorophyll concentrations are above 5 ug/L for more than two days'
+            'The first peak in which chlorophyll concentrations in the upper 3m are above 5 ug/L for more than two days'
             
             Parameters:
                     sphyto: 1D array of phytoplankton concentrations (in uM N) over time 
@@ -116,12 +116,26 @@ def metric2_bloomtime(sphyto,sno3,bio_time):
                     bloomtime2: the spring bloom date as a single datetime value
         
     '''
-    
-    df = pd.DataFrame({'bio_time':bio_time, 'sphyto':sphyto, 'sno3':sno3})
+    # a) get avg phytplankton in upper 3m
+    phyto_alld_df=pd.DataFrame(phyto_alld)
+    upper_3m_phyto=pd.DataFrame(phyto_alld_df[[0,1,2,3]].mean(axis=1))
+    upper_3m_phyto.columns=['sphyto']
+    #upper_3m_phyto
+
+    # b) get average no3 in upper 3m
+    no3_alld_df=pd.DataFrame(no3_alld)
+    upper_3m_no3=pd.DataFrame(no3_alld_df[[0,1,2,3]].mean(axis=1))
+    upper_3m_no3.columns=['sno3']
+    #upper_3m_no3
+
+    # make bio_time into a dataframe
+    bio_time_df=pd.DataFrame(bio_time)
+    bio_time_df.columns=['bio_time']
+    df=pd.concat((bio_time_df,upper_3m_phyto,upper_3m_no3), axis=1)
 
     # to find all the peaks:
     df['phytopeaks'] = df.sphyto[(df.sphyto.shift(1) < df.sphyto) & (df.sphyto.shift(-1) < df.sphyto)]
-    
+
     # need to covert the value of interest from ug/L to uM N (conversion factor: 1.8 ug Chl per umol N)
     chlvalue=5/1.8
 
@@ -138,7 +152,6 @@ def metric2_bloomtime(sphyto,sno3,bio_time):
             bloomtime2=np.nan
             print('bloom not found')
     return bloomtime2
-
 
 # Metric 3: 
 def metric3_bloomtime(sphyto,sno3,bio_time):
