@@ -104,12 +104,12 @@ def metric2b_bloomtime(phyto_alld,no3_alld,bio_time):
         and depth, returns a datetime value of the spring phytoplankton bloom date according to the 
         following definition (now called 'metric 2'):
             
-            'The first peak in which chlorophyll concentrations in the upper 3m are above 5 ug/L for more than two days'
+            'The first peak in which chlorophyll concentrations in upper 3m are above 5 ug/L for more than two days'
             
             Parameters:
-                    sphyto: 1D array of phytoplankton concentrations (in uM N) over time 
+                    phyto_alld: 2D array of phytoplankton concentrations (in uM N) over all depths and time 
                                 range of 'bio_time'
-                      sno3: 1D array of nitrate concentrations (in uM N) over time 
+                      no3_alld: 2D array of nitrate concentrations (in uM N) over all depths and time 
                                 range of 'bio_time'
                   bio_time: 1D datetime array of the same time frame as sphyto and sno3
             Returns:
