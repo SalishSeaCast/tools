@@ -457,7 +457,6 @@ def get_chs_tides(
     query_params = {
         "time-series-code": valid_time_series_codes[data_type],
     }
-
     msg = f"retrieving {data_type} water level data from {endpoint}"
     stn_number = resolve_chs_tide_stn(stn)
     msg = (
@@ -465,13 +464,13 @@ def get_chs_tides(
         if int(stn_number) == stn
         else f"{msg} for station {stn_number} {stn}"
     )
+
     try:
         if not hasattr(begin, "range"):
             begin = arrow.get(begin)
     except ValueError:
         logging.error(f"invalid start date/time: {begin}")
         return
-    query_params.update({"from": f"{begin.format('YYYY-MM-DDTHH:mm:ss')}Z"})
     msg = f"{msg} from {begin.format('YYYY-MM-DD HH:mm:ss')}Z"
     try:
         if not hasattr(end, "range"):
@@ -479,13 +478,28 @@ def get_chs_tides(
     except ValueError:
         logging.error(f"invalid end date/time: {end}")
         return
-    query_params.update({"to": f"{end.format('YYYY-MM-DDTHH:mm:ss')}Z"})
     msg = f"{msg} to {end.format('YYYY-MM-DD HH:mm:ss')}Z"
     logging.info(msg)
-    response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
+
+    # IWLS API limits requests to 7 day long periods
+    water_levels, datetimes = [], []
+    for (span_start, span_end) in arrow.Arrow.span_range("week", begin, end, exact=True):
+        query_params.update({
+            "from": f"{span_start.format('YYYY-MM-DDTHH:mm:ss')}Z",
+            "to": f"{span_end.format('YYYY-MM-DDTHH:mm:ss')}Z",
+        })
+        response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
+        water_levels.extend(event["value"] for event in response.json())
+        datetimes.extend(event["eventDate"] for event in response.json())
+
+    if not water_levels:
+        logging.info(
+            f"no {data_type} water level data available from {stn_id} during "
+            f"{begin.format('YYYY-MM-DD HH:mm:ss')}Z to {end.format('YYYY-MM-DD HH:mm:ss')}Z")
+        return
     time_series = pd.Series(
-        data=[event["value"] for event in response.json()],
-        index=pd.to_datetime([event["eventDate"] for event in response.json()]),
+        data=water_levels,
+        index=pd.to_datetime(datetimes, format="%Y-%m-%dT%H:%M:%S%z").tz_convert(None),
         name=(
             f"{stn_number} water levels"
             if int(stn_number) == stn
