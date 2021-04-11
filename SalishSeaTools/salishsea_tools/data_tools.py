@@ -558,7 +558,12 @@ def get_chs_tide_stn_id(
         return
     query_params = {"code": stn_code}
     response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
-    return response.json()[0]["id"]
+    try:
+        return response.json()[0]["id"]
+    except IndexError:
+        # CHS IWLS API endpoint returned no station information;
+        # station code is probably for a NOAA station
+        return
 
 
 def _do_chs_iwls_api_request(endpoint, query_params, retry_args):

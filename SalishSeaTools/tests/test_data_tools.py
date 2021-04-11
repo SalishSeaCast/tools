@@ -115,6 +115,22 @@ class TestGetCHSTideStnId:
         assert caplog.messages[1] == expected
         assert stn_id is None
 
+    def test_no_stn_info(self, monkeypatch):
+        def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
+            class MockResponse:
+                def json(self):
+                    return stdlib_json.loads("[]")
+
+            return MockResponse()
+
+        monkeypatch.setattr(
+            data_tools, "_do_chs_iwls_api_request", mock_do_chs_iwls_api_request
+        )
+
+        stn_id = data_tools.get_chs_tide_stn_id(9449880)  # Friday Harbor
+
+        assert stn_id is None
+
     def test_get_chs_tide_stn_id(self, monkeypatch):
         def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
             class MockResponse:
