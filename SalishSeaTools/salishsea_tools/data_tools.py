@@ -552,8 +552,8 @@ def get_chs_tide_stn_id(
     endpoint = f"{api_server}/api/{api_version}/stations"
     stn_code = resolve_chs_tide_stn(stn)
     if stn_code is None:
-        logging.error(
-            f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
+        logging.warning(
+            f"can't resolve a valid CHS station code for {stn}"
         )
         return
     query_params = {"code": stn_code}
@@ -603,6 +603,9 @@ def resolve_chs_tide_stn(stn):
             logging.error(
                 f"station name not found in places.PLACES: {stn}; maybe try an integer station number?"
             )
+            return
+        except TypeError:
+            logging.warning(f"invalid station number for {stn} station: {PLACES[stn]['stn number']}")
             return
 
 

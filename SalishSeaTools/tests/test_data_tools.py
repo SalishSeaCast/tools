@@ -81,6 +81,16 @@ class TestResolveCHSTideStn:
         assert caplog.messages[0] == expected
         assert stn_code is None
 
+    def test_invalid_stn_nunmber(self, caplog):
+        caplog.set_level(logging.DEBUG)
+
+        stn_code = data_tools.resolve_chs_tide_stn("Boundary Bay")
+
+        assert caplog.records[0].levelname == "WARNING"
+        expected = "invalid station number for Boundary Bay station: None"
+        assert caplog.messages[0] == expected
+        assert stn_code is None
+
 
 class TestGetCHSTideStnId:
     """Unit tests for get_chs_tide_stn_id() function."""
@@ -93,6 +103,16 @@ class TestGetCHSTideStnId:
         assert caplog.records[0].levelname == "ERROR"
         expected = "station name not found in places.PLACES: Rimouski; maybe try an integer station number?"
         assert caplog.messages[0] == expected
+        assert stn_id is None
+
+    def test_no_valid_stn_code(self, caplog):
+        caplog.set_level(logging.DEBUG)
+
+        stn_id = data_tools.get_chs_tide_stn_id("Boundary Bay")
+
+        assert caplog.records[1].levelname == "WARNING"
+        expected = "can't resolve a valid CHS station code for Boundary Bay"
+        assert caplog.messages[1] == expected
         assert stn_id is None
 
     def test_get_chs_tide_stn_id(self, monkeypatch):
