@@ -1135,6 +1135,45 @@ def loadPSF(datelims=(),loadChl=True,loadCTD=False):
                     df.at[i,'tdiffH']=tdelta
     return df
 
+def loadPSFCTD(datelims=(),pathbase='/ocean/eolson/MEOPAR/obs/PSFCitSci/phys'):
+    """ load PSF CTD data only """
+    if len(datelims)<2:
+        datelims=(dt.datetime(2014,1,1),dt.datetime(2020,1,1))
+    ctddfs=list()
+    if datelims[0].year<2016:
+        # load 2015
+        phys2015=pd.read_csv(os.path.join(pathbase,'CitSci2015_20180621.csv'),skiprows=lambda x: x in [0,1,2,3,4,6],delimiter=',',
+                dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                            'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                            'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+        ctddfs.append(phys2015)
+        print(np.min(phys2015['salinity']),np.max(phys2015['salinity']))
+    if (datelims[0].year<2017) and (datelims[1].year>2015):
+        # load 2016
+        phys2016=pd.read_csv(os.path.join(pathbase,'CitSci2016_20180621.csv'),skiprows=lambda x: x in [0,1,2,3,4,5,6,7,9],delimiter=',',
+                dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                            'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                            'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+        ctddfs.append(phys2016)
+        print(np.min(phys2016['salinity']),np.max(phys2016['salinity']))
+    if (datelims[1].year>2016):
+        # load 2017
+        phys2017=pd.read_csv(os.path.join(pathbase,'CitSci2017_20180621.csv'),skiprows=lambda x: x in [0,1,2,3,4,5,7],delimiter=',',
+                dtype={'Patrol': str,'ID':str,'station':str,'datetime':str,'latitude':float,'longitude':float},
+                converters={'pressure': lambda x: float(x),'depth': lambda x: float(x),'temperature': lambda x: float(x),
+                            'conductivity': lambda x: float(x),'salinity': lambda x: float(x),
+                            'o2SAT': lambda x: float(x),'o2uM':lambda x: float(x),'chl':lambda x: float(x)})
+        ctddfs.append(phys2017)
+        print(np.min(phys2017['salinity']),np.max(phys2017['salinity']))
+    # note: csv files report salnity in TEOS-10 g/kg
+    df=pd.concat(ctddfs,ignore_index=True,sort=True)
+    df['dtUTC']=[dt.datetime.strptime(ii,'%d/%m/%Y %H:%M:%S') for ii in df['datetime'].values]
+    df['CT']=[gsw.CT_from_t(SA,t,p) for SA, t, p, in zip(df['salinity'],df['temperature'],df['pressure'])]
+    df.rename(columns={'salinity':'SA','latitude':'Lat','longitude':'Lon','depth':'Z'},inplace=True)
+    return df
+
 def loadHakai(datelims=(),loadCTD=False):
     """ load data from Hakai sampling program from spreadsheets"""
     if len(datelims)<2:
