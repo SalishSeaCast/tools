@@ -323,6 +323,12 @@ PLACES = {
         'NEMO grid ji': (736, 144),
         'GEM2.5 grid ji': (189, 106),
     },
+    # SJDF station for bloom timing 
+    'SJDF': {
+        'lon lat': (-124.07, 48.31),
+        'NEMO grid ji': (329, 81),
+        'GEM2.5 grid ji': (103, 121),
+    },
     # Tereza's cluster stations, aligned with Vector Stations where possible.
     'Cluster_1': {
         'NEMO grid ji': (241, 212),
