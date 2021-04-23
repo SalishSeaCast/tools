@@ -82,6 +82,7 @@ def metric1_bloomtime(phyto_alld,no3_alld,bio_time):
     # c)  Find first location where nitrate crosses below 0.5 micromolar and 
     #     stays there for 2 days 
     # NOTE: changed the value to 2 micromolar
+    location1=np.nan
     for i, row in metric1_df.iterrows():
         try:
             if metric1_df['upper_3m_no3'].iloc[i]<2 and metric1_df['upper_3m_no3'].iloc[i+1]<2:
@@ -92,8 +93,12 @@ def metric1_bloomtime(phyto_alld,no3_alld,bio_time):
             print('bloom not found')
 
     # d) Find date with maximum phytoplankton concentration within four days (say 9 day window) of date in c)
-    bloomrange=metric1_df[location1-4:location1+5]
-    bloomtime1=bloomrange.loc[bloomrange.upper_3m_phyto.idxmax(), 'bio_time']
+    if np.isnan(location1):
+	bloomrange=np.nan
+	bloomtime1=np.nan
+    else:
+        bloomrange=metric1_df[location1-4:location1+5]
+        bloomtime1=bloomrange.loc[bloomrange.upper_3m_phyto.idxmax(), 'bio_time']
 
     return bloomtime1
 
