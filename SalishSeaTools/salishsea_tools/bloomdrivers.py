@@ -94,8 +94,8 @@ def metric1_bloomtime(phyto_alld,no3_alld,bio_time):
 
     # d) Find date with maximum phytoplankton concentration within four days (say 9 day window) of date in c)
     if np.isnan(location1):
-	bloomrange=np.nan
-	bloomtime1=np.nan
+        bloomrange=np.nan
+        bloomtime1=np.nan
     else:
         bloomrange=metric1_df[location1-4:location1+5]
         bloomtime1=bloomrange.loc[bloomrange.upper_3m_phyto.idxmax(), 'bio_time']
