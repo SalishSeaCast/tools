@@ -381,6 +381,8 @@ PLACES = {
         'lon lat': (-123.425825, 49.040066666),
         # depth in metres from ONC website
         'depth': 294,
+        # corresponding python vertical grid index
+        'NEMO grid k': 34,
         # NEMO python grid indices: j in y direction, i in x direction
         'NEMO grid ji': (424, 266),
         # HRDPS python grid indices: j in y direction, i in x direction
@@ -392,6 +394,7 @@ PLACES = {
         # ONC's description is "Delta/Lower Slope/Bottom Boundary Layer"
         'lon lat': (-123.339633, 49.074766),
         'depth': 143,
+        'NEMO grid k': 28,
         'NEMO grid ji': (424, 283),
         'wind grid ji': (134, 150),
         'ONC stationCode': 'LSBBL',
@@ -400,6 +403,7 @@ PLACES = {
         # ONC's description is "Delta/Upper Slope/Delta Dynamics Laboratory"
         'lon lat': (-123.32972, 49.08495),
         'depth': 107,
+        'NEMO grid k': 27,
         'NEMO grid ji': (426, 286),
         'wind grid ji': (135, 150),
         'ONC stationCode': 'USDDL',
@@ -407,6 +411,7 @@ PLACES = {
     'East node': {
         'lon lat': (-123.316836666, 49.04316),
         'depth': 164,
+        'NEMO grid k': 29,
         'NEMO grid ji': (417, 283),
         'wind grid ji': (133, 150),
         'ONC stationCode': 'SEVIP',
