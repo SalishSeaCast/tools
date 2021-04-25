@@ -22,7 +22,7 @@ import numpy as np
 import netCDF4 as nc
 import pandas as pd
 import glob
-from salishsea_tools import geo_tools
+from salishsea_tools import geo_tools, places
 import gsw
 import os
 import pytz
@@ -1343,6 +1343,81 @@ def load_ferry_ERDDAP(datelims, variables=None):
                       "nemo_grid_j (count)": "j", "nemo_grid_i (count)": "i"}, inplace=True)
 
     return obs_pd
+
+
+def load_ONC_node_ERDDAP(datelims, variables=None):
+    """ load ONC data from the nodes from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
+    conservative temperature. Pull out grid i, grid j and depth from places
+
+    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    :type datelims: tuple
+
+    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
+    :type variables: list
+
+    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
+    :rtype: :py:class:`pandas.dataframe`
+    """
+
+    # load erddapy here so your can use the tools on computers without web access (sockeye)
+    from erddapy import ERDDAP
+
+    server = "https://salishsea.eos.ubc.ca/erddap"
+
+    protocol = "tabledap"
+    dataset_ids = ["ubcONCSCVIPCTD15mV1", "ubcONCSEVIPCTD15mV1", "ubcONCLSBBLCTD15mV1", "ubcONCUSDDLCTD15mV1"]
+    nodes = ["Central node", "Delta BBL node", "Delta DDL node", "East node"]
+
+    if variables == None:
+        variables = [
+            "latitude",
+            "longitude",
+            "temperature",
+            "salinity",
+            "time",
+            "depth",
+        ]
+
+    start_date = datelims[0].strftime('%Y-%m-%dT00:00:00Z')
+    end_date = datelims[1].strftime('%Y-%m-%dT00:00:00Z')
+
+    constraints = {
+    "time>=": start_date,
+    "time<=": end_date,
+    }
+
+    obs_tot = []
+
+    for inode, (dataset_id, node) in enumerate(zip(dataset_ids, nodes)):
+        print (node, start_date, end_date)
+
+        obs = ERDDAP(server=server, protocol=protocol)
+        obs.dataset_id = dataset_id
+        obs.variables = variables
+        obs.constraints = constraints
+
+        try:
+            obs_pd = obs.to_pandas(index_col="time (UTC)", parse_dates=True,).dropna()
+        except Exception as error:
+            print (error)
+            print ('Assuming no data')
+            columns = ["dtUTC", "conservative temperature (oC)", "salinity (g/kg)", "latitude (degrees_north)", "longitude (degrees_east)"]
+            obs_pd = pd.DataFrame(columns=columns)
+        else:
+            obs_pd['conservative temperature (oC)'] = gsw.CT_from_pt(obs_pd['salinity (g/kg)'], obs_pd['temperature (degrees_Celcius)'] )
+            obs_pd['dtUTC'] = obs_pd.index.tz_localize(None)
+
+        obs_pd.reset_index(inplace=True)
+        obs_pd.rename(columns={"latitude (degrees_north)": "Lat", "longitude (degrees_east)": "Lon"}, inplace=True)
+        (obs_pd['j'], obs_pd['i']) = places.PLACES[node]['NEMO grid ji']
+        obs_pd['k'] = places.PLACES[node]['NEMO grid k']
+
+        obs_tot.append(obs_pd)
+
+    obs_concat = pd.concat(obs_tot)
+    obs_concat.to_csv('checkitout.csv')
+
+    return obs_concat
 
 
 def WSS(obs,mod):
