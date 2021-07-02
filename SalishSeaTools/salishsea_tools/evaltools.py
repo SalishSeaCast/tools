@@ -1521,6 +1521,23 @@ def varvarPlot(ax,df,obsvar,modvar,sepvar='',sepvals=np.array([]),lname='',sepun
             ps.append(p0)
     return ps
 
+def varvarIter(ax,df,obsvar,modvar,sepvar='',lname='',
+    cols=('darkslateblue','royalblue','skyblue','mediumseagreen','darkseagreen','goldenrod',
+            'coral','tomato','firebrick','mediumvioletred','magenta'),labels=''):
+    """ model vs obs plot like varvarScatter but colors taken from a list
+        as determined by determined from df[sepvar] and a list of bin edges, sepvals """
+    # remember labels must include < and > cases
+    if len(lname)==0:
+        lname=sepvar
+    ps=list()
+    df2=df.loc[(df[obsvar]==df[obsvar])&(df[modvar]==df[modvar])]
+    for ii,isep in enumerate(df2[sepvar].drop_duplicates().values):
+        obs0=_deframe(df2.loc[df2[sepvar]==isep,[obsvar]])
+        mod0=_deframe(df2.loc[df2[sepvar]==isep,[modvar]])
+        p0,=ax.plot(obs0,mod0,'.',color=cols[ii],label=isep)
+        ps.append(p0)
+    return ps
+
 def tsertser_graph(ax,df,obsvar,modvar,start_date,end_date,sepvar='',sepvals=([]),lname='',sepunits='',
                   ocols=('blue','darkviolet','teal','green','deepskyblue'),
                   mcols=('fuchsia','firebrick','orange','darkgoldenrod','maroon'),labels=''):
