@@ -383,8 +383,16 @@ prop_dict['fraser'] = {
         'di': 1, 'dj': 1, 'depth': 1,
             },
     'Nooksack': {
-        'prop': WRIA1 * 0.75, 'i': 309, 'j': 352,
-        'di': 1, 'dj': 4, 'depth': 1,
+        'prop': WRIA1 * 0.75/2., 'i': 308, 'j': 356,
+        'di': 1, 'dj': 2, 'depth': 1,
+            },
+    'NooksackW': {
+        'prop': WRIA1 * 0.75/4., 'i': 309, 'j': 349,
+        'di': 1, 'dj': 1, 'depth': 1,
+            },
+    'NooksackE': {
+        'prop': WRIA1 * 0.75/4., 'i': 308, 'j': 361,
+        'di': 1, 'dj': 1, 'depth': 1,
             },
     'Squallum': {
         'prop': WRIA1 * 0.05, 'i': 305, 'j': 365,
@@ -630,7 +638,7 @@ prop_dict['evi_s'] = {
         'prop': 0.01, 'i': 649, 'j': 121, 'di': 1, 'dj': 1, 'depth': 1,
             },
     'Puntledge': {
-        'prop': 0.14, 'i': 654, 'j': 120, 'di': 1, 'dj': 2, 'depth': 1,
+        'prop': 0.14, 'i': 654, 'j': 120, 'di': 1, 'dj': 1, 'depth': 1,
             },
     'BlackCreek': {
         'prop': 0.03, 'i': 701, 'j': 123, 'di': 1, 'dj': 1, 'depth': 1,
