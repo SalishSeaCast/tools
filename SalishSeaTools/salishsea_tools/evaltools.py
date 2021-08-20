@@ -339,8 +339,12 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
             # find depth indices (assume they may be reversed)
             z_l=max(row['Z_upper'],row['Z_lower'])
             z_u=min(row['Z_upper'],row['Z_lower'])
-            ik_l=_getZInd_bin(z_l,fid[ift],maskName=maskName)
-            ik_u=_getZInd_bin(z_u,fid[ift],maskName=maskName)
+            if len(set(fid[ift].variables.keys()).intersection(set(('deptht_bounds','depthu_bounds','depthv_bounds'))))>0: # no problem! 
+                ik_l=_getZInd_bin(z_l,fid[ift],maskName=maskName)
+                ik_u=_getZInd_bin(z_u,fid[ift],maskName=maskName)
+            else # workaround for missing variable
+                ik_l=_getZInd_bin(z_l,fid[ift],boundsFlag=True,maskName=maskName)
+                ik_u=_getZInd_bin(z_u,fid[ift],boundsFlag=True,maskName=maskName)
             # assign values for each var assoc with ift
             if (not np.isnan(ik_l)) and (not np.isnan(ik_u)) and \
                          (gridmask[0,ik_u,row['j'],row['i']]==1):
@@ -430,7 +434,10 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
                                 print(ind,ift,ih,ik,row['j'],row['i'])
                                 raise
                 else:
-                    ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
+                    if len(set(fid[ift].variables.keys()).intersection(set(('deptht_bounds','depthu_bounds','depthv_bounds'))))>0: # no problem! 
+                        ik=_getZInd_bin(row['Z'],fid[ift],maskName=maskName)
+                    else: #workaround for missing variables in postprocessed files
+                        ik=_getZInd_bin(row['Z'],fid[ift],boundsFlag=True,maskName=maskName)
                     # assign values for each var assoc with ift
                     if (not np.isnan(ik)) and (gridmask[0,ik,row['j'],row['i']]==1):
                         data.loc[ind,['k']]=int(ik)
