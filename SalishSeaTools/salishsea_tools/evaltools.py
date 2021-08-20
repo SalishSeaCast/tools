@@ -323,7 +323,11 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
             # now read data
             # find time index
             try:
-                ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+                if 'time_centered_bounds' in fid[ift].variables.keys(): # no problem! 
+                    ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+                else: # annoying!
+                    hpf=(flist[ift]['t_n'][0]-flist[ift]['t_0'][0]).total_seconds()/3600 #hours per file
+                    ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift],hpf=hpf)
             except:
                 print(row['dtUTC'],ift,torig[ift])
                 tlist=fid[ift].variables['time_centered_bounds'][:,:]
