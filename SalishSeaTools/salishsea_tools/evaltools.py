@@ -312,7 +312,10 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
             for ift in ftypes:
                 fid,fend=_nextfile_bin(ift,row['dtUTC'],flist[ift],fid,fend,flist)
                 # handle NEMO files time reference
-                torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
+                if 'time_centered' in fid[ftypes[0]].variables.keys():
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
+                else:
+                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%m-%d %H:%M:%S')
         # loop through each file type to extract data from the appropriate time and location
         for ift in ftypes:
             if row['dtUTC']>=fend[ift]:
