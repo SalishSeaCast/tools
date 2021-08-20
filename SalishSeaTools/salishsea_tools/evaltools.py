@@ -587,7 +587,7 @@ def _getTimeInd_bin(idt,ifid,torig,hpf=None):
         ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0]
     else: # hacky fix because time_centered_bounds missing from post-processed daily files
         nt=len(ifid.variables['time_counter'][:])
-        tlist=[ii+dt.timedelta(hours=hpf/(nt*2)) for ii in ifid.variables['time_counter'][:]]
+        tlist=[ii+hpf/(nt*2)*3600 for ii in ifid.variables['time_counter'][:]]
         ih=[iii for iii,hhh in enumerate(tlist) if hhh>(idt-torig).total_seconds()][0]
     return ih
 
