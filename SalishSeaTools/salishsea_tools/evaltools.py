@@ -342,7 +342,7 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
             if len(set(fid[ift].variables.keys()).intersection(set(('deptht_bounds','depthu_bounds','depthv_bounds'))))>0: # no problem! 
                 ik_l=_getZInd_bin(z_l,fid[ift],maskName=maskName)
                 ik_u=_getZInd_bin(z_u,fid[ift],maskName=maskName)
-            else # workaround for missing variable
+            else: # workaround for missing variable
                 ik_l=_getZInd_bin(z_l,fid[ift],boundsFlag=True,maskName=maskName)
                 ik_u=_getZInd_bin(z_u,fid[ift],boundsFlag=True,maskName=maskName)
             # assign values for each var assoc with ift
