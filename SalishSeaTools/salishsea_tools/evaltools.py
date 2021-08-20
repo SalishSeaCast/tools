@@ -384,7 +384,10 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
                 if ift=='ops': # specially handle time origin for ops forcing files
                     torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%b-%d %H:%M:%S')
                 else: # handle NEMO files time reference
-                    torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
+                    if 'time_centered' in fid[ftypes[0]].variable.keys():
+                        torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
+                    else:
+                        torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%m-%d %H:%M:%S')
         # loop through each file type to extract data from the appropriate time and location
         for ift in ftypes:
             if row['dtUTC']>=fend[ift]:
@@ -395,7 +398,11 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
                 ih=_getTimeInd_bin_ops(row['dtUTC'],fid[ift],torig[ift])
             else: # NEMO files
                 try:
-                    ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+                    if 'time_centered_bounds' in fid[ift].variables.keys(): # no problem! 
+                        ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift])
+                    else: # annoying!
+                        hpf=(flist[ift]['t_n'][0]-flist[ift]['t_0'][0]).total_seconds()/3600 #hours per file
+                        ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift],hpf=hpf)
                 except:
                     print('fend',fend)
                     print('flist[ift]',flist[ift]['paths'][0])
@@ -572,11 +579,16 @@ def _nextfile_bin(ift,idt,ifind,fid,fend,flist): # to do: replace flist[ift] wit
     fend[ift]=frow['t_n'].values[0]
     return fid, fend
 
-def _getTimeInd_bin(idt,ifid,torig):
+def _getTimeInd_bin(idt,ifid,torig,hpf=None):
     """ find time index for SalishSeaCast output interval including observation time """
-    tlist=ifid.variables['time_centered_bounds'][:,:]
-    # return first index where latter endpoint is larger
-    ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0]
+    if 'time_centered_bounds' in ifid.variables.keys():
+        tlist=ifid.variables['time_centered_bounds'][:,:]
+        # return first index where latter endpoint is larger
+        ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0]
+    else: # hacky fix because time_centered_bounds missing from post-processed daily files
+        nt=len(ifid.variables['time_counter'][:])
+        tlist=[ii+dt.timedelta(hours=hpf/(nt*2)) for ii in ifid.variables['time_counter'][:]]
+        ih=[iii for iii,hhh in enumerate(tlist) if hhh>(idt-torig).total_seconds()][0]
     return ih
 
 def _getTimeInd_bin_ops(idt,ifid,torig):
