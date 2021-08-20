@@ -384,7 +384,7 @@ def _binmatch(data,flist,ftypes,filemap_r,gridmask,maskName='tmask',sdim=3,preIn
                 if ift=='ops': # specially handle time origin for ops forcing files
                     torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%b-%d %H:%M:%S')
                 else: # handle NEMO files time reference
-                    if 'time_centered' in fid[ftypes[0]].variable.keys():
+                    if 'time_centered' in fid[ftypes[0]].variables.keys():
                         torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_centered'].time_origin,'%Y-%m-%d %H:%M:%S')
                     else:
                         torig[ift]=dt.datetime.strptime(fid[ftypes[0]].variables['time_counter'].time_origin,'%Y-%m-%d %H:%M:%S')
