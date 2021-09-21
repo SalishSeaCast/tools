@@ -880,7 +880,8 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                       StationTBL.Lat,StationTBL.Lon,
                      ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Chlorophyll_Extracted,
                      ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
-                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT')).\
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT'),
+                      ObsTBL.Oxygen_Dissolved,ObsTBL.Oxygen_Dissolved_units).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(StationTBL.Lat>47-3/2.5*(StationTBL.Lon+123.5),
                                                                     StationTBL.Lat<47-3/2.5*(StationTBL.Lon+121)))
@@ -896,7 +897,8 @@ def loadDFO(basedir='/ocean/eolson/MEOPAR/obs/DFOOPDB/', dbname='DFO_OcProfDB.sq
                       StationTBL.Lat,StationTBL.Lon,
                      ObsTBL.Pressure,ObsTBL.Depth,ObsTBL.Chlorophyll_Extracted,
                      ObsTBL.Chlorophyll_Extracted_units,ObsTBL.Nitrate_plus_Nitrite.label('N'),
-                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT')).\
+                      ObsTBL.Silicate.label('Si'),ObsTBL.Silicate_units,SA.label('AbsSal'),CT.label('ConsT'),
+                      ObsTBL.Oxygen_Dissolved,ObsTBL.Oxygen_Dissolved_units).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
