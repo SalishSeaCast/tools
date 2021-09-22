@@ -105,7 +105,7 @@ def matchData(
         'bin'- return model value from grid/time interval containing observation
         'vvlBin' - same as 'bin' but consider tidal change in vertical grid
         'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
-        'ferry' - match observations to mean of upper 3 model layers
+        'ferry' - match observations to top model layer
         'vertNet' - match observations to mean over a vertical range defined by
                     Z_upper and Z_lower; first try will include entire cell containing end points
                     and use e3t_0 rather than time-varying e3t
@@ -230,7 +230,7 @@ def matchData(
     if method == 'bin':
         data = _binmatch(data,flist,ftypes,filemap_r,omask,maskName,sdim,preIndexed=preIndexed)
     elif method == 'ferry':
-        print('data is matched to mean of upper 3 model levels')
+        print('data is matched to shallowest model level')
         data = _ferrymatch(data,flist,ftypes,filemap_r,omask,fdict)
     elif method == 'vvlZ':
         data = _interpvvlZ(data,flist,ftypes,filemap,filemap_r,omask,fdict,e3tvar)
@@ -550,7 +550,7 @@ def _interpvvlZ(data,flist,ftypes,filemap,filemap_r,tmask,fdict,e3tvar):
     return data
 
 def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
-    """ matching of model output to average of upper three grid cells (for ferry underway measurements)
+    """ matching of model output to top grid cells (for ferry underway measurements)
     """
     # loop through data, openening and closing model files as needed and storing model data
     # extract average of upper 3 model levels (approx 3 m)
@@ -575,7 +575,7 @@ def _ferrymatch(data,flist,ftypes,filemap_r,gridmask,fdict):
                 fid=nc.Dataset(flist[ift].loc[row['indf_'+ift],['paths']].values[0])
                 indflast=row['indf_'+ift]
             for ivar in filemap_r[ift]:
-                data.loc[ind,['mod_'+ivar]]=np.mean(fid.variables[ivar][row['ih_'+ift],:3,row['j'],row['i']])
+                data.loc[ind,['mod_'+ivar]] = fid.variables[ivar][row['ih_'+ift], 0, row['j'], row['i']]
     return data
 
 def _nextfile_bin(ift,idt,ifind,fid,fend,flist): # to do: replace flist[ift] with ifind and get rid of flist argument
