@@ -79,30 +79,8 @@ def load_LiveOcean(
     sdt = datetime.datetime.strptime(date, '%Y-%m-%d')
     file = os.path.join(LO_dir, sdt.strftime('%Y%m%d'), LO_file)
 
-    G, S, T = grid.get_basic_info(file)  # note: grid.py is from Parker
+    T = grid.get_basic_info(file, only_T=True)  # note: grid.py is from Parker
     d = xr.open_dataset(file)
-
-    # Determine z-rho (depth)
-    zeta = d.zeta.values[0]
-    z_rho = grid.get_z(G['h'], zeta, S)
-    # Add z_rho to dataset
-    zrho_DA = xr.DataArray(
-        np.expand_dims(z_rho, 0),
-        dims=['ocean_time', 's_rho', 'eta_rho', 'xi_rho'],
-        coords={
-            'ocean_time': d.ocean_time.values[:],
-            's_rho': d.s_rho.values[:],
-            'eta_rho': d.eta_rho.values[:],
-            'xi_rho': d.xi_rho.values[:]
-        },
-        attrs={
-            'units': 'metres',
-            'positive': 'up',
-            'long_name': 'Depth at s-levels',
-            'field': 'z_rho ,scalar'
-        }
-    )
-    d = d.assign(z_rho=zrho_DA)
 
     return d
 
