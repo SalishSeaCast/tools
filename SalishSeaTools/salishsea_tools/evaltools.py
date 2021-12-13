@@ -808,7 +808,8 @@ def loadDFOCTD(basedir='/ocean/shared/SalishSeaCastData/DFO/CTD/', dbname='DFO_C
         end_d=datelims[1].day
         qry=session.query(StationTBL.StartYear.label('Year'),StationTBL.StartMonth.label('Month'),
                       StationTBL.StartDay.label('Day'),StationTBL.StartHour.label('Hour'),
-                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT'),FL.label('Fluor')).\
+                      StationTBL.Lat,StationTBL.Lon,ZD.label('Z'),SA.label('SA'),CT.label('CT'),FL.label('Fluor').\
+                      ObsTBL.Oxygen_Dissolved_SBE.label('DO_mLL'),ObsTBL.Oxygen_Dissolved_SBE_1.label('DO_umolkg')).\
                 select_from(StationTBL).join(ObsTBL,ObsTBL.StationTBLID==StationTBL.ID).\
                 join(CalcsTBL,CalcsTBL.ObsTBLID==ObsTBL.ID).filter(and_(or_(StationTBL.StartYear>start_y,
                                                                          and_(StationTBL.StartYear==start_y, StationTBL.StartMonth>start_m),
