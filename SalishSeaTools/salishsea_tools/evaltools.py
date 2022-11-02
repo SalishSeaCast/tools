@@ -642,7 +642,8 @@ def index_model_files(start,end,basedir,nam_fmt,flen,ftype=None,tres=1):
     where paths are all the model output files of a given type in the time interval (start,end)
     with end not included
     """
-    if ftype not in ('ptrc_T','grid_T','grid_W','grid_U','grid_V','dia1_T','carp_T','None',None):
+    if ftype not in ('ptrc_T', 'grid_T', 'grid_W', 'grid_U', 'grid_V',
+                     'dia1_T', 'carp_T', 'biol_T', 'chem_T', 'None', None):
         print('ftype={}, are you sure? (if yes, add to list)'.format(ftype))
     if tres==24:
         ftres='1d'
