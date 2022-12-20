@@ -119,6 +119,19 @@ def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     Nano={'ILim':ILimNano,'NLim':NLimNano,'SiLim':SiLimNano,'limiter':limiterNano,'limval':limvalNano}
     return Diat, Myri, Nano
 
+def phyto_Tdep_Factor(TT, zz_rate_maxtemp, zz_rate_temprange):
+    if hasattr(TT,'__len__'): # assume 1-d array or similar and return array
+        return np.array([phyto_Tdep_Factor(el,zz_rate_maxtemp, zz_rate_temprange) for el in TT])
+    else:
+        return np.exp(0.07 * (TT - 20)) * min(max((zz_rate_maxtemp - TT), 0.0),zz_rate_temprange) / (zz_rate_temprange + 1e-10)
+
+def calc_T_Factors(TT,nampisprod):
+    Tdep_Diat=phyto_Tdep_Factor(TT,nampisprod['zz_rate_maxtemp_diat'],nampisprod['zz_rate_temprange_diat'])
+    Tdep_Myri=phyto_Tdep_Factor(TT,nampisprod['zz_rate_maxtemp_myri'],nampisprod['zz_rate_temprange_myri'])
+    Tdep_Nano=phyto_Tdep_Factor(TT,nampisprod['zz_rate_maxtemp_nano'],nampisprod['zz_rate_temprange_nano'])
+    return Tdep_Diat, Tdep_Myri, Tdep_Nano
+
+
 #def calc_limiter(resDir,fnameDia=None,fnamePtrc=None):
 #    :arg str resDir: path to results directory where output and namelist files are stored
 #    :arg str fnameDia: (optional) diagnostic file to get output from;
