@@ -235,8 +235,8 @@ def stabilize(sigma, interps):
         for i in range(imax):
             for j in range(jmax):
                 if sigma[k+1, i, j] - sigma[k, i, j] < small:
-                    interps['salt'][:k+1, i, j] += -add_salt/np.float(k+1)
-                    interps['salt'][k+1:, i, j] += add_salt/np.float(kmax-k+1)
+                    interps['salt'][:k+1, i, j] += -add_salt / (k+1)
+                    interps['salt'][k+1:, i, j] += add_salt / (kmax - k+1)
 
     return interps
 
