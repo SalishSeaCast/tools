@@ -212,7 +212,7 @@ def find_closest_model_point(
         else:
             return np.nan, np.nan
     try:
-        j, i = map(np.asscalar, (j_list, i_list))
+        j, i = map(np.ndarray.item, (j_list, i_list))
     except ValueError:
         # Several points within tolerance
         # Calculate distances for all and choose the closest
@@ -226,7 +226,7 @@ def find_closest_model_point(
             np.array([lon] * i_list.size), np.array([lat] * j_list.size),
             lons, lats)
         n = dists.argmin()
-        j, i = map(np.asscalar, (j_list[n], i_list[n]))
+        j, i = j_list.item(n), i_list.item(n)
 
     # If point is on land and land mask is provided
     # try to find closest water point
@@ -244,11 +244,11 @@ def find_closest_model_point(
         else:
             return _spiral_search_for_closest_water_point(
                 j, i, land_mask, lon, lat, model_lons, model_lats)
-    except ValueError: 
+    except ValueError:
         if raiseOutOfBounds:
             raise ValueError(
                 'lat/lon on land and no nearby water point found')
-        else: 
+        else:
             return np.nan, np.nan
 
 def closestPointArray(lons,lats,
