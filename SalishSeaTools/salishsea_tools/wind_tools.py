@@ -255,8 +255,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
         wind_u = np.concatenate((wind_prev_day.u, wind_u))
         wind_v = np.concatenate((wind_prev_day.v, wind_v))
         wind_t = np.concatenate((wind_prev_day.time, wind_t))
-    i_date_time = np.asscalar(
-        np.where(wind_t == date_time.floor('hour'))[0])
+    i_date_time = np.where(wind_t == date_time.floor('hour'))[0].item()
     i_date_time_p1 = i_date_time + 1
     u_avg = np.mean(wind_u[(i_date_time_p1 + avg_hrs):i_date_time_p1])
     v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
