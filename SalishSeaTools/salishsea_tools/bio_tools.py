@@ -120,10 +120,12 @@ def calc_p_limiters(I,NO,NH,Si,tmask,nampisprod):
     return Diat, Myri, Nano
 
 def phyto_Tdep_Factor(TT, zz_rate_maxtemp, zz_rate_temprange):
-    if hasattr(TT,'__len__'): # assume 1-d array or similar and return array
-        return np.array([phyto_Tdep_Factor(el,zz_rate_maxtemp, zz_rate_temprange) for el in TT])
-    else:
-        return np.exp(0.07 * (TT - 20)) * min(max((zz_rate_maxtemp - TT), 0.0),zz_rate_temprange) / (zz_rate_temprange + 1e-10)
+    #if hasattr(TT,'__len__'): # assume 1-d array or similar and return array
+    #    return np.array([phyto_Tdep_Factor(el,zz_rate_maxtemp, zz_rate_temprange) for el in TT])
+    #else:
+    #    return np.exp(0.07 * (TT - 20)) * min(max((zz_rate_maxtemp - TT), 0.0),zz_rate_temprange) / (zz_rate_temprange + 1e-10)
+    return np.exp(0.07 * (TT - 20)) * np.minimum(np.maximum((zz_rate_maxtemp - TT), 0.0),zz_rate_temprange) / (zz_rate_temprange + 1e-10)
+
 
 def calc_T_Factors(TT,nampisprod):
     Tdep_Diat=phyto_Tdep_Factor(TT,nampisprod['zz_rate_maxtemp_diat'],nampisprod['zz_rate_temprange_diat'])
