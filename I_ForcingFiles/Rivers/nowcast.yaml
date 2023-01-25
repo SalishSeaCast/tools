@@ -1,0 +1,1660 @@
+# System configuration file for Salish Sea Nowcast system
+
+# System status checklist file
+checklist file: $(NOWCAST.ENV.NOWCAST_LOGS)/nowcast_checklist.yaml
+
+# Python interpreter in environment with all dependencies installed
+python: $(NOWCAST.ENV.NOWCAST_ENV)/bin/python3
+
+# Filesystem group name to use for ownership of newly created files
+file group: sallen
+
+
+weather:
+  download:
+    2.5 km:
+      # Directory where ECCC datamart hrdps/weat/ mirror files are stored
+      datamart dir: /SalishSeaCast/datamart/hrdps-west/
+      # Destination directory for downloaded GEM 2.5km operational model GRIB2 files
+      GRIB dir: /results/forcing/atmospheric/GEM2.5/GRIB/
+      # URL from which to download ECCC HRDPS 2.5km west domain forecast fields files
+      # **Must be quoted to project {} characters**
+      url template: 'https://hpfx.collab.science.gc.ca/{date}/WXO-DD/model_hrdps/west/grib2/{forecast}/{hour}/{filename}'
+      # Older, slower URL:
+#      url template: 'https://dd.weather.gc.ca/model_hrdps/west/grib2/{forecast}/{hour}/{filename}'
+      # Template for hourly ECCC HRDPS 2.5km west domain fields file name
+      # **Must be quoted to project {} characters**
+      file template: 'CMC_hrdps_west_{variable}_ps2.5km_{date}{forecast}_P{hour}-00.grib2'
+      # ECCC HRDPS 2.5km GRIB forecast file field variable names
+      grib variables:
+        - UGRD_TGL_10  # u component of wind velocity at 10m elevation
+        - VGRD_TGL_10  # v component of wind velocity at 10m elevation
+        - DSWRF_SFC_0  # accumulated downward shortwave (solar) radiation at ground level
+        - DLWRF_SFC_0  # accumulated downward longwave (thermal) radiation at ground level
+        - LHTFL_SFC_0  # upward surface latent heat flux (for VHFR FVCOM)
+        - TMP_TGL_2    # air temperature at 2m elevation
+        - SPFH_TGL_2   # specific humidity at 2m elevation
+        - RH_TGL_2     # relative humidity at 2m elevation (for VHFR FVCOM)
+        - APCP_SFC_0   # accumulated precipitation at ground level
+        - PRATE_SFC_0  # precipitation rate at ground level (for VHFR FVCOM)
+        - PRMSL_MSL_0  # atmospheric pressure at mean sea level
+        - TCDC_SFC_0   # total cloud in percent (for parametrization of radiation missing from 2007-2014 GRMLAM)
+      # ECCC HRDPS 2.5km west domain forecast duration
+      forecast duration: 48  # hours
+
+    1 km:
+      # Directory where ECCC datamart hrdps/weat/ mirror files are stored
+      datamart dir: /SalishSeaCast/datamart/hrdps-west/1km/
+      # Destination directory for downloaded GEM 1km operational model GRIB2 files
+      GRIB dir: /results/forcing/atmospheric/GEM1.0/GRIB/
+      # URL from which to download ECCC HRDPS 1km west domain forecast fields files
+      # **Must be quoted to project {} characters**
+      url template: 'https://dd.alpha.meteo.gc.ca/model_hrdps/west/1km/grib2/{forecast}/{hour}/{filename}'
+      # Template for hourly ECCC HRDPS 1km west domain fields file name
+      # **Must be quoted to project {} characters**
+      file template: 'CMC_hrdps_west_{variable}_rotated_latlon0.009x0.009_{date}T{forecast}Z_P{hour}-00.grib2'
+      # ECCC HRDPS 1km GRIB forecast file field variable names
+      grib variables:
+        - UGRD_TGL_10  # u component of wind velocity at 10m elevation
+        - VGRD_TGL_10  # v component of wind velocity at 10m elevation
+        - DSWRF_SFC_0  # accumulated downward shortwave (solar) radiation at ground level
+        - DLWRF_SFC_0  # accumulated downward longwave (thermal) radiation at ground level
+        - LHTFL_SFC_0  # upward surface latent heat flux (for VHFR FVCOM)
+        - TMP_TGL_2    # air temperature at 2m elevation
+        - SPFH_TGL_2   # specific humidity at 2m elevation
+        - RH_TGL_2     # relative humidity at 2m elevation (for VHFR FVCOM)
+        - APCP_SFC_0   # accumulated precipitation at ground level
+        - PRATE_SFC_0  # precipitation rate at ground level (for VHFR FVCOM)
+        - PRMSL_MSL_0  # atmospheric pressure at mean sea level
+      # ECCC HRDPS 1km west domain forecast duration
+      forecast duration: 36  # hours
+
+  # Location of wgrib2 executable
+  wgrib2: /SalishSeaCast/private-tools/grib2/wgrib2/wgrib2
+  # Location of Pramod Thupaki's grid_defn.pl script
+  grid_defn.pl: /SalishSeaCast/private-tools/PThupaki/grid_defn.pl
+  # Destination directory for NEMO forcing files generated from GRIB2 files
+  ops dir: /results/forcing/atmospheric/GEM2.5/operational/
+  # Template for the atmospheric forcing file name
+  # **Must be quoted to project {} characters**
+  file template: 'ops_{:y%Ym%md%d}.nc'
+  # Location to store image that grib_to_netcdf worker creates to facilitate
+  # monitoring of its operation
+  monitoring image: /results/nowcast-sys/figures/monitoring/wg.png
+
+
+rivers:
+  # Directory where ECCC datamart hydrometric CSV files are stored
+  datamart dir: /SalishSeaCast/datamart/hydrometric/
+  # ECCC datamart hydrometric CSV file name template
+  # **Must be quoted to protect {} characters**
+  csv file template: 'BC_{stn_id}_hourly_hydrometric.csv'
+  # USGS waterservice URL
+  usgs url: https://waterservices.usgs.gov/nwis/dv/
+  # USGS Water Service REST query parameters
+  usgs params:
+    format: json
+    # Parameter code for discharge in cubic ft per second
+    # **Must be quaoted to protect leading zeros**
+    parameterCd: "00060"
+    # River station id and start/end dates that change for every query
+    sites: ""
+    startDT: ""
+    endDT: ""
+  # Mapping of river names and ECCC or USGS station ids for which daily average discharges
+  # are calculated and stored
+  stations:
+    ECCC:
+      # River name (camel-case): ECCC station id
+      Capilano: 08GA010
+      ChilliwackVedder: 08MH001
+      ClowhomClowhomLake: 08GB013
+      Englishman: 08HB002
+      Fraser: 08MF005
+      HomathkoMouth: 08GD004
+      NicomeklLangley: 08MH155
+      RobertsCreek: 08GA047
+      SalmonSayward: 08HD006
+      SanJuanPortRenfrew: 08HA010
+      SquamishBrackendale: 08GA022
+      TheodosiaScotty: 08GC008
+      TheodosiaBypass: 08GC006
+      TheodosiaDiversion: 08GC005
+    USGS:
+      # River name (camel-case): USGS station id
+      SkagitMountVernon: 12200500
+      SnohomishMonroe: 12150800
+      NisquallyMcKenna: 12089500
+      GreenwaterGreenwater: 12097500
+  # Files containing daily average river discharges
+  SOG river files:
+    # River name (camel-case): SOG-forcing river flow file path
+    Capilano: /opp/observations/rivers/Capilano/Caplilano_08GA010_day_avg_flow
+    ChilliwackVedder: /results/forcing/rivers/observations/Chilliwack_Vedder_flow
+    ClowhomClowhomLake: /results/forcing/rivers/observations/Clowhom_ClowhomLake_flow
+    Englishman: /data/dlatorne/SOG-projects/SOG-forcing/ECget/Englishman_flow
+    Fraser: /data/dlatorne/SOG-projects/SOG-forcing/ECget/Fraser_flow
+    GreenwaterGreenwater: /results/forcing/rivers/observations/Greenwater_Greenwater_flow
+    HomathkoMouth: /results/forcing/rivers/observations/Homathko_Mouth_flow
+    NisquallyMcKenna: /results/forcing/rivers/observations/Nisqually_McKenna_flow
+    NicomeklLangley: /results/forcing/rivers/observations/Nicomekl_Langley_flow
+    RobertsCreek: /results/forcing/rivers/observations/RobertsCreek_flow
+    SalmonSayward: /results/forcing/rivers/observations/Salmon_Sayward_flow
+    SanJuanPortRenfrew: /results/forcing/rivers/observations/SanJuan_PortRenfrew_flow
+    SkagitMountVernon: /results/forcing/rivers/observations/Skagit_MountVernon_flow
+    SnohomishMonroe: /results/forcing/rivers/observations/Snohomish_Monroe_flow
+    SquamishBrackendale: /results/forcing/rivers/observations/Squamish_Brackendale_flow
+    TheodosiaScotty: /results/forcing/rivers/observations/Theodosia_Scotty_flow
+    TheodosiaBypass: /results/forcing/rivers/observations/Theodosia_Bypass_flow
+    TheodosiaDiversion: /results/forcing/rivers/observations/Theodosia_Diversion_flow
+  # Destination directory for river runoff forcing file
+  rivers dir: /results/forcing/rivers/
+  # Templates for the runoff forcing file names
+  # **Must be quoted to project {} characters**
+  file templates:
+    b202108: 'R202108Dailies_{:y%Ym%md%d}.nc'
+  prop_dict modules:
+    b202108: salishsea_tools.river_202108
+  turbidity:
+    # File containing hourly real-time Fraser River water quality buoy turbidity data
+    ECget Fraser turbidity: /results/observations/ECCC/fraser_buoy.csv
+    # Destination directory for Fraser River turbidity forcing file
+    forcing dir: /results/forcing/rivers/river_turb/
+    # Template for the turbidity forcing file names
+    # **Must be quoted to protect {} characters**
+    file template: 'riverTurbDaily2_{:y%Ym%md%d}.nc'
+
+
+ssh:
+  download:
+    # URL from which to download NOAA Neah Bay sea surface height obs/forecast files
+    # **Must be quoted to project {} characters**
+    url template: 'https://nomads.ncep.noaa.gov/pub/data/nccf/com/etss/prod/etss.{yyyymmdd}/etss.t{forecast}z.csv_tar'
+    # Template for the downloaded CSV tarball file name
+    # **Must be quoted to project {} characters**
+    tar file template: 'etss.{yyyymmdd}.t{forecast}z.csv_tar'
+    # Template for the directory and file name of the CSV file to extract from the tarball
+    # **Must be quoted to project {} characters**
+    tarball csv file template: 'etss.{yyyymmdd}/t{forecast}z_csv/9443090.csv'
+  # Coordinates file to get lats/lons from
+  coordinates: /SalishSeaCast/grid/coordinates_seagrid_SalishSea2.nc
+  # Directory containing tidal predication file for sea surface height correction
+  tidal predictions: /SalishSeaCast/tidal-predictions/
+  # Name of Neah Bay hourly prediction file
+  neah bay hourly: Neah Bay Hourly_tidal_prediction_30-Dec-2006_31-Dec-2030.csv
+  # Destination directory for Neah Bay sea surface height open boundary files
+  ssh dir: /results/forcing/sshNeahBay/
+  # Template for the sea surface height forcing file name
+  # **Must be quoted to project {} characters**
+  file template: 'ssh_{:y%Ym%md%d}.nc'
+  # Location to store image that grib_to_netcdf worker creates to facilitate
+  # monitoring of its operation
+  monitoring image: /results/nowcast-sys/figures/monitoring/NBssh.png
+
+
+temperature salinity:
+  download:
+    # Template for UW LiveOcean day-averaged forecast fields file processing status URL
+    # **Must be quoted to project {} characters**
+    status file url template: 'https://liveocean.apl.uw.edu/output/f{yyyymmdd}/ubc_done.txt'
+    # Template for UW LiveOcean day-averaged forecast fields file URL
+    # **Must be quoted to project {} characters**
+    bc file url template: 'https://liveocean.apl.uw.edu/output/f{yyyymmdd}/ubc.nc'
+    # Destination directory for downloaded UW LiveOcean files
+    dest dir: /results/forcing/LiveOcean/downloaded/
+    # File name for local storage of UW LiveOcean day-averaged forecast file
+    file name: low_passed_UBC.nc
+
+  # Destination directory for daily temperature and salinity boundary conditions
+  # files generated from UW LiveOcean forecast
+  bc dir: /results/forcing/LiveOcean/boundary_conditions
+  # File name template for the daily temperature and salinity boundary
+  # conditions files generated from UW LiveOcean forecast
+  # **Must be quoted to project {} characters**
+  file template: 'LiveOcean_v201905_{:y%Ym%md%d}.nc'
+  # Mesh mask from which to get grid parameters for boundary conditions files
+  mesh mask: /SalishSeaCast/grid/mesh_mask201702.nc
+  # Parameter set to use to convert from LiveOcean to SalishSeaCast
+  parameter set: v201905
+
+
+observations:
+  # Dataset that maps high resolution lon/lat grid on to NEMO j/i indices
+  lon/lat to NEMO ji map: /SalishSeaCast/grid/grid_from_lat_lon_mask999.nc
+  # ONC Strait of Georgia nodes real-time CTD data
+  ctd data:
+    # ONC node station names to download data from
+    stations:
+      - SCVIP
+      - SEVIP
+#      - USDDL  # out of service since 22-Dec-2019; repair ETA unknown
+#      - LSBBL  # Decommissioned on 4-Nov-2017
+    # Destination directory for ONC CTD T&S data netCDF files
+    dest dir: /results/observations/ONC/CTD/
+    # Template for ONC CTD T&S data file path
+    # **Must be quoted to project {} characters**
+    filepath template: '{station}/{station}_CTD_15m_{yyyymmdd}.nc'
+
+  # ONC Strait of Georgia ferry platforms real-time data
+  ferry data:
+    ferries: {}
+      # see PR#109 for TWDP ferry example of this section and corresponding config tests
+    # Destination directory for ONC ferry data netCDF files
+    dest dir: /results/observations/ONC/ferries/
+
+  # VFPA real-time HADCP data
+  hadcp data:
+    # Directory where VFPA HADCP data csv files are stored
+    csv dir: /opp/observations/AISDATA/
+    # Destination directory for VFPA HADCP data netCDF files
+    dest dir: /opp/observations/AISDATA/netcdf/
+    # Template for VFPA HADCP data file path
+    # **Must be quoted to project {} characters**
+    filepath template: 'VFPA_2ND_NARROWS_HADCP_2s_{yyyymm}.nc'
+
+
+run types:
+  # Keys are run types to execute, values are NEMO configuration name,
+  # bathymetry, and mesh mask to use.
+  # Note that forecast requires a nowcast to have been completed,
+  # and forecast2 requires a forecast to have been completed.
+  nowcast:
+    config name: SalishSeaCast_Blue
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    land processor elimination: bathymetry_201702.csv
+    duration: 1  # day
+    restart from: nowcast-green
+  nowcast-dev:
+    config name: SalishSeaCast_Blue
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    land processor elimination: bathymetry_201702.csv
+    duration: 1  # day
+    restart from: nowcast-dev
+  nowcast-green:
+    config name:  SalishSeaCast
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    land processor elimination: bathymetry_201702.csv
+    duration: 1  # day
+    restart from: nowcast-green
+  nowcast-agrif:
+    config name:  SMELTAGRIF
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    sub-grid bathymetry: /SalishSeaCast/grid/subgrids/BaynesSound/bathymetry_201702_BS.nc
+    land processor elimination: False
+    duration: 1  # day
+    restart from: nowcast-agrif
+  forecast:
+    config name:  SalishSeaCast_Blue
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    land processor elimination: bathymetry_201702.csv
+    duration: 1.5  # days
+    restart from: nowcast
+  forecast2:
+    config name:  SalishSeaCast_Blue
+    coordinates: coordinates_seagrid_SalishSea201702.nc
+    bathymetry: bathymetry_201702.nc
+    mesh mask: mesh_mask201702.nc
+    land processor elimination: bathymetry_201702.csv
+    duration: 1.25  # days
+    restart from: forecast
+
+
+results archive:
+  # Keys are run types.
+  # Values are directories on results server where run results are stored
+  # in ddmmmyy/ directories.
+  nowcast: /results/SalishSea/nowcast-blue.201905/
+  nowcast-dev: /results/SalishSea/nowcast-dev.201905/
+  forecast: /results/SalishSea/forecast.201905/
+  forecast2: /results/SalishSea/forecast2.201905/
+  nowcast-green: /results2/SalishSea/nowcast-green.201905/
+  nowcast-agrif: /results/SalishSea/nowcast-agrif.201702/
+  hindcast:
+    localhost: /results2/SalishSea/nowcast-green.202111/
+    graham-dtn: /nearline/rrg-allen/SalishSea/nowcast-green.202111/
+
+
+# Config for archival storage of month-long tarballs of results
+# on a remote host; e.g. graham:/nearline/
+results tarballs:
+  # Should hindcast results be archived?
+  archive hindcast: True
+  # Local path with sufficient room to store ~170Gb tarball and index file
+  temporary tarball dir: /ocean/dlatorne/
+  # Remote host and path to rsync tarballs to;
+  # results dir stem (e.g. nowcast-green.201905) will be added to path
+  graham-dtn: /nearline/rrg-allen/SalishSea/
+
+
+# Config for post-run resampling via Reshapr to create day-averaged and month-averaged
+# results files
+averaged datasets:
+  # Directory where Reshapr extraction/resampling config files are stored
+  reshapr config dir: /SalishSeaCast/SalishSeaNowcast/config/reshapr/
+  # Configs for day-averaged files keyed by variable group
+  day:
+    biology:
+      # Reshapr extraction/resampling config YAML file name
+      reshapr config: day-average_202111_biology.yaml
+      # **Must be quoted to project {} characters**
+      file pattern: "SalishSea_1d_{yyyymmdd}_{yyyymmdd}_biol_T.nc"
+    chemistry:
+      reshapr config: day-average_202111_chemistry.yaml
+      file pattern: "SalishSea_1d_{yyyymmdd}_{yyyymmdd}_chem_T.nc"
+    physics:
+      reshapr config: day-average_202111_physics.yaml
+      file pattern: "SalishSea_1d_{yyyymmdd}_{yyyymmdd}_grid_T.nc"
+  # Configs for month-averaged files keyed by variable group
+  month:
+    biology:
+      reshapr config: month-average_202111_biology.yaml
+      file pattern: "SalishSeaCast_1m_biol_T_{yyyymmdd}_{yyyymmdd}.nc"
+    chemistry:
+      reshapr config: month-average_202111_chemistry.yaml
+      file pattern: "SalishSeaCast_1m_chem_T_{yyyymmdd}_{yyyymmdd}.nc"
+    physics:
+      reshapr config: month-average_202111_physics.yaml
+      file pattern: "SalishSeaCast_1m_grid_T_{yyyymmdd}_{yyyymmdd}.nc"
+
+rolling forecasts:
+  # Number of days prior to run date to include in forecast dataset
+  days from past: 5
+  # Root of directory tree to hold temporary results files
+  temporary results archives: /tmp/
+  nemo:
+    # Destination directory for rolling forecast results directories
+    dest dir: /results/SalishSea/rolling-forecasts/nemo/
+  wwatch3:
+    # Destination directory for rolling forecast results directories
+    dest dir: /results/SalishSea/rolling-forecasts/wwatch3/
+    # Destination directory for most recent forecast file symlinks
+    most recent forecast dir: /opp/wwatch3/most_recent_forecast/
+
+
+# Notifications to ERDDAP server that datasets have been updated
+erddap:
+  # Directory in which to create flag files to signal ERDDAP server that
+  # datasets have been updated
+  flag dir: /results/erddap/flag/
+  datasetIDs:
+    # Keys are types of datasets that have been updated
+    # Must match dataset command-line argument in ping_erddap worker
+    weather:
+      # List of ERDDAP dataset ids to create flag files for to signal updates
+      # to ERDDAP server
+      - ubcSSaSurfaceAtmosphereFieldsV1
+    SCVIP-CTD:
+      - ubcONCSCVIPCTD15mV1
+    SEVIP-CTD:
+      - ubcONCSEVIPCTD15mV1
+#    LSBBL-CTD:
+#      Decommissioned on 4-Nov-2017
+#      - ubcONCLSBBLCTD15mV1
+#    USDDL-CTD:
+#      out of service since 22-Dec-2019; repair ETA unknown
+#      - ubcONCUSDDLCTD15mV1
+    TWDP-ferry:
+      - ubcONCTWDP1mV1
+    nowcast-green:
+      - ubcSSg3DBiologyFields1hV19-05
+      - ubcSSg3DTracerFields1hV19-05
+      - ubcSSg3DuGridFields1hV19-05
+      - ubcSSg3DvGridFields1hV19-05
+      - ubcSSg3DwGridFields1hV19-05
+      - ubcSSgSurfaceTracerFields1hV19-05
+      - ubcSSg3DAuxiliaryFields1hV19-05
+    nemo-forecast:
+      # tide gauge station water levels
+      - ubcSSfBoundaryBaySSH10m
+      - ubcSSfCampbellRiverSSH10m
+      - ubcSSfCherryPointSSH10m
+      - ubcSSfFridayHarborSSH10m
+      - ubcSSfHalfmoonBaySSH10m
+      - ubcSSfNanaimoSSH10m
+      - ubcSSfNeahBaySSH10m
+      - ubcSSfNewWestminsterSSH10m
+      - ubcSSfPatriciaBaySSH10m
+      - ubcSSfPointAtkinsonSSH10m
+      - ubcSSfPortRenfrewSSH10m
+      - ubcSSfSandHeadsSSH10m
+      - ubcSSfSandyCoveSSH10m
+      - ubcSSfSquamishSSH10m
+      - ubcSSfVictoriaSSH10m
+      - ubcSSfWoodwardsLandingSSH10m
+      # currents and tracers
+      - ubcSSfDepthAvgdCurrents1h
+      - ubcSSf3DuGridFields1h
+      - ubcSSf3DvGridFields1h
+      - ubcSSfSurfaceTracerFields1h
+    wwatch3-forecast:
+      - ubcSSf2DWaveFields30mV17-02
+    VFPA-HADCP:
+      - ubcVFPA2ndNarrowsCurrent2sV1
+    fvcom-x2-nowcast:
+      - ubcSSFVCOM-VHFR-BaroclinicX2
+    fvcom-r12-nowcast:
+      - ubcSSFVCOM-VHFR-BaroclinicR12
+
+
+figures:
+  # ERDDAP dataset URLs
+  dataset URLs:
+    bathymetry:
+      https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV17-02
+    HRDPS fields:
+      https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSaSurfaceAtmosphereFieldsV1
+    tide stn ssh time series:
+      # **Must be quoted to project {} characters**
+      'https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf{place}SSH10m'
+    3d tracer fields:
+      https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DTracerFields1hV19-05
+    3d biology fields:
+      https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DBiologyFields1hV19-05
+    2nd narrows hadcp time series:
+      https://salishsea.eos.ubc.ca/erddap/tabledap/ubcVFPA2ndNarrowsCurrent2sV1
+    wwatch3 fields:
+      https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf2DWaveFields30mV17-02
+  # Directory in which to find bathymetry and mesh mask files
+  grid dir: /SalishSeaCast/grid/
+  # Pacific Now-West coastline polygons file
+  coastline: /ocean/rich/more/mmapbase/bcgeo/PNW.mat
+  # Timezone to use in model results figures
+  ## TODO: Consider changing figures code to use arrow.to('local') as make_feeds worker does
+  timezone: Canada/Pacific
+  # Directory tree behind the https://salishsea.eos.ubc.ca/nowcast-sys/figures/
+  # static web server that figure files are to be stored in and requested from
+  storage path: /results/nowcast-sys/figures/
+  # Directory tree behind the https://salishsea.eos.ubc.ca/nowcast-sys/figures/
+  # static web server that test figure files from `make_plots --test-figure`
+  # are to be stored in
+  test path: /results/nowcast-sys/figures/test/
+  # Directory under storage path where most recent storm surge alerts thumbnail
+  # image is stored
+  storm surge info portal path: storm-surge/
+  # Filename root for the storm surge alerts thumbnail image.
+  # _dmy.png is appended for the version stored in the run results figures/ directory
+  # An undated .png version of the most recently generated one is stored in
+  # for use on the Strm Surge Information Portal page.
+  storm surge alerts thumbnail: Website_thumbnail
+
+  # Surface current tile figures
+  surface current tiles:
+    # Rolling forecast u and v velocity fields ERDDAP dataset URLs
+    u field: https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf3DuGridFields1h
+    v field: https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSf3DvGridFields1h
+    # Directory tree behind the https://salishsea.eos.ubc.ca/nowcast-sys/figures/
+    # static web server that tile files are to be stored in and requested from
+    storage path: /results/nowcast-sys/figures/surface_currents/
+
+
+# Storm surge alerts ATOM feeds
+storm surge feeds:
+  # Directory under figures[storage path][storm surge info portal path] where
+  # feed XML files are stored
+  storage path: atom
+  domain: salishsea.eos.ubc.ca
+  feed entry template: storm_surge_advisory.mako
+  feeds:
+    pmv.xml:
+      title: SalishSeaCast Storm Surge Alerts for Port Metro Vancouver
+      city: Vancouver
+      tide gauge stn: Point Atkinson
+      tidal predictions: 'Point Atkinson_tidal_prediction_30-Dec-2006_31-Dec-2030.csv'
+
+
+run:
+  enabled hosts:
+    # Compute host name where daily runs are executed under automation
+    arbutus.cloud-nowcast:
+      # Does the host share storage with the machine where the nowcast manager
+      # is running?
+      shared storage: False
+      # Should the make_forcing_links worker be launched upon successful completion
+      # of upload_forcing worker runs?
+      make forcing links: True
+      # Passphrase-less deployment key used by automation for authentication
+      # on the host.
+      # The key-pair is assumed to be stored in $USER/.ssh/.
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      # Location on the compute host of the file that contains IP addresses
+      # and MPI slots specifications.
+      # Only required for runs on cloud hosts.
+      mpi hosts file: ${HOME}/mpi_hosts
+      # IP address of the machine to run XIOS on.
+      # Only required for runs on cloud hosts.
+      xios host: 192.168.238.14
+      # Location of bash script that sets nowcast system environment variables.
+      # The script will be sourced as a prefix to worker launch commands on
+      # the host
+      envvars: /nemoShare/MEOPAR/nowcast-sys/nowcast-env/etc/conda/activate.d/envvars.sh
+      # Python interpreter on compute host in an environment with all
+      # dependencies installed. Used to, for example, launch run_NEMO and
+      # watch_NEMO workers.
+      python: /nemoShare/MEOPAR/nowcast-sys/nowcast-env/bin/python3
+      # Location on the compute host of the nowcast system config file
+      config file: /nemoShare/MEOPAR/nowcast-sys/SalishSeaNowcast/config/nowcast.yaml
+      # Directory on compute host where files (e.g. namelist.time) and symlinks
+      # (e,g. iodef.xml, forcing links) necessary to prepare the NEMO runs are stored
+      run prep dir: /nemoShare/MEOPAR/nowcast-sys/runs
+      # Directory in which to find coordinates, bathymetry, mesh mask,
+      # and land processor elimination files
+      grid dir: /nemoShare/MEOPAR/nowcast-sys/grid/
+      # Path to the salishsea command processor executable to use in the run
+      # script
+      salishsea_cmd: /nemoShare/MEOPAR/nowcast-sys/nowcast-env/bin/salishsea
+      # Executable to use to submit the SalishSeaNEMO.sh script to be run
+      job exec cmd: bash
+      # Run type specific configurations for the runs that are executed on the
+      # compute host; keyed by run type
+      run types:
+        nowcast:
+          run sets dir: /nemoShare/MEOPAR/nowcast-sys/SS-run-sets/v201905/nowcast-blue/
+          # How is the domain to be distributed over the processors in the
+          # i (longitude) and j (latitude) directions?
+          mpi decomposition: 11x18
+          # Directory on compute host where results are stored
+          results: /nemoShare/MEOPAR/SalishSea/nowcast/
+        forecast:
+          run sets dir: /nemoShare/MEOPAR/nowcast-sys/SS-run-sets/v201905/forecast/
+          mpi decomposition: 11x18
+          results: /nemoShare/MEOPAR/SalishSea/forecast/
+        forecast2:
+          run sets dir: /nemoShare/MEOPAR/nowcast-sys/SS-run-sets/v201905/forecast2/
+          mpi decomposition: 11x18
+          results: /nemoShare/MEOPAR/SalishSea/forecast2/
+        nowcast-green:
+          run sets dir: /nemoShare/MEOPAR/nowcast-sys/SS-run-sets/v201905/nowcast-green/
+          mpi decomposition: 11x18
+          results: /nemoShare/MEOPAR/SalishSea/nowcast-green/
+      forcing:
+        # Directory on compute host where Neah Bay sea surface height forcing files
+        # are stored
+        ssh dir: /nemoShare/MEOPAR/sshNeahBay/
+        # Directory on compute host where temperature and salinity boundary
+        # conditions files generated from UW Live Ocean forecast are stored
+        bc dir: /nemoShare/MEOPAR/LiveOcean/
+        # Directory on compute host where rivers runoff forcing files are stored
+        rivers dir: /nemoShare/MEOPAR/rivers/
+        # Directory on compute host where the Fraser River turbidity forcing
+        # files are stored
+        Fraser turbidity dir: /nemoShare/MEOPAR/rivers/river_turb/
+        # Location on compute host of bottom friction mask file
+        bottom friction mask: /nemoShare/MEOPAR/nowcast-sys/grid/jetty_mask_bathy201702.nc
+        # Directory on compute host where atmospheric forcing files are stored
+        weather dir: /nemoShare/MEOPAR/GEM2.5/ops/NEMO-atmos/
+
+    salish-nowcast:
+      shared storage: True
+      make forcing links: True
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      envvars: /SalishSeaCast/nowcast-env/etc/conda/activate.d/envvars.sh
+      python: /SalishSeaCast/nowcast-env/bin/python3
+      config file: /SalishSeaCast/SalishSeaNowcast/config/nowcast.yaml
+      run prep dir: /SalishSeaCast/runs/
+      grid dir: /SalishSeaCast/grid/
+      salishsea_cmd: /SalishSeaCast/nowcast-env/bin/salishsea
+      job exec cmd: qsub
+      # Optional email address to which to send notifications of the beginning
+      # and end of execution of the run, as well as notification of abnormal
+      # abort messages.
+      email: sallen@eoas.ubc.ca
+      run types:
+        nowcast-dev:
+          run sets dir: /SalishSeaCast/SS-run-sets/v201905/nowcast-dev/
+          mpi decomposition: 1x7
+          walltime: 23:30:00
+          results: /results/SalishSea/nowcast-dev.201905/
+        nowcast-green:
+          results: /results2/SalishSea/nowcast-green.201905/
+      forcing:
+        ssh dir: /results/forcing/sshNeahBay/
+        bc dir: /results/forcing/LiveOcean/boundary_conditions/
+        rivers dir: /results/forcing/rivers/
+        bottom friction mask: /SalishSeaCast/grid/jetty_mask_bathy201702.nc
+        weather dir: /results/forcing/atmospheric/GEM2.5/operational/
+
+    orcinus-nowcast-agrif:
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      shared storage: False
+      make forcing links: True
+      # Directory on compute host where temporary run directories and run results are stored
+      scratch dir: /global/scratch/dlatorne/nowcast-agrif
+      run prep dir: /home/dlatorne/nowcast-agrif-sys/runs
+      salishsea cmd: /home/dlatorne/.local/bin/salishsea
+      run types:
+        nowcast-agrif:
+          results: /global/scratch/dlatorne/nowcast-agrif/
+      forcing:
+        ssh dir: /home/sallen/MEOPAR/sshNeahBay/
+        bc dir: /home/sallen/MEOPAR/LiveOcean/
+        rivers dir: /home/sallen/MEOPAR/rivers/
+        Fraser turbidity dir: /home/sallen/MEOPAR/rivers/river_turb/
+        weather dir: /home/sallen/MEOPAR/GEM2.5/ops/NEMO-atmos/
+
+    graham-dtn:
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      shared storage: False
+      make forcing links: False
+      # Empty collection of run types because all we want to do is upload daily forcing
+      # files
+      run types: {}
+      forcing:
+        ssh dir: /project/def-allen/SalishSea/forcing/sshNeahBay/
+        bc dir: /project/def-allen/SalishSea/forcing/LiveOcean/
+        rivers dir: /project/def-allen/SalishSea/forcing/rivers/
+        Fraser turbidity dir: /project/def-allen/SalishSea/forcing/rivers/river_turb/
+        weather dir: /project/def-allen/SalishSea/forcing/atmospheric/GEM2.5/operational/
+
+    optimum-hindcast:
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      shared storage: False
+      make forcing links: False
+      # Empty collection of run types because all we want to do is upload daily forcing
+      # files
+      run types: {}
+      forcing:
+        ssh dir: /data/sallen/shared/SalishSeaCast/forcing/sshNeahBay/
+        bc dir: /data/sallen/shared/SalishSeaCast/forcing/LiveOcean/
+        rivers dir: /data/sallen/shared/SalishSeaCast/forcing/rivers/
+        Fraser turbidity dir: /data/sallen/shared/SalishSeaCast/forcing/rivers/river_turb/
+        weather dir: /data/sallen/shared/SalishSeaCast/forcing/atmospheric/GEM2.5/operational/
+
+
+  hindcast hosts:
+    # HPC compute host name where hindcast runs are executed under automation
+    optimum-hindcast:
+      # Passphrase-less deployment key used by automation for authentication
+      # on the host.
+      # The key-pair is assumed to be stored in $USER/.ssh/.
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      # Path to the command used to query the job scheduler queue on the compute host
+      queue info cmd: /usr/bin/qstat
+      # Comma separated list of compute host user ids to use in queue and accounting queries
+      users: sallen,dlatorne
+      # Directory on compute host where temporary run directories and run results are stored
+      scratch dir: /scratch/sallen/dlatorne/v202111/
+      # Directory on compute host where files (e.g. namelist.time) necessary to prepare
+      # the NEMO runs are stored
+      run prep dir: /home/sallen/dlatorne/SalishSeaCast/hindcast-sys/runs
+      salishsea cmd:
+        # Path to the salishsea command processor executable to use in the run script
+        executable: /home/sallen/dlatorne/.conda/envs/salishseacast/bin/salishsea
+        # Command-line options to use with the salishsea run command
+        run options:
+        # Environment variables to set for salishsea run command on hindcast host
+        envvars:
+          PATH: $PATH:$HOME/bin
+          FORCING: /data/sallen/shared
+          PROJECT: /home/sallen/dlatorne
+          SUSANPROJECT: /home/sallen/sallen
+      # Run type specific configurations for the runs that are executed on the
+      # compute host; keyed by run type
+      run types:
+        hindcast:
+          # Directory on compute host where results are stored
+          results: /scratch/sallen/dlatorne/v202111/
+
+    sockeye-hindcast:
+      ssh key: SalishSeaNEMO-nowcast_id_rsa
+      queue info cmd: /cm/shared/apps/pbspro-ce/18.1.2/bin/qstat
+      users: sallen,dlatorne
+      scratch dir: /scratch/sallen1/hindcast_v201905_long/
+      run prep dir: /project/dri-allen/MEOPAR/hindcast-sys/runs/
+      salishsea cmd:
+        executable: /home/dlatorne/.local/bin/salishsea
+        run options:
+        envvars:
+      run types:
+        hindcast:
+          results: /scratch/sallen1/hindcast_v201905_long/
+
+
+# Strait of Georgia WaveWatch3 model runs
+wave forecasts:
+  # Compute host to run wave forecast on
+  host: arbutus.cloud-nowcast
+  # NEMO run to run wwatch3 forecast run after
+  # User 'after forecast' during storm surge season and 'after nowcast-green`
+  # the rest of the year
+  run when: after forecast
+  # Directory on compute host where files (e.g. ww3_*.inp,  mod_def.ww3) and
+  # directories (e,g. wind/ current/) necessary to prepare the wwatch3 runs
+  # are stored
+  run prep dir: /nemoShare/MEOPAR/nowcast-sys/wwatch3-runs
+  # Directory in which to find mesh mask file
+  grid dir: /nemoShare/MEOPAR/nowcast-sys/grid/
+  # Template for wind forcing file names
+  # **Must be quoted to project {} characters**
+  wind file template: 'SoG_wind_{yyyymmdd}.nc'
+  # Template for ocean current forcing file names
+  # **Must be quoted to project {} characters**
+  current file template: 'SoG_current_{yyyymmdd}.nc'
+  # Template for NEMO hourly results file name
+  # **Must be quoted to project {} characters**
+  NEMO file template: 'SalishSea_1h_{s_yyyymmdd}_{e_yyyymmdd}_grid_{grid}.nc'
+  # Path to the wwatch3 executables directory
+  wwatch3 exe path: /nemoShare/MEOPAR/nowcast-sys/wwatch3-5.16/exe
+  # Path to the salishsea command processor executable to use in the run script
+  salishsea cmd: /nemoShare/MEOPAR/nowcast-sys/nowcast-env/bin/salishsea
+  # Directories on compute host where results are stored, keyed by run type
+  results:
+    nowcast: /nemoShare/MEOPAR/SalishSea/wwatch3-nowcast/
+    forecast: /nemoShare/MEOPAR/SalishSea/wwatch3-forecast/
+    forecast2: /nemoShare/MEOPAR/SalishSea/wwatch3-forecast2/
+  # Directories on results server where run results are stored
+  # in ddmmmyy/ directories; keyed by run type
+  results archive:
+    nowcast: /opp/wwatch3/nowcast/
+    forecast: /opp/wwatch3/forecast/
+    forecast2: /opp/wwatch3/forecast2/
+
+
+# Vancouver Harbour & Fraser River FVCOM model runs
+vhfr fvcom runs:
+  # Compute host to run VHFR FVCOM model on
+  host: arbutus.cloud-nowcast
+  # Passphrase-less deployment key used by automation for authentication
+  # on the host.
+  # The key-pair is assumed to be stored in $HOME/.ssh/.
+  ssh key: SalishSeaNEMO-nowcast_id_rsa
+  # FVCOM case name
+  case name:
+    x2: vh_x2
+    r12: vh_r12
+  # Directory on compute host where files and directories necessary to
+  # prepare and execute the fvcom runs are stored
+  run prep dir: /nemoShare/MEOPAR/nowcast-sys/fvcom-runs/
+
+  fvcom grid:
+    # Directory on compute host where FVCOM grid files are stored
+    grid dir: /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/grid/
+    # UTM zone:
+    utm zone: 10
+    # Model configurations (aka case names)
+    x2:
+      # Grid file
+      grid file: vh_x2_grd.dat
+      # Depths file
+      depths file: vh_x2_dep.dat
+      # Sigma levels file
+      sigma file: vh_x2_sigma.dat
+      # Coriolis file
+      coriolis file: vh_x2_cor.dat
+      # Sponge file
+      sponge file: vh_x2_nospg_spg.dat
+      # Open boundaries nodes list file
+      obc nodes file: vh_x2_obc.dat
+      # Fraser River nodes list file
+      fraser nodes file: vh_x2_river_nodes_fraser.txt
+    r12:
+      grid file: vh_r12_grd.dat
+      depths file: vh_r12_smp3_dep.dat
+      sigma file: vh_r12_sigma.dat
+      coriolis file: vh_r12_cor.dat
+      sponge file: vh_r12_nospg_spg.dat
+      obc nodes file: vh_r12_obc.dat
+      fraser nodes file: vh_r12_river_nodes_fraser.txt
+
+  nemo coupling:
+    # Directory on compute host where FVCOM-NEMO coupling files are stored
+    coupling dir: /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/coupling_nemo_cut/
+    # Model configurations (aka case names)
+    x2:
+      # File containing FVCOM indices for the NEMO nesting zone
+      fvcom nest indices file: vh_x2_nesting_indices.txt
+      # File containing nesting zone reference line for weights calculation
+      fvcom nest ref line file: vh_x2_nesting_innerboundary.txt
+    r12:
+      fvcom nest indices file: vh_r12_nesting_indices.txt
+      fvcom nest ref line file: vh_r12_nesting_innerboundary.txt
+    # NEMO index ranges contained in the boundary files
+    nemo cut i range: [225, 369]
+    nemo cut j range: [340, 561]
+    # Transition zone width [m] over which weights rise from 0 to 1
+    transition zone width: 8500
+    # Transition profile tanh function parameters
+    tanh dl: 2
+    tanh du: 2
+    # NEMO coordinates file
+    nemo coordinates: /nemoShare/MEOPAR/nowcast-sys/grid/coordinates_seagrid_SalishSea201702.nc
+    # NEMO mesh mask file
+    nemo mesh mask: /nemoShare/MEOPAR/nowcast-sys/grid/mesh_mask201702.nc
+    # NEMO bathymetry file
+    nemo bathymetry: /nemoShare/MEOPAR/nowcast-sys/grid/bathymetry_201702.nc
+    # Template for boundary forcing file names
+    # **Must be quoted to project {} characters**
+    boundary file template: 'bdy_{model_config}_{run_type}_brcl_{yyyymmdd}.nc'
+
+  atmospheric forcing:
+    # Directory on host where make_fccom_atmos_forcing worker runs where HRDPS GRIB files are stored
+    hrdps grib dir: /results/forcing/atmospheric/GEM2.5/GRIB/
+    # Directory on host where make_fccom_atmos_forcing worker runs where FVCOM atmospheric forcing files are stored
+    fvcom atmos dir: /results/forcing/atmospheric/GEM2.5/vhfr-fvcom
+    # Template for atmospheric forcing file names
+    # **Must be quoted to project {} characters**
+    atmos file template: 'atmos_{model_config}_{run_type}_{field_type}_{yyyymmdd}.nc'
+    # Directory on host where make_fvcom_atmos_forcing worker runs where FVCOM grid files are stored
+    fvcom grid dir: /SalishSeaCast/FVCOM-VHFR-config/grid/
+    # Atmospheric forcing field types to generate files for
+    # (ftype parameter values in OPPTools.atm.create_atm_hrdps())
+    field types:
+      - hfx
+      - precip
+      - wnd
+
+  rivers forcing:
+    # Directory on compute host where NEMO runoff forcing files are stored
+    nemo rivers dir: /nemoShare/MEOPAR/rivers/
+    # Template for NEMO runoff forcing file names
+    # **Must be quoted to project {} characters**
+    runoff file template: 'R201702DFraCElse_{yyyymmdd}.nc'
+    # File containing monthly average conservative temperature climatology for NEMO runoff forcing
+    temperature climatology: /nemoShare/MEOPAR/nowcast-sys/rivers-climatology/rivers_ConsTemp_month.nc
+    # Template for rivers forcing file names
+    # **Must be quoted to project {} characters**
+    rivers file template: 'rivers_{model_config}_{run_type}_{yyyymmdd}.nc'
+
+  # Directory on compute host where FVCOM input files are stored
+  input dir:
+    x2: /nemoShare/MEOPAR/nowcast-sys/fvcom-runs/input.x2/
+    r12: /nemoShare/MEOPAR/nowcast-sys/fvcom-runs/input.r12/
+  # Path and name of file on compute host that defines the tide gauge stations
+  # to produce point outputs at
+  output station timeseries:
+    x2: /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/output/vh_x2_station.txt
+    r12: /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/output/vh_r12_station.txt
+  namelists:
+    # Name of the namelist file to create by concatenating the list of namelist
+    # section files below
+    vh_x2_run.nml:
+      - namelist.case
+      - namelist.startup.hotstart
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.io
+      - namelist.numerics
+      - namelist.restart
+      - namelist.netcdf
+      - namelist.physics
+      - namelist.surface
+      - namelist.rivers.x2
+      - namelist.obc
+      - namelist.grid
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.groundwater
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.lagrangian
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.probes
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.bounds_check
+      - namelist.nesting
+      - namelist.station_timeseries
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.additional_models
+    vh_r12_run.nml:
+      - namelist.case
+      - namelist.startup.hotstart
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.io
+      - namelist.numerics
+      - namelist.restart
+      - namelist.netcdf
+      - namelist.physics
+      - namelist.surface
+      - namelist.rivers.r12
+      - namelist.obc
+      - namelist.grid
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.groundwater
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.lagrangian
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.probes
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.bounds_check
+      - namelist.nesting
+      - namelist.station_timeseries
+      - /nemoShare/MEOPAR/nowcast-sys/FVCOM-VHFR-config/namelists/namelist.additional_models
+  # Path to the tree that contains the FVCOM executable at FVCOM_source/fvcom
+  FVCOM exe path: /nemoShare/MEOPAR/nowcast-sys/FVCOM41/
+  # Number of processors
+  number of processors:
+    x2: 30
+    r12: 90
+  # Location on the compute host of the file that contains IP addresses
+  # and MPI slots specifications.
+  mpi hosts file:
+    x2: ${HOME}/mpi_hosts.fvcom.x2
+    r12: ${HOME}/mpi_hosts.fvcom.r12
+  # Path to the FVCOM command processor executable to use in the run script
+  fvc_cmd: /nemoShare/MEOPAR/nowcast-sys/nowcast-env/bin/fvc
+  # Run type specific configurations for the runs that are executed on the
+  # compute host; keyed by run type
+  run types:
+    nowcast x2:
+      # Directory on compute host where NEMO run results for boundary forcing
+      # are stored
+      nemo boundary results: /nemoShare/MEOPAR/SalishSea/nowcast/
+      # Integration time step [seconds]
+      time step: 0.5
+      # Directory on compute host where results are stored
+      results: /nemoShare/MEOPAR/SalishSea/fvcom-nowcast-x2/
+    nowcast r12:
+      nemo boundary results: /nemoShare/MEOPAR/SalishSea/nowcast/
+      time step: 0.2
+      results: /nemoShare/MEOPAR/SalishSea/fvcom-nowcast-r12/
+  # Directories on results server where run results are stored
+  # in ddmmmyy/ directories; keyed by run type
+  results archive:
+    nowcast x2: /opp/fvcom/nowcast-x2/
+    nowcast r12: /opp/fvcom/nowcast-r12/
+  # Name of the results file containing the tide gauge stations sea surface height time series
+  stations dataset filename:
+    x2: vh_x2_station_timeseries.nc
+    r12: vh_r12_station_timeseries.nc
+
+
+# Distributed logging system configuration
+logging:
+  aggregator:
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+      simple:
+        format: '%(asctime)s %(levelname)s [%(logger_name)s] %(message)s'
+    handlers:
+      info_text:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/nowcast.log
+        backupCount: 7
+      debug_text:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/nowcast.debug.log
+        backupCount: 7
+      email:
+        class: logging.handlers.SMTPHandler
+        level: CRITICAL
+        formatter: simple
+        subject: 'CRITICAL Message from Salish Sea Nowcast System'
+        mailhost: localhost
+        fromaddr: salishsea_nowcast@eoas.ubc.ca
+        toaddrs:
+          - dlatornell@eoas.ubc.ca
+          - sallen@eoas.ubc.ca
+    root:
+      level: DEBUG
+      handlers:
+       - info_text
+       - debug_text
+       - email
+       # No Sentry exception logging from log aggregator because the events are either
+       # duplicates of those from other processes, or they lack traceback info
+
+  publisher:
+    version: 1
+    disable_existing_loggers: False
+    formatters:
+      simple:
+        format: '%(asctime)s %(levelname)s [%(name)s] %(message)s'
+    handlers:
+      console:
+        class: logging.StreamHandler
+        # Level 100 disables console logging.
+        # Use worker --debug flag to enable console logging.
+        level: 100
+        formatter: simple
+        stream: ext://sys.stdout
+      zmq_pub:
+        class: zmq.log.handlers.PUBHandler
+        level: DEBUG
+        formatter: simple
+      wgrib2_text:
+        class: logging.FileHandler
+        level: DEBUG
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/wgrib2.log
+        mode: w
+      hindcast_info:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/hindcast.log
+        backupCount: 7
+      hindcast_debug:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/hindcast.debug.log
+        backupCount: 7
+      checklist:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: simple
+        filename: $(NOWCAST.ENV.NOWCAST_LOGS)/checklist.log
+        backupCount: 7
+    loggers:
+      wgrib2:
+        qualname: wgrib2
+        level: DEBUG
+        propagate: False
+        handlers:
+          - wgrib2_text
+      run_NEMO_hindcast:
+        qualname: run_NEMO_hindcast
+        level: DEBUG
+        propagate: False
+        handlers:
+          - hindcast_info
+          - hindcast_debug
+      watch_NEMO_hindcast:
+        qualname: watch_NEMO_hindcast
+        level: DEBUG
+        propagate: False
+        handlers:
+          - hindcast_info
+          - hindcast_debug
+      split_results:
+        qualname: split_results
+        level: DEBUG
+        propagate: False
+        handlers:
+          - hindcast_info
+          - hindcast_debug
+      make_averaged_dataset:
+        qualname: make_averaged_dataset
+        level: DEBUG
+        propagate: False
+        handlers:
+          - hindcast_info
+          - hindcast_debug
+      reshapr:
+        qualname: reshapr
+        level: DEBUG
+        propagate: False
+        handlers:
+          - hindcast_info
+          - hindcast_debug
+      checklist:
+        qualname: checklist
+        level: INFO
+        propagate: False
+        handlers:
+          - checklist
+      matplotlib:
+        # matplotlib library used by figure modules
+        qualname: matplotlib
+        level: WARNING
+        formatter: simple
+      PIL:
+        # Python Imaging Library (aka pillow) used by figure modules
+        qualname: PIL
+        level: WARNING
+        formatter: simple
+      paramiko:
+        # ssh/sftp client library used by various workers
+        qualname: paramiko
+        level: WARNING
+        formatter: simple
+      watchdog:
+        # File system monitoring library used by collect_weather worker
+        qualname: watchdog
+        level: WARNING
+        formatter: simple
+    root:
+      # disable propagation to avoid duplicate sentry events from workers and
+      # log_aggregator
+      propagate: False
+      level: DEBUG
+      handlers:
+       - console
+       - zmq_pub
+       # exception logging to Sentry is enabled by a valid Sentry DSN as the value
+       # of the SENTRY_DSN environment variable
+
+
+slack notifications:
+  # Environment variable is which the slack channel incoming webhook URL is stored
+  SLACK_SSC_DAILY_PROGRESS:
+    # List of workers for which notifications will be sent on completion
+    # to #ssc-daily-progress channel
+    - collect_weather
+    - download_weather
+    - download_live_ocean
+    - watch_NEMO
+    - watch_NEMO_agrif
+    - watch_fvcom
+    - watch_ww3
+  SLACK_SSC_HINDCAST_PROGRESS:
+    # notifications will be sent to #ssc-hindcast-progress channel
+    - watch_NEMO_hindcast
+  # Website URL that shows automation log; included in slack message if present
+  website log url: https://salishsea.eos.ubc.ca/nemo/nowcast/logs/nowcast.log
+  # Website URL that shows automation checklist; included in slack message if present
+  website checklist url: https://salishsea.eos.ubc.ca/nemo/nowcast/logs/nowcast_checklist.yaml
+
+
+# Message system
+zmq:
+  host: skookum.eos.ubc.ca
+  ports:
+    # traffic between manager and message broker
+    manager: 5554
+    # traffic between workers and message broker
+    workers: 5555
+    # pub/sub logging traffic for log aggregator
+    logging:
+      message_broker: 5560
+      manager: 5561
+      workers: [
+        5562, 5563, 5564, 5565, 5566, 5567, 5568, 5569,
+        5570, 5571, 5572, 5573, 5574, 5575, 5576, 5577, 5578, 5579,
+        5590, 5591, 5592, 5593, 5594
+      ]
+    # **host:port pairs in lists must be quoted to protect : characters**
+      run_NEMO: ['salish.eos.ubc.ca:5556', '206.12.100.213:5556']
+      watch_NEMO: ['salish.eos.ubc.ca:5557', '206.12.100.213:5557']
+      make_ww3_wind_file: '206.12.100.213:5570'
+      make_ww3_current_file: '206.12.100.213:5571'
+      run_ww3: '206.12.100.213:5572'
+      watch_ww3: '206.12.100.213:5573'
+      make_fvcom_boundary: ['206.12.100.213:5580','206.12.100.213:5581']
+      make_fvcom_rivers_forcing: ['206.12.100.213:5582','206.12.100.213:5583']
+      run_fvcom: ['206.12.100.213:5584', '206.12.100.213:5585']
+      watch_fvcom: ['206.12.100.213:5586', '206.12.100.213:5587']
+      make_averaged_dataset: [
+        "salish.eos.ubc.ca:5562", "salish.eos.ubc.ca:5563", "salish.eos.ubc.ca:5564",
+        "salish.eos.ubc.ca:5565", "salish.eos.ubc.ca:5566", "salish.eos.ubc.ca:5567",
+        "salish.eos.ubc.ca:5568", "salish.eos.ubc.ca:5569", "salish.eos.ubc.ca:5570",
+        "salish.eos.ubc.ca:5571", "salish.eos.ubc.ca:5572", "salish.eos.ubc.ca:5573",
+        "salish.eos.ubc.ca:5574", "salish.eos.ubc.ca:5575", "salish.eos.ubc.ca:5576",
+        "salish.eos.ubc.ca:5577", "salish.eos.ubc.ca:5578", "salish.eos.ubc.ca:5579",
+        "salish.eos.ubc.ca:5580", "salish.eos.ubc.ca:5581", "salish.eos.ubc.ca:5582",
+        "salish.eos.ubc.ca:5583", "salish.eos.ubc.ca:5584", "salish.eos.ubc.ca:5585",
+      ]
+
+
+message registry:
+  # Message types that the manager process can send and their meanings
+  # Don't change this section without making corresponding changes in
+  # the nemo_nowcast.manager module of the NEMO_Nowcast package.
+  manager:
+    ack: message acknowledged
+    checklist cleared: system checklist cleared
+    unregistered worker: ERROR - message received from unregistered worker
+    unregistered message type: ERROR - unregistered message type received from worker
+    no after_worker function: ERROR - after_worker function not found in next_workers module
+
+  # Module from which to load :py:func:`after_<worker_name>` functions
+  # that provide lists of workers to launch when :kbd:`worker_name` finishes.
+  # Use fully qualified, dotted notation.
+  next workers module: nowcast.next_workers
+
+  workers:
+    # Worker module name
+    download_weather:
+      # The key in the system checklist that the manager maintains that is to
+      # be used to hold message payload information provided by the worker
+      checklist key: weather forecast
+      # Message types that the worker can send and their meanings
+      success 2.5km 00: 00 2.5km weather forecast ready
+      failure 2.5km 00: 00 2.5km weather forecast download failed
+      success 2.5km 06: 06 2.5km weather forecast ready
+      failure 2.5km 06: 06 2.5km weather forecast download failed
+      success 2.5km 12: 12 2.5km weather forecast ready
+      failure 2.5km 12: 12 2.5km weather forecast download failed
+      success 2.5km 18: 18 2.5km weather forecast ready
+      failure 2.5km 18: 18 2.5km weather forecast download failed
+      success 1km 00: 00 1km weather forecast ready
+      failure 1km 00: 00 1km weather forecast download failed
+      success 1km 12: 12 1km weather forecast ready
+      failure 1km 12: 12 1km weather forecast download failed
+      crash: download_weather worker crashed
+
+    # Worker module name
+    collect_weather:
+      # The key in the system checklist that the manager maintains that is to
+      # be used to hold message payload information provided by the worker
+      checklist key: weather forecast
+      # Message types that the worker can send and their meanings
+      success 2.5km 00: 00 2.5km weather forecast ready
+      failure 2.5km 00: 00 2.5km weather forecast collection failed
+      success 2.5km 06: 06 2.5km weather forecast ready
+      failure 2.5km 06: 06 2.5km weather forecast collection failed
+      success 2.5km 12: 12 2.5km weather forecast ready
+      failure 2.5km 12: 12 2.5km weather forecast collection failed
+      success 2.5km 18: 18 2.5km weather forecast ready
+      failure 2.5km 18: 18 2.5km weather forecast collection failed
+      success 1km 00: 00 1km weather forecast ready
+      failure 1km 00: 00 1km weather forecast collection failed
+      success 1km 12: 12 1km weather forecast ready
+      failure 1km 12: 12 1km weather forecast collection failed
+      crash: collect_weather worker crashed
+
+    collect_river_data:
+      checklist key: river data
+      success: river data collection succeeded
+      failure: river data collection failed
+      crash: collect_river_data worker crashed
+
+    make_runoff_file:
+      checklist key: rivers forcing
+      success: rivers forcing ready
+      failure: rivers forcing files preparation failed
+      crash: make_runoff_file worker crashed
+
+    collect_NeahBay_ssh:
+      checklist key: Neah Bay ssh data
+      success 00: 00Z Neah Bay ssh data collection succeeded
+      failure 00: 00Z Neah Bay ssh data collection failed
+      success 06: 06Z Neah Bay ssh data collection succeeded
+      failure 06: 06Z Neah Bay ssh data collection failed
+      success 12: 12Z Neah Bay ssh data collection succeeded
+      failure 12: 12Z Neah Bay ssh data collection failed
+      success 18: 18Z Neah Bay ssh data collection succeeded
+      failure 18: 18Z Neah Bay ssh data collection failed
+      crash: collect_NeahBay_ssh worker crashed
+
+    make_ssh_files:
+      checklist key: sea surface height forcing
+      success nowcast: sea surface height forcing for nowcast ready
+      failure nowcast: sea surface height forcing file prep for nowcast failed
+      success forecast2: sea surface height forcing for forecast2 ready
+      failure forecast2: sea surface height forcing file prep for forecast2 failed
+      crash: make_ssh_file worker crashed
+
+    grib_to_netcdf:
+      checklist key: weather forcing
+      success nowcast+: atmospheric nowcast/forecast forcing ready
+      failure nowcast+: atmospheric nowcast forcing files preparation failed
+      success forecast2: atmospheric forecast2 forcing ready
+      failure forecast2: atmospheric forecast2 forcing files preparation failed
+      crash: grib_to_netcdf worker crashed
+
+    get_onc_ctd:
+      checklist key: ONC CTD data
+      success SCVIP: ONC SCVIP station CTD T&S data file created
+      success SEVIP: ONC SEVIP station CTD T&S data file created
+      success USDDL: ONC USDDL station CTD T&S data file created
+      failure: ONC CTD T&S data file creation failed
+      crash: get_onc_ctd worker crashed
+
+    get_onc_ferry:
+      checklist key: ONC ferry data
+      success TWDP: ONC TWDP ferry route data file created
+      failure TWDP: ONC TWDP ferry route data file creation failed
+      crash: get_onc_ferry worker crashed
+
+    download_live_ocean:
+      checklist key: Live Ocean products
+      success: Live Ocean Salish Sea boundary files ready
+      failure: Live Ocean Salish Sea boundary files download failed
+      crash: download_live_ocean worker crashed
+
+    make_live_ocean_files:
+      checklist key: Live Ocean boundary conditions
+      success: Live Ocean boundary conditions files ready
+      failure: Live Ocean boundary conditions files preparation failed
+      crash: make_live_ocean_files worker crashed
+
+    upload_forcing:
+      checklist key: forcing upload
+      success nowcast+: forcing files for nowcast/forecast uploaded
+      failure nowcast+: forcing files for nowcast/forecast upload failed
+      success forecast2: forcing files for forecast2 uploaded
+      failure forecast2: forcing files for forecast2 upload failed
+      success ssh: sea surface height forcing files for forecast uploaded
+      failure ssh: sea surface height forcing files for forecast upload failed
+      success turbidity: Fraser River turbidity forcing files for nowcast-green uploaded
+      failure turbidity: Fraser River turbidity forcing files for nowcast-green upload failed
+      crash: upload_forcing worker crashed
+
+    make_forcing_links:
+      checklist key: forcing links
+      success nowcast+: forcing file links for nowcast/forecast created
+      failure nowcast+: forcing file links for nowcast/forecast failed
+      success forecast2: forcing file links for forecast2 created
+      failure forecast2: forcing file links for forecast2 failed
+      success ssh: sea surface height forcing file links for forecast created
+      failure ssh: sea surface height forcing file links for forecast failed
+      success nowcast-green: forcing file links for nowcast-green created
+      failure nowcast-green: forcing file links for nowcast-green failed
+      success nowcast-agrif: forcing file links for nowcast-agrif created
+      failure nowcast-agrif: forcing file links for nowcast-agrif failed
+      crash: make_forcing_links worker crashed
+
+    run_NEMO:
+      checklist key: NEMO run
+      need: NEMO run information dict requested
+      success nowcast: nowcast NEMO run started
+      failure nowcast: nowcast NEMO run failed
+      success nowcast-green: nowcast-green NEMO run started
+      failure nowcast-green: nowcast-green NEMO run failed
+      success nowcast-dev: nowcast-dev NEMO run started
+      failure nowcast-dev: nowcast-dev NEMO run failed
+      success forecast: forecast NEMO run started
+      failure forecast: forecast NEMO run failed
+      success forecast2: forecast2 NEMO run started
+      failure forecast2: forecast2 NEMO run failed
+      crash: run_NEMO worker crashed
+
+    run_NEMO_hindcast:
+      checklist key: NEMO run
+      success: NEMO hindcast run queued
+      failure: NEMO hindcast run queue submission failed
+      crash: run_NEMO_hindcast worker crashed
+
+    run_NEMO_agrif:
+      checklist key: NEMO run
+      success: NEMO AGRIF run queued
+      failure: NEMO AGRIF run queue submission failed
+      crash: run_NEMO_agrif worker crashed
+
+    watch_NEMO:
+      checklist key: NEMO run
+      need: NEMO run information dict requested
+      success nowcast: nowcast NEMO run ended
+      failure nowcast: nowcast watch_NEMO failed
+      success nowcast-green: nowcast-green NEMO run ended
+      failure nowcast-green: nowcast-green watch_NEMO failed
+      success nowcast-dev: nowcast-dev NEMO run ended
+      failure nowcast-dev: nowcast-dev watch_NEMO failed
+      success forecast: forecast NEMO run ended
+      failure forecast: forecast watch_NEMO failed
+      success forecast2: forecast2 NEMO run ended
+      failure forecast2: forecast2 watch_NEMO failed
+      crash: watch_NEMO worker crashed
+
+    watch_NEMO_hindcast:
+      checklist key: NEMO run
+      success: NEMO hindcast run ended
+      failure: watch_NEMO_hindcast failed
+      crash: watch_NEMO_hindcast worker crashed
+
+    watch_NEMO_agrif:
+      checklist key: NEMO run
+      success: NEMO AGRIF run ended
+      failure: watch_NEMO_agrif failed
+      crash: watch_NEMO_agrif worker crashed
+
+    make_CHS_currents_file:
+      checklist key: CHS currents file
+      success nowcast: CHS currents file created for nowcast-blue
+      failure nowcast: CHS currents file creation failed for nowcast-blue
+      success forecast: CHS currents file created for forecast
+      failure forecast: CHS currents file creation failed for forecast
+      success forecast2: CHS currents file created for forecast2
+      failure forecast2: CHS currents file creation failed for forecast2
+      crash: make_CHS_currents_file worker crashed
+
+    make_turbidity_file:
+      checklist key: Fraser River turbidity
+      success: Fraser River turbidity file created
+      failure: Fraser River turbidity file creation failed
+      crash: make_turbidity_file worker crashed
+
+    make_fvcom_boundary:
+      checklist key: FVCOM boundary conditions
+      success x2 nowcast: x2 configuration nowcast FVCOM boundary condition file created
+      failure x2 nowcast: x2 configuration nowcast FVCOM boundary condition file creation failed
+      success r12 nowcast: r12 configuration nowcast FVCOM boundary condition file created
+      failure r12 nowcast: r12 configuration forecast FVCOM boundary condition file creation failed
+      crash: make_fvcom_boundary worker crashed
+
+    make_fvcom_rivers_forcing:
+      checklist key: FVCOM rivers forcing
+      success x2 nowcast: x2 configuration nowcast FVCOM rivers forcing file created
+      failure x2 nowcast: x2 configuration nowcast FVCOM rivers forcing file creation failed
+      success r12 nowcast: r12 configuration nowcast FVCOM rivers forcing file created
+      failure r12 nowcast: r12 configuration nowcast FVCOM rivers forcing file creation failed
+      crash: make_fvcom_atmos_forcing worker crashed
+
+    make_fvcom_atmos_forcing:
+      checklist key: FVCOM atmospheric forcing
+      success x2 nowcast: x2 configuration nowcast FVCOM atmospheric forcing file created
+      failure x2 nowcast: x2 configuration nowcast FVCOM atmospheric forcing file creation failed
+      success r12 nowcast: r12 configuration nowcast FVCOM atmospheric forcing file created
+      failure r12 nowcast: r12 configuration nowcast FVCOM atmospheric forcing file creation failed
+      crash: make_fvcom_atmos_forcing worker crashed
+
+    upload_fvcom_atmos_forcing:
+      checklist key: FVCOM atmospheric forcing upload
+      success x2 nowcast: FVCOM x2 configuration nowcast atmospheric forcing file uploaded
+      failure x2 nowcast: FVCOM x2 configuration nowcast atmospheric forcing file upload failed
+      success r12 nowcast: FVCOM r12 configuration nowcast atmospheric forcing file uploaded
+      failure r12 nowcast: FVCOM r12 configuration nowcast atmospheric forcing file upload failed
+      crash: upload_fvcom_atmos_forcing worker crashed
+
+    run_fvcom:
+      checklist key: FVCOM run
+      success x2 nowcast: x2 configuration nowcast FVCOM run started
+      failure x2 nowcast: x2 configuration nowcast FVCOM run failed
+      success r12 nowcast: r12 configuration nowcast FVCOM run started
+      failure r12 nowcast: r12 configuration nowcast FVCOM run failed
+      crash: run_fvcom worker crashed
+
+    watch_fvcom:
+      checklist key: FVCOM run
+      need: FVCOM run information dict requested
+      success x2 nowcast: x2 configuration nowcast FVCOM run completed
+      failure x2 nowcast: x2 configuration nowcast FVCOM run failed
+      success r12 nowcast: r12 configuration nowcast FVCOM run completed
+      failure r12 nowcast: r12 configuration nowcast FVCOM run failed
+      crash: watch_fvcom worker crashed
+
+    get_vfpa_hadcp:
+      checklist key: VFPA HADCP data
+      success: VFPA HADCP data file created
+      failure: VFPA HADCP data file creation failed
+      crash: get_vfpa_hadcp worker crashed
+
+    make_ww3_wind_file:
+      checklist key: WW3 wind forcing
+      success forecast2: WaveWatch3 wind forcing file for forecast2 run ready
+      failure forecast2: WaveWatch3 wind forcing file creation for forecast2 run failed
+      success forecast: WaveWatch3 wind forcing file for forecast run ready
+      failure forecast: WaveWatch3 wind forcing file creation for forecast run failed
+      success nowcast: WaveWatch3 wind forcing file for nowcast/hindcast run ready
+      failure nowcast: WaveWatch3 wind forcing file creation for nowcast/hindcast run failed
+      crash: make_ww3_wind_files worker crashed
+
+    make_ww3_current_file:
+      checklist key: WW3 currents forcing
+      success forecast2: WaveWatch3 currents forcing file for forecast2 run ready
+      failure forecast2: WaveWatch3 currents forcing file creation for forecast2 run failed
+      success forecast: WaveWatch3 currents forcing file for forecast run ready
+      failure forecast: WaveWatch3 currents forcing file creation for forecast run failed
+      success nowcast: WaveWatch3 currents forcing file for nowcast/hindcast run ready
+      failure nowcast: WaveWatch3 currents forcing file creation for nowcast/hindcast run failed
+      crash: make_ww3_current_files worker crashed
+
+    run_ww3:
+      checklist key: WWATCH3 run
+      success forecast2: forecast2 WaveWatch3 run started
+      failure forecast2: forecast2 WaveWatch3 run failed
+      success nowcast: nowcast WaveWatch3 run started
+      failure nowcast: nowcast WaveWatch3 run failed
+      success forecast: forecast WaveWatch3 run started
+      failure forecast: forecast WaveWatch3 run failed
+      crash: run_ww3 worker crashed
+
+    watch_ww3:
+      checklist key: WWATCH3 run
+      need: wwatch3 run information dict requested
+      success forecast2: forecast2 WaveWatch3 run completed
+      failure forecast2: forecast2 WaveWatch3 run failed
+      success nowcast: nowcast WaveWatch3 run completed
+      failure nowcast: nowcast WaveWatch3 run failed
+      success forecast: forecast WaveWatch3 run completed
+      failure forecast: forecast WaveWatch3 run failed
+      crash: watch_ww3 worker crashed
+
+    download_results:
+      checklist key: results files
+      success nowcast: nowcast results files downloaded
+      failure nowcast: nowcast results files download failed
+      success nowcast-green: nowcast-green results files downloaded
+      failure nowcast-green: nowcast-green results files download failed
+      success forecast: forecast results files downloaded
+      failure forecast: forecast results files download failed
+      success forecast2: forecast2 results files downloaded
+      failure forecast2: forecast2 results files download failed
+      success hindcast: hindcast results files downloaded
+      failure hindcast: hindcast results files download failed
+      success nowcast-agrif: nowcast-agrif results files downloaded
+      failure nowcast-agrif: nowcast-agrif results files download failed
+      crash: download_results worker crashed
+
+    split_results:
+      checklist key: results splitting
+      success hindcast: hindcast results files split into daily directories
+      failure hindcast: hindcast results files splitting into daily directories failed
+      crash: split_results worker crashed
+
+    make_averaged_dataset:
+      checklist key: averaged dataset
+      success: dataset averaged
+      failure: dataset averaging failed
+      crash: make_averaged_dataset worker crashed
+
+    archive_tarball:
+      checklist key: archived tarballs
+      success nowcast: nowcast results tarball archived
+      failure nowcast: nowcast results tarball archiving failed
+      success nowcast-green: nowcast-green results tarball archived
+      failure nowcast-green: nowcast-green results tarball archiving failed
+      success nowcast-agrif: nowcast-agrif results tarball archived
+      failure nowcast-agrif: nowcast-agrif results tarball archiving failed
+      success hindcast: nowcast results tarball archived
+      failure hindcast: nowcast results tarball archiving failed
+      crash: archive_tarball worker crashed
+
+    download_wwatch3_results:
+      checklist key: WWATCH3 results files
+      success forecast2: WaveWatch3 forecast2 results files downloaded
+      failure forecast2: WaveWatch3 forecast2 results files download failed
+      success nowcast: WaveWatch3 nowcast results files downloaded
+      failure nowcast: WaveWatch3 nowcast results files download failed
+      success forecast: WaveWatch3 forecast results files downloaded
+      failure forecast: WaveWatch3 forecast results files download failed
+      crash: download_wwatch3_results worker crashed
+
+    download_fvcom_results:
+      checklist key: VHFR FVCOM results files
+      success x2 nowcast: VHFR FVCOM x2 configuration nowcast results files downloaded
+      failure x2 nowcast: VHFR FVCOM x2 configuration nowcast results files download failed
+      success r12 nowcast: VHFR FVCOM r12 configuration nowcast results files downloaded
+      failure r12 nowcast: VHFR FVCOM r12 configuration nowcast results files download failed
+      crash: download_fvcom_results worker crashed
+
+    update_forecast_datasets:
+     checklist key: update forecast datasets
+     success nemo forecast: NEMO forecast datasets updated from forecast run
+     failure nemo forecast: NEMO forecast datasets update from forecast run failed
+     success nemo forecast2: NEMO forecast datasets updated from forecast2 run
+     failure nemo forecast2: NEMO forecast datasets update from forecast2 run failed
+     success wwatch3 forecast: WaveWatch3 forecast datasets updated from forecast run
+     failure wwatch3 forecast: WaveWatch3 forecast datasets update from forecast run failed
+     success wwatch3 forecast2: WaveWatch3 forecast datasets updated from forecast2 run
+     failure wwatch3 forecast2: WaveWatch3 forecast datasets update from forecast2 run failed
+     crash: update_forecast_datasets worker crashed
+
+    ping_erddap:
+      checklist key: ERDDAP flag files
+      success weather: atmospheric forcing ERDDAP dataset flag files created
+      failure weather: atmospheric forcing ERDDAP dataset flag files creation failed
+      success SCVIP-CTD: ONC SCVIP node CTD ERDDAP dataset flag files created
+      failure SCVIP-CTD: ONC SCVIP node CTD ERDDAP dataset flag files creation failed
+      success SEVIP-CTD: ONC SEVIP node CTD ERDDAP dataset flag files created
+      failure SEVIP-CTD: ONC SEVIP node CTD ERDDAP dataset flag files creation failed
+      success USDDL-CTD: ONC USDDL node CTD ERDDAP dataset flag files created
+      failure USDDL-CTD: ONC USDDL node CTD ERDDAP dataset flag files creation failed
+      success TWDP-ferry: ONC Tsawwassen/Duke Pt. ferry ERDDAP dataset flag files created
+      failure TWDP-ferry: ONC Tsawwassen/Duke Pt. ferry ERDDAP dataset flag files creation failed
+      success VFPA-HADCP: VFPA 2nd Narrows Rail Bridge HADCP ERDDAP dataset flag files created
+      failure VFPA-HADCP: VFPA 2nd Narrows Rail Bridge HADCP ERDDAP dataset flag files creation failed
+      success nowcast-green: nowcast-green ERDDAP dataset flag files created
+      failure nowcast-green: nowcast-green ERDDAP dataset flag files creation failed
+      success nemo-forecast: NEMO forecast ERDDAP dataset flag files created
+      failure nemo-forecast: NEMO forecast ERDDAP dataset flag files creation failed
+      success wwatch3-forecast: WaveWatch3 forecast ERDDAP dataset flag files created
+      failure wwatch3-forecast: WaveWatch3 forecast ERDDAP dataset flag files creation failed
+      success fvcom-x2-nowcast: VHFR FVCOM x2 nowcast ERDDAP dataset flag files created
+      failure fvcom-x2-nowcast: VHFR FVCOM x2 nowcast ERDDAP dataset flag files creation failed
+      success fvcom-r12-nowcast: VHFR FVCOM r12 nowcast ERDDAP dataset flag files created
+      failure fvcom-r12-nowcast: VHFR FVCOM r12 nowcast ERDDAP dataset flag files creation failed
+      crash: ping_erddap worker crashed
+
+    make_plots:
+      checklist key: plots
+      success nemo nowcast publish: nemo nowcast publish plots produced
+      success nemo nowcast research: nemo nowcast reseach plots produced
+      success nemo nowcast comparison: nemo nowcast comparison plots produced
+      failure nemo nowcast publish: nemo nowcast publish plots failed
+      failure nemo nowcast research: nemo nowcast research plots failed
+      failure nemo nowcast comparison: nemo nowcast comparison plots failed
+      success nemo nowcast-green research: nemo nowcast-green reseach plots produced
+      failure nemo nowcast-green research: nemo nowcast-green research plots failed
+      success nemo nowcast-agrif research: nemo nowcast-agrif reseach plots produced
+      failure nemo nowcast-agrif research: nemo nowcast-agrif research plots failed
+      success nemo forecast publish: nemo forecast publish plots produced
+      failure nemo forecast publish: nemo forecast publish plots failed
+      success nemo forecast2 publish: nemo forecast2 publish plots produced
+      failure nemo forecast2 publish: nemo forecast2 publish plots failed
+      success fvcom nowcast-x2 publish: fvcom x2 configuration nowcast publish plots produced
+      failure fvcom nowcast-x2 publish: fvcom x2 configuration nowcast publish plots failed
+      success fvcom nowcast-r12 publish: fvcom r12 configuration nowcast publish plots produced
+      failure fvcom nowcast-r12 publish: fvcom r12 configuration nowcast publish plots failed
+      success fvcom nowcast-x2 research: fvcom x2 configuration nowcast research plots produced
+      failure fvcom nowcast-x2 research: fvcom x2 configuration nowcast research plots failed
+      success fvcom nowcast-r12 research: fvcom r12 configuration nowcast research plots produced
+      failure fvcom nowcast-r12 research: fvcom r12 configuration nowcast research plots failed
+      success wwatch3 forecast publish: wwatch3 forecast publish plots produced
+      failure wwatch3 forecast publish: wwatch3 forecast publish plots failed
+      success wwatch3 forecast2 publish: wwatch3 forecast2 publish plots produced
+      failure wwatch3 forecast2 publish: wwatch3 forecast2 publish plots failed
+      crash: make_plots worker crashed
+
+    make_surface_current_tiles:
+      checklist key: surface current tiles
+      success nowcast-green: nowcast-green surface current tile figures produced
+      failure nowcast-green: nowcast-green surface current tile figure production failed
+      success forecast: forecast surface current tile figures produced
+      failure forecast: forecast surface current tile figure production failed
+      success forecast2: forecast2 surface current tile figures produced
+      failure forecast2: forecast2 surface current tile figure production failed
+      crash: make_surface_current_tiles worker crashed
+
+    make_feeds:
+      checklist key: storm surge alert feeds
+      success forecast: forecast results ATOM feeds produced
+      failure forecast: forecast results ATOM feeds creation failed
+      success forecast2: forecast2 results ATOM feeds produced
+      failure forecast2: forecast2 results ATOM feeds creation failed
+      crash: make_feeds worker crashed
+
+    clear_checklist:
+      clear checklist: request that manager clear system state checklist
+      success: system state checklist cleared
+      failure: system state checklist clearance failed
+      crash: clear_checklist worker crashed
+
+    rotate_logs:
+      checklist key: log rotation
+      success: log files rotated
+      failure: log file rotation failed
+      crash: rotate_logs worker crashed
+
+    rotate_hindcast_logs:
+      checklist key: hindcast log rotation
+      success: hindcast log files rotated
+      failure: hindcast log file rotation failed
+      crash: rotate_hindcast_logs worker crashed
+
+    launch_remote_worker:
+      checklist key: remote worker launch
+      success: remote worker launched
+      failure: remote worker launch failed
+      crash: launch_remote_worker crashed
