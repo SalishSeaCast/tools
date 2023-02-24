@@ -38,7 +38,7 @@ rivers_for_watershed = {
              'secondary': 'False'},
     'jervis': {'primary': 'Clowhom_ClowhomLake',
               'secondary': 'RobertsCreek'},
-    'evi_s': {'primary': 'Englishman', 
+    'evi_s': {'primary': 'Englishman',
              'secondary': 'False'},
     'howe': {'primary': 'Squamish_Brackendale',
             'secondary': 'False'},
@@ -108,6 +108,7 @@ def get_area(config):
 
 def read_river(river_name, ps, config):
     """Read daily average discharge data for river_name from river flow file."""
+    print (river_name)
     filename = Path(config["rivers"]["SOG river files"][river_name.replace('_', '')])
     river_flow = pd.read_csv(filename, header=None, sep='\s+', index_col=False,
                       names=['year', 'month', 'day', 'flow'])
@@ -135,13 +136,13 @@ def read_river_Theodosia(config):
     part1 = part1.rename(columns={'flow': 'Scotty'})
     part2 = part2.rename(columns={'flow': 'Bypass'})
     part3 = part3.rename(columns={'flow': 'Diversion'})
-    theodosia = (part3.merge(part2, how='inner', on='date')).merge(part1, how='inner', on='date')
+    theodosia = (part3.merge(part2, how='outer', on='date')).merge(part1, how='outer', on='date')
     theodosia['Secondary River Flow'] = theodosia['Scotty'] + theodosia['Diversion'] - theodosia['Bypass']
     part3['FlowFromDiversion'] = part3.Diversion * theodosia_from_diversion_only
     theodosia = theodosia.merge(part3, how='outer', on='date', sort=True)
     theodosia['Secondary River Flow'] = theodosia['Secondary River Flow'].fillna(
         theodosia['FlowFromDiversion'])
-    theodosia = theodosia.drop(['Diversion_x', 'Bypass', 'Scotty', 'Diversion_y', 
+    theodosia = theodosia.drop(['Diversion_x', 'Bypass', 'Scotty', 'Diversion_y',
                                    'FlowFromDiversion'], axis=1)
     return theodosia
 
