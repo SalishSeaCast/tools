@@ -235,7 +235,7 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     :raises: :py:exc:`IndexError` if :kbd:`avg_hrs` is outside the range
              :kbd:`[-24, 0]`.
     """
-    weather_filename_tmpl = 'ops_y{0.year:4d}m{0.month:02d}d{0.day:02d}.nc'
+    weather_filename_tmpl = 'hrdps_y{0.year:4d}m{0.month:02d}d{0.day:02d}.nc'
     try:
         weather_file = Path(
             weather_path, weather_filename_tmpl.format(date_time))
