@@ -236,6 +236,7 @@ def time_origin(dataset, time_var='time_counter'):
         time_orig,
         ['YYYY-MMM-DD HH:mm:ss',
          'DD-MMM-YYYY HH:mm:ss',
+         'DD-MMM-YYYY HH:mm',
          'YYYY-MM-DD HH:mm:ss'])
     return value
 
