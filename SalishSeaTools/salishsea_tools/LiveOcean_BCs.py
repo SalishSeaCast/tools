@@ -410,7 +410,8 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     }
 
     da = {}
-    for var in interpl.keys():
+    var_names = (var for var in interpl.keys() if var != 'NH4'))
+    for var in var_names:
         da[var] = xr.DataArray(
             data=interpl[var],
             name=LO_to_NEMO_var_map[var],
@@ -561,6 +562,7 @@ def create_LiveOcean_TS_BCs(
         'salt': 'vosaline',
         'temp': 'votemper',
         'NO3': 'NO3',
+        'NH4': 'NH4',
         'Si': 'Si',
         'oxygen': 'OXY',
         'TIC': 'DIC',
@@ -611,6 +613,9 @@ def create_LiveOcean_TS_BCs(
             1, interpl[var].shape[0], 1,
             interpl[var].shape[2] * interpl[var].shape[1]
         )
+
+    # Add NH4 to NO3
+    interpl['NO3'] = interpl['NO3'] + interpl['NH4']
 
     # Calculate Si from NO3 using LiveOcean nitrate
     interpl['Si'] = calculate_Si_from_NO3(
