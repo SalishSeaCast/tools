@@ -410,7 +410,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     }
 
     da = {}
-    var_names = (var for var in interpl.keys() if var != 'NH4'))
+    var_names = (var for var in interpl.keys() if var != 'NH4')
     for var in var_names:
         da[var] = xr.DataArray(
             data=interpl[var],
@@ -614,7 +614,9 @@ def create_LiveOcean_TS_BCs(
             interpl[var].shape[2] * interpl[var].shape[1]
         )
 
-    # Add NH4 to NO3
+    # Due to change in LiveOcean (May 22, 2023) add NH4 to NO3 to
+    # preserve previous behaviour (note LiveOcean NH4+NO3 evaluates
+    # better than NO3 against NO3 obs)
     interpl['NO3'] = interpl['NO3'] + interpl['NH4']
 
     # Calculate Si from NO3 using LiveOcean nitrate
