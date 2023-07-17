@@ -37,7 +37,7 @@ colorspacious==1.1.2
 comm==0.1.3
 contourpy==1.0.7
 coverage==7.2.2
-cryptography==41.0.0
+cryptography==41.0.2
 cycler==0.11.0
 debugpy==1.6.6
 decorator==5.1.1
