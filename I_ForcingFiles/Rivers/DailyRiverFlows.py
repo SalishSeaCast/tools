@@ -140,6 +140,7 @@ def read_river_Theodosia(config):
     theodosia['Secondary River Flow'] = theodosia['Scotty'] + theodosia['Diversion'] - theodosia['Bypass']
     part3['FlowFromDiversion'] = part3.Diversion * theodosia_from_diversion_only
     theodosia = theodosia.merge(part3, how='outer', on='date', sort=True)
+    print (theodosia)
     theodosia['Secondary River Flow'] = theodosia['Secondary River Flow'].fillna(
         theodosia['FlowFromDiversion'])
     theodosia = theodosia.drop(['Diversion_x', 'Bypass', 'Scotty', 'Diversion_y',
@@ -225,6 +226,8 @@ def do_a_pair(water_shed, watershed_from_river, dateneeded,
     if use_secondary:
         if secondary_river_name == "Theodosia":
             secondary_river = read_river_Theodosia(config)
+            print (secondary_river)
+            
         else:
             secondary_river = read_river(secondary_river_name, 'secondary', config)
             
@@ -357,7 +360,7 @@ def write_file(day, runoff, config):
                       'long_name': 'runoff_flux'}
     
     # set up filename 
-    directory = Path(config["rivers"]["rivers dir"])
+    directory = Path('./ncfiles/')
     filename_tmpls = config["rivers"]["file templates"][bathy_type]
         
     filename = directory / filename_tmpls.format(day.date())
