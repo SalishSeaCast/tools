@@ -6,8 +6,8 @@
 #
 #   $ cd tools
 #   $ conda env create -f SalishSeaTools/environment.yaml
-#   $ source activate salishsea-tools
-#   (salishsea-tools)$ pip install --editable SalishSeaTools
+#   $ conda activate salishsea-tools
+#   (salishsea-tools)$ python -m pip install --editable SalishSeaTools
 #
 # See the requirements.txt file for an exhaustive list of all of the
 # packages installed in the environment and their versions used in
@@ -39,7 +39,7 @@ dependencies:
 - pandas
 - pip
 - pytest
-- python=3.9
+- python=3.12
 - pytz
 - python-dateutil
 - pyyaml
