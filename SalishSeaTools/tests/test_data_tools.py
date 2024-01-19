@@ -15,20 +15,21 @@
 
 """Uni tests for salishsea_tools.data_tools module.
 """
+import json
 import json as stdlib_json
 import logging
-import textwrap
 from datetime import datetime
 
 import arrow
+import numpy
 import pandas
 import pytest
 
-from salishsea_tools import data_tools
+from salishsea_tools import data_tools, teos_tools
 
 
 class TestOncDatetime:
-    """Unit tests for onc_datetime function."""
+    """Unit tests for onc_datetime() function."""
 
     @pytest.mark.parametrize(
         "date_time",
@@ -56,6 +57,155 @@ class TestOncDatetime:
     def test_onc_datetime_timzone(self, date_time, timezone):
         result = data_tools.onc_datetime(date_time, timezone)
         assert result == "2016-06-27T23:49:42.000Z"
+
+
+class TestOncJsonToDataset:
+    """Unit tests for onc_json_to_dataset() function."""
+
+    def test_onc_json_to_dataset_teos_10_salinity(self):
+        onc_json = json.loads(
+            '''\
+            {
+              "citations": [
+                "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
+              ],
+              "parameters": {
+                "dateFrom": "2023-12-12T00:00:00.000Z",
+                "dateTo": "2023-12-12T00:00:10.000Z",
+                "deviceCategoryCode": "CTD",
+                "locationCode": "SEVIP",
+                "sensorCategoryCodes": [
+                  "salinity",
+                  "temperature"
+                ],
+                "sensorsToInclude": "original"
+              },
+              "sensorData": [
+                {
+                  "actualSamples": 2,
+                  "data": {
+                    "qaqcFlags": [ 1, 1 ],
+                    "sampleTimes": [
+                      "2023-12-12T00:00:01.013Z",
+                      "2023-12-12T00:00:02.006Z"
+                    ],
+                    "values": [ 30.9339, 30.9338 ]
+                  },
+                  "outputFormat": "array",
+                  "sensorCategoryCode": "salinity",
+                  "sensorCode": "salinity",
+                  "sensorName": "Practical Salinity",
+                  "unitOfMeasure": "psu"
+                },
+                {
+                  "actualSamples": 2,
+                  "data": {
+                    "qaqcFlags": [ 1, 1 ],
+                    "sampleTimes": [
+                      "2023-12-12T00:00:01.013Z",
+                      "2023-12-12T00:00:02.006Z"
+                    ],
+                    "values": [ 9.5185, 9.5185 ]
+                  },
+                  "outputFormat": "array",
+                  "sensorCategoryCode": "temperature",
+                  "sensorCode": "Temperature",
+                  "sensorName": "Temperature",
+                  "unitOfMeasure": "C"
+                }
+              ]
+            }                
+            '''
+        )
+        ds = data_tools.onc_json_to_dataset(onc_json)
+        assert "salinity" in ds.data_vars
+        assert ds.salinity.name == "salinity"
+        expected = [teos_tools.psu_teos(d) for d in [30.9339, 30.9338]]
+        numpy.testing.assert_array_equal(ds.salinity.data, expected)
+        expected = numpy.array([
+            arrow.get(t).naive for t in [
+                "2023-12-12T00:00:01.013Z",
+                "2023-12-12T00:00:02.006Z"
+            ]
+        ], dtype='datetime64[ns]')
+        numpy.testing.assert_array_equal(ds.salinity.coords["sampleTime"], expected)
+        assert ds.salinity.dims == ("sampleTime",)
+        numpy.testing.assert_array_equal(ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1]))
+        assert ds.salinity.attrs["sensorName"] == "Reference Salinity"
+        assert ds.salinity.attrs["unitOfMeasure"] == "g/kg"
+        assert ds.salinity.attrs["actualSamples"] == 2
+
+        assert "temperature" in ds.data_vars
+        assert ds.temperature.name == "temperature"
+        numpy.testing.assert_array_equal(ds.temperature.data, [9.5185, 9.5185])
+        expected = numpy.array([
+            arrow.get(t).naive for t in [
+                "2023-12-12T00:00:01.013Z",
+                "2023-12-12T00:00:02.006Z"
+            ]
+        ], dtype='datetime64[ns]')
+        numpy.testing.assert_array_equal(ds.temperature.coords["sampleTime"], expected)
+        assert ds.temperature.dims == ("sampleTime",)
+        numpy.testing.assert_array_equal(ds.temperature.attrs["qaqcFlag"], numpy.array([1, 1]))
+        assert ds.temperature.attrs["sensorName"] == "Temperature"
+        assert ds.temperature.attrs["unitOfMeasure"] == "C"
+        assert ds.temperature.attrs["actualSamples"] == 2
+
+    def test_onc_json_to_dataset_psu_salinity(self):
+        onc_json = json.loads(
+            '''\
+            {
+              "citations": [
+                "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
+              ],
+              "parameters": {
+                "dateFrom": "2023-12-12T00:00:00.000Z",
+                "dateTo": "2023-12-12T00:00:10.000Z",
+                "deviceCategoryCode": "CTD",
+                "locationCode": "SEVIP",
+                "sensorCategoryCodes": [
+                  "salinity",
+                  "temperature"
+                ],
+                "sensorsToInclude": "original"
+              },
+              "sensorData": [
+                {
+                  "actualSamples": 2,
+                  "data": {
+                    "qaqcFlags": [ 1, 1 ],
+                    "sampleTimes": [
+                      "2023-12-12T00:00:01.013Z",
+                      "2023-12-12T00:00:02.006Z"
+                    ],
+                    "values": [ 30.9339, 30.9338 ]
+                  },
+                  "outputFormat": "array",
+                  "sensorCategoryCode": "salinity",
+                  "sensorCode": "salinity",
+                  "sensorName": "Practical Salinity",
+                  "unitOfMeasure": "psu"
+                }
+              ]
+            }                
+            '''
+        )
+        ds = data_tools.onc_json_to_dataset(onc_json, teos=False)
+        assert "salinity" in ds.data_vars
+        assert ds.salinity.name == "salinity"
+        numpy.testing.assert_array_equal(ds.salinity.data, [30.9339, 30.9338])
+        expected = numpy.array([
+            arrow.get(t).naive for t in [
+                "2023-12-12T00:00:01.013Z",
+                "2023-12-12T00:00:02.006Z"
+            ]
+        ], dtype='datetime64[ns]')
+        numpy.testing.assert_array_equal(ds.salinity.coords["sampleTime"], expected)
+        assert ds.salinity.dims == ("sampleTime",)
+        numpy.testing.assert_array_equal(ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1]))
+        assert ds.salinity.attrs["sensorName"] == "Practical Salinity"
+        assert ds.salinity.attrs["unitOfMeasure"] == "psu"
+        assert ds.salinity.attrs["actualSamples"] == 2
 
 
 class TestResolveCHSTideStn:
@@ -136,8 +286,7 @@ class TestGetCHSTideStnId:
             class MockResponse:
                 def json(self):
                     return stdlib_json.loads(
-                        textwrap.dedent(
-                            """\
+                        """\
                         [
                           {
                             "id": "5cebf1de3d0f4a073c4bb996",
@@ -150,8 +299,7 @@ class TestGetCHSTideStnId:
                             "timeSeries": []
                           }
                        ]
-                    """
-                        )
+                        """
                     )
 
             return MockResponse()
@@ -240,38 +388,37 @@ class TestGetCHSTides:
 
         def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
             class MockResponse:
-                def json(self):
+                @staticmethod
+                def json():
                     return stdlib_json.loads(
-                        textwrap.dedent(
-                            """\
-                            [
-                              {
-                                "eventDate": "2021-03-18T00:00:00Z",
-                                "qcFlagCode": "1",
-                                "value": 1.871,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
-                              },
-                              {
-                                "eventDate": "2021-03-18T00:01:00Z",
-                                "qcFlagCode": "1",
-                                "value": 1.885,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
-                              },
-                              {
-                                "eventDate": "2021-03-18T00:02:00Z",
-                                "qcFlagCode": "1",
-                                "value": 1.898,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
-                              },
-                              {
-                                "eventDate": "2021-03-18T00:03:00Z",
-                                "qcFlagCode": "1",
-                                "value": 1.91,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
-                              }
-                            ]
-                            """
-                        )
+                        """\
+                        [
+                          {
+                            "eventDate": "2021-03-18T00:00:00Z",
+                            "qcFlagCode": "1",
+                            "value": 1.871,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                          },
+                          {
+                            "eventDate": "2021-03-18T00:01:00Z",
+                            "qcFlagCode": "1",
+                            "value": 1.885,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                          },
+                          {
+                            "eventDate": "2021-03-18T00:02:00Z",
+                            "qcFlagCode": "1",
+                            "value": 1.898,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                          },
+                          {
+                            "eventDate": "2021-03-18T00:03:00Z",
+                            "qcFlagCode": "1",
+                            "value": 1.91,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
+                          }
+                        ]
+                        """
                     )
 
             return MockResponse()
@@ -317,44 +464,43 @@ class TestGetCHSTides:
 
         def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
             class MockResponse:
-                def json(self):
+                @staticmethod
+                def json():
                     return stdlib_json.loads(
-                        textwrap.dedent(
-                            """\
-                            [
-                              {
-                                "eventDate": "2021-03-19T00:00:00Z",
-                                "qcFlagCode": "2",
-                                "value": 1.757,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
-                              },
-                              {
-                                "eventDate": "2021-03-19T00:15:00Z",
-                                "qcFlagCode": "2",
-                                "value": 1.811,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
-                              },
-                              {
-                                "eventDate": "2021-03-19T00:30:00Z",
-                                "qcFlagCode": "2",
-                                "value": 1.878,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
-                              },
-                              {
-                                "eventDate": "2021-03-19T00:45:00Z",
-                                "qcFlagCode": "2",
-                                "value": 1.959,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
-                              },
-                              {
-                                "eventDate": "2021-03-19T01:00:00Z",
-                                "qcFlagCode": "2",
-                                "value": 2.053,
-                                "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
-                              }
-                            ]
-                            """
-                        )
+                        """\
+                        [
+                          {
+                            "eventDate": "2021-03-19T00:00:00Z",
+                            "qcFlagCode": "2",
+                            "value": 1.757,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                          },
+                          {
+                            "eventDate": "2021-03-19T00:15:00Z",
+                            "qcFlagCode": "2",
+                            "value": 1.811,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                          },
+                          {
+                            "eventDate": "2021-03-19T00:30:00Z",
+                            "qcFlagCode": "2",
+                            "value": 1.878,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                          },
+                          {
+                            "eventDate": "2021-03-19T00:45:00Z",
+                            "qcFlagCode": "2",
+                            "value": 1.959,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                          },
+                          {
+                            "eventDate": "2021-03-19T01:00:00Z",
+                            "qcFlagCode": "2",
+                            "value": 2.053,
+                            "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
+                          }
+                        ]
+                        """
                     )
 
             return MockResponse()
