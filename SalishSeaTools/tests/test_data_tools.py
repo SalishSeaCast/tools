@@ -118,6 +118,8 @@ class TestOncJsonToDataset:
             '''
         )
         ds = data_tools.onc_json_to_dataset(onc_json)
+        assert ds.attrs["station"] == "SEVIP"
+
         assert "salinity" in ds.data_vars
         assert ds.salinity.name == "salinity"
         expected = [teos_tools.psu_teos(d) for d in [30.9339, 30.9338]]
@@ -191,6 +193,8 @@ class TestOncJsonToDataset:
             '''
         )
         ds = data_tools.onc_json_to_dataset(onc_json, teos=False)
+        assert ds.attrs["station"] == "SEVIP"
+
         assert "salinity" in ds.data_vars
         assert ds.salinity.name == "salinity"
         numpy.testing.assert_array_equal(ds.salinity.data, [30.9339, 30.9338])

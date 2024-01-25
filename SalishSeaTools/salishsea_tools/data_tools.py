@@ -379,7 +379,10 @@ def onc_json_to_dataset(onc_json, teos=True):
                 "actualSamples": sensor["actualSamples"],
             },
         )
-    return xarray.Dataset(data_vars)
+    dataset_attrs = {
+        "station": onc_json["parameters"]["locationCode"]
+    }
+    return xarray.Dataset(data_vars, attrs=dataset_attrs)
 
 
 def get_chs_tides(
