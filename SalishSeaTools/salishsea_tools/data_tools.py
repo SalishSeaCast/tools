@@ -342,12 +342,12 @@ def onc_json_to_dataset(onc_json, teos=True):
 
     :arg dict onc_json: Data structure returned from an ONC data web service
                         API request.
-                        Typically produces by calling the :py:meth:`json`
+                        Typically produced by calling the :py:meth:`json`
                         method on the :py:class:`~requests.Response` object
                         produced by calling :py:meth:`requests.get`.
 
     :arg boolean teos: Convert salinity data from PSU
-                       (Practical Salinity  Units) to TEOS-10 reference
+                       (Practical Salinity Units) to TEOS-10 reference
                        salinity in g/kg.
                        Defaults to :py:obj:`True`.
 
@@ -357,28 +357,32 @@ def onc_json_to_dataset(onc_json, teos=True):
     data_vars = {}
     for sensor in onc_json["sensorData"]:
         if sensor["sensorName"] == "Practical Salinity" and teos:
-            data = teos_tools.psu_teos([d["value"] for d in sensor["data"]])
+            data = teos_tools.psu_teos([d for d in sensor["data"]["values"]])
             sensor["sensorName"] = "Reference Salinity"
             sensor["unitOfMeasure"] = "g/kg"
         else:
-            data = [d["value"] for d in sensor["data"]]
-        data_vars[sensor["sensor"]] = xarray.DataArray(
-            name=sensor["sensor"],
+            data = [d for d in sensor["data"]["values"]]
+        sensor_code = sensor["sensorCode"].lower()
+        data_vars[sensor_code] = xarray.DataArray(
+            name=sensor_code,
             data=data,
             coords={
                 "sampleTime": [
-                    arrow.get(d["sampleTime"]).naive for d in sensor["data"]
+                    arrow.get(d).naive for d in sensor["data"]["sampleTimes"]
                 ],
             },
             dims=("sampleTime",),
             attrs={
-                "qaqcFlag": np.array([d["qaqcFlag"] for d in sensor["data"]]),
+                "qaqcFlag": np.array([d for d in sensor["data"]["qaqcFlags"]]),
                 "sensorName": sensor["sensorName"],
                 "unitOfMeasure": sensor["unitOfMeasure"],
                 "actualSamples": sensor["actualSamples"],
             },
         )
-    return xarray.Dataset(data_vars, attrs=onc_json["serviceMetadata"])
+    dataset_attrs = {
+        "station": onc_json["parameters"]["locationCode"]
+    }
+    return xarray.Dataset(data_vars, attrs=dataset_attrs)
 
 
 def get_chs_tides(
