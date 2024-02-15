@@ -96,7 +96,7 @@ class TestFindClosestModelPoint:
     def test_raises_value_error(self):
         with pytest.raises(ValueError):
             # lat and lon values that aren't on this grid (0, 0)
-            geo_tools.find_closest_model_point(0, 0, self.model_lons, self.model_lats)
+            geo_tools.find_closest_model_point(0, 0, self.model_lons, self.model_lats, raiseOutOfBounds=True)
 
     @pytest.mark.parametrize('lon, lat, expected', [
         (-124.488, 48.54, (0, 2)),
@@ -137,4 +137,4 @@ class TestFindClosestModelPoint:
         with pytest.raises(ValueError):
             geo_tools.find_closest_model_point(
                 lon, lat, self.model_lons, self.model_lats,
-                land_mask=all_land_land_mask)
+                land_mask=all_land_land_mask, raiseOutOfBounds=True)
