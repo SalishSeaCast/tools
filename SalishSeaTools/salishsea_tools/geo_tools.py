@@ -139,6 +139,7 @@ def find_closest_model_point(
     tols={
         'NEMO': {'tol_lon': 0.007, 'tol_lat': 0.004},
         'GEM2.5': {'tol_lon': 0.018, 'tol_lat': 0.013},
+        'continental2.5': {'tol_lon': 0.018, 'tol_lat': 0.013},
     },
     checkTol=False,
     raiseOutOfBounds=False
