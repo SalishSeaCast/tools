@@ -208,7 +208,7 @@ def find_closest_model_point(
     if len(j_list) == 0:
         if raiseOutOfBounds:
             raise ValueError(
-                f'No model point found at ({lon,lat}). tol_lon/tol_lat too small or '
+                f'No model point found at ({lon, lat}). tol_lon/tol_lat too small or '
                 'lon/lat outside of domain.')
         else:
             return np.nan, np.nan
@@ -235,11 +235,11 @@ def find_closest_model_point(
         return j, i
     try:
         if checkTol:
-            j2,i2=_spiral_search_for_closest_water_point(
+            j2, i2 = _spiral_search_for_closest_water_point(
                 j, i, land_mask, lon, lat, model_lons, model_lats)
-            if (np.abs(model_lons[j2,i2]-lon)>tols[grid]['tol_lon']) or \
-                (np.abs(model_lats[j2,i2]-lat)>tols[grid]['tol_lat']):
-                return np.nan,np.nan
+            if (np.abs(model_lons[j2, i2] - lon) > tols[grid]['tol_lon']) or \
+                    (np.abs(model_lats[j2, i2] - lat) > tols[grid]['tol_lat']):
+                return np.nan, np.nan
             else:
                 return j2, i2
         else:
