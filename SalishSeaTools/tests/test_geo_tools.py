@@ -17,10 +17,8 @@
 """
 import numpy as np
 import pytest
-import netCDF4 as nc
 
 from salishsea_tools import geo_tools
-from salishsea_tools import tidetools
 
 class TestDistanceAlongCurve:
     """Unit tests for distance_along_curve() function.
