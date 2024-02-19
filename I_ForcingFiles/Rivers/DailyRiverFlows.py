@@ -115,6 +115,7 @@ def read_river(river_name, ps, config):
     river_flow['date'] = pd.to_datetime(river_flow.drop(columns='flow'))
     river_flow.set_index('date', inplace=True)
     river_flow = river_flow.drop(columns=['year', 'month', 'day'])
+    river_flow = river_flow.dropna(axis=0)  # remove any rows with nans\n",
     if ps == 'primary':
         river_flow = river_flow.rename(columns={'flow': 'Primary River Flow'})
     elif ps == 'secondary':
