@@ -329,7 +329,7 @@ def _vertNetmatch(data,flist,ftypes,filemap_r,gridmask,e3t0,maskName='tmask'):
                     hpf=(flist[ift]['t_n'][0]-flist[ift]['t_0'][0]).total_seconds()/3600 #hours per file
                     ih=_getTimeInd_bin(row['dtUTC'],fid[ift],torig[ift],hpf=hpf)
             except:
-                print(row['dtUTC'],ift,torig[ift])
+                print(row['dtUTC'], ift.torig[ift])
                 tlist=fid[ift].variables['time_centered_bounds'][:,:]
                 for el in tlist:
                     print(el)
@@ -598,7 +598,13 @@ def _getTimeInd_bin(idt,ifid,torig,hpf=None):
         ih=[iii for iii,hhh in enumerate(tlist) if hhh[1]>(idt-torig).total_seconds()][0]
     else: # hacky fix because time_centered_bounds missing from post-processed daily files
         nt=len(ifid.variables['time_counter'][:])
-        tlist=[ii+hpf/(nt*2)*3600 for ii in ifid.variables['time_counter'][:]]
+        if ('hours' in ifid.variables['time_counter'].units):
+            tcorr = 3600
+        elif ('seconds' in ifid.variables['time_counter'].units):
+            tcorr = 1
+        else:
+            print ('problem in time_counter units')
+        tlist = [ii * tcorr + hpf / (nt * 2) * 3600 for ii in ifid.variables['time_counter'][:]]
         ih=[iii for iii,hhh in enumerate(tlist) if hhh>(idt-torig).total_seconds()][0]
     return ih
 
@@ -615,17 +621,15 @@ def _getTimeInd_bin_ops(idt,ifid,torig):
 def _getZInd_bin(idt,ifid=None,boundsFlag=False,maskName='tmask'):
     """ get vertical index of cell containing observation depth """
     if boundsFlag==True:
-        if maskName=='tmask':
-            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_ptrc_T.nc') as ftemp:
+        with nc.Dataset('/home/sallen/MEOPAR/grid/depth_grid_bounds.nc') as ftemp:
+            if maskName == 'tmask':
                 tlist=ftemp.variables['deptht_bounds'][:,:]
-        elif maskName=='umask':
-            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_U.nc') as ftemp:
+            elif maskName=='umask':
                 tlist=ftemp.variables['depthu_bounds'][:,:]
-        elif maskName=='vmask':
-            with nc.Dataset('/results/SalishSea/nowcast-green.201812/01jan16/SalishSea_1h_20160101_20160101_grid_V.nc') as ftemp:
+            elif maskName=='vmask':
                 tlist=ftemp.variables['depthv_bounds'][:,:]
-        else:
-            raise('choice not coded')
+            else:
+                raise('choice not coded')
     else:
         dboundvar={'tmask':'deptht_bounds','umask':'depthu_bounds','vmask':'depthv_bounds'}
         tlist=ifid.variables[dboundvar[maskName]][:,:]
