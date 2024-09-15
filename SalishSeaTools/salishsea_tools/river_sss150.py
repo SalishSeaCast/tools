@@ -16,7 +16,7 @@
 """Salish Sea NEMO Model, dictionary of the proportion
 that each river occupies in the watershed.
 
-For SSS150 Grid and Bathymetry
+For sss150 Grid and Bathymetry
 """
 prop_dict = {}
 
