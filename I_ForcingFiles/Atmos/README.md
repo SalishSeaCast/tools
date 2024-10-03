@@ -2,86 +2,32 @@ This is a collection of Jupyter Notebooks for creating,
 manipulating, and visualizing atmospheric forcing netCDF files.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[AtmosphereGridSelection.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/AtmosphereGridSelection.ipynb)
-
-    Notebook to Look at Atmosphereic Domains and Choose Ours
-
-* ##[CheckAltitude.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/CheckAltitude.ipynb)
-
-    This notebook checks that the altitude.py script generates a files that are reasonable.
-
-    It also combines the monthly altitude calculation into one file by averaging.
-
-* ##[GetGrib.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/GetGrib.ipynb)
-
+* ## [GetGrib.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/GetGrib.ipynb)  
+    
     Notebook to design script to download GRIB2 data from EC webpage
 
-* ##[gribTnetcdf.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)
-
-    Notebook to convert grib2 files to netCDF files that can be used in NEMO
-    Makes use of wgrib2
-
-* ##[ImproveWeightsFile.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/ImproveWeightsFile.ipynb)
-
-    **Improve Atmospheric Forcing Weights File**
-
-    Transfer the values from a `met_gem_weight.nc`
-    created by `NEMO_EastCoast/NEMO_Preparation/4_weights_ATMOS/get_weight_nemo`
-    into a netCDF4 file with zlib compression on variables
-    and CF-1.6 conventions conformant attributes.
-
-* ##[InitialGEMCheck.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)
-
+* ## [NegativePrecip.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NegativePrecip.ipynb)  
+    
+* ## [InitialGEMCheck.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
+    
     **Initial Check of GEM Products Forcing Data**
-
+    
     This notebook is about initial checks and exploration of the 2.5 km grid GEM products
     atmospheric forcing dataset provided by Luc Fillion's group at EC Dorval.
 
-* ##[NegativePrecip.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/NegativePrecip.ipynb)
-
-* ##[netCDF4weights-CGRF.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)
-
-    **Convert Atmospheric Forcing Weights to netCDF4**
-
-    Transfer the values from the `met_gem_weight.nc`
-    from the 2-Oct-2013 `WC3_PREP` tarball
-    into a netCDF4 file with zlib compression on variables
-    and CF-1.6 conventions conformant attributes.
-
-* ##[NoSnow.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/NoSnow.ipynb)
-
-    **No Snow on the Salish Sea**
-
-    Create an annual climatology CGRF-like atmospheric forcing file for NEMO
-    that always supplies zero as the solid precipitation value.
-
-* ##[RadiationCheck.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/RadiationCheck.ipynb)
-
-    This notebook compares the longwave/shortwave radiation from the GEM2.5 model provided by
-
-    1. Pramod converted from grib2 format to netcdf covering all of Dec 2012
-    2. Kao-Shen at Environment Canada covering 1 hour on Dec 16, 2012
-
-    Question: Are the longwave/shortwave radiation variables in Pramod's netcdf files the ones we should be using? There are several radiation flux variables in the grib2 output.
-
-    Description of grib2 variables
-    https://weather.gc.ca/grib/HRDPS_HR/HRDPS_ps2p5km_P000_deterministic_e.html
-
-    Plan: Comapre Pramod's radiation variables to Kao Shen's.
-
-* ##[RebaseCGRF.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)
-
+* ## [RebaseCGRF.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/RebaseCGRF.ipynb)  
+    
     **Rebasing CGRF Atmospheric Forcing Files**
-
+    
     This notebook documents and verifies the algorithm for
     rebasing the [CGRF atmospheric forcing dataset][CGRF dataset] files.
-
+    
     [CGRF dataset]: http://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/atmospheric.html#cgrf-dataset
-
+    
     The raw CGRF files contain hourly values that run from 06:00 UTC on the file's date
     to 06:00 UTC on the following day.
     For hourly forcing,
@@ -93,27 +39,99 @@ Descriptions below the links are from the first cell of the notebooks
     by creating them as netCDF4 files with variable-level compression enabled.
     Metadata that conforms to [CF-1.6 and Salish Sea MEOPAR project conventions][netCDF4 conventions] is included
     in the new files.
-
+    
     [netCDF4 conventions]: http://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/netcdf4.html#netcdf4-file-conventions
-
+    
     All of that processing is implemented in the [`salishsea get_cgrf`][salishsea get_cgrf] command.
     This notebook provides explanation of that code,
     and verification that the created files contain wind and precipitation forcing
     values that are consistent with observations at Sandheads and YVR.
-
+    
     [salishsea get_cgrf]: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command
 
-* ##[VerifyAtmosphericForcing.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)
+* ## [ProcessPramodArchive.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/ProcessPramodArchive.ipynb)  
+    
+    Notebook to process Pramod's archived grib files to produce our netcdf files
 
+* ## [OriginalVelocities.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/OriginalVelocities.ipynb)  
+    
+* ## [CheckAltitude.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/CheckAltitude.ipynb)  
+    
+    This notebook checks that the altitude.py script generates a files that are reasonable.
+    
+    It also combines the monthly altitude calculation into one file by averaging.
+
+* ## [VerifyAtmosphericForcing.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/VerifyAtmosphericForcing.ipynb)  
+    
     **Verification of Atmospheric Forcing**
 
+* ## [CGridLocations.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/CGridLocations.ipynb)  
+    
+* ## [RadiationCheck.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/RadiationCheck.ipynb)  
+    
+    This notebook compares the longwave/shortwave radiation from the GEM2.5 model provided by
+    
+    1. Pramod converted from grib2 format to netcdf covering all of Dec 2012
+    2. Kao-Shen at Environment Canada covering 1 hour on Dec 16, 2012
+    
+    Question: Are the longwave/shortwave radiation variables in Pramod's netcdf files the ones we should be using? There are several radiation flux variables in the grib2 output.
+    
+    Description of grib2 variables
+    https://weather.gc.ca/grib/HRDPS_HR/HRDPS_ps2p5km_P000_deterministic_e.html
+    
+    Plan: Comapre Pramod's radiation variables to Kao Shen's.
 
-##License
+* ## [NoSnow.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NoSnow.ipynb)  
+    
+    **No Snow on the Salish Sea**
+    
+    Create an annual climatology CGRF-like atmospheric forcing file for NEMO
+    that always supplies zero as the solid precipitation value.
 
-These notebooks and files are copyright 2013-2021
-by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast/docs/blob/master/CONTRIBUTORS.rst)
+* ## [gribTnetcdf.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)  
+    
+    Notebook to convert grib2 files to netCDF files that can be used in NEMO
+    Makes use of wgrib2
+
+* ## [netCDF4weights-CGRF.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/netCDF4weights-CGRF.ipynb)  
+    
+    **Convert Atmospheric Forcing Weights to netCDF4**
+    
+    Transfer the values from the `met_gem_weight.nc` 
+    from the 2-Oct-2013 `WC3_PREP` tarball
+    into a netCDF4 file with zlib compression on variables
+    and CF-1.6 conventions conformant attributes.
+
+* ## [ImproveWeightsFile.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/ImproveWeightsFile.ipynb)  
+    
+    **Improve Atmospheric Forcing Weights File**
+    
+    Transfer the values from a `met_gem_weight.nc`
+    created by `NEMO_EastCoast/NEMO_Preparation/4_weights_ATMOS/get_weight_nemo`
+    into a netCDF4 file with zlib compression on variables
+    and CF-1.6 conventions conformant attributes.
+
+* ## [CheckGridCoLocation.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/CheckGridCoLocation.ipynb)  
+    
+    Are the ugrid, vgrid and temperature at the same points
+
+* ## [RotateVelocities.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/RotateVelocities.ipynb)  
+    
+    Rotate the Wind
+
+* ## [AtmosphereGridSelection.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/AtmosphereGridSelection.ipynb)  
+    
+    Notebook to Look at Atmosphereic Domains and Choose Ours
+
+* ## [CheckRotation.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/CheckRotation.ipynb)  
+    
+
+## License
+
+These notebooks and files are copyright by the
+[UBC EOAS MOAD Group](https://github.com/UBC-MOAD/docs/blob/main/CONTRIBUTORS.rst)
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
-Please see the LICENSE file for details of the license.
+https://www.apache.org/licenses/LICENSE-2.0
+Please see the LICENSE file in this repository for details of the license.
