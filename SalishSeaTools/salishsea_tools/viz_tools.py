@@ -431,10 +431,10 @@ def rotate_vel(u_in, v_in, origin='grid'):
     The origin argument sets the input coordinates ('grid' or 'map')
 
     :arg u_in: u velocity component values
-    :type u_in: :py:class:`numpy.ndarray`
+    :type u_in: :py:class:`numpy.ndarray` | :py:class:`xarray.DataArray`
 
     :arg v_in: v velocity component values
-    :type v_in: :py:class:`numpy.ndarray`
+    :type v_in: :py:class:`numpy.ndarray` | :py:class:`xarray.DataArray`
 
     :arg origin: Input coordinate system
                  (either 'grid' or 'map', output will be the other)
