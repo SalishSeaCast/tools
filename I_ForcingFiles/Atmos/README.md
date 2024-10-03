@@ -12,6 +12,13 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ## [NegativePrecip.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NegativePrecip.ipynb)  
     
+* ## [NoSnow-CGRF.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NoSnow-CGRF.ipynb)  
+    
+    **No Snow on the Salish Sea**
+    
+    Create an annual climatology CGRF-like atmospheric forcing file for NEMO
+    that always supplies zero as the solid precipitation value.
+
 * ## [InitialGEMCheck.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
     
     **Initial Check of GEM Products Forcing Data**
@@ -80,13 +87,6 @@ Descriptions below the links are from the first cell of the notebooks
     https://weather.gc.ca/grib/HRDPS_HR/HRDPS_ps2p5km_P000_deterministic_e.html
     
     Plan: Comapre Pramod's radiation variables to Kao Shen's.
-
-* ## [NoSnow.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NoSnow.ipynb)  
-    
-    **No Snow on the Salish Sea**
-    
-    Create an annual climatology CGRF-like atmospheric forcing file for NEMO
-    that always supplies zero as the solid precipitation value.
 
 * ## [gribTnetcdf.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/gribTnetcdf.ipynb)  
     
