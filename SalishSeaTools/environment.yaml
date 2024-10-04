@@ -27,6 +27,7 @@ dependencies:
 - coverage
 - f90nml
 - gsw
+- h5netcdf
 - ipdb
 - ipython
 - jupyterlab
