@@ -12,13 +12,6 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ## [NegativePrecip.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NegativePrecip.ipynb)  
     
-* ## [NoSnow-CGRF.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NoSnow-CGRF.ipynb)  
-    
-    **No Snow on the Salish Sea**
-    
-    Create an annual climatology CGRF-like atmospheric forcing file for NEMO
-    that always supplies zero as the solid precipitation value.
-
 * ## [InitialGEMCheck.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/InitialGEMCheck.ipynb)  
     
     **Initial Check of GEM Products Forcing Data**
@@ -114,6 +107,23 @@ Descriptions below the links are from the first cell of the notebooks
 * ## [CheckGridCoLocation.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/CheckGridCoLocation.ipynb)  
     
     Are the ugrid, vgrid and temperature at the same points
+
+* ## [NoSnowIce.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/NoSnowIce.ipynb)  
+    
+    **Create `no_snow_ice.nc` File for NEMO Surface Forcing**
+    
+    Create a netCDF4 file containing 2 variables named `snow` and `ice`.
+    The coordinates of the variable are `y` and `x`.
+    The values of `snow` and `ice` at all points in the domain is floating point zero.
+    
+    The resulting `no_snow_ice.nc` file can be used as an annual climatology in NEMO atmospheric forcing
+    that does not require on-the-fly interpolation.
+    It imposes a no snow, ever condition on the NEMO configuration.
+    The no ice, ever condition that it provides works in conjunction with the code in `sbcice_if.F90` contributed by Michael Dunphy
+    to provide a minimal ice-model substitute. 
+    In Michael's words,
+    > "The point is to make sure water temperatures don’t go below the local freezing point, 
+    > and there are some limits on heat exchanges as well."
 
 * ## [RotateVelocities.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/RotateVelocities.ipynb)  
     
