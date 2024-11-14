@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,7 +52,7 @@ def load_drifters(
     """Loads drifter coordinates and times from the ODL Drifters Project.
 
     UBC Ocean Dynamics Laboratory Drifters Project
-    http://drifters.eoas.ubc.ca/
+    https://drifters.eoas.ubc.ca/
     Contact Rich Pawlowicz: rich@eos.ubc.ca
     Contact Romain Costanz: rcostanz@eos.ubc.ca
 
@@ -289,7 +289,7 @@ def get_onc_data(
     See the `ONC-DataWebServices notebook`_ for example of use of the API
     and of this function.
 
-    .. _ONC-DataWebServices notebook: http://nbviewer.org/urls/bitbucket.org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
+    .. _ONC-DataWebServices notebook: https://nbviewer.org/urls/bitbucket.org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
 
     :arg dict retry_args: Key/value pair arguments to control how the request
                           is retried should it fail the first time.

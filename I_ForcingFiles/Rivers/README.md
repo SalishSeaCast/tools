@@ -30,5 +30,5 @@ by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.

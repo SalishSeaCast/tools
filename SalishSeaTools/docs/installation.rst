@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@ These instructions assume that:
 * :file:`$HOME/anaconda3/bin` is included in your :envvar:`PATH` environment variable if your are using the :ref:`AnacondaPythonDistro`,
   or :file:`$HOME/miniconda3/bin` is included in your :envvar:`PATH` environment variable if your are using `Miniconda`_
 
-.. _Miniconda: http://conda.pydata.org/miniconda.html
+.. _Miniconda: https://conda.pydata.org/miniconda.html
 
 To install the :kbd:`SalishSeaTools` package in your :kbd:`root` Anaconda or Miniconda environment use:
 

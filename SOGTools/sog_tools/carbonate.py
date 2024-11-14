@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ Lewis, E., and D. W. R. Wallace. 1998. Program Developed for
 CO2 System Calculations. ORNL/CDIAC-105. Carbon Dioxide Information
 Analysis Center, Oak Ridge National Laboratory, U.S. Department of Energy,
 Oak Ridge, Tennessee.
-http://cdiac.ornl.gov/oceans/co2rprt.html
+https://cdiac.ornl.gov/oceans/co2rprt.html
 """
 
 import numpy as np
@@ -144,7 +144,7 @@ def set_constants(Sal, TempK, Pdbar):
     CO2 System Calculations. ORNL/CDIAC-105. Carbon Dioxide Information
     Analysis Center, Oak Ridge National Laboratory,
     U.S. Department of Energy, Oak Ridge, Tennessee.
-    http://cdiac.ornl.gov/oceans/co2rprt.html
+    https://cdiac.ornl.gov/oceans/co2rprt.html
     """
 
     # Declare global constants

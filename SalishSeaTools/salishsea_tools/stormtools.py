@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -368,7 +368,7 @@ def get_EC_observations(station, start_day, end_day):
     PST = tz.tzoffset("PST", -28800)
 
     wind_spd, wind_dir, temp = [], [], []
-    url = 'http://climate.weather.gc.ca/climate_data/bulk_data_e.html'
+    url = 'https://climate.weather.gc.ca/climate_data/bulk_data_e.html'
     query = {
         'timeframe': 1,
         'stationID': station_ids[station],
@@ -820,7 +820,7 @@ def get_NOAA_wlev(station_no, start_date, end_date):
     st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
 
-    base_url = 'http://tidesandcurrents.noaa.gov'
+    base_url = 'https://tidesandcurrents.noaa.gov'
     form_handler = (
         '/stationhome.html?id='
         + str(station_no))
@@ -860,7 +860,7 @@ def get_NOAA_predictions(station_no, start_date, end_date):
     st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
     end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
 
-    base_url = 'http://tidesandcurrents.noaa.gov'
+    base_url = 'https://tidesandcurrents.noaa.gov'
     form_handler = (
         '/stationhome.html?id='
         + str(station_no))

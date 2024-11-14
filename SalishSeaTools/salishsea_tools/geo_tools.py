@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,7 +39,7 @@ def haversine(lon1, lat1, lon2, lat2):
     """Calculate the great-circle distance in kilometers between two points
     on a sphere from their longitudes and latitudes.
 
-    Reference: http://www.movable-type.co.uk/scripts/latlong.html
+    Reference: https://www.movable-type.co.uk/scripts/latlong.html
 
     :arg lon1: Longitude of point 1.
     :type lon1: float or :py:class:`numpy.ndarray`

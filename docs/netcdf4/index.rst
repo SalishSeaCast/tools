@@ -14,9 +14,9 @@ Use of the `netCDF4-python`_ library
 (included in :ref:`AnacondaPythonDistro`)
 is assumed.
 
-.. _netCDF4: http://www.unidata.ucar.edu/software/netcdf/
-.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
-.. _netCDF4-python: http://unidata.github.io/netcdf4-python/
+.. _netCDF4: https://www.unidata.ucar.edu/software/netcdf/
+.. _NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 December, 2011: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
+.. _netCDF4-python: https://unidata.github.io/netcdf4-python/
 
 The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaToolsPackage` is a library of Python functions for exploring and managing the attributes of netCDF files.
 The `PrepareTS.ipynb`_ notebook shows examples of the use of those functions.
@@ -142,9 +142,9 @@ Writing and Retrieving Data
 
 Variable data in netCDF4 datasets are stored in NumPy_ array_ or `masked array`_ objects.
 
-.. _NumPy: http://docs.scipy.org/doc/numpy/reference/index.html
-.. _array: http://docs.scipy.org/doc/numpy/reference/arrays.html
-.. _masked array: http://docs.scipy.org/doc/numpy/reference/maskedarray.html
+.. _NumPy: https://docs.scipy.org/doc/numpy/reference/index.html
+.. _array: https://docs.scipy.org/doc/numpy/reference/arrays.html
+.. _masked array: https://docs.scipy.org/doc/numpy/reference/maskedarray.html
 
 An appropriately sized and shaped NumPy array can be loaded into a dataset variable by assigning it to a slice that span the variable:
 
@@ -177,8 +177,8 @@ Datasets created by the Salish Sea MEOPAR project shall conform to `CF-1.6`_.
 NEMO results nominally conform to an ealier version,
 `CF-1.1`_.
 
-.. _CF-1.1: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.1/build/cf-conventions.html
-.. _CF-1.6: http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
+.. _CF-1.1: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.1/build/cf-conventions.html
+.. _CF-1.6: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
 
 
 Global Attributes
@@ -300,7 +300,7 @@ See that documentation for more details of the intent behind these attributes.
   The value of the units attribute is a string that can be recognized by UNIDATA's `Udunits package`_,
   with a few exceptions.
 
-  .. _Udunits package: http://www.unidata.ucar.edu/software/udunits/
+  .. _Udunits package: https://www.unidata.ucar.edu/software/udunits/
 
   Example:
 
@@ -420,7 +420,7 @@ The :command:`ncks` tool from the `NCO package`_ can be used to accomplish that:
 
 .. note:: The above command replaces the original version of the file with its netCDF4 compressed version.
 
-.. _NCO package: http://nco.sourceforge.net/
+.. _NCO package: https://nco.sourceforge.net/
 
 The :kbd:`-4` argument tells :command:`ncks` to produce a :kbd:`netCDF-4` format file.
 

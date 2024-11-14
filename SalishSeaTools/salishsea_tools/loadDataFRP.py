@@ -96,7 +96,7 @@ def fmtVarName(strx):
     return vName
 
 #def rolling_window(a, window):
-#    # source: http://www.rigtorp.se/2011/01/01/rolling-statistics-numpy.html
+#    # source: https://www.rigtorp.se/2011/01/01/rolling-statistics-numpy.html
 #    # use example: np.mean(rolling_window(x, 3), -1)
 #    shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
 #    strides = a.strides + (a.strides[-1],)

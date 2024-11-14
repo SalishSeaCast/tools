@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -129,7 +129,7 @@ def get_dfo_wlev(station_no, start_date, end_date):
     # Name the output file
     outfile = 'wlev_'+str(station_no)+'_'+start_date+'_'+end_date+'.csv'
     # Form urls and html information
-    base_url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
+    base_url = 'https://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
     form_handler = (
         'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='
         + str(station_no))
@@ -1299,7 +1299,7 @@ def ap2ep(Au, PHIu, Av, PHIv):
     """Convert amplitude and phase to ellipse parameters.
 
     Based on MATLAB script by Zhigang Xu, available at
-    http://woodshole.er.usgs.gov/operations/sea-mat/tidal_ellipse-html/ap2ep.m
+    https://woodshole.er.usgs.gov/operations/sea-mat/tidal_ellipse-html/ap2ep.m
     """
 
     # Convert tidal amplitude and phase lag (ap-) parameters into tidal ellipse

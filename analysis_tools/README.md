@@ -2,7 +2,7 @@ The Jupyter Notebooks in this directory provide discussion,
 examples, and best practices for plotting various kinds of model results
 from netCDF files. There are code examples in the notebooks and also
 examples of the use of functions from the
-[`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
+[`salishsea_tools`](https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
 package.
 If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
@@ -26,8 +26,8 @@ Descriptions under the links below are from the first cell of the notebooks
     This notebook contains discussion, examples, and best practices for plotting bathymetry data as colour meshes. It also serves as a basic introduction setting up horizontal slice visualizations of any model result quantities.
     Topics include:
 
-    * The [matplotlib](http://matplotlib.org/) library and its `pyplot` and `pylab` interfaces
-    * The [`salishsea_tools.viz_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-viz_tools) code module
+    * The [matplotlib](https://matplotlib.org/) library and its `pyplot` and `pylab` interfaces
+    * The [`salishsea_tools.viz_tools`](https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-viz_tools) code module
     * Making plots appear below the code cells that create them in Jupyter Notebooks
     * Figure and Axes objects
     * Plotting bathymetry depth data as 2-D pseudocolour mesh plots
@@ -46,11 +46,11 @@ Descriptions under the links below are from the first cell of the notebooks
     This notebook provides discussion, examples, and best practices for working with netCDF files in Python.
     Topics include:
 
-    * The [`netcdf4-python`](http://http://unidata.github.io/netcdf4-python/) library
-    * The [`salishsea_tools.nc_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module
+    * The [`netcdf4-python`](https://https://unidata.github.io/netcdf4-python/) library
+    * The [`salishsea_tools.nc_tools`](https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module
     * Reading netCDF files into Python data structures
     * Exploring netCDF dataset dimensions, variables, and attributes
-    * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays
+    * Working with netCDF variable data as [NumPy](https://www.numpy.org/) arrays
 
 * ##[Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
 
@@ -89,7 +89,7 @@ Descriptions under the links below are from the first cell of the notebooks
     The time series of interest span several days of nowcast runs,
     so ERDDAP provides a more convenient way of accessing the results than building
     the time series by loading several single day nowcast results file.
-    We'll use the [xarray](http://xarray.pydata.org/) to demonstrate it powerful
+    We'll use the [xarray](https://xarray.pydata.org/) to demonstrate it powerful
     time period selection,
     and built-in plotting features that facilitate quick dataset visualization.
     Topics include:
@@ -121,25 +121,25 @@ Descriptions under the links below are from the first cell of the notebooks
     working with netCDF datasets from ERDDAP servers in Python.
     Topics include:
 
-    * [ERDDAP](http://coastwatch.pfeg.noaa.gov/erddap/) servers
-    * The [`netcdf4-python`](http://unidata.github.io/netcdf4-python/) library
-    * The [`salishsea_tools.nc_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module
+    * [ERDDAP](https://coastwatch.pfeg.noaa.gov/erddap/) servers
+    * The [`netcdf4-python`](https://unidata.github.io/netcdf4-python/) library
+    * The [`salishsea_tools.nc_tools`](https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html#module-nc_tools) code module
     * Reading netCDF datasets from an ERDDAP server into Python data structures
     * Exploring netCDF dataset dimensions, variables, and attributes
-    * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays
+    * Working with netCDF variable data as [NumPy](https://www.numpy.org/) arrays
 
 * ##[Exploring netCDF Datasets Using xarray.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Datasets Using xarray.ipynb)
 
     **Exploring netCDF Datasets Using the xarray Package**
 
     This notebook provides discussion, examples, and best practices for
-    working with netCDF datasets in Python using the [`xarray`](http://xarray.pydata.org/) package.
+    working with netCDF datasets in Python using the [`xarray`](https://xarray.pydata.org/) package.
     Topics include:
 
-    * The [`xarray`](http://xarray.pydata.org/) package
+    * The [`xarray`](https://xarray.pydata.org/) package
     * Reading netCDF datasets into Python data structures
     * Exploring netCDF dataset dimensions, variables, and attributes
-    * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays
+    * Working with netCDF variable data as [NumPy](https://www.numpy.org/) arrays
 
 
 ##License
@@ -149,5 +149,5 @@ by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.

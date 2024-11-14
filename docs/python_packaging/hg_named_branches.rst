@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,9 +40,9 @@ Examples of the use of named branches in the :ref:`tools-repo` include:
 There is a brief description of the key elements of `working with named branches`_ in the Mercurial docs,
 and a more narrative discussion in the `Naming branches within a repository`_ in the `Mercurial - The Definitive Guide`_.
 
-.. _Naming branches within a repository: http://hgbook.red-bean.com/read/managing-releases-and-branchy-development.html
+.. _Naming branches within a repository: https://hgbook.red-bean.com/read/managing-releases-and-branchy-development.html
 .. _working with named branches: https://www.mercurial-scm.org/wiki/NamedBranches
-.. _Mercurial - The Definitive Guide: http://hgbook.red-bean.com/
+.. _Mercurial - The Definitive Guide: https://hgbook.red-bean.com/
 
 To see the active named branches in a repo use:
 

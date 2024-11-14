@@ -26,7 +26,7 @@ Descriptions below the links are from the first cell of the notebooks
 
 * ##[webtide_forcing.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Tides/webtide_forcing.ipynb)
 
-    Get the forcing from WebTide (http://www.bio.gc.ca/science/research-recherche/ocean/webtide/index-eng.php) for the Juan de Fuca boundary of the model
+    Get the forcing from WebTide (https://www.bio.gc.ca/science/research-recherche/ocean/webtide/index-eng.php) for the Juan de Fuca boundary of the model
 
 
 ##License
@@ -36,5 +36,5 @@ by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.

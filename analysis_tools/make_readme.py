@@ -8,7 +8,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+   https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,7 +36,7 @@ The Jupyter Notebooks in this directory provide discussion,
 examples, and best practices for plotting various kinds of model results
 from netCDF files. There are code examples in the notebooks and also
 examples of the use of functions from the
-[`salishsea_tools`](http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
+[`salishsea_tools`](https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/salishsea-tools.html)
 package.
 If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
@@ -65,7 +65,7 @@ by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
 """.format(this_year=datetime.date.today().year)
     with open('README.md', 'wt') as f:

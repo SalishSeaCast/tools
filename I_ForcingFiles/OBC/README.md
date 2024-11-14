@@ -48,7 +48,7 @@ Descriptions below the links are from the first cell of the notebooks
 * ##[SSH.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/OBC/SSH.ipynb)
 
     Notebook to prepare climatology of sea surface height (SSH) at Juan de Fuca boundary.  Data is from
-    http://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no=8615 and I downloaded 2000 through 2013 complete.  Sets barotropic velocities to zero.
+    https://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no=8615 and I downloaded 2000 through 2013 complete.  Sets barotropic velocities to zero.
 
 * ##[MassonClimatology.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/OBC/MassonClimatology.ipynb)
 
@@ -69,7 +69,7 @@ Descriptions below the links are from the first cell of the notebooks
 * ##[Reading Neah Bay Surge website.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/OBC/Reading Neah Bay Surge website.ipynb)
 
     This notebook reads storm surge data from a NOAA website:
-    http://www.nws.noaa.gov/mdl/etsurge/index.php?page=stn&region=wc&datum=mllw&list=&map=0-48&type=both&stn=waneah
+    https://www.nws.noaa.gov/mdl/etsurge/index.php?page=stn&region=wc&datum=mllw&list=&map=0-48&type=both&stn=waneah
 
 
 ##License
@@ -79,5 +79,5 @@ by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
