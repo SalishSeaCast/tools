@@ -8,15 +8,21 @@ channels:
   - nodefaults
 
 dependencies:
-- ipython
-- jupyter
-- matplotlib
-- nbsphinx
-- pip
-- python=3.9
+  - ipython
+  - jupyter
+  - matplotlib
+  - pip
+  - python=3.12
 
-  # RTD packages
-- mock
-- pillow
-- sphinx
-- sphinx_rtd_theme
+  # Sphinx and extensions we use
+  - nbsphinx==0.9.5
+  - sphinx=8.1.3
+  - sphinx-rtd-theme=3.0.0
+
+  # readthedocs build system packages
+  - mock
+  - pillow
+  - pip:
+    - commonmark
+    - recommonmark
+    - readthedocs-sphinx-ext
