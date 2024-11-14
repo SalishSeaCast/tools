@@ -21,7 +21,7 @@ TORQUE Job Scripts
 
 TORQUE scripts are submitted with the :command:`qsub` command.
 
-See https://www.westgrid.ca/support/running_jobs for information on job scripts and submission of jobs on :kbd:`westgrid.ca` systems.
+See ``https://www.westgrid.ca/support/running_jobs`` for information on job scripts and submission of jobs on :kbd:`westgrid.ca` systems.
 
 * :file:`AMM_multi.pbs`: run the AMM12 configuration on 32 processors on :kbd:`jasper.westgrid.ca`
 
