@@ -19,7 +19,7 @@
 
 #Assumes atmosphere is a dry ideal gas in hydrostatic balance and has a
 #constant lapse rate. See this notebook:
-#  https://nbviewer.org/urls/bitbucket.org/salishsea/analysis/raw/tip/storm_surges/Pressure%20to%20sea%20level.ipynb
+#  https://nbviewer.org/github/SalishSeaCast/analysis/blob/main/storm_surges/Pressure%20to%20sea%20level.ipynb
 
 import netCDF4 as NC
 import numpy as np

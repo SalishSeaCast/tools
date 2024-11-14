@@ -50,7 +50,7 @@ def reshape_BCs(infile, outfile):
             fout.variables[v.name].setncattr(attr, v.getncattr(attr))
 
     # Update notes
-    fout.source += ("\n https://bitbucket.org/salishsea/"
+    fout.source += ("\n https://github.com/SalishSeaCast/"
                     "tools/I_ForcingFiles/OBC/reshape_BCs.py")
 
     fout.history += ("\n [{}] Reshaped to structured format and drop "

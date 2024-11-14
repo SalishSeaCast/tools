@@ -23,7 +23,7 @@ import re
 
 
 nbviewer = 'https://nbviewer.org/urls'
-repo = 'bitbucket.org/salishsea/tools/raw/tip'
+repo = 'github.com/SalishSeaCast/tools/blob/main'
 repo_dir = 'I_ForcingFiles/LookAtOthersFiles'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')

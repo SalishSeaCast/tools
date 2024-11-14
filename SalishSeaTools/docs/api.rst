@@ -16,11 +16,11 @@
 
 .. _SalishSeaToolsAPI:
 
-*************************
-:kbd:`SalishSeaTools` API
-*************************
+**********************
+``SalishSeaTools`` API
+**********************
 
-This section documents the :kbd:`SalishSeaTools` API (Application Programming Interface).
+This section documents the ``SalishSeaTools`` API (Application Programming Interface).
 These API docs provide function signatures and docstrings derived directly from the code modules.
 
 

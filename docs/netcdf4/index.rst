@@ -248,7 +248,7 @@ See that documentation for more details of the intent behind these attributes.
 
   .. code-block:: python
 
-      foo.references = 'https://bitbucket.org/salishsea/nemo-forcing/src/tip/grid/bathy_meter_SalishSea.nc'
+      foo.references = 'https://github.com/SalishSeaCast/nemo-forcing/src/tip/grid/bathy_meter_SalishSea.nc'
 
 :kbd:`history`
   Provides an audit trail for modifications to the original dataset.

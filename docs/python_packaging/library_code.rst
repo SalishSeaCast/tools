@@ -40,12 +40,12 @@ See :ref:`PythonSourceCodeCheckingViaFlake8` for details of how to set that up f
 If you are looking for examples of the coding style preferred in Salish Sea project modules,
 checkout out the code in these packages:
 
-* `Salish Sea NEMO Command Processor`_
+* `SalishSeaCast NEMO Command Processor`_
 * `SalishSeaNowcast Package`_
 * :ref:`Marlin`
 
-.. _Salish Sea NEMO Command Processor: https://bitbucket.org/salishsea/salishseacmd
-.. _SalishSeaNowcast Package: https://bitbucket.org/salishsea/salishseanowcast
+.. _SalishSeaCast NEMO Command Processor: https://github.com/SalishSeaCast/SalishSeaCmd
+.. _SalishSeaNowcast Package: https://github.com/SalishSeaCast/SalishSeaNowcast
 
 
 Python 3

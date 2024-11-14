@@ -289,7 +289,7 @@ def get_onc_data(
     See the `ONC-DataWebServices notebook`_ for example of use of the API
     and of this function.
 
-    .. _ONC-DataWebServices notebook: https://nbviewer.org/urls/bitbucket.org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
+    .. _ONC-DataWebServices notebook: https://nbviewer.org/github/SalishSeaCast/analysis-doug/blob/main/notebooks/ONC-DataWebServices.ipynb
 
     :arg dict retry_args: Key/value pair arguments to control how the request
                           is retried should it fail the first time.

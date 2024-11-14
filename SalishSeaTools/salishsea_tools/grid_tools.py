@@ -16,10 +16,10 @@
 """ Functions for calculating time-dependent scale factors and depth.
 
 Functions developed/tested in this notebook:
-https://nbviewer.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb
+https://nbviewer.org/github/SalishSeaCast/analysis-nancy/blob/master/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb
 
 Examples of plotting with output:
-https://nbviewer.org/urls/bitbucket.org/salishsea/analysis-nancy/raw/tip/notebooks/energy_flux/Plotting%20with%20time%20dependent%20depths.ipynb
+https://nbviewer.org/github/SalishSeaCast/analysis-nancy/blob/master/notebooks/energy_flux/Plotting%20with%20time%20dependent%20depths.ipynb
 
 NKS nsoontie@eos.ubc.ca 08-2016
 """

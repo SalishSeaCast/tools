@@ -24,7 +24,7 @@ import re
 
 
 NBVIEWER = 'https://nbviewer.org/urls'
-REPO = 'bitbucket.org/salishsea/tools/raw/tip'
+REPO = 'github.com/SalishSeaCast/tools/blob/main'
 REPO_DIR = 'analysis_tools'
 TITLE_PATTERN = re.compile('#{1,6} ?')
 

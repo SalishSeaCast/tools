@@ -21,10 +21,8 @@ Importing Files from Another Mercurial Repo
 
 Sometimes code and other files that we want to create a new Python package from start life in another Mercurial repo.
 That was the case with what is now the :kbd:`SOGTools` package,
-which was started in Ben Moore-Maley's `SOG_utils`_ repo.
+which was started in Ben Moore-Maley's ``SOG_utils`` repo.
 This section documents the example of how the files and repo history from there were imported into the :file:`tools` repo.
-
-.. _SOG_utils: https://bitbucket.org/bmoorema/sog_utils
 
 To import changesets from another Mercurial repo we use the `Convert Extension`_ that is bundles with Mercurial.
 To activate it,
@@ -47,7 +45,7 @@ and add :kbd:`hgext.convert =` to the :kbd:`[extensions]` section:
 
 The most important step of importing files from another repo is the creation of a file map to filter and rename/relocate the files that are being imported.
 The `Convert Extension`_ docs explain the syntax and effect of the file map directives.
-Here is the file map for the `SOG_utils`_ import into :file:`tools/SOGTools/`:
+Here is the file map for the ``SOG_utils`` import into :file:`tools/SOGTools/`:
 
 .. include:: ../../SOG_utils_SOGTools_filemap.txt
     :literal:
