@@ -115,16 +115,13 @@ def _spiral_search_for_closest_water_point(
 
 def get_ij_coordinates(lat,lon,grid_loc='~/MEOPAR/grid/grid_from_lat_lon_mask999.nc'):
     """ Finds the closest ii and jj model coordinates by matching Latitude and
-        Longitude to the new grid_from_lat_lon_mask999.nc file
+    Longitude to the new grid_from_lat_lon_mask999.nc file
 
-        :arg lat: The Latittude of the point in question in decimal degrees.
-        :type : float
+    :arg float lat: The Latitude of the point in question in decimal degrees.
 
-        :arg lon: The Longitude of the point in question in decimal degrees.
-        :type : float
+    :arg float lon: The Longitude of the point in question in decimal degrees.
 
-        :arg grid_loc: The location of the grid_from_lat_lon nc file on your system.
-        :type : string
+    :arg str grid_loc: The location of the grid_from_lat_lon nc file on your system.
     """
     jjii = xr.open_dataset(grid_loc)
     method = 'nearest'
