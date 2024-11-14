@@ -70,7 +70,7 @@ Basic Installation
 Source Code
 ===========
 
-The source code is hosted on GitHub: https://github.com/SalishSeaCast/tools/blob/master/Marlin/.
+The source code is hosted on GitHub: https://github.com/SalishSeaCast/tools/blob/main/Marlin/.
 
 
 Reporting Bugs

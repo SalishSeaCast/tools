@@ -7,7 +7,7 @@ Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
 
-* ##[PrepareTS.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/I_ForcingFiles/Initial/PrepareTS.ipynb)
+* ##[PrepareTS.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Initial/PrepareTS.ipynb)
 
     Notebook to prepare NEMO initial stratification files from a single T,S profile from September 2003 taken at S4-1.
 

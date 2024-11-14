@@ -8,18 +8,18 @@ If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
 in the following order:
 
-* [Exploring netCDF Files.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Exploring netCDF Files.ipynb)
-* [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
-* [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
-* [Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
-* [Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
+* [Exploring netCDF Files.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Files.ipynb)
+* [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
+* [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
+* [Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
+* [Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
 
 The links above and below are to static renderings of the notebooks via
 [nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
+* ##[Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
 
     **Plotting Bathymetry Colour Meshes**
 
@@ -39,7 +39,7 @@ Descriptions under the links below are from the first cell of the notebooks
     * Plotting on latitude/longitude map coordinates
     * Saving plots as image files and displaying image files in notebooks
 
-* ##[Exploring netCDF Files.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Exploring netCDF Files.ipynb)
+* ##[Exploring netCDF Files.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Files.ipynb)
 
     **Exploring netCDF Files**
 
@@ -52,11 +52,11 @@ Descriptions under the links below are from the first cell of the notebooks
     * Exploring netCDF dataset dimensions, variables, and attributes
     * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays
 
-* ##[Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
+* ##[Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
 
     **Plotting Tracers on Horizontal Planes (Depth Slices)**
 
-    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.
+    This notebook contains discussion, examples, and best practices for plotting tracer variable (e.g. temperature, salinity, sea surface height) results from NEMO as colour meshes. It extends the discussion of horizontal slice visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) notebook with plotting of slices at selected depths and time steps of variables like temperature and salinity that are calculated on the 3D grid.
     Topics include:
 
     * Reading tracer variable values from NEMO `*grid_T.nc` results files
@@ -69,7 +69,7 @@ Descriptions under the links below are from the first cell of the notebooks
     * Anomaly plots
     * Plotting salinity fields with various colour scales
 
-* ##[Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
+* ##[Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
 
     **Plotting Velocities and Tracers on Vertical Planes**
 
@@ -80,7 +80,7 @@ Descriptions under the links below are from the first cell of the notebooks
     * Using `nc_tools.timestamp()` to get time stamps from results datasets
     * Plotting salinity as a colour mesh on thalweg section
 
-* ##[Exploring a Nowcast Time Series from ERDDAP.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Exploring a Nowcast Time Series from ERDDAP.ipynb)
+* ##[Exploring a Nowcast Time Series from ERDDAP.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring a Nowcast Time Series from ERDDAP.ipynb)
 
     **Exploring a Nowcast Time Series from ERDDAP**
 
@@ -100,11 +100,11 @@ Descriptions under the links below are from the first cell of the notebooks
     * Selecting single point values of variables from datasets by index and by value
     * Selecting time series slices of variables from datasets by date/time ranges
 
-* ##[Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
+* ##[Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
 
     **Plotting Velocity Fields on Horizontal Planes (Depth Slices)**
 
-    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Plotting%20Tracers%20on%20Horizontal%20Planes.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.
+    This notebook contains discussion, examples, and best practices for plotting velocity field results from NEMO. It extends the discussion of horizontal plane visualizations in the [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting%20Bathymetry%20Colour%20Meshes) and [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting%20Tracers%20on%20Horizontal%20Planes.ipynb) notebooks with plotting of quiver and streamline plots in addition to colour mesh plots.
     Topics include:
 
     * Reading velocity component values from NEMO `*grid_[UVW].nc` results files
@@ -113,7 +113,7 @@ Descriptions under the links below are from the first cell of the notebooks
     * Quiver plots of velocity vectors
     * Streamline plots of velocity fields
 
-* ##[Exploring netCDF Datasets from ERDDAP.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Exploring netCDF Datasets from ERDDAP.ipynb)
+* ##[Exploring netCDF Datasets from ERDDAP.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Datasets from ERDDAP.ipynb)
 
     **Exploring netCDF Datasets from ERDDAP Servers**
 
@@ -128,7 +128,7 @@ Descriptions under the links below are from the first cell of the notebooks
     * Exploring netCDF dataset dimensions, variables, and attributes
     * Working with netCDF variable data as [NumPy](http://www.numpy.org/) arrays
 
-* ##[Exploring netCDF Datasets Using xarray.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/analysis_tools/Exploring netCDF Datasets Using xarray.ipynb)
+* ##[Exploring netCDF Datasets Using xarray.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Datasets Using xarray.ipynb)
 
     **Exploring netCDF Datasets Using the xarray Package**
 
