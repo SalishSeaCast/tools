@@ -8,7 +8,7 @@ We have developed routines for building our model boundary conditions from  `Liv
 Live Ocean is a circulation model for the Pacific Northwest run out of the University Washington by Parker MacCready's group.
 This page documents the tools and routines used to create boundary conditions from Live Ocean results.
 
-.. _`Live Ocean`: http://faculty.washington.edu/pmacc/LO/LiveOcean.html
+.. _`Live Ocean`: https://faculty.washington.edu/pmacc/LO/LiveOcean.html
 
 Overview
 --------

@@ -26,7 +26,7 @@ Descriptions below the links are from the first cell of the notebooks
     This notebook documents and verifies the algorithm for
     rebasing the [CGRF atmospheric forcing dataset][CGRF dataset] files.
     
-    [CGRF dataset]: http://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/atmospheric.html#cgrf-dataset
+    [CGRF dataset]: https://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/atmospheric.html#cgrf-dataset
     
     The raw CGRF files contain hourly values that run from 06:00 UTC on the file's date
     to 06:00 UTC on the following day.
@@ -40,14 +40,14 @@ Descriptions below the links are from the first cell of the notebooks
     Metadata that conforms to [CF-1.6 and Salish Sea MEOPAR project conventions][netCDF4 conventions] is included
     in the new files.
     
-    [netCDF4 conventions]: http://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/netcdf4.html#netcdf4-file-conventions
+    [netCDF4 conventions]: https://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/netcdf4.html#netcdf4-file-conventions
     
     All of that processing is implemented in the [`salishsea get_cgrf`][salishsea get_cgrf] command.
     This notebook provides explanation of that code,
     and verification that the created files contain wind and precipitation forcing
     values that are consistent with observations at Sandheads and YVR.
     
-    [salishsea get_cgrf]: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command
+    [salishsea get_cgrf]: https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaCmd/salishsea-cmd.html#get-cgrf-sub-command
 
 * ## [ProcessPramodArchive.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Atmos/ProcessPramodArchive.ipynb)  
     

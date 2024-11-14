@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -52,7 +52,7 @@ def load_drifters(
     """Loads drifter coordinates and times from the ODL Drifters Project.
 
     UBC Ocean Dynamics Laboratory Drifters Project
-    http://drifters.eoas.ubc.ca/
+    https://drifters.eoas.ubc.ca/
     Contact Rich Pawlowicz: rich@eos.ubc.ca
     Contact Romain Costanz: rcostanz@eos.ubc.ca
 
@@ -284,12 +284,12 @@ def get_onc_data(
 ):
     """Request data from one of the Ocean Networks Canada (ONC) web services.
 
-    See https://wiki.oceannetworks.ca/display/help/API for documentation
+    See https://wiki.oceannetworks.ca/display/O2A/Oceans+3.0+API+Home for documentation
     of the ONC data web services API.
     See the `ONC-DataWebServices notebook`_ for example of use of the API
     and of this function.
 
-    .. _ONC-DataWebServices notebook: http://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-doug/raw/tip/notebooks/ONC-DataWebServices.ipynb
+    .. _ONC-DataWebServices notebook: https://nbviewer.org/github/SalishSeaCast/analysis-doug/blob/main/notebooks/ONC-DataWebServices.ipynb
 
     :arg dict retry_args: Key/value pair arguments to control how the request
                           is retried should it fail the first time.
@@ -301,11 +301,11 @@ def get_onc_data(
                           retrying.
 
     :arg str endpoint: ONC web service end-point; e.g. :kbd:`scalardata`.
-                       See https://wiki.oceannetworks.ca/display/help/API
+                       See https://wiki.oceannetworks.ca/display/O2A/Oceans+3.0+API+Home
                        for available web service end-points.
 
     :arg str method: ONC web service method; e.g. :kbd:`getByStation`.
-                     See https://wiki.oceannetworks.ca/display/help/API
+                     See https://wiki.oceannetworks.ca/display/O2A/Oceans+3.0+API+Home
                      and the pages linked from it for the method available
                      on each of the web service end-points.
 

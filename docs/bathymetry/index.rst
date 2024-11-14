@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,7 @@ Full Salish Sea Domain Bathymetry
 
   * Algorithmic smoothing
 
-.. _SalishSeaBathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/SalishSeaBathy.ipynb
+.. _SalishSeaBathy.ipynb: https://nbviewer.org/github/SalishSeaCast/tools/blob/main/bathymetry/SalishSeaBathy.ipynb
 
 
 Initial Sub-domain Test Bathymetry
@@ -48,13 +48,13 @@ Initial Sub-domain Test Bathymetry
   * Manual smoothing based on depth adjustments at the locations where test runs failed
   * Algorithmic smoothing applied to the entire sub-domain
 
-.. _SalishSeaSubdomainBathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/SalishSeaSubdomainBathy.ipynb
+.. _SalishSeaSubdomainBathy.ipynb: https://nbviewer.org/github/SalishSeaCast/tools/blob/main/bathymetry/SalishSeaSubdomainBathy.ipynb
 
 * `netCDF4bathy.ipynb`_: Documents the creation of a netCDF4 bathymetry file from the algorithmic smoothed bathymetry with zlib compression enabled for all variables.
   The resulting file is about 1/6 the size
   (227 kb in contrast to 1.6 Mb)
 
-.. _netCDF4bathy.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/master/bathymetry/netCDF4bathy.ipynb
+.. _netCDF4bathy.ipynb: https://nbviewer.org/github/SalishSeaCast/tools/blob/main/bathymetry/netCDF4bathy.ipynb
 
 
 Bathymetric Attributed Grid (BAG) Datasets

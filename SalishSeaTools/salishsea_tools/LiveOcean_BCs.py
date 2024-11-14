@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -380,7 +380,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     # Add some global attributes
     ds_attrs = {
         'acknowledgements':
-            'Live Ocean http://faculty.washington.edu/pmacc/LO/LiveOcean.html',
+            'Live Ocean https://faculty.washington.edu/pmacc/LO/LiveOcean.html',
         'creator_email':
             'sallen@eoas.ubc.ca',
         'creator_name':
@@ -400,7 +400,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
             ' western open boundary. Silicon from Nitrate.'
         ),
         'source': (
-            'http://nbviewer.jupyter.org/urls/bitbucket.org/'
+            'https://nbviewer.org/urls/bitbucket.org/'
             'salishsea/.../LiveOceanNew'
         ),
         'history': (

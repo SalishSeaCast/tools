@@ -11,7 +11,7 @@ what its required arguments are,
 and what options are available to control it.
 
 Documentation for ``marlin`` is in the ``docs/`` directory and is rendered at
-http://salishsea-meopar-tools.readthedocs.org/en/latest/Marlin/.
+https://salishsea-meopar-tools.readthedocs.org/en/latest/Marlin/.
 
 Yes,
 ``marlin`` is named for `Nemo's over-protective father`_...
@@ -25,5 +25,5 @@ License
 The ``marlin`` code and documentation are copyright 2014-2021 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.

@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,5 +24,5 @@
 
     This package has been superseded by the standalone SalishSeaNowcast package:
 
-    * repo: https://bitbucket.org/salishsea/salishseanowcast
+    * repo: https://github.com/SalishSeaCast/SalishSeaNowcast
     * docs: https://salishsea-nowcast.readthedocs.io/en/latest/

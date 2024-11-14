@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -372,12 +372,12 @@ def test_init_dataset_attrs_no_oversrite_quiet(
 
 @patch(
     'salishsea_tools.nc_tools.hg.default_url',
-    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+    return_value='ssh://hg@github.com/SalishSeaCast/foo')
 def test_notebook_hg_url(mock_dflt_url):
     """_notebook_hg_url returns expected URL
     """
     url = nc_tools._notebook_hg_url('bar.ipynb')
-    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/bar.ipynb'
+    assert url == 'https://github.com/SalishSeaCast/foo/src/tip/bar.ipynb'
 
 
 def test_notebook_hg_url_no_notebook_name():
@@ -397,22 +397,22 @@ def test_notebook_hg_url_REQUIRED(mock_dflt_url):
 
 @patch(
     'salishsea_tools.nc_tools.hg.default_url',
-    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+    return_value='ssh://hg@github.com/SalishSeaCast/foo')
 def test_notebook_hg_url_adds_ipynb(mock_dflt_url):
     """_notebook_hg_url adds .ipynb extension if notebook name lacks it
     """
     url = nc_tools._notebook_hg_url('bar')
-    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/bar.ipynb'
+    assert url == 'https://github.com/SalishSeaCast/foo/src/tip/bar.ipynb'
 
 
 @patch(
     'salishsea_tools.nc_tools.hg.default_url',
-    return_value='ssh://hg@bitbucket.org/salishsea/foo')
+    return_value='ssh://hg@github.com/SalishSeaCast/foo')
 def test_nc_file_hg_url(mock_dflt_url):
     """_nc_file_hg_url returns expected URL
     """
     url = nc_tools._nc_file_hg_url('../bar/baz.nc')
-    assert url == 'https://bitbucket.org/salishsea/foo/src/tip/baz.nc'
+    assert url == 'https://github.com/SalishSeaCast/foo/src/tip/baz.nc'
 
 
 def test_nc_file_hg_url_no_nc_filepath():

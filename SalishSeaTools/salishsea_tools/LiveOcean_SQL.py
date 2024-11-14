@@ -1351,7 +1351,7 @@ def _create_sub_file(date, time_unit, var_arrays, var_meta, NEMO_BC, filename):
     # Add some global attributes
     ds.attrs = {
         'acknowledgements':
-            'Live Ocean http://faculty.washington.edu/pmacc/LO/LiveOcean.html',
+            'Live Ocean https://faculty.washington.edu/pmacc/LO/LiveOcean.html',
         'creator_email': 'nsoontie@eos.ubc.ca',
         'creator_name': 'Salish Sea MEOPAR Project Contributors',
         'creator_url': 'https://salishsea-meopar-docs.readthedocs.org/',
@@ -1361,8 +1361,8 @@ def _create_sub_file(date, time_unit, var_arrays, var_meta, NEMO_BC, filename):
         'summary': ('Temperature and Salinity from the Live Ocean model'
                     ' interpolated in space onto the Salish Sea NEMO Model'
                     ' western open boundary.'),
-        'source': ('http://nbviewer.jupyter.org/urls/bitbucket.org/'
-                   'salishsea/analysis-nancy/raw/tip/notebooks/'
+        'source': ('https://nbviewer.org/urls/bitbucket.org/'
+                   'salishsea/analysis-nancy/blob/master/notebooks/'
                    'LiveOcean/Interpolating%20Live%20Ocean%20to%20'
                    'our%20boundary.ipynb'),
         'history':

@@ -24,7 +24,7 @@ Works with Python 2.7 and has not further dependencies.
 
 :license:
     GNU Lesser General Public License, Version 3
-    (http://www.gnu.org/copyleft/lesser.html)
+    (https://www.gnu.org/copyleft/lesser.html)
 """
 QUOTE_CHARS = ["'", '"']
 

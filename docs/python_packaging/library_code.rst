@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,12 +40,12 @@ See :ref:`PythonSourceCodeCheckingViaFlake8` for details of how to set that up f
 If you are looking for examples of the coding style preferred in Salish Sea project modules,
 checkout out the code in these packages:
 
-* `Salish Sea NEMO Command Processor`_
+* `SalishSeaCast NEMO Command Processor`_
 * `SalishSeaNowcast Package`_
 * :ref:`Marlin`
 
-.. _Salish Sea NEMO Command Processor: https://bitbucket.org/salishsea/salishseacmd
-.. _SalishSeaNowcast Package: https://bitbucket.org/salishsea/salishseanowcast
+.. _SalishSeaCast NEMO Command Processor: https://github.com/SalishSeaCast/SalishSeaCmd
+.. _SalishSeaNowcast Package: https://github.com/SalishSeaCast/SalishSeaNowcast
 
 
 Python 3
@@ -80,7 +80,7 @@ Every Python library module show start with our standard copyright notice::
   # you may not use this file except in compliance with the License.
   # You may obtain a copy of the License at
 
-  #    http://www.apache.org/licenses/LICENSE-2.0
+  #    https://www.apache.org/licenses/LICENSE-2.0
 
   # Unless required by applicable law or agreed to in writing, software
   # distributed under the License is distributed on an "AS IS" BASIS,
@@ -107,7 +107,7 @@ Sphinx documentation files in the :ref:`tools-repo` repo should also start with 
   .. you may not use this file except in compliance with the License.
   .. You may obtain a copy of the License at
   ..
-  ..    http://www.apache.org/licenses/LICENSE-2.0
+  ..    https://www.apache.org/licenses/LICENSE-2.0
   ..
   .. Unless required by applicable law or agreed to in writing, software
   .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -248,10 +248,10 @@ documentation like the :ref:`SalishSeaToolsPackage` `API docs`_.
 The autodoc extension pulls documentation from docstrings into the documentation tree in a semi-automatic way.
 When commits are pushed to Bitbucket a signal is sent to :kbd:`readthedocs.org` where the changes are pulled in,
 Sphinx is run to update the HTML rendered docs,
-and the revised version is published at http://salishsea-meopar-tools.readthedocs.org/en/latest/.
+and the revised version is published at https://salishsea-meopar-tools.readthedocs.org/en/latest/.
 
-.. _Sphinx autodoc extension: http://www.sphinx-doc.org/en/stable/ext/autodoc.html
-.. _API docs: http://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/api.html
+.. _Sphinx autodoc extension: https://www.sphinx-doc.org/en/stable/ext/autodoc.html
+.. _API docs: https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/api.html
 
 See :ref:`DocumentationWithSphinx` for more details.
 

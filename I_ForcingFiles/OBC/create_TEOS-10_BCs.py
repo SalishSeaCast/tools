@@ -70,18 +70,18 @@ def create_BCs(infile, outfile, title, dS_is_zero=True):
     F.title = title
 
     source = F.source
-    F.source = source + ("\n https://bitbucket.org/salishsea/"
+    F.source = source + ("\n https://github.com/SalishSeaCast/"
                          "tools/src/tip/I_ForcingFiles/OBC/"
                          "Temperature to conservative temperature in"
                          " boundary conditions.ipynb"
-                         "\n https://bitbucket.org/salishsea/"
+                         "\n https://github.com/SalishSeaCast/"
                          "tools/I_ForcingFiles/OBC/"
                          "create_TEOS-10_BCs.py")
 
     F.comment = "Temperature and salinity are TEOS-10 variables:"\
                 " Conservative Temperature and {}".format(sal_title)
 
-    F.references = "https://bitbucket.org/salishsea/nemo-forcing/src/tip/"\
+    F.references = "https://github.com/SalishSeaCast/nemo-forcing/src/tip/"\
                    "open_boundaries/{}/{}".format(os.path.basename(
                                                   os.path.split(outfile)[0]),
                                                   os.path.basename(outfile))

@@ -7,7 +7,7 @@ Based on tests class from https://gist.github.com/krischer/4943658.
 
 :license:
     GNU Lesser General Public License, Version 3
-    (http://www.gnu.org/copyleft/lesser.html)
+    (https://www.gnu.org/copyleft/lesser.html)
 """
 import unittest
 from io import StringIO
@@ -282,7 +282,7 @@ class NameListTestCase(unittest.TestCase):
     def test_real_world_example(self):
         """
         Tests example from
-            http://owen.sj.ca.us/~rk/howto/slides/f90model/slides/namelist.html
+            https://owen.sj.ca.us/~rk/howto/slides/f90model/slides/namelist.html
         """
         groups = (
             "! can have blank lines and comments in the namelist input file\n"

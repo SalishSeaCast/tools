@@ -20,36 +20,41 @@ channels:
   - nodefaults
 
 dependencies:
-- arrow>=1.0.0
-- bottleneck
-- cliff
-- cmocean
-- coverage
-- f90nml
-- gsw
-- h5netcdf
-- ipdb
-- ipython
-- jupyterlab
-- lxml
-- matplotlib
-- nbsphinx
-- netCDF4
-- numpy
-- openpyxl
-- pandas
-- pip
-- pytest
-- python=3.12
-- pytz
-- python-dateutil
-- pyyaml
-- requests
-- retrying
-- scipy
-- sphinx
-- sphinx_rtd_theme
-- tqdm
-- xarray
-- pip:
-  - angles
+  - arrow>=1.0.0
+  - bottleneck
+  - cliff
+  - cmocean
+  - f90nml
+  - gsw
+  - h5netcdf
+  - ipdb
+  - ipython
+  - jupyterlab
+  - lxml
+  - matplotlib
+  - netCDF4
+  - numpy
+  - openpyxl
+  - pandas
+  - pip
+  - python=3.12
+  - pytz
+  - python-dateutil
+  - pyyaml
+  - requests
+  - retrying
+  - scipy
+  - tqdm
+  - xarray
+
+  # For unit tests
+  - coverage
+  - pytest
+
+  # For documentation
+  - nbsphinx==0.9.5
+  - sphinx=8.1.3
+  - sphinx-rtd-theme=3.0.0
+
+  - pip:
+    - angles

@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -136,7 +136,7 @@ def read_DFO_buoy(station, year):
     }
 
     # Data url
-    url = 'http://www.meds-sdmm.dfo-mpo.gc.ca/alphapro/wave/waveshare/fbyears'
+    url = 'https://www.meds-sdmm.dfo-mpo.gc.ca/alphapro/wave/waveshare/fbyears'
 
     # Open the *.zip file from url using Pandas
     ID = f'C{station_ids[station]}'

@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,7 +28,7 @@ class TestDistanceAlongCurve:
     # The distance_along_curve() function uses the haversine formula which
     # has a typical error of up to 0.3% due to the Earth not being a perfect
     # sphere.
-    # See http://www.movable-type.co.uk/scripts/latlong.html
+    # See https://www.movable-type.co.uk/scripts/latlong.html
     HAVERSINE_RTOL = 0.003
 
     @pytest.mark.parametrize(
@@ -53,7 +53,7 @@ class TestHaversine:
     KM_PER_NM = 1.852
     # The haversine formula which has a typical error of up to 0.3% due to the
     # Earth not being a perfect sphere.
-    # See http://www.movable-type.co.uk/scripts/latlong.html
+    # See https://www.movable-type.co.uk/scripts/latlong.html
     HAVERSINE_RTOL = 0.003
 
     @pytest.mark.parametrize(

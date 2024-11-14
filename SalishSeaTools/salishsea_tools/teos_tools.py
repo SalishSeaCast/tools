@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#    https://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
 Salish Sea NEMO model.
 
 TEOS-10 is the Thermodynamic Equation of Seawater (2010).
-See http://www.teos-10.org/.
+See https://www.teos-10.org/.
 """
 from __future__ import division
 

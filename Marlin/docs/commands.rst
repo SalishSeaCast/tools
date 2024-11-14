@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ Marlin Commands
 ***************
 
 The main purpose of the :py:obj:`Marlin` package is to automate the process of incorporating Subversion revisions from the NEMO master repository into our Mercurial repository.
-See :ref:`PullChangesFromNEMOsvn` for details of how the :command:`marlin` command is used.
+See :ref:`PullChangesFromNEMO-3.6svn` for details of how the :command:`marlin` command is used.
 
 Use :kbd:`marlin --help` to see the available options and sub-commands::
 

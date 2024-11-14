@@ -5,7 +5,7 @@
 .. you may not use this file except in compliance with the License.
 .. You may obtain a copy of the License at
 ..
-..    http://www.apache.org/licenses/LICENSE-2.0
+..    https://www.apache.org/licenses/LICENSE-2.0
 ..
 .. Unless required by applicable law or agreed to in writing, software
 .. distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,7 @@ Include it in the virtualenv in which :py:obj:`Marlin` is installed by symlinkin
 
 Details of how to install both of these dependencies are included in the :ref:`BasicInstallation` section below.
 
-.. _pysvn: http://pysvn.tigris.org/
+.. _pysvn: https://pysvn.sourceforge.io
 
 
 .. _BasicInstallation:
@@ -70,7 +70,7 @@ Basic Installation
 Source Code
 ===========
 
-The source code is hosted on GitHub: https://github.com/SalishSeaCast/tools/blob/master/Marlin/.
+The source code is hosted on GitHub: https://github.com/SalishSeaCast/tools/blob/main/Marlin/.
 
 
 Reporting Bugs

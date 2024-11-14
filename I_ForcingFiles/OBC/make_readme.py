@@ -8,7 +8,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+   https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,8 +22,8 @@ import os
 import re
 
 
-nbviewer = 'https://nbviewer.jupyter.org/urls'
-repo = 'bitbucket.org/salishsea/tools/raw/tip'
+nbviewer = 'https://nbviewer.org/urls'
+repo = 'github.com/SalishSeaCast/tools/blob/main'
 repo_dir = 'I_ForcingFiles/OBC'
 url = os.path.join(nbviewer, repo, repo_dir)
 title_pattern = re.compile('#{1,6} ?')
@@ -31,7 +31,7 @@ readme = """This is a collection of Jupyter Notebooks for creating,
 manipulating, and visualizing open boundary netCDF files.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
@@ -69,7 +69,7 @@ by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
-http://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
 """.format(this_year=datetime.date.today().year)
 with open('README.md', 'wt') as f:
