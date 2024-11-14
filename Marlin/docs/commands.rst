@@ -19,7 +19,7 @@ Marlin Commands
 ***************
 
 The main purpose of the :py:obj:`Marlin` package is to automate the process of incorporating Subversion revisions from the NEMO master repository into our Mercurial repository.
-See :ref:`PullChangesFromNEMOsvn` for details of how the :command:`marlin` command is used.
+See :ref:`PullChangesFromNEMO-3.6svn` for details of how the :command:`marlin` command is used.
 
 Use :kbd:`marlin --help` to see the available options and sub-commands::
 
