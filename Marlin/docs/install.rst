@@ -35,7 +35,7 @@ Include it in the virtualenv in which :py:obj:`Marlin` is installed by symlinkin
 
 Details of how to install both of these dependencies are included in the :ref:`BasicInstallation` section below.
 
-.. _pysvn: https://pysvn.tigris.org/
+.. _pysvn: https://pysvn.sourceforge.io
 
 
 .. _BasicInstallation:
