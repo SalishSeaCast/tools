@@ -2,13 +2,13 @@ This is a collection of Jupyter Notebooks for
 visualizing initial conditions and forcing netCDF files from other groups.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[LookAtDianeWendysFile.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
+* ##[LookAtDianeWendysFile.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/LookAtOthersFiles/LookAtDianeWendysFile.ipynb)
 
-* ##[LookatInitialForcingFiles.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
+* ##[LookatInitialForcingFiles.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/LookAtOthersFiles/LookatInitialForcingFiles.ipynb)
 
     This notebook opens NetCDF input files from JPP.
 

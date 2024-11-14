@@ -21,7 +21,7 @@ is assumed.
 The :ref:`salishsea_tools.nc_tools` in the :ref:`SalishSeaToolsPackage` is a library of Python functions for exploring and managing the attributes of netCDF files.
 The `PrepareTS.ipynb`_ notebook shows examples of the use of those functions.
 
-.. _PrepareTS.ipynb: https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Initial/PrepareTS.ipynb
+.. _PrepareTS.ipynb: https://nbviewer.org/github/SalishSeaCast/tools/blob/main/I_ForcingFiles/Initial/PrepareTS.ipynb
 
 
 Creating netCDF4 Files

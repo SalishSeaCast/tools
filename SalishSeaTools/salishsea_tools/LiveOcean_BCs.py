@@ -400,7 +400,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
             ' western open boundary. Silicon from Nitrate.'
         ),
         'source': (
-            'http://nbviewer.jupyter.org/urls/bitbucket.org/'
+            'http://nbviewer.org/urls/bitbucket.org/'
             'salishsea/.../LiveOceanNew'
         ),
         'history': (

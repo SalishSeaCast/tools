@@ -2,11 +2,11 @@ The Jupyter Notebooks in this directory are made by for testing
 functions in visualisations.py.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[TestingContourThalweg.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/SalishSeaTools/notebooks/visualisations/TestingContourThalweg.ipynb)
+* ##[TestingContourThalweg.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/SalishSeaTools/notebooks/visualisations/TestingContourThalweg.ipynb)
 
     This is a notebook to test the use of salishsea_tools.visualisations.contour_thalweg().
 

@@ -23,7 +23,7 @@ import os
 import re
 
 
-NBVIEWER = 'https://nbviewer.jupyter.org/urls'
+NBVIEWER = 'https://nbviewer.org/urls'
 REPO = 'bitbucket.org/salishsea/tools/raw/tip'
 REPO_DIR = 'analysis_tools'
 TITLE_PATTERN = re.compile('#{1,6} ?')
@@ -42,14 +42,14 @@ If you are new to the Salish Sea MEOPAR project or to Jupyter Notebook,
 netCDF, and Matplotlib you should read the introductory notebooks
 in the following order:
 
-* [Exploring netCDF Files.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Files.ipynb)
-* [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
-* [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
-* [Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
-* [Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.jupyter.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
+* [Exploring netCDF Files.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Exploring netCDF Files.ipynb)
+* [Plotting Bathymetry Colour Meshes.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Bathymetry Colour Meshes.ipynb)
+* [Plotting Tracers on Horizontal Planes.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Tracers on Horizontal Planes.ipynb)
+* [Plotting Velocity Fields on Horizontal Planes.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocity Fields on Horizontal Planes.ipynb)
+* [Plotting Velocities and Tracers on Vertical Planes.ipynb](https://nbviewer.org/github/SalishSeaCast/tools/blob/main/analysis_tools/Plotting Velocities and Tracers on Vertical Planes.ipynb)
 
 The links above and below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 

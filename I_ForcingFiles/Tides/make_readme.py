@@ -22,7 +22,7 @@ import os
 import re
 
 
-nbviewer = 'https://nbviewer.jupyter.org/urls'
+nbviewer = 'https://nbviewer.org/urls'
 repo = 'bitbucket.org/salishsea/tools/raw/tip'
 repo_dir = 'I_ForcingFiles/Tides'
 url = os.path.join(nbviewer, repo, repo_dir)
@@ -31,7 +31,7 @@ readme = """This is a collection of Jupyter Notebooks for creating,
 manipulating, and visualizing tidal forcing netCDF files.
 
 The links below are to static renderings of the notebooks via
-[nbviewer.jupyter.org](https://nbviewer.jupyter.org/).
+[nbviewer.org](https://nbviewer.org/).
 Descriptions below the links are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
