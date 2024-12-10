@@ -1,0 +1,45 @@
+.. Copyright 2013 – present by the SalishSeaCast Project Contributors
+.. and The University of British Columbia
+..
+.. Licensed under the Apache License, Version 2.0 (the "License");
+.. you may not use this file except in compliance with the License.
+.. You may obtain a copy of the License at
+..
+..    https://www.apache.org/licenses/LICENSE-2.0
+..
+.. Unless required by applicable law or agreed to in writing, software
+.. distributed under the License is distributed on an "AS IS" BASIS,
+.. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. See the License for the specific language governing permissions and
+.. limitations under the License.
+
+.. SPDX-License-Identifier: Apache-2.0
+
+
+.. _toolsRepoChangesThatBreakBackwardCompatibility:
+
+*****************************************
+Changes That Break Backward Compatibility
+*****************************************
+
+.. _BreakingChangesVersion24.1:
+
+Version 24.1 (unreleased)
+=========================
+
+The following changes that were introduced in version 24.1 of the ``tools`` repository
+are incompatible with earlier versions:
+
+* Changed to `CalVer`_ versioning convention.
+  Version identifier format is now ``yy.n[.devn]``,
+  where ``yy`` is the (post-2000) year of release,
+  and ``n`` is the number of the release within the year, starting at ``1``.
+  After a release has been made the value of ``n`` is incremented by 1,
+  and ``.dev0`` is appended to the version identifier to indicate changes that will be
+  included in the next release.
+  ``24.1.dev0`` is an exception to that scheme.
+  That version identifies the period of development between the ``2.0`` and ``24.1``
+  releases.
+
+  .. _CalVer: https://calver.org/
+
