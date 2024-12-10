@@ -17,5 +17,5 @@
 """
 PROJECT = 'SalishSeaTools'
 DESCRIPTION = 'SalishSeaTools Package'
-VERSION = '2.0'
+VERSION = '24.1.dev0'
 DEV_STATUS = '5 - Production'

@@ -134,7 +134,7 @@ retrying==1.3.3
 rfc3339_validator==0.1.4
 rfc3986-validator==0.1.1
 rpds-py==0.22.3
-SalishSeaTools==2.0
+SalishSeaTools==24.1.dev0
 scipy==1.14.1
 Send2Trash==1.8.3
 setuptools==75.6.0
