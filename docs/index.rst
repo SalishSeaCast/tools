@@ -38,6 +38,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   breaking_changes
    SalishSeaTools/index
    SOGTools/index
    SalishSeaCmd/index
