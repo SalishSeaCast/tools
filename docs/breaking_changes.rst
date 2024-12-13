@@ -30,6 +30,11 @@ Version 24.1 (unreleased)
 The following changes that were introduced in version 24.1 of the ``tools`` repository
 are incompatible with earlier versions:
 
+* Removed docs and package stub for `SalishSeaNowcast`_ package.
+  It was moved into its own repository in late-2016.
+
+  .. _SalishSeaNowcast: https://github.com/SalishSeaCast/SalishSeaNowcast
+
 * Removed docs and package stub for `SalishSeaCmd`_ package.
   It was moved into its own repository in late-2016.
 
