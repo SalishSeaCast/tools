@@ -26,7 +26,7 @@ maintain,
 and improve.
 While much of what follows is applicable to any Python code that you may write,
 some of the points are particularly relevant to code going into modules in the :ref:`tools-repo`;
-e.g. the :ref:`SalishSeaToolsPackage` and the :ref:`SalishSeaNowcastPackage`.
+e.g. the :ref:`SalishSeaToolsPackage`.
 
 A primary guide for writing Python code is `PEP 8 -- Style Guide for Python Code`_.
 

@@ -41,7 +41,6 @@ Contents:
    breaking_changes
    SalishSeaTools/index
    SOGTools/index
-   SalishSeaNowcast/index
    netcdf4/index
    erddap/ERDDAP_datasets.ipynb
    visualisation/visualization_workflows_xarray.ipynb

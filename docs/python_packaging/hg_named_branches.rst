@@ -34,7 +34,7 @@ and abandoned.
 Examples of the use of named branches in the :ref:`tools-repo` include:
 
 * Development of v2.0 of the :ref:`SalishSeaCmdProcessor` to support NEMO-3.6 in the :kbd:`SalishSeaCmd-3.6` branch
-* Separation of the nowcast system code from the :ref:`SalishSeaToolsPackage` into the :ref:`SalishSeaNowcastPackage` in the :kbd:`SalishSeaNowcast` branch
+* Separation of the nowcast system code from the :ref:`SalishSeaToolsPackage` into the :kbd:`SalishSeaNowcastPackage` in the :kbd:`SalishSeaNowcast` branch
 * Refactoring of the nowcast system web page results figures into a 1 figure per module architecture in the :kbd:`refactor-nowcast-figures` branch
 
 There is a brief description of the key elements of `working with named branches`_ in the Mercurial docs,
