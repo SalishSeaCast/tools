@@ -42,7 +42,6 @@ checkout out the code in these packages:
 
 * `SalishSeaCast NEMO Command Processor`_
 * `SalishSeaNowcast Package`_
-* :ref:`Marlin`
 
 .. _SalishSeaCast NEMO Command Processor: https://github.com/SalishSeaCast/SalishSeaCmd
 .. _SalishSeaNowcast Package: https://github.com/SalishSeaCast/SalishSeaNowcast
