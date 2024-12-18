@@ -18,8 +18,6 @@ The :file:`tools` repo contains several Python packages:
 
 * :py:obj:`SOGTools` - :ref:`Python functions <SOGTools>` for working with the output of the SOG 1-D model
 
-* :py:obj:`Marlin` - the :ref:`Salish Sea NEMO svn-hg Maintenance Tool <Marlin>`
-
 Also documented here are:
 
 * Notes are how the Python packages in the repo are :ref:`developed and maintained <PythonPackagesDevelopmentAndMaintenance>`
@@ -47,7 +45,6 @@ Contents:
    bathymetry/index
    I_ForcingFiles/index
    LiveOcean/index
-   Marlin/index
    python_packaging/index
    nemo-tools/index
    legacy_docs/index
