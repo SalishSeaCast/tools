@@ -275,7 +275,7 @@ def namelist2dict(file_or_file_object):
 
 def _namelist2dict(file_object):
     """
-    Converts a file_object containng a namelist to a dictionary.
+    Converts a file_object containing a namelist to a dictionary.
     """
     namelist_dict = {}
     for group_name, group_values in group_generator(tokenizer(file_object)):
