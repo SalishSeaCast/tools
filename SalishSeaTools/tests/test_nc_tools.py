@@ -76,10 +76,12 @@ def test_show_dimensions(capsys, nc_dataset):
     """show_dimensions prints dimension string representation
     """
     nc_dataset.createDimension('foo', 42)
+
     nc_tools.show_dimensions(nc_dataset)
+
+    expected = ['"<class \'netCDF4.Dimension\'>": name = \'foo\', size = 42']
     out, err = capsys.readouterr()
-    assert out.splitlines()[0] == (
-        "<class 'netCDF4._netCDF4.Dimension'>: name = 'foo', size = 42")
+    assert out.splitlines() == expected
 
 
 def test_show_dimensions_order(capsys, nc_dataset):
@@ -87,10 +89,15 @@ def test_show_dimensions_order(capsys, nc_dataset):
     """
     nc_dataset.createDimension('foo', 42)
     nc_dataset.createDimension('bar', 24)
+
     nc_tools.show_dimensions(nc_dataset)
+
+    expected = [
+        '"<class \'netCDF4.Dimension\'>": name = \'foo\', size = 42',
+        '"<class \'netCDF4.Dimension\'>": name = \'bar\', size = 24',
+    ]
     out, err = capsys.readouterr()
-    assert out.splitlines()[2] == (
-        "<class 'netCDF4._netCDF4.Dimension'>: name = 'bar', size = 24")
+    assert out.splitlines() == expected
 
 
 def test_show_variables(capsys, nc_dataset):
@@ -98,9 +105,11 @@ def test_show_variables(capsys, nc_dataset):
     """
     nc_dataset.createDimension('x', 42)
     nc_dataset.createVariable('foo', float, ('x',))
+
     nc_tools.show_variables(nc_dataset)
+
     out, err = capsys.readouterr()
-    assert out.splitlines()[0] == "odict_keys(['foo'])"
+    assert out.splitlines() == ["dict_keys(['foo'])"]
 
 
 def test_show_variables_order(capsys, nc_dataset):
@@ -109,9 +118,11 @@ def test_show_variables_order(capsys, nc_dataset):
     nc_dataset.createDimension('x', 42)
     nc_dataset.createVariable('foo', float, ('x',))
     nc_dataset.createVariable('bar', float, ('x',))
+
     nc_tools.show_variables(nc_dataset)
+
     out, err = capsys.readouterr()
-    assert out.splitlines()[0] == "odict_keys(['foo', 'bar'])"
+    assert out.splitlines() == ["dict_keys(['foo', 'bar'])"]
 
 
 def test_show_variable_attrs(capsys, nc_dataset):
@@ -120,16 +131,19 @@ def test_show_variable_attrs(capsys, nc_dataset):
     nc_dataset.createDimension('x', 42)
     foo = nc_dataset.createVariable('foo', float, ('x',))
     foo.units = 'm'
+
     nc_tools.show_variable_attrs(nc_dataset)
+
+    expected = [
+        "<class 'netCDF4.Variable'>",
+        "float64 foo(x)",
+        "    units: m",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+    ]
     out, err = capsys.readouterr()
-    assert out == (
-        "<class 'netCDF4._netCDF4.Variable'>\n"
-        "float64 foo(x)\n"
-        "    units: m\n"
-        "unlimited dimensions: \n"
-        "current shape = (42,)\n"
-        "filling on, default _FillValue of 9.969209968386869e+36 used\n\n"
-    )
+    assert out.splitlines() == expected
 
 
 def test_show_variable_attrs_order(capsys, nc_dataset):
@@ -138,39 +152,70 @@ def test_show_variable_attrs_order(capsys, nc_dataset):
     nc_dataset.createDimension('x', 42)
     nc_dataset.createVariable('foo', float, ('x',))
     nc_dataset.createVariable('bar', float, ('x',))
+
     nc_tools.show_variable_attrs(nc_dataset)
+
+    expected = [
+        "<class 'netCDF4.Variable'>",
+        "float64 foo(x)",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+        "<class 'netCDF4.Variable'>",
+        "float64 bar(x)",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+    ]
     out, err = capsys.readouterr()
-    assert out.splitlines()[7] == 'float64 bar(x)'
+    assert out.splitlines() == expected
 
 
-def test_show_variable_attrs_spec_var(capsys, nc_dataset):
+def test_show_variable_attrs_specified_var(capsys, nc_dataset):
     """show_variable_attrs prints string repr of specified variable
     """
     nc_dataset.createDimension('x', 42)
     foo = nc_dataset.createVariable('foo', float, ('x',))
     foo.units = 'm'
     nc_dataset.createVariable('bar', float, ('x',))
+
     nc_tools.show_variable_attrs(nc_dataset, 'foo')
+
+    expected = [
+        "<class 'netCDF4.Variable'>",
+        "float64 foo(x)",
+        "    units: m",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+    ]
     out, err = capsys.readouterr()
-    assert out == (
-        "<class 'netCDF4._netCDF4.Variable'>\n"
-        "float64 foo(x)\n"
-        "    units: m\n"
-        "unlimited dimensions: \n"
-        "current shape = (42,)\n"
-        "filling on, default _FillValue of 9.969209968386869e+36 used\n\n"
-    )
+    assert out.splitlines() == expected
 
 
-def test_show_variable_attrs_spec_var_order(capsys, nc_dataset):
+def test_show_variable_attrs_specified_var_order(capsys, nc_dataset):
     """show_variable_attrs prints specified vars in order they were defined
     """
     nc_dataset.createDimension('x', 42)
     nc_dataset.createVariable('foo', float, ('x',))
     nc_dataset.createVariable('bar', float, ('x',))
+
     nc_tools.show_variable_attrs(nc_dataset, 'foo', 'bar')
+
+    expected = [
+        "<class 'netCDF4.Variable'>",
+        "float64 foo(x)",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+        "<class 'netCDF4.Variable'>",
+        "float64 bar(x)",
+        "unlimited dimensions: ",
+        "current shape = (42,)",
+        "filling on, default _FillValue of 9.969209968386869e+36 used",
+    ]
     out, err = capsys.readouterr()
-    assert out.splitlines()[7] == 'float64 bar(x)'
+    assert out.splitlines() == expected
 
 
 def test_time_origin_value(nc_dataset):
