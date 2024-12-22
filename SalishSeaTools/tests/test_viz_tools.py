@@ -23,6 +23,7 @@ from unittest.mock import (
     patch,
 )
 import netCDF4 as nc
+import numpy
 import numpy as np
 import pytest
 
@@ -57,7 +58,9 @@ class TestPlotCoastline(object):
     @patch('salishsea_tools.viz_tools.nc.Dataset')
     def test_plot_coastline_defaults_bathy_file(self, m_dataset):
         axes = Mock()
+
         viz_tools.plot_coastline(axes, 'bathyfile')
+
         m_dataset.assert_called_once_with('bathyfile')
         m_dataset().close.assert_called_once_with()
 
@@ -65,16 +68,25 @@ class TestPlotCoastline(object):
     def test_plot_coastline_defaults_bathy_netCDF_obj(self, m_dataset):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         viz_tools.plot_coastline(axes, bathy)
+
         assert not m_dataset.called
         assert not m_dataset.close.called
 
     def test_plot_coastline_defaults(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_lines = viz_tools.plot_coastline(axes, bathy)
+
         axes.contour.assert_called_once_with(
-            bathy.variables['Bathymetry'], [0], colors='black')
+            bathy.variables['Bathymetry'],
+            [0],
+            colors='black',
+            zorder=2,
+        )
+        assert contour_lines == axes.contour()
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_map_coords(self):
@@ -84,24 +96,38 @@ class TestPlotCoastline(object):
             'nav_lat': Mock(),
             'nav_lon': Mock(),
         }
+
         contour_lines = viz_tools.plot_coastline(axes, bathy, coords='map')
+
         axes.contour.assert_called_once_with(
-            bathy.variables['nav_lon'], bathy.variables['nav_lat'],
-            bathy.variables['Bathymetry'], [0], colors='black')
+            bathy.variables['nav_lon'],
+            bathy.variables['nav_lat'],
+            bathy.variables['Bathymetry'],
+            [0],
+            colors='black',
+            zorder=2,
+        )
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_isobath(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_lines = viz_tools.plot_coastline(
             axes, bathy, isobath=42.42)
+
         axes.contour.assert_called_once_with(
-            bathy.variables['Bathymetry'], [42.42], colors='black')
+            bathy.variables['Bathymetry'],
+            [42.42],
+            colors='black',
+            zorder=2,
+        )
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_no_xslice(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         with pytest.raises(ValueError):
             viz_tools.plot_coastline(
                 axes, bathy, yslice=np.arange(200, 320))
@@ -109,6 +135,7 @@ class TestPlotCoastline(object):
     def test_plot_coastline_no_yslice(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         with pytest.raises(ValueError):
             viz_tools.plot_coastline(
                 axes, bathy, xslice=np.arange(250, 370))
@@ -118,11 +145,18 @@ class TestPlotCoastline(object):
         bathy.variables = {'Bathymetry': MagicMock(spec=nc.Variable)}
         xslice = np.arange(250, 370)
         yslice = np.arange(200, 320)
+
         contour_lines = viz_tools.plot_coastline(
             axes, bathy, xslice=xslice, yslice=yslice)
+
         axes.contour.assert_called_once_with(
-            xslice, yslice, bathy.variables['Bathymetry'][yslice, xslice].data,
-            [0], colors='black')
+            xslice,
+            yslice,
+            bathy.variables['Bathymetry'][yslice, xslice].data,
+            [0],
+            colors='black',
+            zorder=2,
+        )
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_map_coords_slice(self):
@@ -134,22 +168,33 @@ class TestPlotCoastline(object):
         }
         xslice = np.arange(250, 370)
         yslice = np.arange(200, 320)
+
         contour_lines = viz_tools.plot_coastline(
             axes, bathy, coords='map', xslice=xslice, yslice=yslice)
+
         axes.contour.assert_called_once_with(
             bathy.variables['nav_lon'][yslice, xslice],
             bathy.variables['nav_lat'][yslice, xslice],
             bathy.variables['Bathymetry'][yslice, xslice].data,
-            [0], colors='black')
+            [0],
+            colors='black',
+            zorder=2,
+        )
         assert contour_lines == axes.contour()
 
     def test_plot_coastline_color_arg(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_lines = viz_tools.plot_coastline(
             axes, bathy, color='red')
+
         axes.contour.assert_called_once_with(
-            bathy.variables['Bathymetry'], [0], colors='red')
+            bathy.variables['Bathymetry'],
+            [0],
+            colors='red',
+            zorder=2,
+        )
         assert contour_lines == axes.contour()
 
 
@@ -157,7 +202,9 @@ class TestPlotLandMask(object):
     @patch('salishsea_tools.viz_tools.nc.Dataset')
     def test_plot_land_mask_defaults_bathy_file(self, m_dataset):
         axes = Mock()
+
         viz_tools.plot_land_mask(axes, 'bathyfile')
+
         m_dataset.assert_called_once_with('bathyfile')
         m_dataset().close.assert_called_once_with()
 
@@ -165,16 +212,24 @@ class TestPlotLandMask(object):
     def test_plot_land_mask_defaults_bathy_netCDF_obj(self, m_dataset):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         viz_tools.plot_land_mask(axes, bathy)
+
         assert not m_dataset.called
         assert not m_dataset.close.called
 
     def test_plot_land_mask_defaults(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_fills = viz_tools.plot_land_mask(axes, bathy)
+
         axes.contourf.assert_called_once_with(
-            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
+            numpy.array(bathy.variables['Bathymetry'], dtype=object),
+            [-0.01, 0.01],
+            colors='black',
+            zorder=1,
+        )
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_map_coords(self):
@@ -184,32 +239,44 @@ class TestPlotLandMask(object):
             'nav_lat': Mock(),
             'nav_lon': Mock(),
         }
+
         contour_fills = viz_tools.plot_land_mask(axes, bathy, coords='map')
+
         axes.contourf.assert_called_once_with(
-            bathy.variables['nav_lon'], bathy.variables['nav_lat'],
-            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='black')
+            numpy.array(bathy.variables['nav_lon'], dtype=object),
+            numpy.array(bathy.variables['nav_lat'], dtype=object),
+            numpy.array(bathy.variables['Bathymetry'], dtype=object),
+            [-0.01, 0.01],
+            colors='black',
+            zorder=1,
+        )
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_isobath(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_fills = viz_tools.plot_land_mask(
             axes, bathy, isobath=42.42)
+
         args, kwargs = axes.contourf.call_args
+
         assert args[0] == bathy.variables['Bathymetry']
         np.testing.assert_almost_equal(args[1], [-0.01, 42.43])
-        assert kwargs == {'colors': 'black'}
+        assert kwargs == {'colors': 'black', 'zorder': 1}
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_no_xslice(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         with pytest.raises(ValueError):
             viz_tools.plot_land_mask(axes, bathy, yslice=np.arange(200, 320))
 
     def test_plot_land_mask_no_yslice(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         with pytest.raises(ValueError):
             viz_tools.plot_land_mask(axes, bathy, xslice=np.arange(250, 370))
 
@@ -218,11 +285,18 @@ class TestPlotLandMask(object):
         bathy.variables = {'Bathymetry': MagicMock(spec=nc.Variable)}
         xslice = np.arange(250, 370)
         yslice = np.arange(200, 320)
+
         contour_fills = viz_tools.plot_land_mask(
             axes, bathy, xslice=xslice, yslice=yslice)
+
         axes.contourf.assert_called_once_with(
-            xslice, yslice, bathy.variables['Bathymetry'][yslice, xslice].data,
-            [-0.01, 0.01], colors='black')
+            xslice,
+            yslice,
+            bathy.variables['Bathymetry'][yslice, xslice].data,
+            [-0.01, 0.01],
+            colors='black',
+            zorder=1,
+        )
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_map_coords_slice(self):
@@ -234,22 +308,33 @@ class TestPlotLandMask(object):
         }
         xslice = np.arange(250, 370)
         yslice = np.arange(200, 320)
+
         contour_fills = viz_tools.plot_land_mask(
             axes, bathy, coords='map', xslice=xslice, yslice=yslice)
+
         axes.contourf.assert_called_once_with(
             bathy.variables['nav_lon'][yslice, xslice],
             bathy.variables['nav_lat'][yslice, xslice],
             bathy.variables['Bathymetry'][yslice, xslice].data,
-            [-0.01, 0.01], colors='black')
+            [-0.01, 0.01],
+            colors='black',
+            zorder=1,
+        )
         assert contour_fills == axes.contourf()
 
     def test_plot_land_mask_color_arg(self):
         axes, bathy = Mock(), Mock()
         bathy.variables = {'Bathymetry': Mock()}
+
         contour_fills = viz_tools.plot_land_mask(
             axes, bathy, color='red')
+
         axes.contourf.assert_called_once_with(
-            bathy.variables['Bathymetry'], [-0.01, 0.01], colors='red')
+            bathy.variables['Bathymetry'],
+            [-0.01, 0.01],
+            colors='red',
+            zorder=1,
+        )
         assert contour_fills == axes.contourf()
 
 
