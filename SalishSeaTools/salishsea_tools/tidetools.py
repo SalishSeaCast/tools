@@ -1275,7 +1275,7 @@ def get_current_harms(runname, loc):
 
 
 def get_run_length(runname, loc):
-    """Get the length of the run in days from the namelist file
+    """Get the length, in days, of the run from the namelist file
 
     :arg runname: name of the model run to process; e.g. '50s_15Sep-21Sep'
     :type runname: str
