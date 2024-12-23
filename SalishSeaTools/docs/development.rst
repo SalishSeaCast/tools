@@ -151,7 +151,7 @@ use:
 .. code-block:: bash
 
     (salishsea-tools)$ cd tools/SalishSeaTools/
-    (salishsea-tools)$ py.test
+    (salishsea-tools)$ pytest
 
 to run the test suite.
 The output looks something like::
@@ -174,32 +174,51 @@ The output looks something like::
 
   ========================= 189 passed in 1.38 seconds =========================
 
-You can monitor what lines of code the test suite exercises using the `coverage.py`_ tool with the command:
+You can monitor what lines of code the test suite exercises using the `coverage.py`_ and `pytest-cov`_ tools with the command:
 
-.. _coverage.py: https://coverage.readthedocs.org/en/latest/
+.. _coverage.py: https://coverage.readthedocs.io/en/latest/
+.. _pytest-cov: https://pytest-cov.readthedocs.io/en/latest/
 
 .. code-block:: bash
 
     (salishsea-tools)$ cd tools/SalishSeaTools/
-    (salishsea-tools)$ coverage run -m py.test
+    (salishsea-tools)$ pytest --cov=./
 
-and generate a test coverage report with:
+The test coverage report will be displayed below the test suite run output.
 
-.. code-block:: bash
-
-    (salishsea-tools)$ coverage report
-
-to produce a plain text report,
-or
+Alternatively,
+you can use
 
 .. code-block:: bash
 
-    (salishsea-tools)$ coverage html
+    (salishsea-tools)$ pytest --cov=./ --cov-report html
 
-to produce an HTML report that you can view in your browser by opening :file:`tools/SalishSeaTools/htmlcov/index.html`.
+to produce an HTML report that you can view in your browser by opening
+:file:`tools/SalishSeaTools/htmlcov/index.html`.
 
-The run the test suite under Python 2.7,
-create a Python 2.7 :ref:`SalishSeaToolsDevelopmentEnvironment`.
+
+.. _SalishSeaToolsContinuousIntegration:
+
+Continuous Integration
+----------------------
+
+The :kbd:`SalishSeaTools` package unit test suite is run and a coverage report is generated
+whenever changes are pushed to GitHub.
+The results are visible on the `repo actions page`_,
+from the green checkmarks beside commits on the `repo commits page`_,
+or from the green checkmark to the left of the "Latest commit" message on the
+`repo code overview page`_ .
+The testing coverage report is uploaded to `codecov.io`_
+
+.. _repo actions page: https://github.com/SalishSeaCast/SalishSeaTools/actions
+.. _repo commits page: https://github.com/SalishSeaCast/SalishSeaTools/commits/main
+.. _repo code overview page: https://github.com/SalishSeaCast/SalishSeaTools
+.. _codecov.io: https://app.codecov.io/gh/SalishSeaCast/SalishSeaTools
+
+The `GitHub Actions`_ workflow configuration that defines the continuous integration
+tasks is in the :file:`.github/workflows/pytest-with-coverage.yaml` file.
+
+.. _GitHub Actions: https://docs.github.com/en/actions
 
 
 .. _SalishSeaToolsVersionControlRepository:

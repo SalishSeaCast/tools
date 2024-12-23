@@ -1,0 +1,53 @@
+# conda environment description file for SalishSeaTools package testing environment
+#
+# Creates a conda environment in which the SalishSeaTools package unit tests and
+# coverage analysis can be run.
+# Primarily intended to create a conda environment for use in a GitHub Actions workflow.
+
+name: salishsea-tools-test
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - arrow>=1.0.0
+  - bottleneck
+  - cliff
+  - cmocean
+  - f90nml
+  - gsw
+  - h5netcdf
+  - ipdb
+  - ipython
+  - jupyterlab
+  - lxml
+  - matplotlib
+  - netCDF4
+  - numpy
+  - openpyxl
+  - pandas
+  - pip
+  - pytz
+  - python-dateutil
+  - pyyaml
+  - requests
+  - retrying
+  - scipy
+  - tqdm
+  - xarray
+
+  # For unit tests and coverage monitoring
+  - coverage
+  - pytest-cov
+
+  # For documentation links checking
+  - sphinx=8.1.3
+  - sphinx-notfound-page=1.0.4
+  - sphinx-rtd-theme=3.0.0
+
+  - pip:
+    - angles
+
+    # Install the SalishSeaTools packages in editable mode
+    - --editable ../
