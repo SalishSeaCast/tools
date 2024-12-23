@@ -5,7 +5,7 @@
 # of the SalishSeaTools package with:
 #
 #   $ cd tools
-#   $ conda env create -f SalishSeaTools/envs/environment.yaml
+#   $ conda env create -f SalishSeaTools/envs/environment-dev.yaml
 #   $ conda activate salishsea-tools
 #   (salishsea-tools)$ python -m pip install --editable SalishSeaTools
 #
