@@ -9,7 +9,7 @@
 #   $ conda activate salishsea-tools
 #   (salishsea-tools)$ python -m pip install --editable SalishSeaTools
 #
-# See the requirements.txt file for an exhaustive list of all the
+# See the envs/requirements.txt file for an exhaustive list of all the
 # packages installed in the environment and their versions used in
 # recent development.
 

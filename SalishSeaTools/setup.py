@@ -42,7 +42,7 @@ try:
 except IOError:
     long_description = ''
 install_requires = [
-    # see requirements.txt for versions most recently used in development
+    # see envs/requirements.txt for versions most recently used in development
     'angles',
     'arrow>=1.0.0',
     'bottleneck',

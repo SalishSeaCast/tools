@@ -5,7 +5,7 @@
 # to create an isolated development environment.
 #
 # Create/update this file with:
-#   (salishsea-tools)$ python -m pip list --format=freeze >> SalishSeaTools/requirements.txt
+#   (salishsea-tools)$ python -m pip list --format=freeze >> SalishSeaTools/envs/requirements.txt
 
 alabaster==1.0.0
 angles==2.0
