@@ -19,7 +19,7 @@ jobs:
     uses: UBC-MOAD/gha-workflows/.github/workflows/pytest-with-coverage.yaml@main
     with:
       python-version: ${{ matrix.python-version }}
-      conda-env-file: envs/environment-test.yaml
+      conda-env-file: SalishSeaTools/envs/environment-test.yaml
       conda-env-name: salishsea-tools-test
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
