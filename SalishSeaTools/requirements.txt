@@ -1,7 +1,7 @@
 # Python packages and version used in development environment
 #
 # This list is intended to be for reference only.
-# Use the conda environment description file (environment.yaml)
+# Use the conda environment description file (envs/environment.yaml)
 # to create an isolated development environment.
 #
 # Create/update this file with:

@@ -5,11 +5,11 @@
 # of the SalishSeaTools package with:
 #
 #   $ cd tools
-#   $ conda env create -f SalishSeaTools/environment.yaml
+#   $ conda env create -f SalishSeaTools/envs/environment.yaml
 #   $ conda activate salishsea-tools
 #   (salishsea-tools)$ python -m pip install --editable SalishSeaTools
 #
-# See the requirements.txt file for an exhaustive list of all of the
+# See the requirements.txt file for an exhaustive list of all the
 # packages installed in the environment and their versions used in
 # recent development.
 
