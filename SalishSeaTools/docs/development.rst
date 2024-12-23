@@ -69,7 +69,7 @@ and building the documentation with the commands:
 .. code-block:: bash
 
     $ cd tools
-    $ conda env create -f SalishSeaTools/environment.yaml
+    $ conda env create -f SalishSeaTools/envs/environment-dev.yaml
     $ conda activate salishsea-tools
     (salishsea-tools)$ pip install --editable SalishSeaTools
 
