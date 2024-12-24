@@ -59,7 +59,8 @@ Development Environment
 
 Setting up an isolated development environment using `Conda`_ is recommended.
 Assuming that you have `Miniconda`_ installed,
-you can create and activate an environment called :kbd:`salishsea-tools` that will have all of the Python packages necessary for development,
+you can create and activate an environment called :kbd:`salishsea-tools` that will have
+all of the Python packages necessary for development,
 testing,
 and building the documentation with the commands:
 
@@ -71,10 +72,13 @@ and building the documentation with the commands:
     $ cd tools
     $ conda env create -f SalishSeaTools/envs/environment-dev.yaml
     $ conda activate salishsea-tools
-    (salishsea-tools)$ pip install --editable SalishSeaTools
 
-The :kbd:`--editable` option in the :command:`pip install` commands above installs the :kbd:`SalishSeaTools` from the cloned repo via symlinks so that it will be automatically updated as the repos evolve.
+:kbd:`SalishSeaTools` is installed in `editable install mode`_ as part of the conda environment
+creation process.
+That means that the package is installed from the cloned repo via symlinks so that
+it will be automatically updated as the repo evolves.
 
+.. _editable install mode: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 To deactivate the environment use:
 
 .. code-block:: bash

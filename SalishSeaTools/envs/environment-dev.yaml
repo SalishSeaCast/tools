@@ -7,7 +7,6 @@
 #   $ cd tools
 #   $ conda env create -f SalishSeaTools/envs/environment-dev.yaml
 #   $ conda activate salishsea-tools
-#   (salishsea-tools)$ python -m pip install --editable SalishSeaTools
 #
 # See the envs/requirements.txt file for an exhaustive list of all the
 # packages installed in the environment and their versions used in
@@ -58,3 +57,6 @@ dependencies:
 
   - pip:
     - angles
+
+    # Install the SalishSeaTools packages in editable mode
+    - --editable ../
