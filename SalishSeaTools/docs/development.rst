@@ -75,10 +75,11 @@ and building the documentation with the commands:
 
 :kbd:`SalishSeaTools` is installed in `editable install mode`_ as part of the conda environment
 creation process.
-That means that the package is installed from the cloned repo via symlinks so that
-it will be automatically updated as the repo evolves.
+That means that the package is installed from the cloned repo in a way that it will be
+automatically updated as the repo evolves.
 
 .. _editable install mode: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
+
 To deactivate the environment use:
 
 .. code-block:: bash
