@@ -63,17 +63,19 @@ def storm_surge_risk_level(site_name, max_ssh, ttide):
               threshold
     """
     try:
-        max_tide_ssh = max(ttide.pred_all) + PLACES[site_name]['mean sea lvl']
-        max_historic_ssh = PLACES[site_name]['hist max sea lvl']
+        max_tide_ssh = max(ttide.pred_all) + PLACES[site_name]["mean sea lvl"]
+        max_historic_ssh = PLACES[site_name]["hist max sea lvl"]
     except KeyError as e:
         raise KeyError(
-            'place name or info key not found in '
-            'salishsea_tools.places.PLACES: {}'.format(e))
+            "place name or info key not found in "
+            "salishsea_tools.places.PLACES: {}".format(e)
+        )
     extreme_threshold = max_tide_ssh + (max_historic_ssh - max_tide_ssh) / 2
     risk_level = (
-        None if max_ssh < max_tide_ssh
-        else 'extreme risk' if max_ssh > extreme_threshold
-        else 'moderate risk')
+        None
+        if max_ssh < max_tide_ssh
+        else "extreme risk" if max_ssh > extreme_threshold else "moderate risk"
+    )
     return risk_level
 
 
@@ -98,7 +100,7 @@ def convert_date_seconds(times, start):
     """
     arr_times = []
     for ii in range(0, len(times)):
-        arr_start = arrow.Arrow.strptime(start, '%d-%b-%Y')
+        arr_start = arrow.Arrow.strptime(start, "%d-%b-%Y")
         arr_new = arr_start.replace(seconds=times[ii])
         arr_times.append(arr_new.datetime)
 
@@ -122,7 +124,7 @@ def convert_date_hours(times, start):
 
     arr_times = []
     for ii in range(0, len(times)):
-        arr_start = arrow.Arrow.strptime(start, '%d-%b-%Y')
+        arr_start = arrow.Arrow.strptime(start, "%d-%b-%Y")
         arr_new = arr_start.replace(hours=times[ii])
         arr_times.append(arr_new.datetime)
 
@@ -158,42 +160,42 @@ def get_CGRF_weather(start, end, grid):
     v10 = []
     pres = []
     time = []
-    st_ar = arrow.Arrow.strptime(start, '%d-%b-%Y')
-    end_ar = arrow.Arrow.strptime(end, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start, "%d-%b-%Y")
+    end_ar = arrow.Arrow.strptime(end, "%d-%b-%Y")
 
-    CGRF_path = '/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/'
+    CGRF_path = "/ocean/dlatorne/MEOPAR/CGRF/NEMO-atmos/"
 
-    for r in arrow.Arrow.range('day', st_ar, end_ar):
+    for r in arrow.Arrow.range("day", st_ar, end_ar):
         mstr = "{0:02d}".format(r.month)
         dstr = "{0:02d}".format(r.day)
 
         # u
-        strU = 'u10_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
-        fU = NC.Dataset(CGRF_path+strU)
-        var = fU.variables['u_wind'][:, grid[0], grid[1]]
+        strU = "u10_y" + str(r.year) + "m" + mstr + "d" + dstr + ".nc"
+        fU = NC.Dataset(CGRF_path + strU)
+        var = fU.variables["u_wind"][:, grid[0], grid[1]]
         u10.extend(var[:])
 
         # time
-        tim = fU.variables['time_counter']
-        time.extend(tim[:] + (r.day-st_ar.day)*24)
+        tim = fU.variables["time_counter"]
+        time.extend(tim[:] + (r.day - st_ar.day) * 24)
         times = convert_date_hours(time, start)
 
         # v
-        strV = 'v10_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
-        fV = NC.Dataset(CGRF_path+strV)
-        var = fV.variables['v_wind'][:, grid[0], grid[1]]
+        strV = "v10_y" + str(r.year) + "m" + mstr + "d" + dstr + ".nc"
+        fV = NC.Dataset(CGRF_path + strV)
+        var = fV.variables["v_wind"][:, grid[0], grid[1]]
         v10.extend(var[:])
 
         # pressure
-        strP = 'slp_corr_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
-        fP = NC.Dataset(CGRF_path+strP)
-        var = fP.variables['atmpres'][:, grid[0], grid[1]]
+        strP = "slp_corr_y" + str(r.year) + "m" + mstr + "d" + dstr + ".nc"
+        fP = NC.Dataset(CGRF_path + strP)
+        var = fP.variables["atmpres"][:, grid[0], grid[1]]
         pres.extend(var[:])
 
         u10s = np.array(u10)
         v10s = np.array(v10)
         press = np.array(pres)
-        windspeed = np.sqrt(u10s**2+v10s**2)
+        windspeed = np.sqrt(u10s**2 + v10s**2)
 
     winddir = np.arctan2(v10, u10) * 180 / np.pi
     winddir = winddir + 360 * (winddir < 0)
@@ -232,13 +234,13 @@ def combine_data(data_list):
     sshs = {}
     for k in data_list:
         net = data_list.get(k)
-        us[k] = net.variables['vozocrtx']
-        vs[k] = net.variables['vomecrty']
-        lats[k] = net.variables['nav_lat']
-        lons[k] = net.variables['nav_lon']
-        tmps[k] = net.variables['votemper']
-        sals[k] = net.variables['vosaline']
-        sshs[k] = net.variables['sossheig']
+        us[k] = net.variables["vozocrtx"]
+        vs[k] = net.variables["vomecrty"]
+        lats[k] = net.variables["nav_lat"]
+        lons[k] = net.variables["nav_lon"]
+        tmps[k] = net.variables["votemper"]
+        sals[k] = net.variables["vosaline"]
+        sshs[k] = net.variables["sossheig"]
     return us, vs, lats, lons, tmps, sals, sshs
 
 
@@ -268,14 +270,14 @@ def get_variables(fU, fV, fT, timestamp, depth):
 
     """
     # get u and ugrid
-    u_vel = fU.variables['vozocrtx']  # u currents and grid
+    u_vel = fU.variables["vozocrtx"]  # u currents and grid
     U = u_vel[timestamp, depth, :, :]  # get data at specified level and time.
     # mask u so that white is plotted on land points
     mu = U == 0
     U = np.ma.array(U, mask=mu)
 
     # get v and v grid
-    v_vel = fV.variables['vomecrty']  # v currents and grid
+    v_vel = fV.variables["vomecrty"]  # v currents and grid
     V = v_vel[timestamp, depth, :, :]  # get data at specified level and time.
 
     # mask v so that white is plotted on land points
@@ -283,17 +285,17 @@ def get_variables(fU, fV, fT, timestamp, depth):
     V = np.ma.array(V, mask=mu)
 
     # grid for T points
-    eta = fT.variables['sossheig']
+    eta = fT.variables["sossheig"]
     E = eta[timestamp, :, :]
     mu = E == 0
     E = np.ma.array(E, mask=mu)
 
-    sal = fT.variables['vosaline']
+    sal = fT.variables["vosaline"]
     S = sal[timestamp, depth, :, :]
     mu = S == 0
     S = np.ma.array(S, mask=mu)
 
-    temp = fT.variables['votemper']
+    temp = fT.variables["votemper"]
     T = temp[timestamp, depth, :, :]
     mu = T == 0
     T = np.ma.array(T, mask=mu)
@@ -329,97 +331,105 @@ def get_EC_observations(station, start_day, end_day):
     # These ids have been identified as interesting locations in the SoG.
     # It is not necessarily a complete list.
     station_ids = {
-        'Pam Rocks': 6817,
-        'Sisters Islet': 6813,
-        'Entrance Island': 29411,
-        'Sand Heads': 6831,
+        "Pam Rocks": 6817,
+        "Sisters Islet": 6813,
+        "Entrance Island": 29411,
+        "Sand Heads": 6831,
         # NOTE: YVR station name changed in 2013. Older data use 889.
-        'YVR': 51442,
-        'YVR_old': 889,
-        'Point Atkinson': 844,
-        'Victoria': 10944,
-        'Campbell River': 145,
+        "YVR": 51442,
+        "YVR_old": 889,
+        "Point Atkinson": 844,
+        "Victoria": 10944,
+        "Campbell River": 145,
         # NOTE: not exactly Patricia Bay. The EC name is Victoria Hartland CS
-        'Patricia Bay': 11007,
-        'Esquimalt': 52,
-        'Discovery Island': 27226,
-        'Race Rocks': 10943,
-        'Saturna Island': 96,
-        'Tsawwassen': 50228,
-        'Ballenas Islands': 138,
-        'Comox Airport': 155,
-        'Squamish Airport': 336,
+        "Patricia Bay": 11007,
+        "Esquimalt": 52,
+        "Discovery Island": 27226,
+        "Race Rocks": 10943,
+        "Saturna Island": 96,
+        "Tsawwassen": 50228,
+        "Ballenas Islands": 138,
+        "Comox Airport": 155,
+        "Squamish Airport": 336,
     }
 
     # Create aliases to recognize places.py definitions
     names = [
-        'Campbell River', 'Entrance Island', 'Pam Rocks', 'Patricia Bay',
-        'Point Atkinson', 'Sand Heads', 'Sisters Islet',
+        "Campbell River",
+        "Entrance Island",
+        "Pam Rocks",
+        "Patricia Bay",
+        "Point Atkinson",
+        "Sand Heads",
+        "Sisters Islet",
     ]
     aliases = [
-        'CampbellRiver', 'EntranceIsland', 'PamRocks', 'PatriciaBay',
-        'PointAtkinson', 'Sandheads', 'SistersIsland',
+        "CampbellRiver",
+        "EntranceIsland",
+        "PamRocks",
+        "PatriciaBay",
+        "PointAtkinson",
+        "Sandheads",
+        "SistersIsland",
     ]
     for alias, name in zip(aliases, names):
         station_ids[alias] = station_ids[name]
 
-    st_ar = arrow.Arrow.strptime(start_day, '%d-%b-%Y')
-    end_ar = arrow.Arrow.strptime(end_day, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start_day, "%d-%b-%Y")
+    end_ar = arrow.Arrow.strptime(end_day, "%d-%b-%Y")
     PST = tz.tzoffset("PST", -28800)
 
     wind_spd, wind_dir, temp = [], [], []
-    url = 'https://climate.weather.gc.ca/climate_data/bulk_data_e.html'
+    url = "https://climate.weather.gc.ca/climate_data/bulk_data_e.html"
     query = {
-        'timeframe': 1,
-        'stationID': station_ids[station],
-        'format': 'xml',
-        'Year': st_ar.year,
-        'Month': st_ar.month,
-        'Day': 1,
+        "timeframe": 1,
+        "stationID": station_ids[station],
+        "format": "xml",
+        "Year": st_ar.year,
+        "Month": st_ar.month,
+        "Day": 1,
     }
     response = requests.get(url, params=query)
     tree = ElementTree.parse(BytesIO(response.content))
     root = tree.getroot()
     # read lat and lon
-    for raw_info in root.findall('stationinformation'):
-        lat = float(raw_info.find('latitude').text)
-        lon = float(raw_info.find('longitude').text)
+    for raw_info in root.findall("stationinformation"):
+        lat = float(raw_info.find("latitude").text)
+        lon = float(raw_info.find("longitude").text)
     # read data
-    raw_data = root.findall('stationdata')
+    raw_data = root.findall("stationdata")
     times = []
     for record in raw_data:
-        day = int(record.get('day'))
-        hour = int(record.get('hour'))
-        year = int(record.get('year'))
-        month = int(record.get('month'))
+        day = int(record.get("day"))
+        hour = int(record.get("hour"))
+        year = int(record.get("year"))
+        month = int(record.get("month"))
         t = arrow.Arrow(year, month, day, hour, tzinfo=PST)
         selectors = (
             (day == st_ar.day - 1 and hour >= 16)
-            or
-            (day >= st_ar.day and day < end_ar.day)
-            or
-            (day == end_ar.day and hour < 16)
+            or (day >= st_ar.day and day < end_ar.day)
+            or (day == end_ar.day and hour < 16)
         )
         if selectors:
             try:
-                wind_spd.append(float(record.find('windspd').text))
-                t.to('utc')
+                wind_spd.append(float(record.find("windspd").text))
+                t.to("utc")
                 times.append(t.datetime)
             except TypeError:
-                wind_spd.append(float('NaN'))
-                t.to('utc')
+                wind_spd.append(float("NaN"))
+                t.to("utc")
                 times.append(t.datetime)
             try:
-                wind_dir.append(float(record.find('winddir').text) * 10)
+                wind_dir.append(float(record.find("winddir").text) * 10)
             except:
-                wind_dir.append(float('NaN'))
+                wind_dir.append(float("NaN"))
             try:
-                temp.append(float(record.find('temp').text)+273)
+                temp.append(float(record.find("temp").text) + 273)
             except:
-                temp.append(float('NaN'))
+                temp.append(float("NaN"))
     wind_spd = np.array(wind_spd) * 1000 / 3600  # km/hr to m/s
-    wind_dir = -np.array(wind_dir)+270   # met. direction to cartesian angle
-    with np.errstate(invalid='ignore'):
+    wind_dir = -np.array(wind_dir) + 270  # met. direction to cartesian angle
+    with np.errstate(invalid="ignore"):
         wind_dir = wind_dir + 360 * (wind_dir < 0)
     temp = np.array(temp)
     for i in np.arange(len(times)):
@@ -440,22 +450,30 @@ def get_SSH_forcing(boundary, date):
     :returns: ssh_forc, time_ssh: arrays of the ssh forcing values and
               corresponding times
     """
-    date_arr = arrow.Arrow.strptime(date, '%d-%b-%Y')
+    date_arr = arrow.Arrow.strptime(date, "%d-%b-%Y")
     year = date_arr.year
     month = date_arr.month
     month = "%02d" % (month,)
-    if boundary == 'north':
-        filen = 'sshNorth'
+    if boundary == "north":
+        filen = "sshNorth"
     else:
-        filen = 'ssh'
-    ssh_path = '/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/' + \
-               boundary + '/ssh/' + filen + '_y' + str(year) + 'm' + str(month)\
-               + '.nc'
+        filen = "ssh"
+    ssh_path = (
+        "/data/nsoontie/MEOPAR/NEMO-forcing/open_boundaries/"
+        + boundary
+        + "/ssh/"
+        + filen
+        + "_y"
+        + str(year)
+        + "m"
+        + str(month)
+        + ".nc"
+    )
     fS = NC.Dataset(ssh_path)
-    ssh_forc = fS.variables['sossheig']
-    tss = fS.variables['time_counter'][:]
+    ssh_forc = fS.variables["sossheig"]
+    tss = fS.variables["time_counter"][:]
     l = tss.shape[0]
-    t = np.linspace(0, l-1, l)  # time array
+    t = np.linspace(0, l - 1, l)  # time array
     time_ssh = convert_date_hours(t, date)
 
     return ssh_forc, time_ssh
@@ -504,13 +522,15 @@ def load_tidal_predictions(filename):
         mycsv = list(csv.reader(f))
         msl = float(mycsv[1][1])
     ttide = pd.read_csv(
-        filename, skiprows=3, parse_dates=[0], date_parser=dateParserMeasured2)
+        filename, skiprows=3, parse_dates=[0], date_parser=dateParserMeasured2
+    )
     ttide = ttide.rename(
         columns={
-            'time ': 'time',
-            ' pred_8 ': 'pred_8',
-            ' pred_all ': 'pred_all',
-        })
+            "time ": "time",
+            " pred_8 ": "pred_8",
+            " pred_all ": "pred_all",
+        }
+    )
     return ttide, msl
 
 
@@ -531,15 +551,19 @@ def load_observations(start, end, location):
     :returns: wlev_meas: a dict object with the water level measurements
                          reference to Chart Datum
     """
-    stations = {'PointAtkinson': 7795, 'Victoria': 7120, 'PatriciaBay': 7277,
-                'CampbellRiver': 8074}
+    stations = {
+        "PointAtkinson": 7795,
+        "Victoria": 7120,
+        "PatriciaBay": 7277,
+        "CampbellRiver": 8074,
+    }
     statID_PA = stations[location]
-    filename = 'wlev_' + str(statID_PA) + '_' + start + '_' + end + '.csv'
+    filename = "wlev_" + str(statID_PA) + "_" + start + "_" + end + ".csv"
     tidetools.get_dfo_wlev(statID_PA, start, end)
-    wlev_meas = pd.read_csv(filename, skiprows=7, parse_dates=[0],
-                            date_parser=dateParserMeasured)
-    wlev_meas = wlev_meas.rename(columns={'Obs_date': 'time',
-                                          'SLEV(metres)': 'slev'})
+    wlev_meas = pd.read_csv(
+        filename, skiprows=7, parse_dates=[0], date_parser=dateParserMeasured
+    )
+    wlev_meas = wlev_meas.rename(columns={"Obs_date": "time", "SLEV(metres)": "slev"})
     return wlev_meas
 
 
@@ -563,11 +587,11 @@ def observed_anomaly(ttide, wlev_meas, msl):
     for i in np.arange(0, len(wlev_meas.time)):
         # check that there is a corresponding time
         # if any(wlev_pred.time == wlev_meas.time[i]):
-        ssanomaly[i] = (wlev_meas.slev[i] -
-                        (ttide.pred_all[ttide.time == wlev_meas.time[i]] +
-                         msl))
-        if not(ssanomaly[i]):
-            ssanomaly[i] = float('Nan')
+        ssanomaly[i] = wlev_meas.slev[i] - (
+            ttide.pred_all[ttide.time == wlev_meas.time[i]] + msl
+        )
+        if not (ssanomaly[i]):
+            ssanomaly[i] = float("Nan")
 
     return ssanomaly
 
@@ -587,8 +611,7 @@ def modelled_anomaly(sshs, location):
 
     :returns: anom: the difference between all_forcing and tidesonly
     """
-    anom = (sshs['all_forcing'][location][:, 0, 0] -
-            sshs['tidesonly'][location][:, 0, 0])
+    anom = sshs["all_forcing"][location][:, 0, 0] - sshs["tidesonly"][location][:, 0, 0]
     return anom
 
 
@@ -615,13 +638,13 @@ def correct_model(ssh, ttide, sdt, edt):
     inds = ttide.time[ttide.time == sdt].index[0]
     inde = ttide.time[ttide.time == edt].index[0]
 
-    difference = ttide.pred_all-ttide.pred_8
+    difference = ttide.pred_all - ttide.pred_8
     difference = np.array(difference)
     # average correction over two times to shift to the model 1/2 outputs
     # question: should I reconsider this calculation by interpolating?
-    corr = 0.5*(difference[inds:inde] + difference[inds+1:inde+1])
+    corr = 0.5 * (difference[inds:inde] + difference[inds + 1 : inde + 1])
 
-    corr_model = ssh+corr
+    corr_model = ssh + corr
     return corr_model
 
 
@@ -650,9 +673,9 @@ def surge_tide(ssh, ttide, sdt, edt):
 
     # average correction over two times to shift to the model 1/2 outputs
     tide = np.array(ttide.pred_all)
-    tide_corr = 0.5*(tide[inds:inde] + tide[inds+1:inde+1])
+    tide_corr = 0.5 * (tide[inds:inde] + tide[inds + 1 : inde + 1])
 
-    surgetide = ssh+tide_corr
+    surgetide = ssh + tide_corr
     return surgetide
 
 
@@ -686,16 +709,17 @@ def get_statistics(obs, model, t_obs, t_model, sdt, edt):
     """
     # truncate model
     trun_model, trun_tm = truncate(
-        model, t_model, sdt.replace(minute=30), edt.replace(minute=30))
+        model, t_model, sdt.replace(minute=30), edt.replace(minute=30)
+    )
     trun_model = trun_model[:-1]
     trun_tm = trun_tm[:-1]
     #  truncate and interpolate observations
     obs_interp = interp_to_model_time(trun_tm, obs, t_obs)
     # rebase observations
     # rbase_obs, rbase_to = rebase_obs(trun_obs, trun_to)
-    error = trun_model-obs_interp
+    error = trun_model - obs_interp
     # calculate statistics
-    gamma2 = np.var(error)/np.var(obs_interp)
+    gamma2 = np.var(error) / np.var(obs_interp)
     mean_error = np.mean(error)
     mean_abs_error = np.mean(np.abs(error))
     rms_error = _rmse(error)
@@ -710,8 +734,20 @@ def get_statistics(obs, model, t_obs, t_model, sdt, edt):
     ws = willmott_skill(obs_interp, trun_model)
 
     return (
-        max_obs, max_model, tmax_obs, tmax_model, mean_error, mean_abs_error,
-        rms_error, gamma2, corr, ws, mean_obs, mean_model, std_obs, std_model,
+        max_obs,
+        max_model,
+        tmax_obs,
+        tmax_model,
+        mean_error,
+        mean_abs_error,
+        rms_error,
+        gamma2,
+        corr,
+        ws,
+        mean_obs,
+        mean_model,
+        std_obs,
+        std_model,
     )
 
 
@@ -735,8 +771,8 @@ def truncate(data, time, sdt, edt):
     inds = np.where(time == sdt)[0]
     inde = np.where(time == edt)[0]
 
-    data_t = np.array(data[inds:inde + 1])
-    time_t = np.array(time[inds:inde + 1])
+    data_t = np.array(data[inds : inde + 1])
+    time_t = np.array(time[inds : inde + 1])
 
     return data_t, time_t
 
@@ -756,7 +792,7 @@ def rebase_obs(data, time):
     :returns: rebase_data, rebase_time, the data and times shifted by half an
               hour
     """
-    rebase_data = 0.5*(data[1:]+data[:-1])
+    rebase_data = 0.5 * (data[1:] + data[:-1])
     rebase_time = []
     for k in range(time.shape[0]):
         rebase_time.append(time[k].replace(minute=30))
@@ -790,10 +826,10 @@ def willmott_skill(obs, model):
     mprime = model - obar
     oprime = obs - obar
 
-    diff_sq = np.sum((model-obs)**2)
-    add_sq = np.sum((np.abs(mprime) + np.abs(oprime))**2)
+    diff_sq = np.sum((model - obs) ** 2)
+    add_sq = np.sum((np.abs(mprime) + np.abs(oprime)) ** 2)
 
-    ws = 1-diff_sq/add_sq
+    ws = 1 - diff_sq / add_sq
     return ws
 
 
@@ -814,28 +850,31 @@ def get_NOAA_wlev(station_no, start_date, end_date):
               Time zone is UTC
     """
     # Name the output file
-    outfile = ('wlev_' + str(station_no) + '_' + str(start_date) +
-               '_' + str(end_date) + '.csv')
+    outfile = (
+        "wlev_" + str(station_no) + "_" + str(start_date) + "_" + str(end_date) + ".csv"
+    )
     # Form urls and html information
-    st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
-    end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start_date, "%d-%b-%Y")
+    end_ar = arrow.Arrow.strptime(end_date, "%d-%b-%Y")
 
-    base_url = 'https://tidesandcurrents.noaa.gov'
-    form_handler = (
-        '/stationhome.html?id='
-        + str(station_no))
+    base_url = "https://tidesandcurrents.noaa.gov"
+    form_handler = "/stationhome.html?id=" + str(station_no)
     data_provider = (
-        '/api/datagetter?product=hourly_height&application=NOS.COOPS.TAC.WL'
-        + '&begin_date=' + st_ar.format('YYYYMMDD') + '&end_date='
-        + end_ar.format('YYYYMMDD')
-        + '&datum=MLLW&station='+str(station_no)
-        + '&time_zone=GMT&units=metric&interval=h&format=csv')
+        "/api/datagetter?product=hourly_height&application=NOS.COOPS.TAC.WL"
+        + "&begin_date="
+        + st_ar.format("YYYYMMDD")
+        + "&end_date="
+        + end_ar.format("YYYYMMDD")
+        + "&datum=MLLW&station="
+        + str(station_no)
+        + "&time_zone=GMT&units=metric&interval=h&format=csv"
+    )
     # Go get the data from the DFO site
     with requests.Session() as s:
         s.post(base_url)
         r = s.get(base_url + data_provider)
     # Write the data to a text file
-    with open(outfile, 'w') as f:
+    with open(outfile, "w") as f:
         f.write(r.text)
 
 
@@ -853,29 +892,38 @@ def get_NOAA_predictions(station_no, start_date, end_date):
               Time zone is UTC
     """
     # Name the output file
-    outfile = ('predictions_' + str(station_no) + '_' + str(start_date) + '_'
-               + str(end_date) + '.csv')
+    outfile = (
+        "predictions_"
+        + str(station_no)
+        + "_"
+        + str(start_date)
+        + "_"
+        + str(end_date)
+        + ".csv"
+    )
     # Form urls and html information
 
-    st_ar = arrow.Arrow.strptime(start_date, '%d-%b-%Y')
-    end_ar = arrow.Arrow.strptime(end_date, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start_date, "%d-%b-%Y")
+    end_ar = arrow.Arrow.strptime(end_date, "%d-%b-%Y")
 
-    base_url = 'https://tidesandcurrents.noaa.gov'
-    form_handler = (
-        '/stationhome.html?id='
-        + str(station_no))
+    base_url = "https://tidesandcurrents.noaa.gov"
+    form_handler = "/stationhome.html?id=" + str(station_no)
     data_provider = (
-        '/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL'
-        + '&begin_date=' + st_ar.format('YYYYMMDD') + '&end_date='
-        + end_ar.format('YYYYMMDD')
-        + '&datum=MLLW&station='+str(station_no)
-        + '&time_zone=GMT&units=metric&interval=h&format=csv')
+        "/api/datagetter?product=predictions&application=NOS.COOPS.TAC.WL"
+        + "&begin_date="
+        + st_ar.format("YYYYMMDD")
+        + "&end_date="
+        + end_ar.format("YYYYMMDD")
+        + "&datum=MLLW&station="
+        + str(station_no)
+        + "&time_zone=GMT&units=metric&interval=h&format=csv"
+    )
     # Go get the data from the DFO site
     with requests.Session() as s:
         s.post(base_url)
         r = s.get(base_url + data_provider)
     # Write the data to a text file
-    with open(outfile, 'w') as f:
+    with open(outfile, "w") as f:
         f.write(r.text)
 
 
@@ -908,39 +956,38 @@ def get_operational_weather(start, end, grid):
     v10 = []
     pres = []
     time = []
-    st_ar = arrow.Arrow.strptime(start, '%d-%b-%Y')
-    end_ar = arrow.Arrow.strptime(end, '%d-%b-%Y')
+    st_ar = arrow.Arrow.strptime(start, "%d-%b-%Y")
+    end_ar = arrow.Arrow.strptime(end, "%d-%b-%Y")
 
-    ops_path = '/ocean/sallen/allen/research/Meopar/Operational/'
-    opsp_path = '/ocean/nsoontie/MEOPAR/GEM2.5/ops/'
+    ops_path = "/ocean/sallen/allen/research/Meopar/Operational/"
+    opsp_path = "/ocean/nsoontie/MEOPAR/GEM2.5/ops/"
 
-    for r in arrow.Arrow.range('day', st_ar, end_ar):
+    for r in arrow.Arrow.range("day", st_ar, end_ar):
         mstr = "{0:02d}".format(r.month)
         dstr = "{0:02d}".format(r.day)
-        fstr = 'ops_y' + str(r.year) + 'm' + mstr + 'd' + dstr + '.nc'
-        f = NC.Dataset(ops_path+fstr)
+        fstr = "ops_y" + str(r.year) + "m" + mstr + "d" + dstr + ".nc"
+        f = NC.Dataset(ops_path + fstr)
         # u
-        var = f.variables['u_wind'][:, grid[0], grid[1]]
+        var = f.variables["u_wind"][:, grid[0], grid[1]]
         u10.extend(var[:])
         # v
-        var = f.variables['v_wind'][:, grid[0], grid[1]]
+        var = f.variables["v_wind"][:, grid[0], grid[1]]
         v10.extend(var[:])
         # pressure
-        fpstr = ('slp_corr_ops_y' + str(r.year) + 'm' + mstr + 'd' + dstr
-                 + '.nc')
-        fP = NC.Dataset(opsp_path+fpstr)
-        var = fP.variables['atmpres'][:, grid[0], grid[1]]
+        fpstr = "slp_corr_ops_y" + str(r.year) + "m" + mstr + "d" + dstr + ".nc"
+        fP = NC.Dataset(opsp_path + fpstr)
+        var = fP.variables["atmpres"][:, grid[0], grid[1]]
         pres.extend(var[:])
         # time
-        tim = f.variables['time_counter']
+        tim = f.variables["time_counter"]
         time.extend(tim[:])
-        times = convert_date_seconds(time, '01-Jan-1970')
+        times = convert_date_seconds(time, "01-Jan-1970")
 
         u10s = np.array(u10)
         v10s = np.array(v10)
         press = np.array(pres)
 
-    windspeed = np.sqrt(u10s**2+v10s**2)
+    windspeed = np.sqrt(u10s**2 + v10s**2)
     winddir = np.arctan2(v10, u10) * 180 / np.pi
     winddir = winddir + 360 * (winddir < 0)
     return windspeed, winddir, press, times
@@ -969,12 +1016,12 @@ def interp_to_model_time(time_model, varp, tp):
     #  Determine tp times wrt epc
     tp_wrt_epoc = []
     for t in tp:
-        tp_wrt_epoc.append((t-epoc).total_seconds())
+        tp_wrt_epoc.append((t - epoc).total_seconds())
 
     # Interpolate observations to model times
     varp_interp = []
     for t in time_model:
-        mod_wrt_epoc = (t-epoc).total_seconds()
+        mod_wrt_epoc = (t - epoc).total_seconds()
         varp_interp.append(np.interp(mod_wrt_epoc, tp_wrt_epoc, varp))
 
     return varp_interp

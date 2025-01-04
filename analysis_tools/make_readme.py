@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import datetime
 import glob
 import json
@@ -23,10 +24,10 @@ import os
 import re
 
 
-NBVIEWER = 'https://nbviewer.org/urls'
-REPO = 'github.com/SalishSeaCast/tools/blob/main'
-REPO_DIR = 'analysis_tools'
-TITLE_PATTERN = re.compile('#{1,6} ?')
+NBVIEWER = "https://nbviewer.org/urls"
+REPO = "github.com/SalishSeaCast/tools/blob/main"
+REPO_DIR = "analysis_tools"
+TITLE_PATTERN = re.compile("#{1,6} ?")
 
 
 def main():
@@ -54,8 +55,8 @@ Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
 """
-    for fn in glob.glob('*.ipynb'):
-        readme += '* ##[{fn}]({url}/{fn})  \n    \n'.format(fn=fn, url=url)
+    for fn in glob.glob("*.ipynb"):
+        readme += "* ##[{fn}]({url}/{fn})  \n    \n".format(fn=fn, url=url)
         readme += notebook_description(fn)
     license = """
 ##License
@@ -67,39 +68,40 @@ and The University of British Columbia.
 They are licensed under the Apache License, Version 2.0.
 https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
-""".format(this_year=datetime.date.today().year)
-    with open('README.md', 'wt') as f:
+""".format(
+        this_year=datetime.date.today().year
+    )
+    with open("README.md", "wt") as f:
         f.writelines(readme)
         f.writelines(license)
 
 
 def notebook_description(fn):
-    description = ''
-    with open(fn, 'rt') as notebook:
+    description = ""
+    with open(fn, "rt") as notebook:
         contents = json.load(notebook)
     try:
-        first_cell = contents['worksheets'][0]['cells'][0]
+        first_cell = contents["worksheets"][0]["cells"][0]
     except KeyError:
-        first_cell = contents['cells'][0]
-    first_cell_type = first_cell['cell_type']
-    if first_cell_type not in 'markdown raw'.split():
+        first_cell = contents["cells"][0]
+    first_cell_type = first_cell["cell_type"]
+    if first_cell_type not in "markdown raw".split():
         return description
-    desc_lines = first_cell['source']
+    desc_lines = first_cell["source"]
     for line in desc_lines:
-        suffix = ''
+        suffix = ""
         if TITLE_PATTERN.match(line):
-            line = TITLE_PATTERN.sub('**', line)
-            suffix = '**'
-        if line.endswith('\n'):
-            description += (
-                '    {line}{suffix}  \n'
-                .format(line=line[:-1], suffix=suffix))
+            line = TITLE_PATTERN.sub("**", line)
+            suffix = "**"
+        if line.endswith("\n"):
+            description += "    {line}{suffix}  \n".format(
+                line=line[:-1], suffix=suffix
+            )
         else:
-            description += (
-                '    {line}{suffix}  '.format(line=line, suffix=suffix))
-    description += '\n' * 2
+            description += "    {line}{suffix}  ".format(line=line, suffix=suffix)
+    description += "\n" * 2
     return description
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

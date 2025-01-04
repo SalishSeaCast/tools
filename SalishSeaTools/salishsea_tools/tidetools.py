@@ -1,4 +1,3 @@
-
 # Copyright 2013-2021 The Salish Sea MEOPAR contributors
 # and The University of British Columbia
 
@@ -47,40 +46,16 @@ from salishsea_tools import (
 # /data/dlatorne/MEOPAR/SalishSea/nowcast/08jul15/ocean.output
 # The freq parameter it the frequency of the tidal consituent in degrees/hour.
 CorrTides = {
-    'reftime': datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc()),
-    'K1': {
-        'freq': 15.041069000,
-        'ft': 0.891751,
-        'uvt': 262.636797},
-    'O1': {
-        'freq': 13.943036,
-        'ft': 0.822543,
-        'uvt': 81.472430},
-    'Q1': {
-        'freq': 13.398661,
-        'ft': 0.822543,
-        'uvt': 46.278236},
-    'P1': {
-        'freq': 14.958932,
-        'ft': 1.0000000,
-        'uvt': 101.042160},
-    'M2': {
-        'freq': 28.984106,
-        'ft': 1.035390,
-        'uvt': 346.114490},
-    'N2': {
-        'freq': 28.439730,
-        'ft': 1.035390,
-        'uvt': 310.920296},
-    'S2': {
-        'freq': 30.000002,
-        'ft': 1.0000000,
-        'uvt': 0.000000},
-    'K2': {
-        'freq': 30.082138,
-        'ft': 0.763545,
-        'uvt': 344.740346}
-    }
+    "reftime": datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc()),
+    "K1": {"freq": 15.041069000, "ft": 0.891751, "uvt": 262.636797},
+    "O1": {"freq": 13.943036, "ft": 0.822543, "uvt": 81.472430},
+    "Q1": {"freq": 13.398661, "ft": 0.822543, "uvt": 46.278236},
+    "P1": {"freq": 14.958932, "ft": 1.0000000, "uvt": 101.042160},
+    "M2": {"freq": 28.984106, "ft": 1.035390, "uvt": 346.114490},
+    "N2": {"freq": 28.439730, "ft": 1.035390, "uvt": 310.920296},
+    "S2": {"freq": 30.000002, "ft": 1.0000000, "uvt": 0.000000},
+    "K2": {"freq": 30.082138, "ft": 0.763545, "uvt": 344.740346},
+}
 
 
 def get_all_perm_dfo_wlev(start_date, end_date):
@@ -96,16 +71,16 @@ def get_all_perm_dfo_wlev(start_date, end_date):
     :returns: Saves text files with water level data at each site
     """
     stations = {
-        'Point Atkinson': 7795,
-        'Vancouver': 7735,
-        'Patricia Bay': 7277,
-        'Victoria Harbour': 7120,
-        'Bamfield': 8545,
-        'Tofino': 8615,
-        'Winter Harbour': 8735,
-        'Port Hardy': 8408,
-        'Campbell River': 8074,
-        'New Westminster': 7654,
+        "Point Atkinson": 7795,
+        "Vancouver": 7735,
+        "Patricia Bay": 7277,
+        "Victoria Harbour": 7120,
+        "Bamfield": 8545,
+        "Tofino": 8615,
+        "Winter Harbour": 8735,
+        "Port Hardy": 8408,
+        "Campbell River": 8074,
+        "New Westminster": 7654,
     }
     for ttt in stations:
         get_dfo_wlev(stations[ttt], start_date, end_date)
@@ -127,29 +102,35 @@ def get_dfo_wlev(station_no, start_date, end_date):
     :returns: Saves text file with water level data at one station
     """
     # Name the output file
-    outfile = 'wlev_'+str(station_no)+'_'+start_date+'_'+end_date+'.csv'
+    outfile = "wlev_" + str(station_no) + "_" + start_date + "_" + end_date + ".csv"
     # Form urls and html information
-    base_url = 'https://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/'
-    form_handler = (
-        'data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no='
-        + str(station_no))
+    base_url = (
+        "https://www.meds-sdmm.dfo-mpo.gc.ca/isdm-gdsi/twl-mne/inventory-inventaire/"
+    )
+    form_handler = "data-donnees-eng.asp?user=isdm-gdsi&region=PAC&tst=1&no=" + str(
+        station_no
+    )
     sitedata = {
-        'start_period': start_date,
-        'end_period': end_date,
-        'resolution': 'h',
-        'time_zone': 'l',
+        "start_period": start_date,
+        "end_period": end_date,
+        "resolution": "h",
+        "time_zone": "l",
     }
     data_provider = (
-        'download-telecharger.asp'
-        '?File=E:%5Ciusr_tmpfiles%5CTWL%5C'
-        + str(station_no) + '-'+start_date + '_slev.csv'
-        '&Name=' + str(station_no) + '-'+start_date+'_slev.csv')
+        "download-telecharger.asp"
+        "?File=E:%5Ciusr_tmpfiles%5CTWL%5C"
+        + str(station_no)
+        + "-"
+        + start_date
+        + "_slev.csv"
+        "&Name=" + str(station_no) + "-" + start_date + "_slev.csv"
+    )
     # Go get the data from the DFO site
     with requests.Session() as s:
         s.post(base_url + form_handler, data=sitedata)
         r = s.get(base_url + data_provider)
     # Write the data to a text file
-    with open(outfile, 'w') as f:
+    with open(outfile, "w") as f:
         f.write(r.text)
 
 
@@ -165,9 +146,9 @@ def dateParserMeasured(s):
     # Convert the string to a datetime object
     unaware = datetime.datetime.strptime(s, "%Y/%m/%d %H:%M")
     # Add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=pytz.timezone('Canada/Pacific'))
+    aware = unaware.replace(tzinfo=pytz.timezone("Canada/Pacific"))
     # Convert to UTC
-    return aware.astimezone(pytz.timezone('UTC'))
+    return aware.astimezone(pytz.timezone("UTC"))
 
 
 def read_dfo_wlev_file(filename):
@@ -181,9 +162,9 @@ def read_dfo_wlev_file(filename):
     """
     info = pd.read_csv(filename, nrows=4, index_col=0, header=None)
     wlev_meas = pd.read_csv(
-        filename, skiprows=7, parse_dates=[0], date_parser=dateParserMeasured)
-    wlev_meas = wlev_meas.rename(
-        columns={'Obs_date': 'time', 'SLEV(metres)': 'slev'})
+        filename, skiprows=7, parse_dates=[0], date_parser=dateParserMeasured
+    )
+    wlev_meas = wlev_meas.rename(columns={"Obs_date": "time", "SLEV(metres)": "slev"})
     # Allocate the variables to nice names
     stat_name = info[1][0]
     stat_num = info[1][1]
@@ -193,13 +174,12 @@ def read_dfo_wlev_file(filename):
     # then convert dates to UTC
     for x in np.arange(0, len(wlev_meas.time)):
         wlev_meas.time[x] = wlev_meas.time[x].replace(
-            tzinfo=pytz.timezone('Canada/Pacific'))
+            tzinfo=pytz.timezone("Canada/Pacific")
+        )
         print(wlev_meas.time[x])
-        wlev_meas.time[x] = wlev_meas.time[x].astimezone(pytz.timezone('UTC'))
+        wlev_meas.time[x] = wlev_meas.time[x].astimezone(pytz.timezone("UTC"))
         print(wlev_meas.time[x])
-    return (
-        wlev_meas.time, wlev_meas.slev,
-        stat_name, stat_num, stat_lat, stat_lon)
+    return (wlev_meas.time, wlev_meas.slev, stat_name, stat_num, stat_lat, stat_lon)
 
 
 def get_amp_phase_data(runname, loc):
@@ -219,27 +199,28 @@ def get_amp_phase_data(runname, loc):
 
     :returns: mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
     """
-    if runname == 'concepts110':
-        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(
-            loc + runname)
+    if runname == "concepts110":
+        mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_concepts110(loc + runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
-    elif runname == 'jpp72':
+    elif runname == "jpp72":
         mod_M2_amp, mod_M2_pha = get_netcdf_amp_phase_data_jpp72(loc + runname)
         mod_K1_amp = 0.0
         mod_K1_pha = 0.0
-    elif runname == 'composite':
+    elif runname == "composite":
         # 'composite' was the first set of runs where the harmonics were
         # combined manually
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms2()
     elif type(runname) is not str and len(runname) > 1:
         # Combine the harmonics from a set of runs
         mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_composite_harms(
-            runname, loc)
+            runname, loc
+        )
     else:
         # Get the harmonics for a specific run
-        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = \
-            get_netcdf_amp_phase_data(loc + runname)
+        mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_netcdf_amp_phase_data(
+            loc + runname
+        )
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
@@ -263,14 +244,13 @@ def plot_amp_phase_maps(runname, loc, grid):
 
     :returns: plots the amplitude and phase
     """
-    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(
-        runname, loc)
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname, loc)
     bathy, X, Y = get_bathy_data(grid)
-    plot_amp_map(X, Y, grid, mod_M2_amp, 'M2')
-    plot_pha_map(X, Y, grid, mod_M2_pha, 'M2')
-    if runname != 'concepts110' and runname != 'jpp72':
-        plot_amp_map(X, Y, grid, mod_K1_amp, 'K1')
-        plot_pha_map(X, Y, grid, mod_K1_pha, 'K1')
+    plot_amp_map(X, Y, grid, mod_M2_amp, "M2")
+    plot_pha_map(X, Y, grid, mod_M2_pha, "M2")
+    if runname != "concepts110" and runname != "jpp72":
+        plot_amp_map(X, Y, grid, mod_K1_amp, "K1")
+        plot_pha_map(X, Y, grid, mod_K1_pha, "K1")
 
 
 def get_netcdf_amp_phase_data(loc):
@@ -283,16 +263,16 @@ def get_netcdf_amp_phase_data(loc):
     :returns: model M2 amplitude, model K1 amplitude, model M2 phase,
               model K1 phase
     """
-    harmT = NC.Dataset(loc+'/Tidal_Harmonics_eta.nc', 'r')
+    harmT = NC.Dataset(loc + "/Tidal_Harmonics_eta.nc", "r")
     # Get imaginary and real components
-    mod_M2_eta_real = harmT.variables['M2_eta_real'][0, :, :]
-    mod_M2_eta_imag = harmT.variables['M2_eta_imag'][0, :, :]
-    mod_K1_eta_real = harmT.variables['K1_eta_real'][0, :, :]
-    mod_K1_eta_imag = harmT.variables['K1_eta_imag'][0, :, :]
+    mod_M2_eta_real = harmT.variables["M2_eta_real"][0, :, :]
+    mod_M2_eta_imag = harmT.variables["M2_eta_imag"][0, :, :]
+    mod_K1_eta_real = harmT.variables["K1_eta_real"][0, :, :]
+    mod_K1_eta_imag = harmT.variables["K1_eta_imag"][0, :, :]
     # Convert to amplitude and phase
-    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2 + mod_M2_eta_imag**2)
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
-    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2 + mod_K1_eta_imag**2)
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
@@ -303,12 +283,12 @@ def get_netcdf_amp_phase_data_jpp72(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/JPP_1d_20020102_20020104_grid_T.nc', 'r')
+    harmT = NC.Dataset(loc + "/JPP_1d_20020102_20020104_grid_T.nc", "r")
     # Get amplitude and phase
-    mod_M2_x_elev = harmT.variables['M2_x_elev'][0, :, :]  # Cj
-    mod_M2_y_elev = harmT.variables['M2_y_elev'][0, :, :]  # Sj
+    mod_M2_x_elev = harmT.variables["M2_x_elev"][0, :, :]  # Cj
+    mod_M2_y_elev = harmT.variables["M2_y_elev"][0, :, :]  # Sj
     # See section 11.6 of NEMO manual (p223/367)
-    mod_M2_amp = np.sqrt(mod_M2_x_elev**2+mod_M2_y_elev**2)
+    mod_M2_amp = np.sqrt(mod_M2_x_elev**2 + mod_M2_y_elev**2)
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_y_elev, mod_M2_x_elev))
     return mod_M2_amp, mod_M2_pha
 
@@ -319,9 +299,9 @@ def get_netcdf_amp_phase_data_concepts110(loc):
 
     :returns: model M2 amplitude, model M2 phase
     """
-    harmT = NC.Dataset(loc+'/WC3_Harmonics_gridT_TIDE2D.nc', 'r')
-    mod_M2_amp = harmT.variables['M2_amp'][0, :, :]
-    mod_M2_pha = harmT.variables['M2_pha'][0, :, :]
+    harmT = NC.Dataset(loc + "/WC3_Harmonics_gridT_TIDE2D.nc", "r")
+    mod_M2_amp = harmT.variables["M2_amp"][0, :, :]
+    mod_M2_pha = harmT.variables["M2_pha"][0, :, :]
     return mod_M2_amp, mod_M2_pha
 
 
@@ -334,9 +314,9 @@ def get_bathy_data(grid):
 
     :returns: bathy, X, Y
     """
-    bathy = grid.variables['Bathymetry'][:, :]
-    X = grid.variables['nav_lon'][:, :]
-    Y = grid.variables['nav_lat'][:, :]
+    bathy = grid.variables["Bathymetry"][:, :]
+    X = grid.variables["nav_lon"][:, :]
+    Y = grid.variables["nav_lat"][:, :]
     return bathy, X, Y
 
 
@@ -353,11 +333,11 @@ def get_SS_bathy_data():
     :returns: bathy, X, Y
     """
     grid = NC.Dataset(
-        '/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea.nc',
-        'r')
-    bathy = grid.variables['Bathymetry'][:, :]
-    X = grid.variables['nav_lon'][:, :]
-    Y = grid.variables['nav_lat'][:, :]
+        "/ocean/klesouef/meopar/nemo-forcing/grid/bathy_meter_SalishSea.nc", "r"
+    )
+    bathy = grid.variables["Bathymetry"][:, :]
+    X = grid.variables["nav_lon"][:, :]
+    Y = grid.variables["nav_lat"][:, :]
     return bathy, X, Y
 
 
@@ -374,10 +354,11 @@ def get_SS2_bathy_data():
     :returns: bathy, X, Y
     """
     grid = NC.Dataset(
-        '/ocean/jieliu/research/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc', 'r')
-    bathy = grid.variables['Bathymetry'][:, :]
-    X = grid.variables['nav_lon'][:, :]
-    Y = grid.variables['nav_lat'][:, :]
+        "/ocean/jieliu/research/meopar/nemo-forcing/grid/bathy_meter_SalishSea2.nc", "r"
+    )
+    bathy = grid.variables["Bathymetry"][:, :]
+    X = grid.variables["nav_lon"][:, :]
+    Y = grid.variables["nav_lat"][:, :]
     return bathy, X, Y
 
 
@@ -394,16 +375,17 @@ def get_subdomain_bathy_data():
     :returns: bathy, X, Y
     """
     grid = NC.Dataset(
-        '/ocean/klesouef/meopar/nemo-forcing/grid/SubDom_bathy_meter_NOBCchancomp.nc',
-        'r')
-    bathy = grid.variables['Bathymetry'][:, :]
-    X = grid.variables['nav_lon'][:, :]
-    Y = grid.variables['nav_lat'][:, :]
+        "/ocean/klesouef/meopar/nemo-forcing/grid/SubDom_bathy_meter_NOBCchancomp.nc",
+        "r",
+    )
+    bathy = grid.variables["Bathymetry"][:, :]
+    X = grid.variables["nav_lon"][:, :]
+    Y = grid.variables["nav_lat"][:, :]
     return bathy, X, Y
 
 
 def find_model_level(depth, model_depths, fractional=False):
-    """ Returns the index of the model level closest to a specified depth.
+    """Returns the index of the model level closest to a specified depth.
     The model level can be fractional (ie between two grid points).
     If depth is between 0 and first model level the result is negative.
     If depth is greater than the max depth the lowest level is returned.
@@ -423,28 +405,32 @@ def find_model_level(depth, model_depths, fractional=False):
     """
 
     # index for closest value
-    idx = (np.abs(depth-model_depths)).argmin()
+    idx = (np.abs(depth - model_depths)).argmin()
 
     # If a fractional index is requried...
     if fractional:
-        sign = np.sign(depth-model_depths[idx])
-        idxpm = idx + sign*1
+        sign = np.sign(depth - model_depths[idx])
+        idxpm = idx + sign * 1
         # Check not to go out of bounds
         if idxpm < model_depths.shape[0] and idxpm >= 0:
-            m = (idx-idxpm)/(model_depths[idx] -
-                             model_depths[idxpm])*(depth-model_depths[idx])
+            m = (
+                (idx - idxpm)
+                / (model_depths[idx] - model_depths[idxpm])
+                * (depth - model_depths[idx])
+            )
             idx = m + idx
         # If idxpm < 0 then we are between z=0 and depth of first gridcell
         if idxpm < 0:
             # assume z=0 correspons to idx = -model_depths[0]
             idxpm = -model_depths[0]
-            m = (idx-idxpm)/(model_depths[idx]-0)*(depth-model_depths[idx])
-            idx = m+idx
+            m = (idx - idxpm) / (model_depths[idx] - 0) * (depth - model_depths[idx])
+            idx = m + idx
     return idx
 
 
-def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
-                             lat_tol=0.00189, allow_land=False):
+def find_closest_model_point(
+    lon, lat, X, Y, bathy, lon_tol=0.0052, lat_tol=0.00189, allow_land=False
+):
     """Returns the grid co-ordinates of the closest non-land model point
     to a specified lon/lat.
 
@@ -454,9 +440,9 @@ def find_closest_model_point(lon, lat, X, Y, bathy, lon_tol=0.0052,
         Use :py:func:`geo_tools.find_closest_model_point` instead.
     """
     raise DeprecationWarning(
-        'tidetools.find_closest_model_point() has been replaced by '
-        'geo_tools.find_closest_model_point()')
-
+        "tidetools.find_closest_model_point() has been replaced by "
+        "geo_tools.find_closest_model_point()"
+    )
 
 
 def plot_amp_map(X, Y, grid, amp, constituent_name, figsize=(9, 9)):
@@ -488,22 +474,22 @@ def plot_amp_map(X, Y, grid, amp, constituent_name, figsize=(9, 9)):
     amp = np.ma.masked_equal(amp, 0)
     # Range of amplitudes to plot
     fig, ax = plt.subplots(1, 1, figsize=figsize)
-    viz_tools.set_aspect(ax, coords='map', lats=Y)
+    viz_tools.set_aspect(ax, coords="map", lats=Y)
     # Plot the coastline and amplitude contours
-    viz_tools.plot_coastline(ax, grid, coords='map')
+    viz_tools.plot_coastline(ax, grid, coords="map")
     v2 = np.arange(0, 1.80, 0.10)
     CS = ax.contourf(X, Y, amp, v2)
-    CS2 = ax.contour(X, Y, amp, v2, colors='black')
+    CS2 = ax.contour(X, Y, amp, v2, colors="black")
     # Add a colour bar
     cbar = fig.colorbar(CS)
     cbar.add_lines(CS2)
-    cbar.set_label('amplitude [m]')
+    cbar.set_label("amplitude [m]")
     # Set axes labels and title
-    ax.set_label('longitude (deg)')
-    ax.set_label('latitude (deg)')
+    ax.set_label("longitude (deg)")
+    ax.set_label("latitude (deg)")
     ax.set_title(
-        '{constituent} amplitude (m) for model'
-        .format(constituent=constituent_name))
+        "{constituent} amplitude (m) for model".format(constituent=constituent_name)
+    )
     return fig
 
 
@@ -532,27 +518,36 @@ def plot_pha_map(X, Y, grid, pha, constituent_name, figsize=(9, 9)):
     # Make 0 values NaNs so they plot blank
     pha = np.ma.masked_equal(pha, 0)
     fig, ax = plt.subplots(1, 1, figsize=figsize)
-    viz_tools.set_aspect(ax, coords='map', lats=Y)
+    viz_tools.set_aspect(ax, coords="map", lats=Y)
     # Plot the coastline and the phase contours
-    viz_tools.plot_coastline(ax, grid, coords='map')
+    viz_tools.plot_coastline(ax, grid, coords="map")
     v2 = np.arange(-180, 202.5, 22.5)
-    CS = ax.contourf(X, Y, pha, v2, cmap='gist_rainbow')
-    CS2 = ax.contour(X, Y, pha, v2, colors='black', linestyles='solid')
+    CS = ax.contourf(X, Y, pha, v2, cmap="gist_rainbow")
+    CS2 = ax.contour(X, Y, pha, v2, colors="black", linestyles="solid")
     # Add a colour bar
     cbar = fig.colorbar(CS)
     cbar.add_lines(CS2)
-    cbar.set_label('phase [deg]')
+    cbar.set_label("phase [deg]")
     # Set axes labels and title
-    ax.set_label('longitude (deg)')
-    ax.set_label('latitude (deg)')
+    ax.set_label("longitude (deg)")
+    ax.set_label("latitude (deg)")
     ax.set_title(
-        '{constituent} phase (deg) for model'
-        .format(constituent=constituent_name))
+        "{constituent} phase (deg) for model".format(constituent=constituent_name)
+    )
     return fig
 
 
-def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6),
-                         split1=0, split2=0, labels=['', '', '']):
+def plot_scatter_pha_amp(
+    Am,
+    Ao,
+    gm,
+    go,
+    constituent_name,
+    figsize=(12, 6),
+    split1=0,
+    split2=0,
+    labels=["", "", ""],
+):
     """Plot scatter plot of observed vs. modelled phase and amplitude
 
     :arg Am: Modelled amplitude.
@@ -587,53 +582,69 @@ def plot_scatter_pha_amp(Am, Ao, gm, go, constituent_name, figsize=(12, 6),
     :rtype: Matplotlib figure
     """
     fig, (ax_amp, ax_pha) = plt.subplots(1, 2, figsize=figsize)
-    ax_amp.set_aspect('equal')
+    ax_amp.set_aspect("equal")
     if split1 == 0:
-        ax_amp.scatter(Ao, Am, color='blue', edgecolors='blue')
+        ax_amp.scatter(Ao, Am, color="blue", edgecolors="blue")
     else:
-        ax_amp.scatter(Ao[:split1], Am[:split1], color='green',
-                       edgecolors = 'green', label=labels[0])
-        ax_amp.scatter(Ao[split1:split2], Am[split1:split2], color='blue',
-                       edgecolors = 'blue', label=labels[1])
-        ax_amp.scatter(Ao[split2:], Am[split2:], color='black',
-                       edgecolors = 'black', label=labels[2])
+        ax_amp.scatter(
+            Ao[:split1], Am[:split1], color="green", edgecolors="green", label=labels[0]
+        )
+        ax_amp.scatter(
+            Ao[split1:split2],
+            Am[split1:split2],
+            color="blue",
+            edgecolors="blue",
+            label=labels[1],
+        )
+        ax_amp.scatter(
+            Ao[split2:], Am[split2:], color="black", edgecolors="black", label=labels[2]
+        )
     min_value, max_value = ax_amp.set_xlim(0, 1.2)
     ax_amp.set_ylim(min_value, max_value)
-    ax_amp.legend(loc='upper left')
+    ax_amp.legend(loc="upper left")
     # Equality line
-    ax_amp.plot([min_value, max_value], [min_value, max_value], color='red')
-    ax_amp.set_xlabel('Observed Amplitude [m]')
-    ax_amp.set_ylabel('Modelled Amplitude [m]')
-    ax_amp.set_title(
-        '{constituent} Amplitude'.format(constituent=constituent_name))
+    ax_amp.plot([min_value, max_value], [min_value, max_value], color="red")
+    ax_amp.set_xlabel("Observed Amplitude [m]")
+    ax_amp.set_ylabel("Modelled Amplitude [m]")
+    ax_amp.set_title("{constituent} Amplitude".format(constituent=constituent_name))
     # Phase plot
-    ax_pha.set_aspect('equal')
+    ax_pha.set_aspect("equal")
     if split1 == 0:
-        ax_pha.scatter(go, gm, color='blue', edgecolors='blue')
+        ax_pha.scatter(go, gm, color="blue", edgecolors="blue")
     else:
-        ax_pha.scatter(go[:split1], gm[:split1], color='green',
-                       edgecolors='green', label=labels[0])
-        ax_pha.scatter(go[split1:split2], gm[split1:split2], color='blue',
-                       edgecolors='blue', label=labels[1])
-        ax_pha.scatter(go[split2:], gm[split2:], color='black',
-                       edgecolors='black', label=labels[2])
+        ax_pha.scatter(
+            go[:split1], gm[:split1], color="green", edgecolors="green", label=labels[0]
+        )
+        ax_pha.scatter(
+            go[split1:split2],
+            gm[split1:split2],
+            color="blue",
+            edgecolors="blue",
+            label=labels[1],
+        )
+        ax_pha.scatter(
+            go[split2:], gm[split2:], color="black", edgecolors="black", label=labels[2]
+        )
     min_value, max_value = ax_pha.set_xlim(0, 360)
     ax_pha.set_ylim(min_value, max_value)
-    ax_pha.legend(loc='upper left')
+    ax_pha.legend(loc="upper left")
     # Equality line
-    ax_pha.plot([min_value, max_value], [min_value, max_value], color='red')
+    ax_pha.plot([min_value, max_value], [min_value, max_value], color="red")
     ticks = range(0, 420, 60)
     ax_pha.set_xticks(ticks)
     ax_pha.set_yticks(ticks)
-    ax_pha.set_xlabel('Observed Phase [deg]')
-    ax_pha.set_ylabel('Modelled Phase [deg]')
-    ax_pha.set_title(
-        '{constituent} Phase'.format(constituent=constituent_name))
+    ax_pha.set_xlabel("Observed Phase [deg]")
+    ax_pha.set_ylabel("Modelled Phase [deg]")
+    ax_pha.set_title("{constituent} Phase".format(constituent=constituent_name))
     return fig
 
 
 def plot_diffs_on_domain(
-    diffs, meas_wl_harm, calc_method, constituent_name, grid,
+    diffs,
+    meas_wl_harm,
+    calc_method,
+    constituent_name,
+    grid,
     scale_fac=100,
     legend_scale=0.1,
     figsize=(9, 9),
@@ -672,30 +683,38 @@ def plot_diffs_on_domain(
     # Plot the bathy underneath
     bathy, X, Y = get_bathy_data(grid)
     fig, ax = plt.subplots(1, 1, figsize=figsize)
-    mesh = ax.contourf(X, Y, bathy, cmap='spring')
+    mesh = ax.contourf(X, Y, bathy, cmap="spring")
     cbar = fig.colorbar(mesh)
-    cbar.set_label('depth [m]')
+    cbar.set_label("depth [m]")
     # Plot the differences as dots of varying radii
     # Multiply the differences by something big to see the results
     # on a map (D is in [m])
     ax.scatter(
-        -meas_wl_harm.Lon, meas_wl_harm.Lat,
-        s=np.array(diffs) * scale_fac, marker='o',
-        c='blue', edgecolors='blue')
+        -meas_wl_harm.Lon,
+        meas_wl_harm.Lat,
+        s=np.array(diffs) * scale_fac,
+        marker="o",
+        c="blue",
+        edgecolors="blue",
+    )
     # Legend and labels
-    ax.text(
-        -124.4, 47.875, 'Diff = {}cm'.format(legend_scale * scale_fac))
+    ax.text(-124.4, 47.875, "Diff = {}cm".format(legend_scale * scale_fac))
     ax.scatter(
-        -124.5, 47.9,
-        s=legend_scale * scale_fac, marker='o',
-        c='blue', edgecolors='blue')
-    ax.set_xlabel('Longitude [deg E]')
-    ax.set_ylabel('Latitude [deg N]')
-    ref = (
-        'Foreman et al' if calc_method == 'F95' else 'Masson & Cummins')
+        -124.5,
+        47.9,
+        s=legend_scale * scale_fac,
+        marker="o",
+        c="blue",
+        edgecolors="blue",
+    )
+    ax.set_xlabel("Longitude [deg E]")
+    ax.set_ylabel("Latitude [deg N]")
+    ref = "Foreman et al" if calc_method == "F95" else "Masson & Cummins"
     ax.set_title(
-        '{constituent} Differences ({ref})'
-        .format(constituent=constituent_name, ref=ref))
+        "{constituent} Differences ({ref})".format(
+            constituent=constituent_name, ref=ref
+        )
+    )
     return fig
 
 
@@ -711,16 +730,17 @@ def calc_diffs_meas_mod(runname, loc, grid):
               go_K1_all, D_F95_K1_all, D_M04_K1_all
     """
     # Read in the measured data from Foreman et al (1995) and US sites
-    meas_wl_harm = pd.read_csv('obs_tidal_wlev_const_all.csv', sep=';')
+    meas_wl_harm = pd.read_csv("obs_tidal_wlev_const_all.csv", sep=";")
     meas_wl_harm = meas_wl_harm.rename(
         columns={
-            'M2 amp': 'M2_amp',
-            'M2 phase (deg UT)': 'M2_pha',
-            'K1 amp': 'K1_amp',
-            'K1 phase (deg UT)': 'K1_pha',
-        })
+            "M2 amp": "M2_amp",
+            "M2 phase (deg UT)": "M2_pha",
+            "K1 amp": "K1_amp",
+            "K1 phase (deg UT)": "K1_pha",
+        }
+    )
     # Make an appropriately named csv file for results
-    outfile = 'wlev_harm_diffs_'+''.join(runname)+'.csv'
+    outfile = "wlev_harm_diffs_" + "".join(runname) + ".csv"
     D_F95_M2_all = []
     D_M04_M2_all = []
     Am_M2_all = []
@@ -735,61 +755,88 @@ def calc_diffs_meas_mod(runname, loc, grid):
     gm_K1_all = []
     go_K1_all = []
     # Get harmonics data
-    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(
-        runname, loc)
+    mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha = get_amp_phase_data(runname, loc)
     # Get bathy data
     bathy, X, Y = get_bathy_data(grid)
-    with open(outfile, 'wb') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow([
-            'Station Number', 'Station Name', 'Longitude', 'Latitude',
-            'Modelled M2 amp', 'Observed M2 amp',
-            'Modelled M2 phase', 'Observed M2 phase',
-            'M2 Difference Foreman', 'M2 Difference Masson',
-            'Modelled K1 amp', 'Observed K1 amp',
-            'Modelled K1 phase', 'Observed K1 phase',
-            'K1 Difference Foreman', 'K1 Difference Masson',
-        ])
+    with open(outfile, "wb") as csvfile:
+        writer = csv.writer(csvfile, delimiter=",")
+        writer.writerow(
+            [
+                "Station Number",
+                "Station Name",
+                "Longitude",
+                "Latitude",
+                "Modelled M2 amp",
+                "Observed M2 amp",
+                "Modelled M2 phase",
+                "Observed M2 phase",
+                "M2 Difference Foreman",
+                "M2 Difference Masson",
+                "Modelled K1 amp",
+                "Observed K1 amp",
+                "Modelled K1 phase",
+                "Observed K1 phase",
+                "K1 Difference Foreman",
+                "K1 Difference Masson",
+            ]
+        )
         for t in np.arange(0, len(meas_wl_harm.Lat)):
             x1, y1 = geo_tools.find_closest_model_point(
-                -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
-                X, Y, land_mask=bathy.mask)
+                -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t], X, Y, land_mask=bathy.mask
+            )
             if x1:
                 # Observed constituents
-                Ao_M2 = meas_wl_harm.M2_amp[t]/100  # [m]
-                go_M2 = meas_wl_harm.M2_pha[t]   # [degrees UTC]
-                Ao_K1 = meas_wl_harm.K1_amp[t]/100  # [m]
-                go_K1 = meas_wl_harm.K1_pha[t]   # [degrees UTC]
+                Ao_M2 = meas_wl_harm.M2_amp[t] / 100  # [m]
+                go_M2 = meas_wl_harm.M2_pha[t]  # [degrees UTC]
+                Ao_K1 = meas_wl_harm.K1_amp[t] / 100  # [m]
+                go_K1 = meas_wl_harm.K1_pha[t]  # [degrees UTC]
                 # Modelled constituents
                 Am_M2 = mod_M2_amp[x1, y1]  # [m]
-                gm_M2 = angles.normalize(
-                    mod_M2_pha[x1, y1], 0, 360)  # [degrees ????]
+                gm_M2 = angles.normalize(mod_M2_pha[x1, y1], 0, 360)  # [degrees ????]
                 Am_K1 = mod_K1_amp[x1, y1]  # [m]
-                gm_K1 = angles.normalize(
-                    mod_K1_pha[x1, y1], 0, 360)  # [degrees ????]
+                gm_K1 = angles.normalize(mod_K1_pha[x1, y1], 0, 360)  # [degrees ????]
                 # Calculate differences two ways
                 D_F95_M2 = sqrt(
-                    (Ao_M2*np.cos(radians(go_M2))
-                     - Am_M2*np.cos(radians(gm_M2)))**2
-                    + (Ao_M2*np.sin(radians(go_M2))
-                       - Am_M2*np.sin(radians(gm_M2)))**2)
+                    (Ao_M2 * np.cos(radians(go_M2)) - Am_M2 * np.cos(radians(gm_M2)))
+                    ** 2
+                    + (Ao_M2 * np.sin(radians(go_M2)) - Am_M2 * np.sin(radians(gm_M2)))
+                    ** 2
+                )
                 D_M04_M2 = sqrt(
                     0.5 * (Am_M2**2 + Ao_M2**2)
-                    - Am_M2*Ao_M2*cos(radians(gm_M2-go_M2)))
+                    - Am_M2 * Ao_M2 * cos(radians(gm_M2 - go_M2))
+                )
                 D_F95_K1 = sqrt(
-                    (Ao_K1*np.cos(radians(go_K1))
-                     - Am_K1*np.cos(radians(gm_K1)))**2
-                    + (Ao_K1*np.sin(radians(go_K1))
-                       - Am_K1*np.sin(radians(gm_K1)))**2)
+                    (Ao_K1 * np.cos(radians(go_K1)) - Am_K1 * np.cos(radians(gm_K1)))
+                    ** 2
+                    + (Ao_K1 * np.sin(radians(go_K1)) - Am_K1 * np.sin(radians(gm_K1)))
+                    ** 2
+                )
                 D_M04_K1 = sqrt(
                     0.5 * (Am_K1**2 + Ao_K1**2)
-                    - Am_K1*Ao_K1*cos(radians(gm_K1-go_K1)))
+                    - Am_K1 * Ao_K1 * cos(radians(gm_K1 - go_K1))
+                )
                 # Write results to csv
-                writer.writerow([
-                    str(t+1), meas_wl_harm.Site[t],
-                    -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
-                    Am_M2, Ao_M2, gm_M2, go_M2, D_F95_M2, D_M04_M2,
-                    Am_K1, Ao_K1, gm_K1, go_K1, D_F95_K1, D_M04_K1])
+                writer.writerow(
+                    [
+                        str(t + 1),
+                        meas_wl_harm.Site[t],
+                        -meas_wl_harm.Lon[t],
+                        meas_wl_harm.Lat[t],
+                        Am_M2,
+                        Ao_M2,
+                        gm_M2,
+                        go_M2,
+                        D_F95_M2,
+                        D_M04_M2,
+                        Am_K1,
+                        Ao_K1,
+                        gm_K1,
+                        go_K1,
+                        D_F95_K1,
+                        D_M04_K1,
+                    ]
+                )
                 # Append the latest result
                 Am_M2_all.append(float(Am_M2))
                 Ao_M2_all.append(float(Ao_M2))
@@ -806,16 +853,32 @@ def calc_diffs_meas_mod(runname, loc, grid):
             else:
                 # If no point found, fill difference fields with 9999
                 print(
-                    'No point found in current domain for station '
-                    + str(t+1)+' :(')
-                writer.writerow([
-                    str(t+1), meas_wl_harm.Site[t],
-                    -meas_wl_harm.Lon[t], meas_wl_harm.Lat[t],
-                    9999, 9999])
+                    "No point found in current domain for station " + str(t + 1) + " :("
+                )
+                writer.writerow(
+                    [
+                        str(t + 1),
+                        meas_wl_harm.Site[t],
+                        -meas_wl_harm.Lon[t],
+                        meas_wl_harm.Lat[t],
+                        9999,
+                        9999,
+                    ]
+                )
     return (
-        meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
-        D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all,
-        gm_K1_all, go_K1_all, D_F95_K1_all, D_M04_K1_all,
+        meas_wl_harm,
+        Am_M2_all,
+        Ao_M2_all,
+        gm_M2_all,
+        go_M2_all,
+        D_F95_M2_all,
+        D_M04_M2_all,
+        Am_K1_all,
+        Ao_K1_all,
+        gm_K1_all,
+        go_K1_all,
+        D_F95_K1_all,
+        D_M04_K1_all,
     )
 
 
@@ -829,7 +892,8 @@ def haversine(lon1, lat1, lon2, lat2):
         Use :py:func:`geo_tools.haversine` instead.
     """
     raise DeprecationWarning(
-        'tidetools.haversine() has been replaced by geo_tools.haversine()')
+        "tidetools.haversine() has been replaced by geo_tools.haversine()"
+    )
 
 
 def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
@@ -862,11 +926,11 @@ def plot_meas_mod_locations(measlon, measlat, modlon, modlat, X, Y, bathy):
     """
     plt.contourf(X, Y, bathy)
     plt.colorbar()
-    plt.title('Domain of model (depths in m)')
-    plt.plot(modlon, modlat, 'g.', markersize=10, label='model')
-    plt.plot(measlon, measlat, 'm.', markersize=10, label='measured')
-    plt.xlim([modlon-0.1, modlon+0.1])
-    plt.ylim([modlat-0.1, modlat+0.1])
+    plt.title("Domain of model (depths in m)")
+    plt.plot(modlon, modlat, "g.", markersize=10, label="model")
+    plt.plot(measlon, measlat, "m.", markersize=10, label="measured")
+    plt.xlim([modlon - 0.1, modlon + 0.1])
+    plt.ylim([modlat - 0.1, modlat + 0.1])
     plt.legend(numpoints=1)
 
 
@@ -900,25 +964,37 @@ def plot_wlev_const_transect(savename, statnums, runname, loc, grid, *args):
     # runname1, loc1, runname2, loc2
     fig1 = plt.figure(figsize=(15, 5))
     ax1 = fig1.add_subplot(111)
-    ax1.set_xlabel('Station number [-]')
-    ax1.set_ylabel('M2 amplitude [m]')
+    ax1.set_xlabel("Station number [-]")
+    ax1.set_ylabel("M2 amplitude [m]")
     fig2 = plt.figure(figsize=(15, 5))
     ax2 = fig2.add_subplot(111)
-    ax2.set_xlabel('Station number [-]')
-    ax2.set_ylabel('K1 amplitude [m]')
+    ax2.set_xlabel("Station number [-]")
+    ax2.set_ylabel("K1 amplitude [m]")
     fig3 = plt.figure(figsize=(15, 5))
     ax3 = fig3.add_subplot(111)
-    ax3.set_xlabel('Station number[-]')
-    ax3.set_ylabel('M2 phase [degrees]')
+    ax3.set_xlabel("Station number[-]")
+    ax3.set_ylabel("M2 phase [degrees]")
     fig4 = plt.figure(figsize=(15, 5))
     ax4 = fig4.add_subplot(111)
-    ax4.set_xlabel('Station number[-]')
-    ax4.set_ylabel('K1 phase [degrees]')
+    ax4.set_xlabel("Station number[-]")
+    ax4.set_ylabel("K1 phase [degrees]")
 
     # Get the modelled data
-    (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all, D_F95_M2_all,
-     D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all, go_K1_all, D_F95_K1_all,
-     D_M04_K1_all) = calc_diffs_meas_mod(runname, loc, grid)
+    (
+        meas_wl_harm,
+        Am_M2_all,
+        Ao_M2_all,
+        gm_M2_all,
+        go_M2_all,
+        D_F95_M2_all,
+        D_M04_M2_all,
+        Am_K1_all,
+        Ao_K1_all,
+        gm_K1_all,
+        go_K1_all,
+        D_F95_K1_all,
+        D_M04_K1_all,
+    ) = calc_diffs_meas_mod(runname, loc, grid)
     Am_M2_all = np.array(Am_M2_all)
     Ao_M2_all = np.array(Ao_M2_all)
     gm_M2_all = np.array(gm_M2_all)
@@ -934,23 +1010,34 @@ def plot_wlev_const_transect(savename, statnums, runname, loc, grid, *args):
     some_model_phas_K1 = np.array([gm_K1_all[statnums]])
     x = np.array(range(0, len(statnums)))
     # Plot the M2 model data
-    ax1.plot(x, some_model_amps_M2[0, :], 'b-o', label='single model')
+    ax1.plot(x, some_model_amps_M2[0, :], "b-o", label="single model")
     # Plot the K1 model data
-    ax2.plot(x, some_model_amps_K1[0, :], 'b--o', label='single model')
-    ax3.plot(x, some_model_phas_M2[0, :], 'b-o', label='single model')
-    ax4.plot(x, some_model_phas_K1[0, :], 'b--o', label='single model')
+    ax2.plot(x, some_model_amps_K1[0, :], "b--o", label="single model")
+    ax3.plot(x, some_model_phas_M2[0, :], "b-o", label="single model")
+    ax4.plot(x, some_model_phas_K1[0, :], "b--o", label="single model")
 
     if len(args) > 0:
         # Assuming we will only be adding an additional 3 lines,
         # define 3 colours
-        colours = ['g', 'm', 'k', 'r', 'y']
-        for r in range(0, int(len(args)/2)):
-            runname = args[2*r]
-            loc = args[2*r+1]
-            (meas_wl_harm, Am_M2_all, Ao_M2_all, gm_M2_all, go_M2_all,
-             D_F95_M2_all, D_M04_M2_all, Am_K1_all, Ao_K1_all, gm_K1_all,
-             go_K1_all, D_F95_K1_all, D_M04_K1_all) = calc_diffs_meas_mod(
-                runname, loc, grid)
+        colours = ["g", "m", "k", "r", "y"]
+        for r in range(0, int(len(args) / 2)):
+            runname = args[2 * r]
+            loc = args[2 * r + 1]
+            (
+                meas_wl_harm,
+                Am_M2_all,
+                Ao_M2_all,
+                gm_M2_all,
+                go_M2_all,
+                D_F95_M2_all,
+                D_M04_M2_all,
+                Am_K1_all,
+                Ao_K1_all,
+                gm_K1_all,
+                go_K1_all,
+                D_F95_K1_all,
+                D_M04_K1_all,
+            ) = calc_diffs_meas_mod(runname, loc, grid)
             Am_M2_all = np.array(Am_M2_all)
             Ao_M2_all = np.array(Ao_M2_all)
             gm_M2_all = np.array(gm_M2_all)
@@ -964,60 +1051,58 @@ def plot_wlev_const_transect(savename, statnums, runname, loc, grid, *args):
             some_model_phas_M2 = np.array([gm_M2_all[statnums]])
             some_model_phas_K1 = np.array([gm_K1_all[statnums]])
             x = np.array(range(0, len(statnums)))
-            ax1.plot(
-                x, some_model_amps_M2[0, :],
-                '-o', color=colours[r], label='model')
+            ax1.plot(x, some_model_amps_M2[0, :], "-o", color=colours[r], label="model")
             ax2.plot(
-                x, some_model_amps_K1[0, :],
-                '--o', color=colours[r], label='model')
-            ax3.plot(
-                x, some_model_phas_M2[0, :],
-                '-o', color=colours[r], label='model')
+                x, some_model_amps_K1[0, :], "--o", color=colours[r], label="model"
+            )
+            ax3.plot(x, some_model_phas_M2[0, :], "-o", color=colours[r], label="model")
             ax4.plot(
-                x, some_model_phas_K1[0, :],
-                '--o', color=colours[r], label='model')
+                x, some_model_phas_K1[0, :], "--o", color=colours[r], label="model"
+            )
     some_meas_amps_M2 = np.array([Ao_M2_all[statnums]])
     some_meas_amps_K1 = np.array([Ao_K1_all[statnums]])
     some_meas_phas_M2 = np.array([go_M2_all[statnums]])
     some_meas_phas_K1 = np.array([go_K1_all[statnums]])
     # M2
-    ax1.plot(x, some_meas_amps_M2[0, :], 'r-o', label='measured')
+    ax1.plot(x, some_meas_amps_M2[0, :], "r-o", label="measured")
     ax1.set_xticks(x)
-    ax1.set_xticklabels(statnums+1)
-    ax1.legend(loc='lower right')
-    ax1.set_title('Line through stations '+str(statnums))
+    ax1.set_xticklabels(statnums + 1)
+    ax1.legend(loc="lower right")
+    ax1.set_title("Line through stations " + str(statnums))
     fig1.savefig(
-        'meas_mod_wlev_transect_M2_'+''.join(runname)+'_'+savename+'.pdf')
+        "meas_mod_wlev_transect_M2_" + "".join(runname) + "_" + savename + ".pdf"
+    )
     # K1
-    ax2.plot(x, some_meas_amps_K1[0, :], 'r--o', label='measured')
+    ax2.plot(x, some_meas_amps_K1[0, :], "r--o", label="measured")
     ax2.set_xticks(x)
-    ax2.set_xticklabels(statnums+1)
-    ax2.legend(loc='lower right')
-    ax2.set_title('Line through stations '+str(statnums))
+    ax2.set_xticklabels(statnums + 1)
+    ax2.legend(loc="lower right")
+    ax2.set_title("Line through stations " + str(statnums))
     fig2.savefig(
-        'meas_mod_wlev_transect_K1_'+''.join(runname)+'_'+savename+'.pdf')
+        "meas_mod_wlev_transect_K1_" + "".join(runname) + "_" + savename + ".pdf"
+    )
     # M2
-    ax3.plot(x, some_meas_phas_M2[0, :], 'r-o', label='measured')
+    ax3.plot(x, some_meas_phas_M2[0, :], "r-o", label="measured")
     ax3.set_xticks(x)
-    ax3.set_xticklabels(statnums+1)
-    ax3.legend(loc='lower right')
-    ax3.set_title('Line through stations '+str(statnums))
+    ax3.set_xticklabels(statnums + 1)
+    ax3.legend(loc="lower right")
+    ax3.set_title("Line through stations " + str(statnums))
     fig3.savefig(
-        'meas_mod_wlev_transect_M2_phas'+''.join(runname)+'_'+savename+'.pdf')
+        "meas_mod_wlev_transect_M2_phas" + "".join(runname) + "_" + savename + ".pdf"
+    )
     # K1
-    ax4.plot(x, some_meas_phas_K1[0, :], 'r--o', label='measured')
+    ax4.plot(x, some_meas_phas_K1[0, :], "r--o", label="measured")
     ax4.set_xticks(x)
-    ax4.set_xticklabels(statnums+1)
-    ax4.legend(loc='lower right')
-    ax4.set_title('Line through stations '+str(statnums))
+    ax4.set_xticklabels(statnums + 1)
+    ax4.legend(loc="lower right")
+    ax4.set_title("Line through stations " + str(statnums))
     fig2.savefig(
-        'meas_mod_wlev_transect_K1_phas'+''.join(runname)+'_'+savename+'.pdf')
+        "meas_mod_wlev_transect_K1_phas" + "".join(runname) + "_" + savename + ".pdf"
+    )
 
 
 def plot_wlev_transect_map(
-    grid, stn_nums,
-    stn_file='obs_tidal_wlev_const_all.csv',
-    figsize=(9, 9)
+    grid, stn_nums, stn_file="obs_tidal_wlev_const_all.csv", figsize=(9, 9)
 ):
     """Plot a map of the coastline and the transect of water level stations,
     which are plotted in :py:func:`plot_wlev_M2_const_transect`.
@@ -1042,14 +1127,14 @@ def plot_wlev_transect_map(
     """
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     # Add a coastline
-    viz_tools.plot_coastline(ax, grid, coords='map')
+    viz_tools.plot_coastline(ax, grid, coords="map")
     # Get the measured data
-    meas_wl_harm = pd.read_csv(stn_file, sep=';')
+    meas_wl_harm = pd.read_csv(stn_file, sep=";")
     sitelats = np.array(meas_wl_harm.Lat[stn_nums])
     sitelons = np.array(-meas_wl_harm.Lon[stn_nums])
     # Plot the transect line
-    ax.plot(sitelons, sitelats, 'm-o')
-    ax.set_title('Location of Select Stations')
+    ax.plot(sitelons, sitelats, "m-o")
+    ax.set_title("Location of Select Stations")
     return fig
 
 
@@ -1066,7 +1151,7 @@ def plot_coastline(grid):
 
     :returns: coastline map
     """
-    viz_tools.plot_coastline(plt.gc(), grid, coords='map', color='black')
+    viz_tools.plot_coastline(plt.gc(), grid, coords="map", color="black")
 
 
 def get_composite_harms2():
@@ -1084,8 +1169,12 @@ def get_composite_harms2():
     """
 
     runnames = [
-        '50s_15-21Sep', '50s_22-25Sep', '50s_26-29Sep', '50s_30Sep-6Oct',
-        '50s_7-13Oct']
+        "50s_15-21Sep",
+        "50s_22-25Sep",
+        "50s_26-29Sep",
+        "50s_30Sep-6Oct",
+        "50s_7-13Oct",
+    ]
     runlength = np.array([7.0, 4.0, 4.0, 7.0, 7.0])
 
     mod_M2_eta_real1 = 0.0
@@ -1095,25 +1184,24 @@ def get_composite_harms2():
 
     for runnum in range(0, len(runnames)):
         harmT = NC.Dataset(
-            '/data/dlatorne/MEOPAR/SalishSea/results/'
-            + runnames[runnum]+'/Tidal_Harmonics_eta.nc', 'r')
+            "/data/dlatorne/MEOPAR/SalishSea/results/"
+            + runnames[runnum]
+            + "/Tidal_Harmonics_eta.nc",
+            "r",
+        )
         # Get imaginary and real components
-        mod_M2_eta_real1 += (
-            harmT.variables['M2_eta_real'][0, :, :]*runlength[runnum])
-        mod_M2_eta_imag1 += (
-            harmT.variables['M2_eta_imag'][0, :, :]*runlength[runnum])
-        mod_K1_eta_real1 += (
-            harmT.variables['K1_eta_real'][0, :, :]*runlength[runnum])
-        mod_K1_eta_imag1 += (
-            harmT.variables['K1_eta_imag'][0, :, :]*runlength[runnum])
+        mod_M2_eta_real1 += harmT.variables["M2_eta_real"][0, :, :] * runlength[runnum]
+        mod_M2_eta_imag1 += harmT.variables["M2_eta_imag"][0, :, :] * runlength[runnum]
+        mod_K1_eta_real1 += harmT.variables["K1_eta_real"][0, :, :] * runlength[runnum]
+        mod_K1_eta_imag1 += harmT.variables["K1_eta_imag"][0, :, :] * runlength[runnum]
     totaldays = sum(runlength)
-    mod_M2_eta_real = mod_M2_eta_real1/totaldays
-    mod_M2_eta_imag = mod_M2_eta_imag1/totaldays
-    mod_K1_eta_real = mod_K1_eta_real1/totaldays
-    mod_K1_eta_imag = mod_K1_eta_imag1/totaldays
-    mod_M2_amp = np.sqrt(mod_M2_eta_real**2+mod_M2_eta_imag**2)
+    mod_M2_eta_real = mod_M2_eta_real1 / totaldays
+    mod_M2_eta_imag = mod_M2_eta_imag1 / totaldays
+    mod_K1_eta_real = mod_K1_eta_real1 / totaldays
+    mod_K1_eta_imag = mod_K1_eta_imag1 / totaldays
+    mod_M2_amp = np.sqrt(mod_M2_eta_real**2 + mod_M2_eta_imag**2)
     mod_M2_pha = -np.degrees(np.arctan2(mod_M2_eta_imag, mod_M2_eta_real))
-    mod_K1_amp = np.sqrt(mod_K1_eta_real**2+mod_K1_eta_imag**2)
+    mod_K1_amp = np.sqrt(mod_K1_eta_real**2 + mod_K1_eta_imag**2)
     mod_K1_pha = -np.degrees(np.arctan2(mod_K1_eta_imag, mod_K1_eta_real))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
@@ -1135,30 +1223,23 @@ def get_composite_harms(runnames, loc):
     :rtypes: 4-tuple of numpy.ndarray instances
     """
     results = {}
-    vars = 'M2_eta_real M2_eta_imag K1_eta_real K1_eta_imag'.split()
-    runlengths = {
-        runname: get_run_length(runname, loc) for runname in runnames}
+    vars = "M2_eta_real M2_eta_imag K1_eta_real K1_eta_imag".split()
+    runlengths = {runname: get_run_length(runname, loc) for runname in runnames}
     for k, runname in enumerate(runnames):
-        filename = os.path.join(loc, runnames[k], 'Tidal_Harmonics_eta.nc')
+        filename = os.path.join(loc, runnames[k], "Tidal_Harmonics_eta.nc")
         harmT = NC.Dataset(filename)
         for var in vars:
             try:
-                results[var] += (
-                    harmT.variables[var][0, ...] * runlengths[runname])
+                results[var] += harmT.variables[var][0, ...] * runlengths[runname]
             except KeyError:
-                results[var] = (
-                    harmT.variables[var][0, ...] * runlengths[runname])
+                results[var] = harmT.variables[var][0, ...] * runlengths[runname]
     totaldays = sum(runlengths.itervalues())
     for var in vars:
         results[var] /= totaldays
-    mod_M2_amp = np.sqrt(
-        results['M2_eta_real']**2 + results['M2_eta_imag']**2)
-    mod_M2_pha = -np.degrees(
-        np.arctan2(results['M2_eta_imag'], results['M2_eta_real']))
-    mod_K1_amp = np.sqrt(
-        results['K1_eta_real']**2 + results['K1_eta_imag']**2)
-    mod_K1_pha = -np.degrees(
-        np.arctan2(results['K1_eta_imag'], results['K1_eta_real']))
+    mod_M2_amp = np.sqrt(results["M2_eta_real"] ** 2 + results["M2_eta_imag"] ** 2)
+    mod_M2_pha = -np.degrees(np.arctan2(results["M2_eta_imag"], results["M2_eta_real"]))
+    mod_K1_amp = np.sqrt(results["K1_eta_real"] ** 2 + results["K1_eta_imag"] ** 2)
+    mod_K1_pha = -np.degrees(np.arctan2(results["K1_eta_imag"], results["K1_eta_real"]))
     return mod_M2_amp, mod_K1_amp, mod_M2_pha, mod_K1_pha
 
 
@@ -1195,51 +1276,49 @@ def get_composite_harms_uv(runname, loc):
     mod_K1_v_imag1 = 0.0
 
     for runnum in range(0, len(runname)):
-        harmU = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_U.nc', 'r')
+        harmU = NC.Dataset(loc + runname[runnum] + "/Tidal_Harmonics_U.nc", "r")
         # Get imaginary and real components
-        mod_M2_u_real1 += (
-            harmU.variables['M2_u_real'][0, :, :]*runlength[runnum])
-        mod_M2_u_imag1 += (
-            harmU.variables['M2_u_imag'][0, :, :]*runlength[runnum])
-        mod_K1_u_real1 += (
-            harmU.variables['K1_u_real'][0, :, :]*runlength[runnum])
-        mod_K1_u_imag1 += (
-            harmU.variables['K1_u_imag'][0, :, :]*runlength[runnum])
+        mod_M2_u_real1 += harmU.variables["M2_u_real"][0, :, :] * runlength[runnum]
+        mod_M2_u_imag1 += harmU.variables["M2_u_imag"][0, :, :] * runlength[runnum]
+        mod_K1_u_real1 += harmU.variables["K1_u_real"][0, :, :] * runlength[runnum]
+        mod_K1_u_imag1 += harmU.variables["K1_u_imag"][0, :, :] * runlength[runnum]
 
     for runnum in range(0, len(runname)):
-        harmV = NC.Dataset(loc+runname[runnum]+'/Tidal_Harmonics_V.nc', 'r')
+        harmV = NC.Dataset(loc + runname[runnum] + "/Tidal_Harmonics_V.nc", "r")
         # Get imaginary and real components
-        mod_M2_v_real1 += (
-            harmV.variables['M2_v_real'][0, :, :]*runlength[runnum])
-        mod_M2_v_imag1 += (
-            harmV.variables['M2_v_imag'][0, :, :]*runlength[runnum])
-        mod_K1_v_real1 += (
-            harmV.variables['K1_v_real'][0, :, :]*runlength[runnum])
-        mod_K1_v_imag1 += (
-            harmV.variables['K1_v_imag'][0, :, :]*runlength[runnum])
+        mod_M2_v_real1 += harmV.variables["M2_v_real"][0, :, :] * runlength[runnum]
+        mod_M2_v_imag1 += harmV.variables["M2_v_imag"][0, :, :] * runlength[runnum]
+        mod_K1_v_real1 += harmV.variables["K1_v_real"][0, :, :] * runlength[runnum]
+        mod_K1_v_imag1 += harmV.variables["K1_v_imag"][0, :, :] * runlength[runnum]
 
     totaldays = sum(runlength)
-    mod_M2_u_real = mod_M2_u_real1/totaldays
-    mod_M2_u_imag = mod_M2_u_imag1/totaldays
-    mod_K1_u_real = mod_K1_u_real1/totaldays
-    mod_K1_u_imag = mod_K1_u_imag1/totaldays
-    mod_M2_v_real = mod_M2_v_real1/totaldays
-    mod_M2_v_imag = mod_M2_v_imag1/totaldays
-    mod_K1_v_real = mod_K1_v_real1/totaldays
-    mod_K1_v_imag = mod_K1_v_imag1/totaldays
+    mod_M2_u_real = mod_M2_u_real1 / totaldays
+    mod_M2_u_imag = mod_M2_u_imag1 / totaldays
+    mod_K1_u_real = mod_K1_u_real1 / totaldays
+    mod_K1_u_imag = mod_K1_u_imag1 / totaldays
+    mod_M2_v_real = mod_M2_v_real1 / totaldays
+    mod_M2_v_imag = mod_M2_v_imag1 / totaldays
+    mod_K1_v_real = mod_K1_v_real1 / totaldays
+    mod_K1_v_imag = mod_K1_v_imag1 / totaldays
 
-    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
+    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2 + mod_M2_u_imag**2)
     mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag, mod_M2_u_real))
-    mod_K1_u_amp = np.sqrt(mod_K1_u_real**2+mod_K1_u_imag**2)
+    mod_K1_u_amp = np.sqrt(mod_K1_u_real**2 + mod_K1_u_imag**2)
     mod_K1_u_pha = -np.degrees(np.arctan2(mod_K1_u_imag, mod_K1_u_real))
-    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
+    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2 + mod_M2_v_imag**2)
     mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag, mod_M2_v_real))
-    mod_K1_v_amp = np.sqrt(mod_K1_v_real**2+mod_K1_v_imag**2)
+    mod_K1_v_amp = np.sqrt(mod_K1_v_real**2 + mod_K1_v_imag**2)
     mod_K1_v_pha = -np.degrees(np.arctan2(mod_K1_v_imag, mod_K1_v_real))
 
     return (
-        mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha, mod_K1_u_amp,
-        mod_K1_u_pha, mod_K1_v_amp, mod_K1_v_pha,
+        mod_M2_u_amp,
+        mod_M2_u_pha,
+        mod_M2_v_amp,
+        mod_M2_v_pha,
+        mod_K1_u_amp,
+        mod_K1_u_pha,
+        mod_K1_v_amp,
+        mod_K1_v_pha,
     )
 
 
@@ -1258,18 +1337,18 @@ def get_current_harms(runname, loc):
     :returns: mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
     """
     # u
-    harmu = NC.Dataset(loc+runname+'/Tidal_Harmonics_U.nc', 'r')
-    mod_M2_u_real = harmu.variables['M2_u_real'][0, :, :]
-    mod_M2_u_imag = harmu.variables['M2_u_imag'][0, :, :]
+    harmu = NC.Dataset(loc + runname + "/Tidal_Harmonics_U.nc", "r")
+    mod_M2_u_real = harmu.variables["M2_u_real"][0, :, :]
+    mod_M2_u_imag = harmu.variables["M2_u_imag"][0, :, :]
     # Convert to amplitude and phase
-    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2+mod_M2_u_imag**2)
+    mod_M2_u_amp = np.sqrt(mod_M2_u_real**2 + mod_M2_u_imag**2)
     mod_M2_u_pha = -np.degrees(np.arctan2(mod_M2_u_imag, mod_M2_u_real))
     # v
-    harmv = NC.Dataset(loc+runname+'/Tidal_Harmonics_V.nc', 'r')
-    mod_M2_v_real = harmv.variables['M2_v_real'][0, :, :]
-    mod_M2_v_imag = harmv.variables['M2_v_imag'][0, :, :]
+    harmv = NC.Dataset(loc + runname + "/Tidal_Harmonics_V.nc", "r")
+    mod_M2_v_real = harmv.variables["M2_v_real"][0, :, :]
+    mod_M2_v_imag = harmv.variables["M2_v_imag"][0, :, :]
     # Convert to amplitude and phase
-    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2+mod_M2_v_imag**2)
+    mod_M2_v_amp = np.sqrt(mod_M2_v_real**2 + mod_M2_v_imag**2)
     mod_M2_v_pha = -np.degrees(np.arctan2(mod_M2_v_imag, mod_M2_v_real))
     return mod_M2_u_amp, mod_M2_u_pha, mod_M2_v_amp, mod_M2_v_pha
 
@@ -1286,11 +1365,11 @@ def get_run_length(runname, loc):
 
     :returns: length of run in days
     """
-    resfile = os.path.join(loc, runname, 'namelist')
+    resfile = os.path.join(loc, runname, "namelist")
     nl = namelist.namelist2dict(resfile)
-    timestep = nl['namdom'][0]['rn_rdt']
-    start_time = nl['nam_diaharm'][0]['nit000_han']
-    end_time = nl['nam_diaharm'][0]['nitend_han']
+    timestep = nl["namdom"][0]["rn_rdt"]
+    start_time = nl["nam_diaharm"][0]["nit000_han"]
+    end_time = nl["nam_diaharm"][0]["nitend_han"]
     run_length = (end_time - start_time + 1) * timestep / 60 / 60 / 24  # days
     return run_length
 
@@ -1356,17 +1435,17 @@ def ap2ep(Au, PHIu, Av, PHIv):
     # Version 2, May 2002
 
     # Assume the input phase lags are in degrees and convert them in radians.
-    PHIu = PHIu/180*pi
-    PHIv = PHIv/180*pi
+    PHIu = PHIu / 180 * pi
+    PHIv = PHIv / 180 * pi
 
     # Make complex amplitudes for u and v
     i = cmath.sqrt(-1)
-    u = Au*cmath.exp(-i*PHIu)
-    v = Av*cmath.exp(-i*PHIv)
+    u = Au * cmath.exp(-i * PHIu)
+    v = Av * cmath.exp(-i * PHIv)
 
     # Calculate complex radius of anticlockwise and clockwise circles:
-    wp = (u+i*v)/2      # for anticlockwise circles
-    wm = ((u-i*v)/2).conjugate()  # for clockwise circles
+    wp = (u + i * v) / 2  # for anticlockwise circles
+    wm = ((u - i * v) / 2).conjugate()  # for clockwise circles
     # and their amplitudes and angles
     Wp = abs(wp)
     Wm = abs(wm)
@@ -1374,35 +1453,35 @@ def ap2ep(Au, PHIu, Av, PHIv):
     THETAm = cmath.phase(wm)
 
     # calculate ep-parameters (ellipse parameters)
-    SEMA = Wp+Wm             # Semi  Major Axis, or maximum speed
-    SEMI = Wp-Wm               # Semin Minor Axis, or minimum speed
-    ECC = SEMI/SEMA          # Eccentricity
+    SEMA = Wp + Wm  # Semi  Major Axis, or maximum speed
+    SEMI = Wp - Wm  # Semin Minor Axis, or minimum speed
+    ECC = SEMI / SEMA  # Eccentricity
     # Phase angle, the time (in angle) when the velocity reaches the maximum
-    PHA = (THETAm-THETAp)/2
+    PHA = (THETAm - THETAp) / 2
     # Inclination, the angle between the semi major axis and x-axis (or u-axis)
-    INC = (THETAm+THETAp)/2
+    INC = (THETAm + THETAp) / 2
 
     # convert to degrees for output
-    PHA = PHA/pi*180
-    INC = INC/pi*180
-    THETAp = THETAp/pi*180
-    THETAm = THETAm/pi*180
+    PHA = PHA / pi * 180
+    INC = INC / pi * 180
+    THETAp = THETAp / pi * 180
+    THETAm = THETAm / pi * 180
 
     # Map the resultant angles to the range of [0, 360].
     # PHA=mod(PHA+360, 360)
-    PHA = (PHA+360) % 360
+    PHA = (PHA + 360) % 360
     # INC=mod(INC+360, 360)
-    INC = (INC+360) % 360
+    INC = (INC + 360) % 360
 
     # Mar. 2, 2002 Revision by Zhigang Xu    (REVISION_1)
     # Change the southern major axes to northern major axes to conform the tidal
     # analysis convention  (cf. Foreman, 1977, p. 13, Manual For Tidal Currents
     # Analysis Prediction, available in www.ios.bc.ca/ios/osap/people/foreman.htm)
-    k = float(INC)/180
-    INC = INC-k*180
-    PHA = PHA+k*180
+    k = float(INC) / 180
+    INC = INC - k * 180
+    PHA = PHA + k * 180
     PHA = PHA % 360
-    return SEMA,  ECC, INC, PHA
+    return SEMA, ECC, INC, PHA
     # Authorship Copyright:
     #
     #    The author retains the copyright of this program, while  you are welcome
@@ -1433,8 +1512,8 @@ def ap2ep(Au, PHIu, Av, PHIv):
     # convention.
 
 
-def convert_to_hours(time_model, reftime='None'):
-    """ Interpolates the datetime values into an array of hours from a
+def convert_to_hours(time_model, reftime="None"):
+    """Interpolates the datetime values into an array of hours from a
         determined starting point
 
     :arg time_model: array of model output time as datetime objects
@@ -1448,13 +1527,13 @@ def convert_to_hours(time_model, reftime='None'):
     :returns tp_wrt_epoch, times with respect to the
         beginning of the input in seconds
     """
-    if reftime == 'None':
+    if reftime == "None":
         epoc = time_model[0]
     else:
         epoc = reftime
     tp_wrt_epoc = []
     for t in time_model:
-        tp_wrt_epoc.append((t-epoc).total_seconds()/3600)
+        tp_wrt_epoc.append((t - epoc).total_seconds() / 3600)
     return tp_wrt_epoc
 
 
@@ -1479,10 +1558,11 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
     :returns:(mean + M2amp*np.cos(M2FREQ*x-M2pha*np.pi/180.)
         +K1amp*np.cos(K1FREQ*x-K1pha*np.pi/180.))
     """
-    return(
-        mean +
-        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180.) +
-        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180))
+    return (
+        mean
+        + M2amp * np.cos((CorrTides["M2"]["freq"] * x - M2pha) * np.pi / 180.0)
+        + K1amp * np.cos((CorrTides["K1"]["freq"] * x - K1pha) * np.pi / 180)
+    )
 
 
 def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
@@ -1500,18 +1580,31 @@ def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
 
     :returns: function for fitting 4 frequencies
     """
-    return(
-        mean +
-        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
-        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
-        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
-        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180))
+    return (
+        mean
+        + M2amp * np.cos((CorrTides["M2"]["freq"] * x - M2pha) * np.pi / 180)
+        + K1amp * np.cos((CorrTides["K1"]["freq"] * x - K1pha) * np.pi / 180)
+        + S2amp * np.cos((CorrTides["S2"]["freq"] * x - S2pha) * np.pi / 180)
+        + O1amp * np.cos((CorrTides["O1"]["freq"] * x - O1pha) * np.pi / 180)
+    )
 
 
 def sextuple(
-        x, M2amp, M2pha, K1amp, K1pha,
-        S2amp, S2pha, O1amp, O1pha,
-        N2amp, N2pha, P1amp, P1pha, mean):
+    x,
+    M2amp,
+    M2pha,
+    K1amp,
+    K1pha,
+    S2amp,
+    S2pha,
+    O1amp,
+    O1pha,
+    N2amp,
+    N2pha,
+    P1amp,
+    P1pha,
+    mean,
+):
     """Function for the fit, assuming 6 constituents of importance are:
     M2, K2, S1, O1, N2 and P1.
 
@@ -1526,21 +1619,37 @@ def sextuple(
 
     :returns: function for fitting 6 frequencies
     """
-    return(
-        mean +
-        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
-        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
-        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
-        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180) +
-        N2amp * np.cos((CorrTides['N2']['freq'] * x - N2pha) * np.pi / 180) +
-        P1amp * np.cos((CorrTides['P1']['freq'] * x - P1pha) * np.pi / 180))
+    return (
+        mean
+        + M2amp * np.cos((CorrTides["M2"]["freq"] * x - M2pha) * np.pi / 180)
+        + K1amp * np.cos((CorrTides["K1"]["freq"] * x - K1pha) * np.pi / 180)
+        + S2amp * np.cos((CorrTides["S2"]["freq"] * x - S2pha) * np.pi / 180)
+        + O1amp * np.cos((CorrTides["O1"]["freq"] * x - O1pha) * np.pi / 180)
+        + N2amp * np.cos((CorrTides["N2"]["freq"] * x - N2pha) * np.pi / 180)
+        + P1amp * np.cos((CorrTides["P1"]["freq"] * x - P1pha) * np.pi / 180)
+    )
 
 
 def octuple(
-        x, M2amp, M2pha, K1amp, K1pha,
-        S2amp, S2pha, O1amp, O1pha,
-        N2amp, N2pha, P1amp, P1pha,
-        K2amp, K2pha, Q1amp, Q1pha, mean):
+    x,
+    M2amp,
+    M2pha,
+    K1amp,
+    K1pha,
+    S2amp,
+    S2pha,
+    O1amp,
+    O1pha,
+    N2amp,
+    N2pha,
+    P1amp,
+    P1pha,
+    K2amp,
+    K2pha,
+    Q1amp,
+    Q1pha,
+    mean,
+):
     """Function for the fit, for all the constituents: M2, K2, S1, O1, N2, P1,
     K2 and Q1.
 
@@ -1555,20 +1664,21 @@ def octuple(
 
     :returns: function for fitting 8 frequencies
     """
-    return(
-        mean +
-        M2amp * np.cos((CorrTides['M2']['freq'] * x - M2pha) * np.pi / 180) +
-        K1amp * np.cos((CorrTides['K1']['freq'] * x - K1pha) * np.pi / 180) +
-        S2amp * np.cos((CorrTides['S2']['freq'] * x - S2pha) * np.pi / 180) +
-        O1amp * np.cos((CorrTides['O1']['freq'] * x - O1pha) * np.pi / 180) +
-        N2amp * np.cos((CorrTides['N2']['freq'] * x - N2pha) * np.pi / 180) +
-        P1amp * np.cos((CorrTides['P1']['freq'] * x - P1pha) * np.pi / 180) +
-        K2amp * np.cos((CorrTides['K2']['freq'] * x - K2pha) * np.pi / 180) +
-        Q1amp * np.cos((CorrTides['Q1']['freq'] * x - Q1pha) * np.pi / 180))
+    return (
+        mean
+        + M2amp * np.cos((CorrTides["M2"]["freq"] * x - M2pha) * np.pi / 180)
+        + K1amp * np.cos((CorrTides["K1"]["freq"] * x - K1pha) * np.pi / 180)
+        + S2amp * np.cos((CorrTides["S2"]["freq"] * x - S2pha) * np.pi / 180)
+        + O1amp * np.cos((CorrTides["O1"]["freq"] * x - O1pha) * np.pi / 180)
+        + N2amp * np.cos((CorrTides["N2"]["freq"] * x - N2pha) * np.pi / 180)
+        + P1amp * np.cos((CorrTides["P1"]["freq"] * x - P1pha) * np.pi / 180)
+        + K2amp * np.cos((CorrTides["K2"]["freq"] * x - K2pha) * np.pi / 180)
+        + Q1amp * np.cos((CorrTides["Q1"]["freq"] * x - Q1pha) * np.pi / 180)
+    )
 
 
 def convention_pha_amp(fitted_amp, fitted_pha):
-    """ This function takes the fitted parameters given for phase and
+    """This function takes the fitted parameters given for phase and
          amplitude of the tidal analysis and returns them following the
          tidal parameter convention; amplitude is positive and phase
          is between -180 and +180 degrees.
@@ -1624,23 +1734,23 @@ def fittit(uaus, time, nconst):
     fitfunction = double
 
     # The first two harmonic parameters are always M2 and K1
-    apparam['M2'] = {'amp': [], 'phase': []}
-    apparam['K1'] = {'amp': [], 'phase': []}
+    apparam["M2"] = {"amp": [], "phase": []}
+    apparam["K1"] = {"amp": [], "phase": []}
 
     if nconst > 2:
         fitfunction = quadruple
-        apparam['S2'] = {'amp': [], 'phase': []}
-        apparam['O1'] = {'amp': [], 'phase': []}
+        apparam["S2"] = {"amp": [], "phase": []}
+        apparam["O1"] = {"amp": [], "phase": []}
 
     if nconst > 4:
         fitfunction = sextuple
-        apparam['N2'] = {'amp': [], 'phase': []}
-        apparam['P1'] = {'amp': [], 'phase': []}
+        apparam["N2"] = {"amp": [], "phase": []}
+        apparam["P1"] = {"amp": [], "phase": []}
 
     if nconst > 6:
         fitfunction = octuple
-        apparam['K2'] = {'amp': [], 'phase': []}
-        apparam['Q1'] = {'amp': [], 'phase': []}
+        apparam["K2"] = {"amp": [], "phase": []}
+        apparam["Q1"] = {"amp": [], "phase": []}
 
     # CASE 1: a time series of velocities with depth at a single location.
     if uaus.ndim == 2:
@@ -1665,13 +1775,14 @@ def fittit(uaus, time, nconst):
                 # Rotating to have a positive amplitude and a phase between
                 # [-180, 180]
                 for k in np.arange(nconst):
-                    fitted[2*k], fitted[2*k+1] = convention_pha_amp(
-                        fitted[2*k], fitted[2*k+1])
+                    fitted[2 * k], fitted[2 * k + 1] = convention_pha_amp(
+                        fitted[2 * k], fitted[2 * k + 1]
+                    )
                 # Putting the amplitude and phase of each constituent of this
                 # particlar depth in the right location within the dictionary.
                 for const, k in zip(apparam, np.arange(0, nconst)):
-                    apparam[const]['amp'][dep] = fitted[2*k]
-                    apparam[const]['phase'][dep] = fitted[2*k+1]
+                    apparam[const]["amp"][dep] = fitted[2 * k]
+                    apparam[const]["phase"][dep] = fitted[2 * k + 1]
 
     # CASE 2 : a time series of an area of velocities at a single depth
     elif uaus.ndim == 3:
@@ -1682,16 +1793,16 @@ def fittit(uaus, time, nconst):
 
         for i in np.arange(0, uaus.shape[1]):
             for j in np.arange(0, uaus.shape[2]):
-                if uaus[:, i, j].any() != 0.:
-                    fitted, cov = curve_fit(
-                        fitfunction, time[:], uaus[:, i, j])
+                if uaus[:, i, j].any() != 0.0:
+                    fitted, cov = curve_fit(fitfunction, time[:], uaus[:, i, j])
                     for k in np.arange(nconst):
-                        fitted[2*k], fitted[2*k+1] = convention_pha_amp(
-                            fitted[2*k], fitted[2*k+1])
+                        fitted[2 * k], fitted[2 * k + 1] = convention_pha_amp(
+                            fitted[2 * k], fitted[2 * k + 1]
+                        )
 
                     for const, k in zip(apparam, np.arange(0, nconst)):
-                        apparam[const]['amp'][i, j] = fitted[2*k]
-                        apparam[const]['phase'][i, j] = fitted[2*k+1]
+                        apparam[const]["amp"][i, j] = fitted[2 * k]
+                        apparam[const]["phase"][i, j] = fitted[2 * k + 1]
 
     # CASE 3: a time series of an area of velocities with depth
     elif uaus.ndim == 4:
@@ -1703,33 +1814,36 @@ def fittit(uaus, time, nconst):
         for dep in np.arange(0, uaus.shape[1]):
             for i in np.arange(0, uaus.shape[2]):
                 for j in np.arange(0, uaus.shape[3]):
-                    if uaus[:, dep, i, j].any() != 0.:
+                    if uaus[:, dep, i, j].any() != 0.0:
                         fitted, cov = curve_fit(
-                            fitfunction, time[:], uaus[:, dep, i, j])
+                            fitfunction, time[:], uaus[:, dep, i, j]
+                        )
 
                         for k in np.arange(nconst):
-                            fitted[2*k], fitted[2*k+1] = convention_pha_amp(
-                                fitted[2*k], fitted[2*k+1])
+                            fitted[2 * k], fitted[2 * k + 1] = convention_pha_amp(
+                                fitted[2 * k], fitted[2 * k + 1]
+                            )
 
                         for const, k in zip(apparam, np.arange(0, nconst)):
-                            apparam[const]['amp'][dep, i, j] = fitted[2*k]
-                            apparam[const]['phase'][dep, i, j] = fitted[2*k+1]
+                            apparam[const]["amp"][dep, i, j] = fitted[2 * k]
+                            apparam[const]["phase"][dep, i, j] = fitted[2 * k + 1]
 
     # Case 4: a time series of a single location with a single depth.
     else:
-        thesize = (0)
+        thesize = 0
         for const, ap in apparam.items():
             for key2 in ap:
                 ap[key2] = np.zeros(thesize)
 
-        if uaus[:].any() != 0.:
+        if uaus[:].any() != 0.0:
             fitted, cov = curve_fit(fitfunction, time[:], uaus[:])
             for k in np.arange(nconst):
-                fitted[2*k], fitted[2*k+1] = convention_pha_amp(
-                    fitted[2*k], fitted[2*k+1])
+                fitted[2 * k], fitted[2 * k + 1] = convention_pha_amp(
+                    fitted[2 * k], fitted[2 * k + 1]
+                )
             for const, k in zip(apparam, np.arange(0, nconst)):
-                apparam[const]['amp'] = fitted[2*k]
-                apparam[const]['phase'] = fitted[2*k+1]
+                apparam[const]["amp"] = fitted[2 * k]
+                apparam[const]["phase"] = fitted[2 * k + 1]
 
     # Mask the zero values
     for const, ap in apparam.items():
@@ -1739,7 +1853,7 @@ def fittit(uaus, time, nconst):
     return apparam
 
 
-def filter_timeseries(record, winlen=39, method='box'):
+def filter_timeseries(record, winlen=39, method="box"):
     """Filter a timeseries.
 
     Developed for wind and tidal filtering, but can be modified for use
@@ -1781,27 +1895,27 @@ def filter_timeseries(record, winlen=39, method='box'):
     weight = np.zeros(w, dtype=int)
 
     # Select filter method
-    if method == 'doodson':
+    if method == "doodson":
         # Doodson bandpass filter (winlen must be 39)
         weight[[1, 2, 5, 6, 10, 11, 13, 16, 18]] = 1
         weight[[0, 3, 8]] = 2
         centerval = 0
-    elif method == 'box':
+    elif method == "box":
         # Box filter
         weight[:] = 1
         centerval = 1
     else:
-        raise ValueError('Invalid filter method: {}'.format(method))
+        raise ValueError("Invalid filter method: {}".format(method))
 
     # Loop through record
     for i in range(record_length):
 
         # Adjust window length for end cases
-        W = min(i, w, record_length-i-1)
+        W = min(i, w, record_length - i - 1)
         Weight = weight[:W]
         Weight = np.append(Weight[::-1], np.append(centerval, Weight))
         if sum(Weight) != 0:
-            Weight = (Weight/sum(Weight))
+            Weight = Weight / sum(Weight)
 
         # Expand weight dims so it can operate on record window
         for dim in range(record.ndim - 1):
@@ -1809,7 +1923,7 @@ def filter_timeseries(record, winlen=39, method='box'):
 
         # Apply mean over window length
         if W > 0:
-            filtered[i, ...] = np.sum(record[i-W:i+W+1, ...] * Weight, axis=0)
+            filtered[i, ...] = np.sum(record[i - W : i + W + 1, ...] * Weight, axis=0)
         else:
             filtered[i, ...] = record[i, ...]
 

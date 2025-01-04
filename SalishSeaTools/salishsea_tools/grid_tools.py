@@ -32,10 +32,14 @@ import scipy.interpolate as spi
 import scipy.sparse as sp
 
 __all__ = [
-    'calculate_H',
-    'calculate_adjustment_factor', 'calculate_time_dependent_grid',
-    'time_dependent_grid_U', 'time_dependent_grid_V', 'build_GEM_mask',
-    'build_matrix', 'use_matrix',
+    "calculate_H",
+    "calculate_adjustment_factor",
+    "calculate_time_dependent_grid",
+    "time_dependent_grid_U",
+    "time_dependent_grid_V",
+    "build_GEM_mask",
+    "build_matrix",
+    "use_matrix",
 ]
 
 
@@ -53,7 +57,7 @@ def calculate_H(e3t0, tmask):
 
     """
 
-    H = np.sum(e3t0*tmask, axis=0)
+    H = np.sum(e3t0 * tmask, axis=0)
 
     return H
 
@@ -70,10 +74,10 @@ def calculate_adjustment_factor(H, ssh):
 
     :returns: the adjustment factor with dimensions (time, y, x)
     """
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         one_over_H = 1 / H
     one_over_H = np.nan_to_num(one_over_H)
-    adj = (1 + ssh * one_over_H)
+    adj = 1 + ssh * one_over_H
     return adj
 
 
@@ -83,7 +87,7 @@ def calculate_time_dependent_grid(
     ssh,
     input_vars,
 ):
-    """ Calculate the time dependent vertical grids and scale factors for
+    """Calculate the time dependent vertical grids and scale factors for
     variable volume in NEMO.
 
     :arg e3t0: initial vertical scale factors on T-grid.
@@ -115,14 +119,15 @@ def calculate_time_dependent_grid(
     # Time-dependent grids
     return_vars = {}
     for key in input_vars:
-        return_key = '{}t'.format(key[0:-1])
+        return_key = "{}t".format(key[0:-1])
         return_vars[return_key] = input_vars[key] * adj
 
     return return_vars
 
 
-def time_dependent_grid_U(e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars,
-                          return_ssh=False):
+def time_dependent_grid_U(
+    e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars, return_ssh=False
+):
     """Calculate time-dependent vertical grid spacing and depths on U-grid for
     variable volume in NEMO.
 
@@ -171,24 +176,28 @@ def time_dependent_grid_U(e3u0, e1u, e2u, e1t, e2t, umask, ssh, input_vars,
     e1e2u = e1u * e2u
     e1e2t = e1t * e2t
     # Interpolate ssh to u grid
-    ssh_u[:, :, 0:-1] = 0.5 * umask[0, :, 0:-1] / e1e2u[:, 0:-1] * (
-        e1e2t[:, 0:-1] * ssh[:, :, 0:-1] + e1e2t[:, 1:] * ssh[:, :, 1:]
-        )
+    ssh_u[:, :, 0:-1] = (
+        0.5
+        * umask[0, :, 0:-1]
+        / e1e2u[:, 0:-1]
+        * (e1e2t[:, 0:-1] * ssh[:, :, 0:-1] + e1e2t[:, 1:] * ssh[:, :, 1:])
+    )
     H = calculate_H(e3u0, umask)
     adj = calculate_adjustment_factor(H, ssh_u)
     adj = np.expand_dims(adj, axis=1)
     # Time-dependent grids
     return_vars = {}
     for key in input_vars:
-        return_key = '{}t'.format(key[0:-1])
+        return_key = "{}t".format(key[0:-1])
         return_vars[return_key] = input_vars[key] * adj
     if return_ssh:
-        return_vars['ssh_u'] = ssh_u
+        return_vars["ssh_u"] = ssh_u
     return return_vars
 
 
-def time_dependent_grid_V(e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars,
-                          return_ssh=False):
+def time_dependent_grid_V(
+    e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars, return_ssh=False
+):
     """Calculate time-dependent vertical grid spacing and depths on V-grid for
     variable volume in NEMO.
 
@@ -237,40 +246,44 @@ def time_dependent_grid_V(e3v0, e1v, e2v, e1t, e2t, vmask, ssh, input_vars,
     e1e2v = e1v * e2v
     e1e2t = e1t * e2t
     # Interpolate ssh to V-grid
-    ssh_v[:, 0:-1, :] = 0.5 * vmask[0, 0:-1, :] / e1e2v[0:-1, :] * (
-        e1e2t[0:-1, :] * ssh[:, 0:-1, :] +
-        e1e2t[1:, :] * ssh[:, 1:, :]
-        )
+    ssh_v[:, 0:-1, :] = (
+        0.5
+        * vmask[0, 0:-1, :]
+        / e1e2v[0:-1, :]
+        * (e1e2t[0:-1, :] * ssh[:, 0:-1, :] + e1e2t[1:, :] * ssh[:, 1:, :])
+    )
     H = calculate_H(e3v0, vmask)
     adj = calculate_adjustment_factor(H, ssh_v)
     adj = np.expand_dims(adj, axis=1)
     # Time-dependent grids
     return_vars = {}
     for key in input_vars:
-        return_key = '{}t'.format(key[0:-1])
+        return_key = "{}t".format(key[0:-1])
         return_vars[return_key] = input_vars[key] * adj
     if return_ssh:
-        return_vars['ssh_v'] = ssh_v
+        return_vars["ssh_v"] = ssh_v
 
     return return_vars
 
 
 def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
-    """
-    """
+    """ """
 
     # Evaluate each point on GEM grid
     mask_GEM = []
-    msg = 'Building HRDPS mask'
+    msg = "Building HRDPS mask"
     for lon, lat in zip(
-        tqdm(grid_GEM['longitude'].values.flatten() - 360, desc=msg),
-        grid_GEM['latitude'].values.flatten(),
+        tqdm(grid_GEM["longitude"].values.flatten() - 360, desc=msg),
+        grid_GEM["latitude"].values.flatten(),
     ):
 
         # Find closest NEMO ji point
         try:
             j, i = geo_tools.find_closest_model_point(
-                lon, lat, grid_NEMO['longitude'], grid_NEMO['latitude'],
+                lon,
+                lat,
+                grid_NEMO["longitude"],
+                grid_NEMO["latitude"],
             )
         except ValueError:
             j, i = np.nan, np.nan
@@ -282,7 +295,7 @@ def build_GEM_mask(grid_GEM, grid_NEMO, mask_NEMO):
             mask_GEM.append(mask_NEMO[j, i].values)
 
     # Reshape
-    mask_GEM = np.array(mask_GEM, dtype='int').reshape(grid_GEM['longitude'].shape)
+    mask_GEM = np.array(mask_GEM, dtype="int").reshape(grid_GEM["longitude"].shape)
 
     return mask_GEM
 
@@ -305,18 +318,23 @@ def build_matrix(weightsfile, opsfile):
     """
     # Weights
     with nc.Dataset(weightsfile) as f:
-        s1 = f.variables['src01'][:]-1  # -1 for fortran-to-python indexing
-        s2 = f.variables['src02'][:]-1
-        s3 = f.variables['src03'][:]-1
-        s4 = f.variables['src04'][:]-1
-        w1 = f.variables['wgt01'][:]
-        w2 = f.variables['wgt02'][:]
-        w3 = f.variables['wgt03'][:]
-        w4 = f.variables['wgt04'][:]
+        s1 = f.variables["src01"][:] - 1  # -1 for fortran-to-python indexing
+        s2 = f.variables["src02"][:] - 1
+        s3 = f.variables["src03"][:] - 1
+        s4 = f.variables["src04"][:] - 1
+        w1 = f.variables["wgt01"][:]
+        w2 = f.variables["wgt02"][:]
+        w3 = f.variables["wgt03"][:]
+        w4 = f.variables["wgt04"][:]
 
     with nc.Dataset(opsfile) as f:
-        NO = f.dimensions['x'].size * f.dimensions['y'].size   # number of operational grid points
-    NN, nemoshape = s1.size, s1.shape   # number of NEMO grid points and shape of NEMO matrix
+        NO = (
+            f.dimensions["x"].size * f.dimensions["y"].size
+        )  # number of operational grid points
+    NN, nemoshape = (
+        s1.size,
+        s1.shape,
+    )  # number of NEMO grid points and shape of NEMO matrix
 
     # Build matrix
     n = np.array([x for x in range(0, NN)])
@@ -324,8 +342,8 @@ def build_matrix(weightsfile, opsfile):
     M2 = sp.csr_matrix((w2.flatten(), (n, s2.flatten())), (NN, NO))
     M3 = sp.csr_matrix((w3.flatten(), (n, s3.flatten())), (NN, NO))
     M4 = sp.csr_matrix((w4.flatten(), (n, s4.flatten())), (NN, NO))
-    M = M1+M2+M3+M4
-    return M,nemoshape
+    M = M1 + M2 + M3 + M4
+    return M, nemoshape
 
 
 def use_matrix(opsfile, matrix, nemoshape, variable, time):
@@ -354,10 +372,10 @@ def use_matrix(opsfile, matrix, nemoshape, variable, time):
     :rtype: :class:`~numpy:numpy.ndarray`
     """
     with nc.Dataset(opsfile) as f:
-        odata = f.variables[variable][time, ...]   # Load the 2D field
+        odata = f.variables[variable][time, ...]  # Load the 2D field
 
     # Interpolate by matrix multiply - quite fast
-    ndata = matrix*odata.flatten()
+    ndata = matrix * odata.flatten()
 
     # Reshape to NEMO shaped array
     ndata = ndata.reshape(nemoshape)

@@ -8,7 +8,7 @@ cc This routine is normally only required when the collated dataset
 cc was constructed from a parallel run which had ignored land-only
 cc regions (i.e. jpnij < jpni*jpnj )
 cc
-cc Any attempt will be abandoned if the input fields do not match the 
+cc Any attempt will be abandoned if the input fields do not match the
 cc fields they are to replace in either rank, size or datatype
 cc
 cc INPUT ::
@@ -39,7 +39,7 @@ c
       integer, allocatable, dimension(:) :: dims, gsize, lsize
 
 cc
-cc Open the coordinate datafile. Read the global domain dimensions 
+cc Open the coordinate datafile. Read the global domain dimensions
 cc
       status = nf90_open( trim(coordname), NF90_NOWRITE, Gncid )
       if(status /= nf90_NoErr) call handle_err(status)
@@ -54,7 +54,7 @@ cc
       allocate(gsize(nDim))
       allocate(lsize(nDim))
 cc
-      status = nf90_Inquire_Variable(Gncid, Gvarid(1), nname, 
+      status = nf90_Inquire_Variable(Gncid, Gvarid(1), nname,
      &                               ntyp, ndims, dims, nvatt)
 cc
       if(verbose) write(*,*)'Fixing coordinates, name: ',trim(nname)
@@ -70,7 +70,7 @@ cc
       if(status /= nf90_NoErr) call handle_err(status)
       status = nf90_inq_varid(ncid, "nav_lat", varid(2))
       if(status /= nf90_NoErr) call handle_err(status)
-      status = nf90_Inquire_Variable(ncid, varid(1), nname, 
+      status = nf90_Inquire_Variable(ncid, varid(1), nname,
      &                               ntyp2, ndims2, dims, nvatt)
       if(status /= nf90_NoErr) call handle_err(status)
       if(verbose) write(*,*)'Fixing coordinates, ndims ',ndims
@@ -167,4 +167,4 @@ cc
       deallocate(gsize)
       deallocate(lsize)
 
-      end subroutine 
+      end subroutine

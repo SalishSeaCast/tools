@@ -1,6 +1,8 @@
 """Unit tests for bathy_tools.
 """
+
 from __future__ import division
+
 """
 Copyright 2013-2021 The Salish Sea MEOPAR contributors
 and The University of British Columbia
@@ -26,43 +28,40 @@ from salishsea_tools import bathy_tools
 
 @pytest.fixture
 def depths(request):
-    bathy = nc.Dataset('foo', 'w')
-    bathy.createDimension('x', 3)
-    bathy.createDimension('y', 5)
-    depths = bathy.createVariable('Bathymetry', float, ('y', 'x'))
+    bathy = nc.Dataset("foo", "w")
+    bathy.createDimension("x", 3)
+    bathy.createDimension("y", 5)
+    depths = bathy.createVariable("Bathymetry", float, ("y", "x"))
 
     def teardown():
         bathy.close()
-        os.remove('foo')
+        os.remove("foo")
+
     request.addfinalizer(teardown)
     return depths
 
 
 def test_smooth_neighbours_d1_lt_d2():
-    """smooth_neighbours returns expected value for depth1 < depth2
-    """
+    """smooth_neighbours returns expected value for depth1 < depth2"""
     d1, d2 = bathy_tools.smooth_neighbours(0.2, 1, 2)
     assert d1, d2 == (1.3, 1.7)
 
 
 def test_smooth_neighbours_d1_gt_d2():
-    """smooth_neighbours returns expected value for depth1 > depth2
-    """
+    """smooth_neighbours returns expected value for depth1 > depth2"""
     d1, d2 = bathy_tools.smooth_neighbours(0.2, 2, 1)
     assert d1, d2 == (1.7, 1.3)
 
 
 def test_calc_norm_depth_diffs_degenerate(depths):
-    """calc_norm_depth_diffs returns zeros for delta_lat=delta_lon=0
-    """
+    """calc_norm_depth_diffs returns zeros for delta_lat=delta_lon=0"""
     depths = np.ones((5, 3))
     diffs = bathy_tools.calc_norm_depth_diffs(depths, 0, 0)
     np.testing.assert_array_equal(diffs, np.zeros_like(depths))
 
 
 def test_calc_norm_depth_diffs_1_lat_step(depths):
-    """calc_norm_depth_diffs returns expected diffs for delta_lat=1
-    """
+    """calc_norm_depth_diffs returns expected diffs for delta_lat=1"""
     depths = np.ones((5, 3))
     depths[1, 1] = 2
     diffs = bathy_tools.calc_norm_depth_diffs(depths, 1, 0)
@@ -72,8 +71,7 @@ def test_calc_norm_depth_diffs_1_lat_step(depths):
 
 
 def test_calc_norm_depth_diffs_1_lon_step(depths):
-    """calc_norm_depth_diffs returns expected diffs for delta_lon=1
-    """
+    """calc_norm_depth_diffs returns expected diffs for delta_lon=1"""
     depths = np.ones((5, 3))
     depths[1, 1] = 2
     diffs = bathy_tools.calc_norm_depth_diffs(depths, 0, 1)
@@ -83,8 +81,7 @@ def test_calc_norm_depth_diffs_1_lon_step(depths):
 
 
 def test_argmax_single_max(depths):
-    """argmax return expected indices for single max value
-    """
+    """argmax return expected indices for single max value"""
     depths = np.zeros((5, 3))
     depths[1, 2] = 42
     result = bathy_tools.argmax(depths)
@@ -92,8 +89,7 @@ def test_argmax_single_max(depths):
 
 
 def test_argmax_2_max(depths):
-    """argmax return expected indices for single max value
-    """
+    """argmax return expected indices for single max value"""
     depths = np.zeros((5, 3))
     depths[1, 2] = 42
     depths[2, 1] = 42
@@ -102,8 +98,7 @@ def test_argmax_2_max(depths):
 
 
 def test_argmax_all_equal(depths):
-    """argmax return expected indices for single max value
-    """
+    """argmax return expected indices for single max value"""
     depths = np.ones((5, 3))
     result = bathy_tools.argmax(depths)
     assert result == (0, 0)

@@ -63,4 +63,3 @@ or import modules from it:
     from salishsea_tools import nc_tools
 
     nc_tools.check_dataset_attrs(...)
-

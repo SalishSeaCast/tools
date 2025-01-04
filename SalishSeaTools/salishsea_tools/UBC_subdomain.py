@@ -27,63 +27,95 @@ import netCDF4 as nc
 XBS = [55, 80]  # x-limits
 YBS = [295, 325]  # y-limits
 # Variables to copy
-VAR_LIST = ['salt', 'temp', 'h', 'lon_rho', 'lat_rho', 'mask_rho', 'pn', 'pm',
-            's_rho', 'hc', 'Cs_r', 'Vtransform', 'zeta', 'ocean_time',
-            'lon_u', 'lat_u', 'mask_u', 'u',
-            'lon_v', 'lat_v', 'mask_v', 'v',
-            'NO3', 'phytoplankton', 'zooplankton', 'detritus', 'Ldetritus',
-            'oxygen', 'TIC', 'alkalinity', 'CaCO3', 'rho']
+VAR_LIST = [
+    "salt",
+    "temp",
+    "h",
+    "lon_rho",
+    "lat_rho",
+    "mask_rho",
+    "pn",
+    "pm",
+    "s_rho",
+    "hc",
+    "Cs_r",
+    "Vtransform",
+    "zeta",
+    "ocean_time",
+    "lon_u",
+    "lat_u",
+    "mask_u",
+    "u",
+    "lon_v",
+    "lat_v",
+    "mask_v",
+    "v",
+    "NO3",
+    "phytoplankton",
+    "zooplankton",
+    "detritus",
+    "Ldetritus",
+    "oxygen",
+    "TIC",
+    "alkalinity",
+    "CaCO3",
+    "rho",
+]
 # Dimensions to copy
-DIM_LIST = ['xi_rho', 'eta_rho', 'N', 's_rho', 'ocean_time',
-            'xi_u', 'eta_u', 'xi_v', 'eta_v']
+DIM_LIST = [
+    "xi_rho",
+    "eta_rho",
+    "N",
+    "s_rho",
+    "ocean_time",
+    "xi_u",
+    "eta_u",
+    "xi_v",
+    "eta_v",
+]
 
 
 def get_UBC_subdomain(f_list):
-    """Create subdomain files for all netCDF files in f_list """
+    """Create subdomain files for all netCDF files in f_list"""
     for fname in f_list:
-        fnew = '{}_UBC.nc'.format(fname.split('.nc', 1)[0])
-        with nc.Dataset(fname) as G, nc.Dataset(fnew, 'w') as Gnew:
+        fnew = "{}_UBC.nc".format(fname.split(".nc", 1)[0])
+        with nc.Dataset(fname) as G, nc.Dataset(fnew, "w") as Gnew:
             _copy_netCDF_subdomain(G, Gnew, XBS, YBS, VAR_LIST, DIM_LIST)
 
 
-def _copy_netCDF_subdomain(oldfile, newfile, xbounds, ybounds,
-                           var_list, dim_list):
+def _copy_netCDF_subdomain(oldfile, newfile, xbounds, ybounds, var_list, dim_list):
     """Copy variables in var_list in subdomain [xbounds, ybounds] from
-       oldfile to newfile. Also copies dimensions in dim_list and
-       all global attributes.
+    oldfile to newfile. Also copies dimensions in dim_list and
+    all global attributes.
     """
     _copy_dimensions(oldfile, newfile, dim_list, xbounds, ybounds)
     _copy_variables(oldfile, newfile, var_list, xbounds, ybounds)
     # copy global attributes
-    newfile.setncatts(
-        {att: oldfile.getncattr(att) for att in oldfile.ncattrs()}
-        )
+    newfile.setncatts({att: oldfile.getncattr(att) for att in oldfile.ncattrs()})
 
 
 def _copy_dimensions(oldfile, newfile, dim_list, xbounds, ybounds):
-    """ Copy the dimensions in dims_list from oldfile to newfile.
-        Dimensions of eta_rho, xi_rho are determined by limits of
-        ybounds, xbounds. eta_v and xi_u have one extra because of staggering.
+    """Copy the dimensions in dims_list from oldfile to newfile.
+    Dimensions of eta_rho, xi_rho are determined by limits of
+    ybounds, xbounds. eta_v and xi_u have one extra because of staggering.
     """
     dim_size_dict = {
-        'eta_rho': ybounds[1]-ybounds[0]+1,
-        'eta_u':  ybounds[1]-ybounds[0]+1,
-        'xi_rho': xbounds[1]-xbounds[0]+1,
-        'xi_v': xbounds[1]-xbounds[0]+1,
-        'xi_u': xbounds[1]-xbounds[0],
-        'eta_v': ybounds[1]-ybounds[0],
-        'ocean_time': 0,
+        "eta_rho": ybounds[1] - ybounds[0] + 1,
+        "eta_u": ybounds[1] - ybounds[0] + 1,
+        "xi_rho": xbounds[1] - xbounds[0] + 1,
+        "xi_v": xbounds[1] - xbounds[0] + 1,
+        "xi_u": xbounds[1] - xbounds[0],
+        "eta_v": ybounds[1] - ybounds[0],
+        "ocean_time": 0,
     }
     for dimname in dim_list:
         dim = oldfile.dimensions[dimname]
-        newfile.createDimension(
-            dimname, size=dim_size_dict.get(dimname, dim.__len__())
-        )
+        newfile.createDimension(dimname, size=dim_size_dict.get(dimname, dim.__len__()))
 
 
 def _copy_variables(oldfile, newfile, var_list, xbounds, ybounds):
     """Copy variables in var_list from oldfile to newfile for subdomain
-        [xbounds, ybounds]"""
+    [xbounds, ybounds]"""
     varnames_in_file = list(oldfile.variables.keys())
     for varname in var_list:
         if varname in varnames_in_file:
@@ -91,24 +123,23 @@ def _copy_variables(oldfile, newfile, var_list, xbounds, ybounds):
             dims = var.dimensions
             newvar = newfile.createVariable(varname, var.datatype, dims)
             # copy variable attributes
-            newvar.setncatts({att: var.getncattr(att)
-                             for att in var.ncattrs()})
+            newvar.setncatts({att: var.getncattr(att) for att in var.ncattrs()})
             # fill data
-            if 'eta_rho' in dims or 'xi_rho' in dims:
-                newvar[:] = var[...,
-                                ybounds[0]:ybounds[1]+1,
-                                xbounds[0]:xbounds[1]+1]
-            elif 'eta_u' in dims or 'xi_u' in dims:
-                newvar[:] = var[...,
-                                ybounds[0]:ybounds[1]+1,
-                                xbounds[0]:xbounds[1]]
-            elif 'eta_v' in dims or 'xi_v' in dims:
-                newvar[:] = var[...,
-                                ybounds[0]:ybounds[1],
-                                xbounds[0]:xbounds[1]+1]
+            if "eta_rho" in dims or "xi_rho" in dims:
+                newvar[:] = var[
+                    ..., ybounds[0] : ybounds[1] + 1, xbounds[0] : xbounds[1] + 1
+                ]
+            elif "eta_u" in dims or "xi_u" in dims:
+                newvar[:] = var[
+                    ..., ybounds[0] : ybounds[1] + 1, xbounds[0] : xbounds[1]
+                ]
+            elif "eta_v" in dims or "xi_v" in dims:
+                newvar[:] = var[
+                    ..., ybounds[0] : ybounds[1], xbounds[0] : xbounds[1] + 1
+                ]
             else:
                 newvar[:] = var[:]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     get_UBC_subdomain(sys.argv[1:])

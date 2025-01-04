@@ -23,6 +23,7 @@ please generate a updated `README.md` file with:
 
 and commit and push the updated `README.md` to GitHub.
 """
+
 import json
 from pathlib import Path
 import re
@@ -37,7 +38,7 @@ TITLE_PATTERN = re.compile("#{1,6} ?")
 
 def main():
     cwd_parts = Path.cwd().parts
-    repo_path = Path(*cwd_parts[cwd_parts.index(REPO_NAME)+1:])
+    repo_path = Path(*cwd_parts[cwd_parts.index(REPO_NAME) + 1 :])
     url = f"{NBVIEWER}/{GITHUB_ORG}/{REPO_NAME}/blob/{DEFAULT_BRANCH_NAME}/{repo_path}"
 
     readme = f"""\

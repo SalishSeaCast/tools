@@ -2,19 +2,19 @@ cc make_global_file
 cc
 cc FORTRAN subroutine that defines the global NetCDF archive containing
 cc diagnostics on the T-grid.  The archive is given the default name of
-cc "global_Tgrid.nc" 
-cc 
+cc "global_Tgrid.nc"
+cc
 cc INPUT ::
 cc       my_time -> array containing write times in seconds
 cc       my_size -> array containing sizes of global archive dimensions
 cc     num_times -> number of time records in archive
 cc
-      subroutine make_global_file( infile, ofile, my_time, my_size3, 
+      subroutine make_global_file( infile, ofile, my_time, my_size3,
      &                             num_times, verbose, dovar )
 
       USE netcdf
       implicit none
- 
+
       integer, intent(IN)               :: num_times
       logical, intent(IN)               :: verbose
       integer, dimension(3), intent(IN) :: my_size3
@@ -28,7 +28,7 @@ cc
       real,dimension(:), allocatable :: depth_array
       character*(*) infile, ofile
       character*256 nname
-      integer i, m, k, nDim, nVar, nAtt, nlen, nunlim, 
+      integer i, m, k, nDim, nVar, nAtt, nlen, nunlim,
      &        n, ntyp, nvatt, ndims, oldfill
 cc
 cc Create global archive and set dimensions
@@ -36,8 +36,8 @@ cc
       my_size(1:3) = my_size3
       my_size(4) = num_times
 #ifdef LARGE_FILE
-      status = nf90_create( trim(ofile), 
-     &         cmode=or(nf90_clobber,nf90_64bit_offset), 
+      status = nf90_create( trim(ofile),
+     &         cmode=or(nf90_clobber,nf90_64bit_offset),
      &         ncid=ncid )
 #else
       status = nf90_create( trim(ofile), NF90_CLOBBER, ncid )
@@ -78,7 +78,7 @@ c
       IF(.not.dovar(n)) THEN
 c skip unwanted variables
       ELSE
-       if(verbose) 
+       if(verbose)
      &         write(*,*) n,ntyp,ndims,(dims(i),i=1,ndims),nvatt,' ',trim(nname)
        if(ndims.eq.0) then
         status = nf90_def_var( ncid, trim(nname), ntyp,  varID )
@@ -91,11 +91,11 @@ c skip unwanted variables
        if(verbose) write(*,*) 'dimids ',dimID(dims(1)),dimID(dims(2))
        elseif(ndims.eq.3) then
         status = nf90_def_var( ncid, trim(nname), ntyp,
-     &                      (/ dimID(dims(1)), dimID(dims(2)), 
+     &                      (/ dimID(dims(1)), dimID(dims(2)),
      &                         dimID(dims(3)) /), varID )
        elseif(ndims.eq.4) then
         status = nf90_def_var( ncid, trim(nname), ntyp,
-     &                      (/ dimID(dims(1)), dimID(dims(2)), 
+     &                      (/ dimID(dims(1)), dimID(dims(2)),
      &                         dimID(dims(3)), dimID(dims(4)) /), varID )
        else
         write(*,*) 'Unknown ndims: ',ndims
@@ -115,9 +115,9 @@ c skip unwanted variables
       deallocate(dimID)
       deallocate(dims)
       deallocate(sdims)
-c      
+c
 c Global Attributes:
-c      
+c
       status = nf90_redef(ncid)
       call handle_err(status)
       do n = 1,nAtt
@@ -125,7 +125,7 @@ c
        if(verbose) write(*,*) 'Global Attribute: ',n,' ',trim(nname)
        if(.not. (index(nname,'DOMAIN').gt.0    .or.
      &           index(nname,'associate').gt.0 .or.
-     &           index(nname,'file_name').gt.0  )) 
+     &           index(nname,'file_name').gt.0  ))
      &  status = nf90_copy_att(ncid2,
      &                     NF90_GLOBAL,trim(nname),ncid,NF90_GLOBAL)
         call handle_err(status)
@@ -137,4 +137,4 @@ c
       status = nf90_close(ncid)
       call handle_err(status)
       if(verbose) write(*,*) 'B.Finished make_global_file'
-      end 
+      end

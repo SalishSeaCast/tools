@@ -6,22 +6,22 @@ LIBS = -L$(NCHOME)/lib -I$(NCHOME)/include -lnetcdf
 #
 #.SUFFIXES :
 OBJFILES = nocscombine.o make_global_file.o ncread_and_collate.o ncfixcoord.o rtime.o handle_err.o
-.o.F90	:	
+.o.F90	:
 	$(FC)  $< $(LIBS)
 #
 nocscombine :  $(OBJFILES)
 	$(LDR) $(OBJFILES) $(LIBS)
 nocscombine.o : nocscombine.F90
 	$(FC)  $< $(LIBS)
-make_global_file.o : make_global_file.F90 
+make_global_file.o : make_global_file.F90
 	$(FC)  $< $(LIBS)
 ncread_and_collate.o : ncread_and_collate.F90 make_global_file.o
 	$(FC)  $< $(LIBS)
-ncfixcoord.o : ncfixcoord.F90 
+ncfixcoord.o : ncfixcoord.F90
 	$(FC)  $< $(LIBS)
-handle_err.o : handle_err.F90 
+handle_err.o : handle_err.F90
 	$(FC)  $< $(LIBS)
-rtime.o : rtime.F90 
+rtime.o : rtime.F90
 	$(FC)  $< $(LIBS)
-clean : 
+clean :
 	rm $(OBJFILES)

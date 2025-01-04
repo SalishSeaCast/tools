@@ -27,18 +27,17 @@ import os
 
 
 def load_NEMO_timeseries(
-        filenames, mask, field, dim, index=0, spacing=1,
-        shape='grid', unstagger_dim=None
+    filenames, mask, field, dim, index=0, spacing=1, shape="grid", unstagger_dim=None
 ):
-    """
-    """
+    """ """
 
     # Reshape mask, grid, and depth
     tmask, coords, ngrid, ngrid_water = reshape_coords(
-        mask, dim, index=index, spacing=spacing)
+        mask, dim, index=index, spacing=spacing
+    )
 
     # Initialize output array
-    date = np.empty(0, dtype='datetime64[ns]')
+    date = np.empty(0, dtype="datetime64[ns]")
     data = np.empty((0, ngrid_water))
 
     # Loop through filenames
@@ -52,46 +51,47 @@ def load_NEMO_timeseries(
 
         # Reshape field
         data_trim = reshape_to_ts(
-            data_grid.values, tmask, ngrid, ngrid_water, spacing=spacing)
+            data_grid.values, tmask, ngrid, ngrid_water, spacing=spacing
+        )
 
         # Store trimmed arrays
         date = np.concatenate([date, data_grid.time_counter.values])
         data = np.concatenate([data, data_trim], axis=0)
 
     # Reshape to grid
-    if shape is 'grid':
+    if shape is "grid":
 
         # Correct for depth dimension name
-        if dim.find('depth') is not -1:
-            dim1, dim2, dimslice = 'gridY', 'gridX', 'z'
-        elif dim.find('y') is not -1:
-            dim1, dim2, dimslice = 'gridZ', 'gridX', 'y'
-        elif dim.find('x') is not -1:
-            dim1, dim2, dimslice = 'gridZ', 'gridY', 'x'
+        if dim.find("depth") is not -1:
+            dim1, dim2, dimslice = "gridY", "gridX", "z"
+        elif dim.find("y") is not -1:
+            dim1, dim2, dimslice = "gridZ", "gridX", "y"
+        elif dim.find("x") is not -1:
+            dim1, dim2, dimslice = "gridZ", "gridY", "x"
 
         # Reshape data to grid
         data = reshape_to_grid(
-            data, [coords[dim1], coords[dim2]],
-            mask.gdept_0.isel(**{'t': 0, dimslice: 0}).shape
+            data,
+            [coords[dim1], coords[dim2]],
+            mask.gdept_0.isel(**{"t": 0, dimslice: 0}).shape,
         )
 
         # Redefine coords for grid
         coords = {
-            'depth': mask.gdept_1d.isel(t=0).values,
-            'gridZ': mask.z.values,
-            'gridY': mask.y.values,
-            'gridX': mask.x.values
+            "depth": mask.gdept_1d.isel(t=0).values,
+            "gridZ": mask.z.values,
+            "gridY": mask.y.values,
+            "gridX": mask.x.values,
         }
 
     # Coords dict
-    coords['date'] = date
+    coords["date"] = date
 
     return data, coords
 
 
 def make_filename_list(
-        timerange, qty, model='nowcast', resolution='h',
-        path='/results/SalishSea'
+    timerange, qty, model="nowcast", resolution="h", path="/results/SalishSea"
 ):
     """Return a sequential list of Nowcast results filenames to be passed into
     `xarray.open_mfdataset` or `timeseries_tools.load_NEMO_timeseries`.
@@ -124,10 +124,11 @@ def make_filename_list(
     filenames = []
 
     while date < enddate:
-        datestr1 = date.strftime('%d%b%y').lower()
-        datestr2 = date.strftime('%Y%m%d')
-        filename = 'SalishSea_1{}_{}_{}_grid_{}.nc'.format(
-            resolution, datestr2, datestr2, qty)
+        datestr1 = date.strftime("%d%b%y").lower()
+        datestr2 = date.strftime("%Y%m%d")
+        filename = "SalishSea_1{}_{}_{}_grid_{}.nc".format(
+            resolution, datestr2, datestr2, qty
+        )
         filenames.append(os.path.join(path, model, datestr1, filename))
         date = date + timedelta(days=1)
 
@@ -140,39 +141,40 @@ def reshape_coords(mask_in, dim_in, index=0, spacing=1):
     """
 
     # Correct for depth dimension name
-    if dim_in.find('depth') is not -1:
-        dim = 'deptht'
+    if dim_in.find("depth") is not -1:
+        dim = "deptht"
     else:
         dim = dim_in
 
     # Create full gridded mask, grid and depth Numpy ndarrays
-    gridZ, gridY, gridX = np.meshgrid(
-        mask_in.z, mask_in.y, mask_in.x, indexing='ij')
-    gridmask = xr.Dataset({
-        'tmask': (
-            ['deptht', 'y', 'x'],
-            mask_in.tmask.isel(t=0).values.astype(bool),
-        ),
-        'depth': (['deptht', 'y', 'x'], mask_in.gdept_0.isel(t=0).values),
-        'gridZ': (['deptht', 'y', 'x'], gridZ),
-        'gridY': (['deptht', 'y', 'x'], gridY),
-        'gridX': (['deptht', 'y', 'x'], gridX)},
-        coords={'deptht': mask_in.gdept_1d.isel(t=0).values,
-                'y': mask_in.y, 'x': mask_in.x})
+    gridZ, gridY, gridX = np.meshgrid(mask_in.z, mask_in.y, mask_in.x, indexing="ij")
+    gridmask = xr.Dataset(
+        {
+            "tmask": (
+                ["deptht", "y", "x"],
+                mask_in.tmask.isel(t=0).values.astype(bool),
+            ),
+            "depth": (["deptht", "y", "x"], mask_in.gdept_0.isel(t=0).values),
+            "gridZ": (["deptht", "y", "x"], gridZ),
+            "gridY": (["deptht", "y", "x"], gridY),
+            "gridX": (["deptht", "y", "x"], gridX),
+        },
+        coords={
+            "deptht": mask_in.gdept_1d.isel(t=0).values,
+            "y": mask_in.y,
+            "x": mask_in.x,
+        },
+    )
 
     # Slice and subsample mask
     mask = gridmask.tmask.isel(**{dim: index}).values[::spacing, ::spacing]
 
     # Slice and subsample grid and depth into dict
     coords = {
-        'depth':
-            gridmask.depth.isel(**{dim: index}).values[::spacing, ::spacing],
-        'gridZ':
-            gridmask.gridZ.isel(**{dim: index}).values[::spacing, ::spacing],
-        'gridY':
-            gridmask.gridY.isel(**{dim: index}).values[::spacing, ::spacing],
-        'gridX':
-            gridmask.gridX.isel(**{dim: index}).values[::spacing, ::spacing],
+        "depth": gridmask.depth.isel(**{dim: index}).values[::spacing, ::spacing],
+        "gridZ": gridmask.gridZ.isel(**{dim: index}).values[::spacing, ::spacing],
+        "gridY": gridmask.gridY.isel(**{dim: index}).values[::spacing, ::spacing],
+        "gridX": gridmask.gridX.isel(**{dim: index}).values[::spacing, ::spacing],
     }
 
     # Number of grid points
@@ -181,23 +183,21 @@ def reshape_coords(mask_in, dim_in, index=0, spacing=1):
 
     # Reshape mask, grid, and depth
     mask = mask.reshape(ngrid)
-    coords['depth'] = coords['depth'].reshape(ngrid)[mask]
-    coords['gridZ'] = coords['gridZ'].reshape(ngrid)[mask]
-    coords['gridY'] = coords['gridY'].reshape(ngrid)[mask]
-    coords['gridX'] = coords['gridX'].reshape(ngrid)[mask]
+    coords["depth"] = coords["depth"].reshape(ngrid)[mask]
+    coords["gridZ"] = coords["gridZ"].reshape(ngrid)[mask]
+    coords["gridY"] = coords["gridY"].reshape(ngrid)[mask]
+    coords["gridX"] = coords["gridX"].reshape(ngrid)[mask]
 
     return mask, coords, ngrid, ngrid_water
 
 
 def reshape_coords_GEM(grid, mask_in):
-    """
-    """
+    """ """
 
     coords = {}
 
     # Create full gridded mask, grid and depth Numpy ndarrays
-    coords['gridY'], coords['gridX'] = np.meshgrid(
-        grid.y, grid.x, indexing='ij')
+    coords["gridY"], coords["gridX"] = np.meshgrid(grid.y, grid.x, indexing="ij")
 
     # Number of grid points
     ngrid = mask_in.shape[0] * mask_in.shape[1]
@@ -205,15 +205,14 @@ def reshape_coords_GEM(grid, mask_in):
 
     # Reshape mask, grid, and depth
     mask = mask_in.reshape(ngrid)
-    coords['gridY'] = coords['gridY'].reshape(ngrid)[mask.astype(bool)]
-    coords['gridX'] = coords['gridX'].reshape(ngrid)[mask.astype(bool)]
+    coords["gridY"] = coords["gridY"].reshape(ngrid)[mask.astype(bool)]
+    coords["gridX"] = coords["gridX"].reshape(ngrid)[mask.astype(bool)]
 
     return mask, coords, ngrid, ngrid_water
 
 
 def reshape_to_ts(data_grid, mask, ngrid, ngrid_water, spacing=1):
-    """
-    """
+    """ """
 
     # Convert to Numpy ndarray, subsample, and reshape
     data_flat = data_grid[:, ::spacing, ::spacing].reshape((-1, ngrid))

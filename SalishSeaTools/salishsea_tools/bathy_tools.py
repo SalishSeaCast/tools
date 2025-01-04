@@ -87,9 +87,9 @@ def plot_colourmesh(
     title,
     fig_size=(9, 9),
     axis_limits=None,
-    colour_map='winter_r',
+    colour_map="winter_r",
     bins=15,
-    land_colour='#edc9af',
+    land_colour="#edc9af",
 ):
     """Create a colour-mesh plot of a bathymetry dataset
     on a longitude/latitude axis.
@@ -121,20 +121,21 @@ def plot_colourmesh(
     :returns: Figure object containing the plot
     :rtype: :py:class:`matplotlib.figure.Figure`
     """
-    lats = dataset.variables['nav_lat']
-    lons = dataset.variables['nav_lon']
-    depths = dataset.variables['Bathymetry']
+    lats = dataset.variables["nav_lat"]
+    lons = dataset.variables["nav_lon"]
+    depths = dataset.variables["Bathymetry"]
     fig = plt.figure(figsize=fig_size)
     set_aspect_ratio(lats)
     plt.title(title)
     cmap, norm = prep_colour_map(
-        depths, limits=(0, np.max(depths)), colour_map=colour_map, bins=bins)
+        depths, limits=(0, np.max(depths)), colour_map=colour_map, bins=bins
+    )
     cmap.set_bad(land_colour)
     plt.pcolormesh(lons[:], lats[:], depths[:], cmap=cmap, norm=norm)
     if axis_limits is not None:
         plt.axis(axis_limits)
     cbar = plt.colorbar(shrink=0.8)
-    cbar.set_label('Depth [m]')
+    cbar.set_label("Depth [m]")
     return fig
 
 
@@ -143,9 +144,9 @@ def plot_colourmesh_zoom(
     centre,
     half_width=5,
     fig_size=(9, 9),
-    colour_map='copper_r',
+    colour_map="copper_r",
     bins=15,
-    land_colour='white',
+    land_colour="white",
 ):
     """Create a colour-mesh plot of a bathymetry dataset
     on a grid point axis.
@@ -176,32 +177,34 @@ def plot_colourmesh_zoom(
                       dataset's :py:const:`Bathymetry` variable masked array
     :type land_colour: str
     """
-    lats = dataset.variables['nav_lat']
-    depths = dataset.variables['Bathymetry']
+    lats = dataset.variables["nav_lat"]
+    depths = dataset.variables["Bathymetry"]
     plt.figure(figsize=fig_size)
     set_aspect_ratio(lats)
     ictr, jctr = centre
     region_depths = depths[
-        jctr+half_width:jctr-half_width:-1,
-        ictr-half_width:ictr+half_width
+        jctr + half_width : jctr - half_width : -1,
+        ictr - half_width : ictr + half_width,
     ]
     cmap, norm = prep_colour_map(
-        depths, limits=(0, np.max(region_depths)), colour_map=colour_map, bins=bins)
+        depths, limits=(0, np.max(region_depths)), colour_map=colour_map, bins=bins
+    )
     cmap.set_bad(land_colour)
     plt.pcolormesh(depths[:], cmap=cmap, norm=norm)
     cbar = plt.colorbar()
-    cbar.set_label('Depth [m]')
-    plt.axis((ictr-half_width, ictr+half_width,
-             jctr-half_width, jctr+half_width))
+    cbar.set_label("Depth [m]")
+    plt.axis(
+        (ictr - half_width, ictr + half_width, jctr - half_width, jctr + half_width)
+    )
 
 
 def prep_colour_map(
-        depths,
-        limits=None,
-        centre=None,
-        half_width=5,
-        colour_map='copper_r',
-        bins=15,
+    depths,
+    limits=None,
+    centre=None,
+    half_width=5,
+    colour_map="copper_r",
+    bins=15,
 ):
     """Returns cmap and norm elements of a colourmap for the
     netCDF depths variable.
@@ -231,8 +234,8 @@ def prep_colour_map(
     if limits is None:
         ictr, jctr = centre
         region = depths[
-            jctr+half_width:jctr-half_width:-1,
-            ictr-half_width:ictr+half_width
+            jctr + half_width : jctr - half_width : -1,
+            ictr - half_width : ictr + half_width,
         ]
         limits = (0, np.max(region))
     levels = MaxNLocator(nbins=bins).tick_values(*limits)
@@ -266,9 +269,12 @@ def show_region_depths(depths, centre, half_width=5):
     :type half_width: int
     """
     ictr, jctr = centre
-    print(depths[
-        jctr+half_width:jctr-half_width:-1,
-        ictr-half_width:ictr+half_width])
+    print(
+        depths[
+            jctr + half_width : jctr - half_width : -1,
+            ictr - half_width : ictr + half_width,
+        ]
+    )
 
 
 def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
@@ -295,12 +301,14 @@ def smooth(depths, max_norm_depth_diff=0.8, smooth_factor=0.2):
     while max_diff > max_norm_depth_diff:
         if diffs_lat[lat_ij] > diffs_lon[lon_ij]:
             i, j = lat_ij
-            depths[lat_ij], depths[i+1, j] = smooth_neighbours(
-                smooth_factor, depths[lat_ij], depths[i+1, j])
+            depths[lat_ij], depths[i + 1, j] = smooth_neighbours(
+                smooth_factor, depths[lat_ij], depths[i + 1, j]
+            )
         else:
             i, j = lon_ij
-            depths[lon_ij], depths[i, j+1] = smooth_neighbours(
-                smooth_factor, depths[lon_ij], depths[i, j+1])
+            depths[lon_ij], depths[i, j + 1] = smooth_neighbours(
+                smooth_factor, depths[lon_ij], depths[i, j + 1]
+            )
         diffs_lat, lat_ij, diffs_lon, lon_ij = choose_steepest_cells(depths)
         max_diff = np.maximum(diffs_lat[lat_ij], diffs_lon[lon_ij])
     return depths
@@ -370,7 +378,7 @@ def calc_norm_depth_diffs(depths, delta_lat, delta_lon):
     :rtype: :py:class:`netCDF4.Variable`
     """
     jmax, imax = depths.shape
-    offset_depths = depths[:jmax-delta_lat, :imax-delta_lon]
+    offset_depths = depths[: jmax - delta_lat, : imax - delta_lon]
     avg_depths = (depths[delta_lat:, delta_lon:] + offset_depths) / 2
     delta_depths = depths[delta_lat:, delta_lon:] - offset_depths
     return np.abs(delta_depths / avg_depths)
@@ -399,8 +407,8 @@ def zero_jervis_end(depths):
     :returns: netcdf variable object containing the depths
     :rtype: :py:class:`netCDF4.Variable`
     """
-    depths[650:651+1, 310:320] = 0.
-    depths[647:649+1, 312:320] = 0.
+    depths[650 : 651 + 1, 310:320] = 0.0
+    depths[647 : 649 + 1, 312:320] = 0.0
     return depths
 
 
@@ -414,15 +422,15 @@ def zero_toba_region(depths):
     :returns: netcdf variable object containing the depths
     :rtype: :py:class:`netCDF4.Variable`
     """
-    depths[746, 243:] = 0.
-    depths[747:756+1, 240:] = 0.
-    depths[757:763+1, 235:] = 0.
-    depths[763:766+1, 220:] = 0.
-    depths[766:771, 213:] = 0.
-    depths[771, 189:] = 0.
-    depths[772, 188:] = 0.
-    depths[773:774+1, 189:] = 0.
-    depths[775:784+1, 190:] = 0.
-    depths[785:788+1, 198:] = 0.
-    depths[789:791+1, 199:] = 0.
+    depths[746, 243:] = 0.0
+    depths[747 : 756 + 1, 240:] = 0.0
+    depths[757 : 763 + 1, 235:] = 0.0
+    depths[763 : 766 + 1, 220:] = 0.0
+    depths[766:771, 213:] = 0.0
+    depths[771, 189:] = 0.0
+    depths[772, 188:] = 0.0
+    depths[773 : 774 + 1, 189:] = 0.0
+    depths[775 : 784 + 1, 190:] = 0.0
+    depths[785 : 788 + 1, 198:] = 0.0
+    depths[789 : 791 + 1, 199:] = 0.0
     return depths

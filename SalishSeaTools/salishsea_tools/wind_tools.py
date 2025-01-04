@@ -42,10 +42,14 @@ from salishsea_tools.unit_conversions import (
 
 
 __all__ = [
-    'calc_wind_avg_at_point',
-    'M_PER_S__KM_PER_HR', 'M_PER_S__KNOTS', 'mps_kph', 'mps_knots',
-    'wind_to_from', 'bearing_heading',
-    'wind_speed_dir',
+    "calc_wind_avg_at_point",
+    "M_PER_S__KM_PER_HR",
+    "M_PER_S__KNOTS",
+    "mps_kph",
+    "mps_knots",
+    "wind_to_from",
+    "bearing_heading",
+    "wind_speed_dir",
 ]
 
 
@@ -79,7 +83,9 @@ def get_EC_observations(station, start_day, end_day):
 
     # Call get_EC_observations from stormtools
     wind_spd, wind_dir, temp, times, lat, lon = stormtools.get_EC_observations(
-        station, start_day, end_day,
+        station,
+        start_day,
+        end_day,
     )
 
     return wind_spd, wind_dir, temp, times, lat, lon
@@ -99,17 +105,17 @@ def parse_DFO_buoy_date(line):
     # -- thus the multiple cases
     if (int(line[3]) > 2020) & (int(line[3]) < 202020):
         year, month, day = int(line[3][:4]), int(line[3][4:]), int(line[4])
-        HHMM = f'{int(line[5]):04d}'
+        HHMM = f"{int(line[5]):04d}"
     elif int(line[3]) > 202020:
         year, month, day = int(line[3][:4]), int(line[3][4:6]), int(line[3][6:])
-        HHMM = f'{int(line[4]):04d}'
+        HHMM = f"{int(line[4]):04d}"
     elif int(line[4]) > 12:
         year = int(line[3])
-        MMDD, HHMM = [f'{int(l):04d}' for l in line[4:6]]
+        MMDD, HHMM = [f"{int(l):04d}" for l in line[4:6]]
         month, day = int(MMDD[:2]), int(MMDD[2:])
     else:
         year = int(line[3])
-        HHMM = f'{int(line[6]):04d}'
+        HHMM = f"{int(line[6]):04d}"
         month, day = int(line[4]), int(line[5])
     hour, minute = int(HHMM[:2]), int(HHMM[2:])
     date = datetime(year, month, day, hour, minute, 0)
@@ -131,16 +137,16 @@ def read_DFO_buoy(station, year):
 
     # Station ID dict
     station_ids = {
-        'Halibut Bank': 46146,
-        'Sentry Shoal': 46131,
+        "Halibut Bank": 46146,
+        "Sentry Shoal": 46131,
     }
 
     # Data url
-    url = 'https://www.meds-sdmm.dfo-mpo.gc.ca/alphapro/wave/waveshare/fbyears'
+    url = "https://www.meds-sdmm.dfo-mpo.gc.ca/alphapro/wave/waveshare/fbyears"
 
     # Open the *.zip file from url using Pandas
-    ID = f'C{station_ids[station]}'
-    file = os.path.join(url, ID, f'{ID.lower()}_{year}.zip')
+    ID = f"C{station_ids[station]}"
+    file = os.path.join(url, ID, f"{ID.lower()}_{year}.zip")
     csv = pd.read_csv(file, header=None)
 
     # Initialize parsing booleans
@@ -170,8 +176,8 @@ def read_DFO_buoy(station, year):
             # Read wind data
             elif gotwind == False:
                 gotwind = True
-                wdir.append(float(line_parsed[0].split('W')[0]))
-                wspd.append(float(line_parsed[1].split('W')[0]))
+                wdir.append(float(line_parsed[0].split("W")[0]))
+                wspd.append(float(line_parsed[1].split("W")[0]))
 
     # Transform angle to deg CCW from east
     wdir = 270 - np.array(wdir)
@@ -200,7 +206,7 @@ def wind_speed_dir(u_wind, v_wind):
     speed = np.sqrt(u_wind**2 + v_wind**2)
     dir = np.arctan2(v_wind, u_wind)
     dir = np.rad2deg(dir + (dir < 0) * 2 * np.pi)
-    speed_dir = namedtuple('speed_dir', 'speed, dir')
+    speed_dir = namedtuple("speed_dir", "speed, dir")
     return speed_dir(speed, dir)
 
 
@@ -235,29 +241,29 @@ def calc_wind_avg_at_point(date_time, weather_path, windji, avg_hrs=-4):
     :raises: :py:exc:`IndexError` if :kbd:`avg_hrs` is outside the range
              :kbd:`[-24, 0]`.
     """
-    weather_filename_tmpl = 'hrdps_y{0.year:4d}m{0.month:02d}d{0.day:02d}.nc'
+    weather_filename_tmpl = "hrdps_y{0.year:4d}m{0.month:02d}d{0.day:02d}.nc"
     try:
-        weather_file = Path(
-            weather_path, weather_filename_tmpl.format(date_time))
+        weather_file = Path(weather_path, weather_filename_tmpl.format(date_time))
         grid_weather = nc_tools.dataset_from_path(weather_file)
     except IOError:
         weather_file = Path(
-            weather_path, 'fcst', weather_filename_tmpl.format(date_time))
+            weather_path, "fcst", weather_filename_tmpl.format(date_time)
+        )
         grid_weather = nc_tools.dataset_from_path(weather_file)
-    wind_u, wind_v, wind_t = nc_tools.uv_wind_timeseries_at_point(
-        grid_weather, *windji)
+    wind_u, wind_v, wind_t = nc_tools.uv_wind_timeseries_at_point(grid_weather, *windji)
     if date_time.hour < abs(avg_hrs):
         grid_weather = nc_tools.dataset_from_path(
             weather_file.with_name(
-                weather_filename_tmpl.format(date_time.shift(days=-1))))
-        wind_prev_day = nc_tools.uv_wind_timeseries_at_point(
-            grid_weather, *windji)
+                weather_filename_tmpl.format(date_time.shift(days=-1))
+            )
+        )
+        wind_prev_day = nc_tools.uv_wind_timeseries_at_point(grid_weather, *windji)
         wind_u = np.concatenate((wind_prev_day.u, wind_u))
         wind_v = np.concatenate((wind_prev_day.v, wind_v))
         wind_t = np.concatenate((wind_prev_day.time, wind_t))
-    i_date_time = np.where(wind_t == date_time.floor('hour'))[0].item()
+    i_date_time = np.where(wind_t == date_time.floor("hour"))[0].item()
     i_date_time_p1 = i_date_time + 1
-    u_avg = np.mean(wind_u[(i_date_time_p1 + avg_hrs):i_date_time_p1])
-    v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs):i_date_time_p1])
-    wind_avg = namedtuple('wind_avg', 'u, v')
+    u_avg = np.mean(wind_u[(i_date_time_p1 + avg_hrs) : i_date_time_p1])
+    v_avg = np.mean(wind_v[(i_date_time_p1 + avg_hrs) : i_date_time_p1])
+    wind_avg = namedtuple("wind_avg", "u, v")
     return wind_avg(u_avg, v_avg)

@@ -38,12 +38,12 @@ def calc_abs_max(array):
 def plot_coastline(
     axes,
     bathymetry,
-    coords='grid',
+    coords="grid",
     isobath=0,
     xslice=None,
     yslice=None,
-    color='black',
-    server='local',
+    color="black",
+    server="local",
     zorder=2,
 ):
     """Plot the coastline contour line from bathymetry on the axes.
@@ -95,48 +95,65 @@ def plot_coastline(
     """
 
     # Index names based on results server
-    if server == 'local':
-        lon_name = 'nav_lon'
-        lat_name = 'nav_lat'
-        bathy_name = 'Bathymetry'
-    elif server == 'ERDDAP':
-        lon_name = 'longitude'
-        lat_name = 'latitude'
-        bathy_name = 'bathymetry'
+    if server == "local":
+        lon_name = "nav_lon"
+        lat_name = "nav_lat"
+        bathy_name = "Bathymetry"
+    elif server == "ERDDAP":
+        lon_name = "longitude"
+        lat_name = "latitude"
+        bathy_name = "bathymetry"
     else:
-        raise ValueError('Unknown results server name: {}'.format(server))
+        raise ValueError("Unknown results server name: {}".format(server))
 
-    if any((
-        xslice is None and yslice is not None,
-        xslice is not None and yslice is None,
-    )):
-        raise ValueError('Both xslice and yslice must be specified')
-    if not hasattr(bathymetry, 'variables'):
+    if any(
+        (
+            xslice is None and yslice is not None,
+            xslice is not None and yslice is None,
+        )
+    ):
+        raise ValueError("Both xslice and yslice must be specified")
+    if not hasattr(bathymetry, "variables"):
         bathy = nc.Dataset(bathymetry)
     else:
         bathy = bathymetry
     depths = bathy.variables[bathy_name]
-    if coords == 'map':
+    if coords == "map":
         lats = bathy.variables[lat_name]
         lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
-                np.array(lons), np.array(lats), np.array(depths),
-                [isobath], colors=color, zorder=zorder)
+                np.array(lons),
+                np.array(lats),
+                np.array(depths),
+                [isobath],
+                colors=color,
+                zorder=zorder,
+            )
         else:
             contour_lines = axes.contour(
-                lons[yslice, xslice], lats[yslice, xslice],
-                depths[yslice, xslice].data, [isobath], colors=color,
-                zorder=zorder)
+                lons[yslice, xslice],
+                lats[yslice, xslice],
+                depths[yslice, xslice].data,
+                [isobath],
+                colors=color,
+                zorder=zorder,
+            )
     else:
         if xslice is None and yslice is None:
             contour_lines = axes.contour(
-                np.array(depths), [isobath], colors=color, zorder=zorder)
+                np.array(depths), [isobath], colors=color, zorder=zorder
+            )
         else:
             contour_lines = axes.contour(
-                xslice, yslice, depths[yslice, xslice].data,
-                [isobath], colors=color, zorder=zorder)
-    if not hasattr(bathymetry, 'variables'):
+                xslice,
+                yslice,
+                depths[yslice, xslice].data,
+                [isobath],
+                colors=color,
+                zorder=zorder,
+            )
+    if not hasattr(bathymetry, "variables"):
         bathy.close()
     return contour_lines
 
@@ -144,13 +161,13 @@ def plot_coastline(
 def plot_land_mask(
     axes,
     bathymetry,
-    coords='grid',
+    coords="grid",
     isobath=0,
     xslice=None,
     yslice=None,
-    color='black',
-    server='local',
-    zorder=1
+    color="black",
+    server="local",
+    zorder=1,
 ):
     """Plot land areas from bathymetry as solid colour polygons on the axes.
 
@@ -201,57 +218,72 @@ def plot_land_mask(
     """
 
     # Index names based on results server
-    if server == 'local':
-        lon_name   = 'nav_lon'
-        lat_name   = 'nav_lat'
-        bathy_name = 'Bathymetry'
-    elif server == 'ERDDAP':
-        lon_name   = 'longitude'
-        lat_name   = 'latitude'
-        bathy_name = 'bathymetry'
+    if server == "local":
+        lon_name = "nav_lon"
+        lat_name = "nav_lat"
+        bathy_name = "Bathymetry"
+    elif server == "ERDDAP":
+        lon_name = "longitude"
+        lat_name = "latitude"
+        bathy_name = "bathymetry"
     else:
-        raise ValueError('Unknown results server name: {}'.format(server))
+        raise ValueError("Unknown results server name: {}".format(server))
 
-    if any((
-        xslice is None and yslice is not None,
-        xslice is not None and yslice is None,
-    )):
-        raise ValueError('Both xslice and yslice must be specified')
-    if not hasattr(bathymetry, 'variables'):
+    if any(
+        (
+            xslice is None and yslice is not None,
+            xslice is not None and yslice is None,
+        )
+    ):
+        raise ValueError("Both xslice and yslice must be specified")
+    if not hasattr(bathymetry, "variables"):
         bathy = nc.Dataset(bathymetry)
     else:
         bathy = bathymetry
     depths = bathy.variables[bathy_name]
     contour_interval = [-0.01, isobath + 0.01]
-    if coords == 'map':
+    if coords == "map":
         lats = bathy.variables[lat_name]
         lons = bathy.variables[lon_name]
         if xslice is None and yslice is None:
             contour_fills = axes.contourf(
-                np.array(lons), np.array(lats), np.array(depths),
-                contour_interval, colors=color, zorder=zorder)
+                np.array(lons),
+                np.array(lats),
+                np.array(depths),
+                contour_interval,
+                colors=color,
+                zorder=zorder,
+            )
         else:
             contour_fills = axes.contourf(
-                lons[yslice, xslice], lats[yslice, xslice],
-                depths[yslice, xslice].data, contour_interval, colors=color,
-                zorder=zorder)
+                lons[yslice, xslice],
+                lats[yslice, xslice],
+                depths[yslice, xslice].data,
+                contour_interval,
+                colors=color,
+                zorder=zorder,
+            )
     else:
         if xslice is None and yslice is None:
-            contour_fills = axes.contourf(np.array(depths),
-                                          contour_interval, colors=color,
-                                          zorder=zorder)
+            contour_fills = axes.contourf(
+                np.array(depths), contour_interval, colors=color, zorder=zorder
+            )
         else:
             contour_fills = axes.contourf(
-                xslice, yslice, depths[yslice, xslice].data,
-                contour_interval, colors=color, zorder=zorder)
-    if not hasattr(bathymetry, 'variables'):
+                xslice,
+                yslice,
+                depths[yslice, xslice].data,
+                contour_interval,
+                colors=color,
+                zorder=zorder,
+            )
+    if not hasattr(bathymetry, "variables"):
         bathy.close()
     return contour_fills
 
 
 def plot_boundary(
-        ax, grid, mask, dim='depth', index=0, coords='grid',
-        color='burlywood', zorder=10
+    ax, grid, mask, dim="depth", index=0, coords="grid", color="burlywood", zorder=10
 ):
     """Plot the land boundary for a given NEMO domain slice.
 
@@ -289,44 +321,52 @@ def plot_boundary(
     indexslice = index
 
     # Determine coordinate system and orientation
-    if dim == 'depth':
-        dimslice = 'z'
+    if dim == "depth":
+        dimslice = "z"
         indexslice = abs(depth.values - index).argmin()
-        if coords == 'map':
+        if coords == "map":
             dim1, dim2 = grid.nav_lon, grid.nav_lat
-        elif coords == 'grid':
+        elif coords == "grid":
             dim1, dim2 = grid.x, grid.y
         else:
-            raise ValueError('Unknown coordinate system: {}'.format(coords))
-    elif dim == 'y':
-        if coords == 'map':
+            raise ValueError("Unknown coordinate system: {}".format(coords))
+    elif dim == "y":
+        if coords == "map":
             dim1, dim2 = grid.nav_lon.isel(**{dim: index}), depth
-        elif coords == 'grid':
+        elif coords == "grid":
             dim1, dim2 = grid.x, depth
         else:
-            raise ValueError('Unknown coordinate system: {}'.format(coords))
-    elif dim == 'x':
-        if coords == 'map':
+            raise ValueError("Unknown coordinate system: {}".format(coords))
+    elif dim == "x":
+        if coords == "map":
             dim1, dim2 = grid.nav_lat.isel(**{dim: index}), depth
-        elif coords == 'grid':
+        elif coords == "grid":
             dim1, dim2 = grid.y, depth
         else:
-            raise ValueError('Unknown coordinate system: {}'.format(coords))
+            raise ValueError("Unknown coordinate system: {}".format(coords))
     else:
-        raise ValueError('Unknown dimension: {}'.format(dim))
+        raise ValueError("Unknown dimension: {}".format(dim))
 
     # Plot landmask and boundary contour
     patch = ax.contourf(
-        dim1, dim2, mask.tmask.isel(**{'t': 0, dimslice: indexslice}),
-        [-0.01, 0.01], colors=color, zorder=zorder
+        dim1,
+        dim2,
+        mask.tmask.isel(**{"t": 0, dimslice: indexslice}),
+        [-0.01, 0.01],
+        colors=color,
+        zorder=zorder,
     )
     boundary = ax.contour(
-        dim1, dim2, mask.tmask.isel(**{'t': 0, dimslice: indexslice}),
-        [0], colors='k', zorder=zorder
+        dim1,
+        dim2,
+        mask.tmask.isel(**{"t": 0, dimslice: indexslice}),
+        [0],
+        colors="k",
+        zorder=zorder,
     )
 
     # Invert depth axis
-    if dim == 'x' or dim == 'y':
+    if dim == "x" or dim == "y":
         ax.invert_yaxis()
 
     return patch, boundary
@@ -334,10 +374,10 @@ def plot_boundary(
 
 def set_aspect(
     axes,
-    aspect=5/4.4,
-    coords='grid',
+    aspect=5 / 4.4,
+    coords="grid",
     lats=None,
-    adjustable='box',
+    adjustable="box",
 ):
     """Set the aspect ratio for the axes.
 
@@ -378,7 +418,7 @@ def set_aspect(
         :kbd:`coords='map'`,
         and use the default :kbd:`lats=None`.
     """
-    if coords == 'map' and lats is not None:
+    if coords == "map" and lats is not None:
         aspect = 1 / np.cos(np.median(lats) * np.pi / 180)
     axes.set_aspect(aspect, adjustable=adjustable)
     return aspect
@@ -425,7 +465,7 @@ def unstagger_xarray(qty, index):
     return qty
 
 
-def rotate_vel(u_in, v_in, origin='grid'):
+def rotate_vel(u_in, v_in, origin="grid"):
     """Rotate u and v component values to either E-N or model grid.
 
     The origin argument sets the input coordinates ('grid' or 'map')
@@ -445,13 +485,12 @@ def rotate_vel(u_in, v_in, origin='grid'):
     """
 
     # Determine rotation direction
-    if   origin == 'grid':
-        fac =  1
-    elif origin == 'map':
+    if origin == "grid":
+        fac = 1
+    elif origin == "map":
         fac = -1
     else:
-        raise ValueError('Invalid origin value: {origin}'.format(
-            origin=origin))
+        raise ValueError("Invalid origin value: {origin}".format(origin=origin))
 
     # Rotate velocities
     theta_rad = 29 * np.pi / 180
@@ -588,7 +627,10 @@ def rotate_vel_bybearing(u_in, v_in, coords, origin="grid"):
     # A is the angle counterclockwise from due east in radians
     A = np.empty_like(longitude)
 
-    A[:, 0:-1] = np.arctan2(np.cos(yA) * np.sin(yB) - np.sin(yA) * np.cos(yB) * np.cos(xB-xA), np.sin(xB-xA) * np.cos(yB))
+    A[:, 0:-1] = np.arctan2(
+        np.cos(yA) * np.sin(yB) - np.sin(yA) * np.cos(yB) * np.cos(xB - xA),
+        np.sin(xB - xA) * np.cos(yB),
+    )
     A[:, -1] = A[:, -2]
 
     # Rotate velocities

@@ -1,21 +1,21 @@
 cc nocscombine
 cc
-cc FORTRAN program that assembles a global NetCDF archive from a series of 
+cc FORTRAN program that assembles a global NetCDF archive from a series of
 cc NEMO output files.
 cc
 cc USAGE :: nocscombine -f inputfile [-o outfile] [-v] [-s]
 cc                      [-d list of variables] [-ts tstart] [-te tend]
 cc
-cc      -f  inputfile  
-cc          Mandatory argument. inputfile is the filename of 
-cc          one of the NEMO restart or diagnostic files.  
+cc      -f  inputfile
+cc          Mandatory argument. inputfile is the filename of
+cc          one of the NEMO restart or diagnostic files.
 cc          This should be the whole filename of one of the individual
-cc          processor files (i.e. include the 
+cc          processor files (i.e. include the
 cc          node number, eg. ORCA1_00010101_restart_0012.nc).
 cc          This program works on NetCDF NEMO output files. The program will
-cc          create a NetCDF archive covering the entire global domain.  
+cc          create a NetCDF archive covering the entire global domain.
 cc
-cc     [-o outputfile ] 
+cc     [-o outputfile ]
 cc          Optional argument. outputfilename is the required name
 cc          of the outputfile. By default this name will be constructed from
 cc          the inputfilename by stripping off the processor number. I.e.:
@@ -23,12 +23,12 @@ cc          inputfile : ORCA1_00010101_restart_0012.nc
 cc          outputfile: ORCA1_00010101_restart.nc
 cc          The -o option permits the user to override this behaviour.
 cc
-cc     [-c coordinatefile ] 
+cc     [-c coordinatefile ]
 cc          Optional argument. coordinatefile is the name
 cc          of the global coordinate file relevant to the NEMO model which
 cc          produced the individual processor files. This file is required to
 cc          ensure complete nav_lon and nav_lat fields in cases where wholly
-cc          land areas have been omitted from a parallel run (i.e. 
+cc          land areas have been omitted from a parallel run (i.e.
 cc          jpnij .ne. jpni*jpnj). The corrections are applied after
 cc          the collation phase. If this argument is supplied and the output
 cc          file exists then the collation phase is not performed but the
@@ -41,20 +41,20 @@ cc          process domains in order, cycling back through 0 if necessary. This
 cc          is useful to prevent multiple simulataneous accesses when running
 cc          nocscombine in a task-farming environment
 cc
-cc     [-v] 
+cc     [-v]
 cc          Optional argument. Switches on verbose reporting for debugging
 cc
-cc     [-s] 
+cc     [-s]
 cc          Optional argument. Normal behaviour is to show a limited amount
 cc          of progress information. This option runs the utility without any
 cc          output to stdout.
 cc
 cc     [-showhaloes]
-cc          Optional argument. Early versions of nocscombine erroneously 
-cc          copied across the halo rows and columns too. Potentially producing 
-cc          lines of unset values if the halo points were not set in the 
-cc          individual restart files (as could happen for some purely 
-cc          diagnostic fields). Use -showhaloes to reproduce this feature 
+cc          Optional argument. Early versions of nocscombine erroneously
+cc          copied across the halo rows and columns too. Potentially producing
+cc          lines of unset values if the halo points were not set in the
+cc          individual restart files (as could happen for some purely
+cc          diagnostic fields). Use -showhaloes to reproduce this feature
 cc          if required.
 cc
 cc     [-d] comma-separated list of variables
@@ -113,7 +113,7 @@ cc
       if ( pos(1).gt.0 .or. fixcoord ) then
             if(.not.setoname) then
              oname = fname(1:pos(1)-6)//'.nc'
-             if(.not.silent) 
+             if(.not.silent)
      &           write(*,'(a)') 'Creating outputfile: '//trim(oname)
             endif
             inquire(file=trim(oname),exist = around)
@@ -121,7 +121,7 @@ cc
 
             if(.not.silent) runtime = rtime(0.0)
             CALL flagvars
-            if(docollation) CALL ncread_and_collate( fname, oname, silent, 
+            if(docollation) CALL ncread_and_collate( fname, oname, silent,
      &                               verbose, showhaloes, dovar, tslice,
      &                               time_start, time_end, npoff )
 cc
@@ -229,8 +229,8 @@ c
       subroutine flagvars
 c
       USE netcdf
-      integer :: n, varid, status, ncid, numfiles, 
-     &           i, num_instances 
+      integer :: n, varid, status, ncid, numfiles,
+     &           i, num_instances
       character (LEN=256) :: nname
       character (LEN=256), allocatable :: dnames(:)
       integer m, k, nDim, nVar, nAtt, nlen, nunlim,

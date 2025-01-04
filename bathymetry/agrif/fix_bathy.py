@@ -28,23 +28,23 @@ def fix_bathy(infile, mindep):
 
     Run this on the file produced by agrif_create_bathy.exe.
     """
-    with nc.Dataset(infile, 'r+') as f:
+    with nc.Dataset(infile, "r+") as f:
         # Enforce minimum bathymetry
-        bm = f.variables['Bathymetry'][:]
+        bm = f.variables["Bathymetry"][:]
         idx = (bm > 0) & (bm < mindep)
         if np.any(idx):
             md = np.min(bm[idx])
             print("Min depth {:3f} m, resetting to {:3f} m".format(md, mindep))
             bm[idx] = mindep
-            f.variables['Bathymetry'][:] = bm
+            f.variables["Bathymetry"][:] = bm
 
         # Enforce nav_lon to be in [-180,180] and not [0,360]
-        lon = f.variables['nav_lon'][:]
+        lon = f.variables["nav_lon"][:]
         if np.any(lon > 180):
             lon[lon > 180] -= 360
-        f.variables['nav_lon'][:] = lon
-        f.variables['nav_lon'].valid_min = np.min(lon)
-        f.variables['nav_lon'].valid_max = np.max(lon)
+        f.variables["nav_lon"][:] = lon
+        f.variables["nav_lon"].valid_min = np.min(lon)
+        f.variables["nav_lon"].valid_max = np.max(lon)
 
 
 if __name__ == "__main__":

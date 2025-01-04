@@ -20,7 +20,7 @@ from collections import namedtuple
 import arrow
 
 
-adcp = namedtuple('ADCP', 'device_id, sensor_id')
+adcp = namedtuple("ADCP", "device_id, sensor_id")
 adcps = {
     # Keys are instrument serial numbers
     8580: adcp(device_id=65, sensor_id=95),  # rdi adcp 150 khz wh
@@ -32,49 +32,64 @@ adcps = {
 }
 
 
-deployment = namedtuple('Deployment', 'id, start, end, serial_no, site_id')
+deployment = namedtuple("Deployment", "id, start, end, serial_no, site_id")
 deployments = {
     # Keys are the same as in :py:data:`~salishsea_tools.places.PLACES`
-    'Central node': {
-        'location id': 4,
-        'history': [
+    "Central node": {
+        "location id": 4,
+        "history": [
             deployment(
-                id='VIP-14',
+                id="VIP-14",
                 start=arrow.get(2016, 5, 3),
-                end=arrow.now().to('Canada/Pacific'),
-                serial_no=8580, site_id=1000661),
+                end=arrow.now().to("Canada/Pacific"),
+                serial_no=8580,
+                site_id=1000661,
+            ),
             deployment(
-                id='VIP-13',
-                start=arrow.get(2015, 8, 31), end=arrow.get(2016, 5, 3),
-                serial_no=8580, site_id=1000479),
+                id="VIP-13",
+                start=arrow.get(2015, 8, 31),
+                end=arrow.get(2016, 5, 3),
+                serial_no=8580,
+                site_id=1000479,
+            ),
         ],
     },
-    'East node': {
-        'location id': 3,
-        'history': [
+    "East node": {
+        "location id": 3,
+        "history": [
             deployment(
-                id='VIP-14',
+                id="VIP-14",
                 start=arrow.get(2016, 5, 1),
-                end=arrow.now().to('Canada/Pacific'),
-                serial_no=8497, site_id=1000670),
+                end=arrow.now().to("Canada/Pacific"),
+                serial_no=8497,
+                site_id=1000670,
+            ),
             deployment(
-                id='VIP-13',
-                start=arrow.get(2015, 8, 27), end=arrow.get(2016, 5, 1),
-                serial_no=8497, site_id=1000475),
-        ]
+                id="VIP-13",
+                start=arrow.get(2015, 8, 27),
+                end=arrow.get(2016, 5, 1),
+                serial_no=8497,
+                site_id=1000475,
+            ),
+        ],
     },
-    'Delta BBL node': {
-        'location id': 14,
-        'history': [
+    "Delta BBL node": {
+        "location id": 14,
+        "history": [
             deployment(
-                id='BBL-SG-05',
+                id="BBL-SG-05",
                 start=arrow.get(2016, 5, 1),
-                end=arrow.now().to('Canada/Pacific'),
-                serial_no=17955, site_id=1000668),
+                end=arrow.now().to("Canada/Pacific"),
+                serial_no=17955,
+                site_id=1000668,
+            ),
             deployment(
-                id='BBL-SG-04',
-                start=arrow.get(2015, 8, 30), end=arrow.get(2016, 5, 1),
-                serial_no=17955, site_id=1000474),
-        ]
+                id="BBL-SG-04",
+                start=arrow.get(2015, 8, 30),
+                end=arrow.get(2016, 5, 1),
+                serial_no=17955,
+                site_id=1000474,
+            ),
+        ],
     },
 }

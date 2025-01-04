@@ -24,13 +24,19 @@ from salishsea_tools import geo_tools, nc_tools
 
 
 def contour_thalweg(
-    axes, var, bathy, mesh_mask, clevels=None,
-    mesh_mask_depth_var='gdept_0', cmap='hsv', land_colour='burlywood',
+    axes,
+    var,
+    bathy,
+    mesh_mask,
+    clevels=None,
+    mesh_mask_depth_var="gdept_0",
+    cmap="hsv",
+    land_colour="burlywood",
     xcoord_distance=True,
-    thalweg_file='/home/sallen/MEOPAR/Tools/bathymetry/thalweg_working.txt',
+    thalweg_file="/home/sallen/MEOPAR/Tools/bathymetry/thalweg_working.txt",
     cbar_args=None,
     mesh_args=None,
-    method='contourf'
+    method="contourf",
 ):
     """Contour the data stored in var along the domain thalweg.
 
@@ -81,56 +87,81 @@ def contour_thalweg(
 
     :returns: matplotlib colorbar object
     """
-    thalweg_pts = np.loadtxt(thalweg_file, delimiter=' ', dtype=int)
+    thalweg_pts = np.loadtxt(thalweg_file, delimiter=" ", dtype=int)
     depth = mesh_mask.variables[mesh_mask_depth_var][:]
     dep_thal, distance, var_thal = load_thalweg(
-        depth[0, ...], var, bathy['nav_lon'][:], bathy['nav_lat'][:],
-        thalweg_pts)
+        depth[0, ...], var, bathy["nav_lon"][:], bathy["nav_lat"][:], thalweg_pts
+    )
     if xcoord_distance:
         xx_thal = distance
-        axes.set_xlabel('Distance along thalweg [km]')
+        axes.set_xlabel("Distance along thalweg [km]")
     else:
         xx_thal, _ = np.meshgrid(np.arange(var_thal.shape[-1]), dep_thal[:, 0])
-        axes.set_xlabel('Thalweg index')
+        axes.set_xlabel("Thalweg index")
     # Determine contour levels
     clevels_default = {
-        'salinity': [
-            26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34
+        "salinity": [26, 27, 28, 29, 30, 30.2, 30.4, 30.6, 30.8, 31, 32, 33, 34],
+        "temperature": [
+            6.9,
+            7,
+            7.5,
+            8,
+            8.5,
+            9,
+            9.8,
+            9.9,
+            10.3,
+            10.5,
+            11,
+            11.5,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
         ],
-        'temperature': [
-            6.9, 7, 7.5, 8, 8.5, 9, 9.8, 9.9, 10.3, 10.5, 11, 11.5, 12,
-            13, 14, 15, 16, 17, 18, 19
-        ]
     }
     if isinstance(clevels, str):
         try:
             clevels = clevels_default[clevels]
         except KeyError:
-            raise KeyError('no default clevels defined for {}'.format(clevels))
+            raise KeyError("no default clevels defined for {}".format(clevels))
     # Prepare for plotting by filling in grid points just above bathymetry
     var_plot = _fill_in_bathy(var_thal, mesh_mask, thalweg_pts)
 
-    if method == 'pcolormesh':
+    if method == "pcolormesh":
         if mesh_args is None:
             mesh = axes.pcolormesh(xx_thal, dep_thal, var_plot, cmap=cmap)
         else:
             mesh = axes.pcolormesh(xx_thal, dep_thal, var_plot, cmap=cmap, **mesh_args)
-        axes.set_xlim((np.min(xx_thal),np.max(xx_thal)))
+        axes.set_xlim((np.min(xx_thal), np.max(xx_thal)))
     else:
         if mesh_args is None:
-            mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
-                         extend='both')
+            mesh = axes.contourf(
+                xx_thal, dep_thal, var_plot, clevels, cmap=cmap, extend="both"
+            )
         else:
-            mesh = axes.contourf(xx_thal, dep_thal, var_plot, clevels, cmap=cmap,
-                         extend='both', **mesh_args)
+            mesh = axes.contourf(
+                xx_thal,
+                dep_thal,
+                var_plot,
+                clevels,
+                cmap=cmap,
+                extend="both",
+                **mesh_args
+            )
     _add_bathy_patch(
-        xx_thal, bathy['Bathymetry'][:], thalweg_pts, axes, color=land_colour)
+        xx_thal, bathy["Bathymetry"][:], thalweg_pts, axes, color=land_colour
+    )
     if cbar_args is None:
         cbar = plt.colorbar(mesh, ax=axes)
     else:
         cbar = plt.colorbar(mesh, ax=axes, **cbar_args)
     axes.invert_yaxis()
-    axes.set_ylabel('Depth [m]')
+    axes.set_ylabel("Depth [m]")
     return cbar
 
 
@@ -157,7 +188,7 @@ def _add_bathy_patch(xcoord, bathy, thalweg_pts, ax, color, zmin=450):
     # Look up bottom bathymetry along thalweg
     thalweg_bottom = bathy[thalweg_pts[:, 0], thalweg_pts[:, 1]]
     # Construct bathy polygon
-    poly = np.zeros((thalweg_bottom.shape[0]+2, 2))
+    poly = np.zeros((thalweg_bottom.shape[0] + 2, 2))
     poly[0, :] = 0, zmin
     poly[1:-1, 0] = xcoord[0, :]
     poly[1:-1:, 1] = thalweg_bottom
@@ -217,16 +248,29 @@ def _fill_in_bathy(variable, mesh_mask, thalweg_pts):
 
     :returns: newvar, the filled numpy array
     """
-    mbathy = mesh_mask.variables['mbathy'][0, :, :]
+    mbathy = mesh_mask.variables["mbathy"][0, :, :]
     newvar = np.copy(variable)
 
     mbathy = mbathy[thalweg_pts[:, 0], thalweg_pts[:, 1]]
     for i, level in enumerate(mbathy):
-        newvar[level, i] = variable[level-1, i]
+        newvar[level, i] = variable[level - 1, i]
     return newvar
 
-def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var_name=None,
-                       land_colour='burlywood',is_depth_avg=False,is_pcolmesh=False,title='',cbar_args=None,
+
+def contour_layer_grid(
+    axes,
+    data,
+    mask,
+    clevels=10,
+    lat=None,
+    lon=None,
+    cmap=None,
+    var_name=None,
+    land_colour="burlywood",
+    is_depth_avg=False,
+    is_pcolmesh=False,
+    title="",
+    cbar_args=None,
 ):
     """Contour 2d data at an arbitrary klevel on the model grid
 
@@ -273,25 +317,24 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
 
     :returns: matplotlib colorbar object
     """
-    mdata = np.ma.masked_where(mask==0,data)
+    mdata = np.ma.masked_where(mask == 0, data)
 
     viz_tools.set_aspect(axes)
 
     if cmap == None:
-        cbMIN, cbMAX, cmap = visualisations.retrieve_cmap(var_name,is_depth_avg)
+        cbMIN, cbMAX, cmap = visualisations.retrieve_cmap(var_name, is_depth_avg)
         cmap = plt.get_cmap(cmocean.cm.algae)
 
     if is_pcolmesh:
         mesh = axes.pcolormesh(mdata, cmap=cmap)
     else:
-        mesh= axes.contourf(mdata,clevels,cmap=cmap)
+        mesh = axes.contourf(mdata, clevels, cmap=cmap)
 
-    axes.set_xlabel('X index')
-    axes.set_ylabel('Y index')
+    axes.set_xlabel("X index")
+    axes.set_ylabel("Y index")
     axes.set_title(title)
 
     axes.set_axis_bgcolor(land_colour)
-
 
     if cbar_args is None:
         cbar = plt.colorbar(mesh, ax=axes)
@@ -301,7 +344,7 @@ def contour_layer_grid(axes,data,mask,clevels=10,lat=None,lon=None,cmap=None,var
     return cbar
 
 
-def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
+def plot_drifters(ax, DATA, DRIFT_OBJS=None, color="red", cutoff=24, zorder=15):
     """Plot a drifter track from ODL Drifter observations.
 
     :arg time_ind: Time index (current drifter position, track will be visible
@@ -330,79 +373,95 @@ def plot_drifters(ax, DATA, DRIFT_OBJS=None, color='red', cutoff=24, zorder=15):
     if DATA.time.shape[0] > 0:
 
         # Convert time boundaries to datetime.datetime to allow operations/slicing
-        starttime = nc_tools.xarraytime_to_datetime(DATA.time[ 0])
-        endtime   = nc_tools.xarraytime_to_datetime(DATA.time[-1])
+        starttime = nc_tools.xarraytime_to_datetime(DATA.time[0])
+        endtime = nc_tools.xarraytime_to_datetime(DATA.time[-1])
 
         # Color plot cutoff
         time_cutoff = endtime - datetime.timedelta(hours=cutoff)
 
-        if DRIFT_OBJS is not None: # --- Update line objects only
+        if DRIFT_OBJS is not None:  # --- Update line objects only
 
             # Plot drifter track (gray)
-            DRIFT_OBJS['L_old'][0].set_data(
+            DRIFT_OBJS["L_old"][0].set_data(
                 DATA.lon.sel(time=slice(starttime, time_cutoff)),
-                DATA.lat.sel(time=slice(starttime, time_cutoff)))
+                DATA.lat.sel(time=slice(starttime, time_cutoff)),
+            )
 
             # Plot drifter track (color)
-            DRIFT_OBJS['L_new'][0].set_data(
+            DRIFT_OBJS["L_new"][0].set_data(
                 DATA.lon.sel(time=slice(time_cutoff, endtime)),
-                DATA.lat.sel(time=slice(time_cutoff, endtime)))
+                DATA.lat.sel(time=slice(time_cutoff, endtime)),
+            )
 
             # Plot drifter position
-            DRIFT_OBJS['P'][0].set_data(
-                DATA.lon.sel(time=endtime, method='nearest'),
-                DATA.lat.sel(time=endtime, method='nearest'))
+            DRIFT_OBJS["P"][0].set_data(
+                DATA.lon.sel(time=endtime, method="nearest"),
+                DATA.lat.sel(time=endtime, method="nearest"),
+            )
 
-        else: # ------------------------ Plot new line objects instances
+        else:  # ------------------------ Plot new line objects instances
 
             # Define drifter objects dict
             DRIFT_OBJS = {}
 
             # Plot drifter track (gray)
-            DRIFT_OBJS['L_old'] = ax.plot(
+            DRIFT_OBJS["L_old"] = ax.plot(
                 DATA.lon.sel(time=slice(starttime, time_cutoff)),
                 DATA.lat.sel(time=slice(starttime, time_cutoff)),
-                '-', linewidth=2, color='gray', zorder=zorder)
+                "-",
+                linewidth=2,
+                color="gray",
+                zorder=zorder,
+            )
 
             # Plot drifter track (color)
-            DRIFT_OBJS['L_new'] = ax.plot(
+            DRIFT_OBJS["L_new"] = ax.plot(
                 DATA.lon.sel(time=slice(time_cutoff, endtime)),
                 DATA.lat.sel(time=slice(time_cutoff, endtime)),
-                '-', linewidth=2, color=color, zorder=zorder+1)
+                "-",
+                linewidth=2,
+                color=color,
+                zorder=zorder + 1,
+            )
 
             # Plot drifter position
-            DRIFT_OBJS['P'] = ax.plot(
-                DATA.lon.sel(time=endtime, method='nearest'),
-                DATA.lat.sel(time=endtime, method='nearest'),
-                'o', color=color, zorder=zorder+2)
+            DRIFT_OBJS["P"] = ax.plot(
+                DATA.lon.sel(time=endtime, method="nearest"),
+                DATA.lat.sel(time=endtime, method="nearest"),
+                "o",
+                color=color,
+                zorder=zorder + 2,
+            )
 
     else:
 
-        if DRIFT_OBJS is not None: # --- Update line objects only
+        if DRIFT_OBJS is not None:  # --- Update line objects only
 
             # Update drifter tracks
-            DRIFT_OBJS['L_old'][0].set_data([], []) # gray
-            DRIFT_OBJS['L_new'][0].set_data([], []) # color
-            DRIFT_OBJS['P'    ][0].set_data([], []) # position
+            DRIFT_OBJS["L_old"][0].set_data([], [])  # gray
+            DRIFT_OBJS["L_new"][0].set_data([], [])  # color
+            DRIFT_OBJS["P"][0].set_data([], [])  # position
 
         else:
 
             DRIFT_OBJS = {}
-            DRIFT_OBJS['L_old'] = ax.plot([], [], '-',
-                linewidth=2, color='gray', zorder=zorder)
+            DRIFT_OBJS["L_old"] = ax.plot(
+                [], [], "-", linewidth=2, color="gray", zorder=zorder
+            )
 
             # Plot drifter track (color)
-            DRIFT_OBJS['L_new'] = ax.plot([], [], '-',
-                linewidth=2, color=color, zorder=zorder+1)
+            DRIFT_OBJS["L_new"] = ax.plot(
+                [], [], "-", linewidth=2, color=color, zorder=zorder + 1
+            )
 
             # Plot drifter position
-            DRIFT_OBJS['P'] = ax.plot([], [], 'o', color=color, zorder=zorder+2)
+            DRIFT_OBJS["P"] = ax.plot([], [], "o", color=color, zorder=zorder + 2)
 
     return DRIFT_OBJS
 
 
-def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
-    """ Boilerplate figure code like coastline, aspect ratio, axis lims, etc.
+def create_figure(ax, DATA, coords="map", window=[-125, -122.5, 48, 50]):
+    """Boilerplate figure code like coastline, aspect ratio, axis lims, etc.
 
     .. note::
 
@@ -411,12 +470,13 @@ def create_figure(ax, DATA, coords='map', window=[-125, -122.5, 48, 50]):
     """
 
     raise DeprecationWarning(
-        'create_figure has been deprecated. Call plot formatting functions '
-        'individually instead.')
+        "create_figure has been deprecated. Call plot formatting functions "
+        "individually instead."
+    )
 
 
 def plot_tracers(
-    ax, qty, DATA, C=None, coords='map', clim=[0, 35, 1], cmap='jet', zorder=0
+    ax, qty, DATA, C=None, coords="map", clim=[0, 35, 1], cmap="jet", zorder=0
 ):
     """Plot a horizontal slice of NEMO tracers as filled contours.
 
@@ -428,14 +488,25 @@ def plot_tracers(
     """
 
     raise DeprecationWarning(
-        'plot_tracers has been deprecated. Plot NEMO results directly using '
-        'matplotlib.pyplot.contourf or equivalent instead.')
-
+        "plot_tracers has been deprecated. Plot NEMO results directly using "
+        "matplotlib.pyplot.contourf or equivalent instead."
+    )
 
 
 def plot_velocity(
-    ax, model, DATA, Q=None, coords='map', processed=False, spacing=5,
-    mask=True, color='black', scale=20, headwidth=3, linewidth=0, zorder=5
+    ax,
+    model,
+    DATA,
+    Q=None,
+    coords="map",
+    processed=False,
+    spacing=5,
+    mask=True,
+    color="black",
+    scale=20,
+    headwidth=3,
+    linewidth=0,
+    zorder=5,
 ):
     """Plot a horizontal slice of NEMO or GEM velocities as quiver objects.
     Accepts subsampled u and v fields via the **processed** keyword
@@ -449,84 +520,92 @@ def plot_velocity(
     """
 
     raise DeprecationWarning(
-        'plot_velocity has been deprecated. Plot NEMO results directly using '
-        'matplotlib.pyplot.quiver or equivalent instead.')
+        "plot_velocity has been deprecated. Plot NEMO results directly using "
+        "matplotlib.pyplot.quiver or equivalent instead."
+    )
 
 
-def retrieve_cmap(varname,deep_bool):
+def retrieve_cmap(varname, deep_bool):
     """takes 2 args:
     string varname - name of a variable from nowcast-green output
     boolean deep_bool - indicates whether the variable is depth-integrated or not
     returns 2 ints(min and max value of range), and string identifying cmap"""
 
-    var_namemap ={'Fraser_tracer': {'varname':'Fraser_tracer'},
-              'ammonium': {'varname':'NH4'},
-              'NH4': {'varname':'NH4'},
-             'biogenic_silicon': {'varname':'bSi'},
-              'bSi': {'varname':'bSi'},
-             'ciliates': {'varname':'MYRI'},
-             'MYRI': {'varname':'MYRI'},
-              'diatoms': {'varname':'PHY2'},
-              'PHY2': {'varname':'PHY2'},
-             'dissolved_organic_nitrogen': {'varname':'dissolved_organic_nitrogen'},
-              'flagellates': {'varname':'PHY'},
-              'PHY': {'varname':'PHY'},
-             'mesozooplankton': {'varname':'MESZ'},
-              'MESZ': {'varname':'MESZ'},
-              'microzooplankton': {'varname':'MICZ'},
-             'MICZ': {'varname':'MICZ'},
-              'nitrate': {'varname':'NO3'},
-              'NO3': {'varname':'NO3'},
-             'particulate_organic_nitrogen': {'varname':'PON'},
-              'POC': {'varname':'PON'},
-              'PON': {'varname':'PON'},
-              'dissolved_organic_nitrogen': {'varname':'DON'},
-              'DOC': {'varname':'DON'},
-              'DON': {'varname':'DON'},
+    var_namemap = {
+        "Fraser_tracer": {"varname": "Fraser_tracer"},
+        "ammonium": {"varname": "NH4"},
+        "NH4": {"varname": "NH4"},
+        "biogenic_silicon": {"varname": "bSi"},
+        "bSi": {"varname": "bSi"},
+        "ciliates": {"varname": "MYRI"},
+        "MYRI": {"varname": "MYRI"},
+        "diatoms": {"varname": "PHY2"},
+        "PHY2": {"varname": "PHY2"},
+        "dissolved_organic_nitrogen": {"varname": "dissolved_organic_nitrogen"},
+        "flagellates": {"varname": "PHY"},
+        "PHY": {"varname": "PHY"},
+        "mesozooplankton": {"varname": "MESZ"},
+        "MESZ": {"varname": "MESZ"},
+        "microzooplankton": {"varname": "MICZ"},
+        "MICZ": {"varname": "MICZ"},
+        "nitrate": {"varname": "NO3"},
+        "NO3": {"varname": "NO3"},
+        "particulate_organic_nitrogen": {"varname": "PON"},
+        "POC": {"varname": "PON"},
+        "PON": {"varname": "PON"},
+        "dissolved_organic_nitrogen": {"varname": "DON"},
+        "DOC": {"varname": "DON"},
+        "DON": {"varname": "DON"},
+        "silicon": {"varname": "Si"},
+        "Si": {"varname": "Si"},
+    }
 
-              'silicon': {'varname':'Si'},
-             'Si': {'varname':'Si'}}
-
-    #dictionary of colour ranges
+    # dictionary of colour ranges
     var_colour_ranges = {
-
-    'Fraser_tracer':{'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
-    'MESZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 3.0,'cmap': 'algae'},
-    'MICZ': {'colorBarMinimum': 0.0, 'colorBarMaximum': 4.0,'cmap': 'algae'},
-    'MYRI': {'colorBarMinimum': 0.0, 'colorBarMaximum': 5.0,'cmap': 'algae'},
-    'NH4': {'colorBarMinimum': 0.0, 'colorBarMaximum': 10.0,'cmap': 'matter'},
-    'NO3': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40.0,'cmap': 'tempo'},
-    'PON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2.0,'cmap': 'amp'},
-    'DON': {'colorBarMinimum': 0.0, 'colorBarMaximum': 20.0,'cmap': 'amp'},
-    'O2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140.0,'cmap': 'turbid'},
-    'PHY': {'colorBarMinimum': 0.0, 'colorBarMaximum': 6.0, 'cmap': 'algae'},
-    'PHY2': {'colorBarMinimum': 0.0, 'colorBarMaximum': 15.0,'cmap': 'algae'},
-    'Si': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
-    'bSi': {'colorBarMinimum': 0.0, 'colorBarMaximum': 70.0,'cmap': 'turbid'},
-
-    'Fraser_tracer_int':{'colorBarMinimum': 0.0, 'colorBarMaximum': 6500,'cmap': 'turbid'},
-    'MESZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 140,'cmap': 'algae'},
-    'MICZ_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},
-    'MYRI_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 75,'cmap': 'algae'},
-    'NH4_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1500,'cmap': 'matter'},
-    'NO3_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 24000,'cmap': 'tempo'},
-    'PON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 600,'cmap': 'amp'},
-    'DON_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 2500,'cmap': 'amp'},
-    'O2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 1000,'cmap': 'turbid'},
-    'PHY_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 100,'cmap': 'algae'},
-    'PHY2_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 350,'cmap': 'algae'},
-    'Si_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
-    'bSi_int': {'colorBarMinimum': 0.0, 'colorBarMaximum': 40000,'cmap': 'turbid'},
-}
+        "Fraser_tracer": {
+            "colorBarMinimum": 0.0,
+            "colorBarMaximum": 140.0,
+            "cmap": "turbid",
+        },
+        "MESZ": {"colorBarMinimum": 0.0, "colorBarMaximum": 3.0, "cmap": "algae"},
+        "MICZ": {"colorBarMinimum": 0.0, "colorBarMaximum": 4.0, "cmap": "algae"},
+        "MYRI": {"colorBarMinimum": 0.0, "colorBarMaximum": 5.0, "cmap": "algae"},
+        "NH4": {"colorBarMinimum": 0.0, "colorBarMaximum": 10.0, "cmap": "matter"},
+        "NO3": {"colorBarMinimum": 0.0, "colorBarMaximum": 40.0, "cmap": "tempo"},
+        "PON": {"colorBarMinimum": 0.0, "colorBarMaximum": 2.0, "cmap": "amp"},
+        "DON": {"colorBarMinimum": 0.0, "colorBarMaximum": 20.0, "cmap": "amp"},
+        "O2": {"colorBarMinimum": 0.0, "colorBarMaximum": 140.0, "cmap": "turbid"},
+        "PHY": {"colorBarMinimum": 0.0, "colorBarMaximum": 6.0, "cmap": "algae"},
+        "PHY2": {"colorBarMinimum": 0.0, "colorBarMaximum": 15.0, "cmap": "algae"},
+        "Si": {"colorBarMinimum": 0.0, "colorBarMaximum": 70.0, "cmap": "turbid"},
+        "bSi": {"colorBarMinimum": 0.0, "colorBarMaximum": 70.0, "cmap": "turbid"},
+        "Fraser_tracer_int": {
+            "colorBarMinimum": 0.0,
+            "colorBarMaximum": 6500,
+            "cmap": "turbid",
+        },
+        "MESZ_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 140, "cmap": "algae"},
+        "MICZ_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 350, "cmap": "algae"},
+        "MYRI_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 75, "cmap": "algae"},
+        "NH4_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 1500, "cmap": "matter"},
+        "NO3_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 24000, "cmap": "tempo"},
+        "PON_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 600, "cmap": "amp"},
+        "DON_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 2500, "cmap": "amp"},
+        "O2_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 1000, "cmap": "turbid"},
+        "PHY_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 100, "cmap": "algae"},
+        "PHY2_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 350, "cmap": "algae"},
+        "Si_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 40000, "cmap": "turbid"},
+        "bSi_int": {"colorBarMinimum": 0.0, "colorBarMaximum": 40000, "cmap": "turbid"},
+    }
     dp = var_namemap[varname]
-    vn = dp['varname']
-    if (deep_bool == True):
-        vn = vn + '_int'
+    vn = dp["varname"]
+    if deep_bool == True:
+        vn = vn + "_int"
 
     dict_pull = var_colour_ranges[vn]
-    cbMIN = dict_pull['colorBarMinimum']
+    cbMIN = dict_pull["colorBarMinimum"]
     print()
-    cbMAX = dict_pull['colorBarMaximum']
-    cmap_name = dict_pull['cmap']
+    cbMAX = dict_pull["colorBarMaximum"]
+    cmap_name = dict_pull["cmap"]
 
     return cbMIN, cbMAX, cmap_name

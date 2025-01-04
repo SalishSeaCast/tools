@@ -41,37 +41,38 @@ def ellipse_params(uamp, upha, vamp, vpha):
     :returns: CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
               The positively and negatively rotating amplitude and phase.
               As well as the major and minor axis and the axis tilt.
-   """
+    """
 
-    CX = uamp*np.cos(np.pi*upha/180.)
-    SX = uamp*np.sin(np.pi*upha/180.)
-    CY = vamp*np.cos(np.pi*vpha/180.)
-    SY = vamp*np.sin(np.pi*vpha/180.)
-    ap = np.sqrt((CX+SY)**2+(CY-SX)**2)/2.
-    am = np.sqrt((CX-SY)**2+(CY+SX)**2)/2.
-    ep = np.arctan2(CY-SX, CX+SY)
-    em = np.arctan2(CY+SX, CX-SY)
-    major = ap+am
-    minor = ap-am
-    theta = (ep+em)/2.*180./np.pi
-    phase = (em-ep)/2.*180./np.pi
+    CX = uamp * np.cos(np.pi * upha / 180.0)
+    SX = uamp * np.sin(np.pi * upha / 180.0)
+    CY = vamp * np.cos(np.pi * vpha / 180.0)
+    SY = vamp * np.sin(np.pi * vpha / 180.0)
+    ap = np.sqrt((CX + SY) ** 2 + (CY - SX) ** 2) / 2.0
+    am = np.sqrt((CX - SY) ** 2 + (CY + SX) ** 2) / 2.0
+    ep = np.arctan2(CY - SX, CX + SY)
+    em = np.arctan2(CY + SX, CX - SY)
+    major = ap + am
+    minor = ap - am
+    theta = (ep + em) / 2.0 * 180.0 / np.pi
+    phase = (em - ep) / 2.0 * 180.0 / np.pi
 
     # Make angles be between [0,360]
-    phase = (phase+360) % 360
-    theta = (theta+360) % 360
+    phase = (phase + 360) % 360
+    theta = (theta + 360) % 360
 
     ind = np.divide(theta, 180)
     k = np.floor(ind)
-    theta = theta - k*180
-    phase = phase + k*180
-    phase = (phase+360) % 360
+    theta = theta - k * 180
+    phase = phase + k * 180
+    phase = (phase + 360) % 360
 
     return CX, SX, CY, SY, ap, am, ep, em, major, minor, theta, phase
 
 
-def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
-                          period='1h', station='None'):
-    """ This function loads all the data between the start and the end date
+def ellipse_files_nowcast(
+    to, tf, iss, jss, path, depthrange="None", period="1h", station="None"
+):
+    """This function loads all the data between the start and the end date
     that contains in the netCDF4 nowcast files in the
     specified depth range. This will make an area with all the indices
     indicated, the area must be continuous for unstaggering.
@@ -108,21 +109,21 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
 
     # The unstaggering in prepare_vel.py requiers an extra i and j, we add one
     # on here to maintain the area, or point chosen.
-    jss = np.append(jss[0]-1, jss)
-    iss = np.append(iss[0]-1, iss)
+    jss = np.append(jss[0] - 1, jss)
+    iss = np.append(iss[0] - 1, iss)
 
     # Makes a list of the filenames that follow the criteria in the indicated
     # path between the start and end dates.
-    if period == '15m':
+    if period == "15m":
         files = analyze.get_filenames_15(to, tf, station, path)
         filesu = files
         filesv = files
     else:
-        filesu = analyze.get_filenames(to, tf, period, 'grid_U', path)
-        filesv = analyze.get_filenames(to, tf, period, 'grid_V', path)
+        filesu = analyze.get_filenames(to, tf, period, "grid_U", path)
+        filesv = analyze.get_filenames(to, tf, period, "grid_V", path)
 
     # Set up depth array and depth range
-    depth = nc.Dataset(filesu[-1]).variables['depthu'][:]
+    depth = nc.Dataset(filesu[-1]).variables["depthu"][:]
 
     # Case one: for a single depth.
     if type(depthrange) == float or type(depthrange) == int:
@@ -130,9 +131,7 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
         dep = depth[k]
     # Case two: for a specific range of depths
     elif type(depthrange) == list:
-        k = np.where(np.logical_and(
-            depth > depthrange[0],
-            depth < depthrange[1]))[0]
+        k = np.where(np.logical_and(depth > depthrange[0], depth < depthrange[1]))[0]
         dep = depth[k]
     # Case three: For the whole depth range 0 to 441m.
     else:
@@ -140,19 +139,19 @@ def ellipse_files_nowcast(to, tf, iss, jss, path, depthrange='None',
         dep = depth
 
     # Load the files
-    u, time = analyze.combine_files(filesu, 'vozocrtx', k, jss, iss)
-    v, time = analyze.combine_files(filesv, 'vomecrty', k,  jss, iss)
+    u, time = analyze.combine_files(filesu, "vozocrtx", k, jss, iss)
+    v, time = analyze.combine_files(filesv, "vomecrty", k, jss, iss)
 
     # For the nowcast the reftime is always Sep10th 2014. Set time of area we
     # are looking at relative to this time.
-    reftime = tidetools.CorrTides['reftime']
+    reftime = tidetools.CorrTides["reftime"]
     time = tidetools.convert_to_hours(time, reftime=reftime)
 
     return u, v, time, dep
 
 
-def prepare_vel(u, v, depav=False, depth='None'):
-    """ Preparing the time series of the orthogonal pair of velocities to get tidal
+def prepare_vel(u, v, depav=False, depth="None"):
+    """Preparing the time series of the orthogonal pair of velocities to get tidal
     ellipse parameters. This function masks, rotates and unstaggers the time
     series. The depth averaging does not work over masked values.
 
@@ -223,42 +222,45 @@ def get_params(u, v, time, nconst, tidecorr=tidetools.CorrTides):
     # Cycling through the constituents in the ap-parameter dict given by fittit
     for const in uapparam:
         # Applying tidal corrections to u and v phase parameter
-        uapparam[const]['phase'] = (
-            uapparam[const]['phase'] + tidecorr[const]['uvt'])
-        vapparam[const]['phase'] = (
-            vapparam[const]['phase'] + tidecorr[const]['uvt'])
+        uapparam[const]["phase"] = uapparam[const]["phase"] + tidecorr[const]["uvt"]
+        vapparam[const]["phase"] = vapparam[const]["phase"] + tidecorr[const]["uvt"]
 
         # Applying tidal corrections to u and v amplitude parameter
-        uapparam[const]['amp'] = uapparam[const]['amp'] / tidecorr[const]['ft']
-        vapparam[const]['amp'] = vapparam[const]['amp'] / tidecorr[const]['ft']
+        uapparam[const]["amp"] = uapparam[const]["amp"] / tidecorr[const]["ft"]
+        vapparam[const]["amp"] = vapparam[const]["amp"] / tidecorr[const]["ft"]
 
         # Converting from u/v amplitude and phase to ellipe parameters. Inputs
         # are the amplitude and phase of both velocities, runs once for each
         # contituent
         CX, SX, CY, SY, ap, am, ep, em, maj, mi, the, pha = ellipse_params(
-            uapparam[const]['amp'],
-            uapparam[const]['phase'],
-            vapparam[const]['amp'],
-            vapparam[const]['phase'])
+            uapparam[const]["amp"],
+            uapparam[const]["phase"],
+            vapparam[const]["amp"],
+            vapparam[const]["phase"],
+        )
         # Filling the dictionary with ep-parameters given by ellipse_param.
         # Each constituent will be a different key.
 
         params[const] = {
-            'Semi-Major Axis': maj,
-            'Semi-Minor Axis': mi,
-            'Inclination': the,
-            'Phase': pha
-            }
+            "Semi-Major Axis": maj,
+            "Semi-Minor Axis": mi,
+            "Inclination": the,
+            "Phase": pha,
+        }
 
     return params
 
 
 def get_params_nowcast_15(
-        to, tf,
-        station,
-        path, nconst,
-        depthrange='None',
-        depav=False, tidecorr=tidetools.CorrTides):
+    to,
+    tf,
+    station,
+    path,
+    nconst,
+    depthrange="None",
+    depav=False,
+    tidecorr=tidetools.CorrTides,
+):
     """This function loads all the data between the start and the end date that
     contains quater houlry velocities in the netCDF4 nowcast files in the
     depth range. Then masks, rotates and unstaggers the time series. The
@@ -299,10 +301,8 @@ def get_params_nowcast_15(
     """
 
     u, v, time, dep = ellipse_files_nowcast(
-        to, tf,
-        [1], [1],
-        path,
-        depthrange=depthrange, period='15m', station=station)
+        to, tf, [1], [1], path, depthrange=depthrange, period="15m", station=station
+    )
     u_u, v_v = prepare_vel(u, v, depav=depav, depth=dep)
     params = get_params(u_u, v_v, time, nconst, tidecorr=tidecorr)
 
@@ -310,11 +310,16 @@ def get_params_nowcast_15(
 
 
 def get_params_nowcast(
-        to, tf,
-        i, j,
-        path, nconst,
-        depthrange='None',
-        depav=False, tidecorr=tidetools.CorrTides):
+    to,
+    tf,
+    i,
+    j,
+    path,
+    nconst,
+    depthrange="None",
+    depav=False,
+    tidecorr=tidetools.CorrTides,
+):
     """This function loads all the data between the start and the end date that
     contains hourly velocities in the netCDF4 nowcast files in the specified
     depth range. Then masks, rotates and unstaggers the time series. The
@@ -359,11 +364,7 @@ def get_params_nowcast(
               dep is the depths of the ellipse paramters
     """
 
-    u, v, time, dep = ellipse_files_nowcast(
-        to, tf,
-        i, j,
-        path,
-        depthrange=depthrange)
+    u, v, time, dep = ellipse_files_nowcast(to, tf, i, j, path, depthrange=depthrange)
     u_u, v_v = prepare_vel(u, v, depav=depav, depth=dep)
     params = get_params(u_u, v_v, time, nconst, tidecorr=tidecorr)
 

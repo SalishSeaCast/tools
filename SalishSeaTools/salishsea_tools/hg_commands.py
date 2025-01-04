@@ -3,7 +3,9 @@ via its command line interface.
 This is a utility library that is used by other Python packages
 and modules developed for the Salish Sea MEOPAR project.
 """
+
 from __future__ import absolute_import
+
 """
 Copyright 2013-2021 The Salish Sea MEOPAR contributors
 and The University of British Columbia
@@ -24,10 +26,10 @@ import subprocess
 
 
 __all__ = [
-    'commit',
-    'default_url',
-    'heads',
-    'parents',
+    "commit",
+    "default_url",
+    "heads",
+    "parents",
 ]
 
 
@@ -38,7 +40,7 @@ def commit(logfile):
     :arg logfile: Name of the file containing the commit message.
     :type logfile: str
     """
-    cmd = ['hg', 'commit', '--logfile', logfile]
+    cmd = ["hg", "commit", "--logfile", logfile]
     subprocess.check_call(cmd)
 
 
@@ -56,18 +58,17 @@ def default_url(repo=None):
 
     :returns: Output of the command or :py:obj:`None`.
     """
-    cmd = ['hg']
+    cmd = ["hg"]
     if repo is not None:
-        cmd.extend(['-R', repo])
-    cmd.extend(['paths', 'default'])
+        cmd.extend(["-R", repo])
+    cmd.extend(["paths", "default"])
     try:
-        return subprocess.check_output(
-            cmd, universal_newlines=True).strip()
+        return subprocess.check_output(cmd, universal_newlines=True).strip()
     except subprocess.CalledProcessError:
         return None
 
 
-def heads(repo, revs=['.']):
+def heads(repo, revs=["."]):
     """Return the result of the :command:`hg -R repo heads revs` command.
 
     :arg repo: Repository root directory.
@@ -81,7 +82,7 @@ def heads(repo, revs=['.']):
     :returns: Output of the command.
     :rtype: str
     """
-    cmd = ['hg', '-R', repo, 'heads'] + revs
+    cmd = ["hg", "-R", repo, "heads"] + revs
     return subprocess.check_output(cmd, universal_newlines=True)
 
 
@@ -121,13 +122,13 @@ def parents(repo=None, rev=None, file=None, verbose=False):
     :returns: Output of the command.
     :rtype: str
     """
-    cmd = ['hg', 'parents']
+    cmd = ["hg", "parents"]
     if repo is not None:
-        cmd.extend(['-R', repo])
+        cmd.extend(["-R", repo])
     if rev is not None:
-        cmd.extend(['-r', rev])
+        cmd.extend(["-r", rev])
     if file is not None:
         cmd.append(file)
     if verbose:
-        cmd.append('-v')
+        cmd.append("-v")
     return subprocess.check_output(cmd, universal_newlines=True)

@@ -27,7 +27,7 @@ def nc_dataset():
 
     Remove the created file as a clean-up operation.
     """
-    dataset = nc.Dataset('foo', 'w')
+    dataset = nc.Dataset("foo", "w")
     yield dataset
     dataset.close()
-    os.remove('foo')
+    os.remove("foo")
