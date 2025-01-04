@@ -19,8 +19,8 @@ import sys
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../SalishSeaNowcast'))
-sys.path.insert(0, os.path.abspath('../SalishSeaTools'))
+sys.path.insert(0, os.path.abspath("../SalishSeaNowcast"))
+sys.path.insert(0, os.path.abspath("../SalishSeaTools"))
 
 
 # -- General configuration ----------------------------------------------------
@@ -30,93 +30,86 @@ sys.path.insert(0, os.path.abspath('../SalishSeaTools'))
 # (named 'sphinx.ext.*')
 # or your custom ones.
 extensions = [
-    'nbsphinx',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
+    "nbsphinx",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
 ]
 
 intersphinx_mapping = {
-    'docs':
-        ('https://salishsea-meopar-docs.readthedocs.io/en/latest/', None),
-    'salishseacmd':
-        ('https://salishseacmd.readthedocs.io/en/latest/', None),
-    'salishseanowcast':
-        ('https://salishsea-nowcast.readthedocs.io/en/latest/', None),
-    'numpy':
-        ('https://docs.scipy.org/doc/numpy/', None),
-    'pandas':
-        ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'scipy':
-        ('https://docs.scipy.org/doc/scipy/reference/', None),
+    "docs": ("https://salishsea-meopar-docs.readthedocs.io/en/latest/", None),
+    "salishseacmd": ("https://salishseacmd.readthedocs.io/en/latest/", None),
+    "salishseanowcast": ("https://salishsea-nowcast.readthedocs.io/en/latest/", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
 }
 
 todo_include_todos = True
 
 autodoc_mock_imports = [
-    'angles',
-    'arrow',
-    'driftwood',
-    'driftwood.formatters',
-    'f90nml',
-    'gsw',
-    'netCDF4',
-    'nowcast',
-    'nowcast.figures',
-    'pandas',
-    'paramiko',
-    'retrying',
-    'scipy',
-    'scipy.interpolate',
-    'scipy.io',
-    'scipy.optimize',
-    'scipy.sparse',
-    'tqdm',
-    'xarray',
-    'yaml',
-    'zmq',
-    'zmq.eventloop',
-    'zmq.eventloop.ioloop',
-    'zmq.eventloop.zmqstream',
-    'zmq.utils',
+    "angles",
+    "arrow",
+    "driftwood",
+    "driftwood.formatters",
+    "f90nml",
+    "gsw",
+    "netCDF4",
+    "nowcast",
+    "nowcast.figures",
+    "pandas",
+    "paramiko",
+    "retrying",
+    "scipy",
+    "scipy.interpolate",
+    "scipy.io",
+    "scipy.optimize",
+    "scipy.sparse",
+    "tqdm",
+    "xarray",
+    "yaml",
+    "zmq",
+    "zmq.eventloop",
+    "zmq.eventloop.ioloop",
+    "zmq.eventloop.zmqstream",
+    "zmq.utils",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Salish Sea MEOPAR Tools'
+project = "Salish Sea MEOPAR Tools"
 copyright = (
-    '2013-{:%Y}, '
-    'Salish Sea MEOPAR Project Contributors '
-    'and The University of British Columbia'
-    .format(datetime.date.today())
+    "2013-{:%Y}, "
+    "Salish Sea MEOPAR Project Contributors "
+    "and The University of British Columbia".format(datetime.date.today())
 )
 
 # For autoclass
-autoclass_content = 'init'
+autoclass_content = "init"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = ''
+version = ""
 # The full version, including alpha/beta/rc tags.
-release = ''
+release = ""
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output --------------------------------------------------
@@ -128,16 +121,16 @@ html_theme = "sphinx_rtd_theme"
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = '_static/MEOPAR_favicon.ico'
+html_favicon = "_static/MEOPAR_favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = "%b %d, %Y"
 
 # If false, no module index is generated.
 html_domain_indices = False
@@ -146,7 +139,7 @@ html_domain_indices = False
 html_use_index = False
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SalishSea-MEOPAR-toolsdoc'
+htmlhelp_basename = "SalishSea-MEOPAR-toolsdoc"
 
 
 # -- Options for LaTeX output -------------------------------------------------
@@ -155,10 +148,12 @@ htmlhelp_basename = 'SalishSea-MEOPAR-toolsdoc'
 # List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto/manual]).
-latex_documents = [(
-    'index',
-    'SalishSea-MEOPAR-toolsdoc.tex',
-    'Salish Sea MEOPAR Tools Documentation',
-    'Salish Sea MEOPAR Project Contributors',
-    'manual',
-)]
+latex_documents = [
+    (
+        "index",
+        "SalishSea-MEOPAR-toolsdoc.tex",
+        "Salish Sea MEOPAR Tools Documentation",
+        "Salish Sea MEOPAR Project Contributors",
+        "manual",
+    )
+]

@@ -21,4 +21,3 @@ ncrename -v sbc_O2_b,sbc_TRA_b $2
 ncrename -v rnf_pis_O2_b,rnf_pis_TRA_b $2
 ncrename -v TRNO2,TRNTRA $2
 ncrename -v TRBO2,TRBTRA $2
-

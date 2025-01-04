@@ -18,16 +18,16 @@
 
 #: String to LaTeX notation mapping for units
 STR_LATEX_MAPPING = {
-    'm/s': 'm/s',
-    'm2/s': 'm$^2$ / s$',
-    'degrees_east': '$^\circ$E',
-    'degrees_north': '$^\circ$N',
-    'degC': '$^\circ$C',
-    'g kg-1': 'g / kg',
-    'g/kg': 'g / kg',
-    'mmol m-3': 'mmol / $m^{3}$',
-    'mmol/m3': 'mmol / $m^{3}$',
-    'm2/s3': 'm$^2$ / s$^3$'
+    "m/s": "m/s",
+    "m2/s": "m$^2$ / s$",
+    "degrees_east": "$^\circ$E",
+    "degrees_north": "$^\circ$N",
+    "degC": "$^\circ$C",
+    "g kg-1": "g / kg",
+    "g/kg": "g / kg",
+    "mmol m-3": "mmol / $m^{3}$",
+    "mmol/m3": "mmol / $m^{3}$",
+    "m2/s3": "m$^2$ / s$^3$",
 }
 
 
@@ -42,5 +42,4 @@ def format_units(units):
     try:
         return STR_LATEX_MAPPING[units]
     except KeyError:
-        raise KeyError(
-            'units not found in string to LaTeX mapping: {}'.format(units))
+        raise KeyError("units not found in string to LaTeX mapping: {}".format(units))

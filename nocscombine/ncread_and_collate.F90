@@ -1,6 +1,6 @@
 cc ncread_and_collate
 cc
-cc FORTRAN subroutine that reads in data from the individual local domains and 
+cc FORTRAN subroutine that reads in data from the individual local domains and
 cc combines it into a global datafield which is written into a NetCDF archive.
 cc
 cc INPUT ::
@@ -80,7 +80,7 @@ cc Open the input datafile. Read the global domain dimensions and the required
 cc number of input files to accessed.
 cc
       status = nf90_open( trim(fname), NF90_NOWRITE, ncid )
-      status = nf90_enddef( ncid ) 
+      status = nf90_enddef( ncid )
       status = nf90_Inquire(ncid, nDim, nVar, nAtt, nunlim)
       allocate(dims(nDim))
       allocate(global_start(nDim))
@@ -88,7 +88,7 @@ cc
       allocate(lstart(nDim))
       allocate(lsize(nDim))
 
-      status = nf90_get_att( ncid, nf90_global, "DOMAIN_size_global", 
+      status = nf90_get_att( ncid, nf90_global, "DOMAIN_size_global",
      &                       local_size )
       global_size(1) = local_size(1)
       global_size(2) = local_size(2)
@@ -96,7 +96,7 @@ cc
       status = nf90_inquire_dimension( ncid, 4, len = num_instances )
       allocate(times(num_instances))
 
-      status = nf90_get_att( ncid, nf90_global, "DOMAIN_number_total", 
+      status = nf90_get_att( ncid, nf90_global, "DOMAIN_number_total",
      &                       numfiles )
 cc
 cc Read in the number instances contained in the archive
@@ -116,7 +116,7 @@ cc
 cc
 cc Create the global NetCDF archive.
 cc
-      CALL make_global_file( fname, oname, times, global_size, 
+      CALL make_global_file( fname, oname, times, global_size,
      &                       num_instances, verbose, dovar )
       deallocate(times)
 
@@ -171,7 +171,7 @@ c May be necessary for domain partitions which have thrown away
 c land only regions due to faulty logic in mpp_init_ioipsl
 c which will have set the wrong halo sizes
 c
-         if(n.eq.0) 
+         if(n.eq.0)
      &   write(*,*) 'nocscombine test version: fixing domain attributes'
          open(unit=11, file='layout.dat')
          read(11,*)
@@ -185,10 +185,10 @@ c
          ihe(1) = nlci-nlei
          ihe(2) = nlcj-nlej
 #endif
-          global_start(1) = global_start(1) + ihs(1) 
-          global_start(2) = global_start(2) + ihs(2) 
-          global_end(1)   = global_end(1)   - ihe(1) 
-          global_end(2)   = global_end(2)   - ihe(2) 
+          global_start(1) = global_start(1) + ihs(1)
+          global_start(2) = global_start(2) + ihs(2)
+          global_end(1)   = global_end(1)   - ihe(1)
+          global_end(2)   = global_end(2)   - ihe(2)
           local_size(1)   = local_size(1)   - (ihs(1) + ihe(1))
           local_size(2)   = local_size(2)   - (ihs(2) + ihe(2))
          endif
@@ -209,7 +209,7 @@ cc
          end do
          ig = 0
          do i = 1,nVar
-          status = nf90_Inquire_Variable(ncid, i, nname, 
+          status = nf90_Inquire_Variable(ncid, i, nname,
      &                                   ntyp, ndims, dims, nvatt)
 c
           call handle_err(status)
@@ -243,7 +243,7 @@ c
            elseif(ndims.eq.1) then
             allocate( dtimes(lsize(dims(1))) )
             status = nf90_get_var( ncid,   i, dtimes, start = lstart )
-            status = nf90_put_var( Gncid,  ig, dtimes, 
+            status = nf90_put_var( Gncid,  ig, dtimes,
      &         start=(/ 1 /),
      &         count=(/ lsize(dims(1)) /) )
             deallocate(dtimes)
@@ -262,9 +262,9 @@ c
             if(verbose) write(*,*) '3d Allocate status: ',status
             status = nf90_get_var( ncid,   i, datad_3d, start=lstart )
             status = nf90_put_var( Gncid,  ig, datad_3d,
-     &         start=(/ global_start(dims(1)), global_start(dims(2)), 
+     &         start=(/ global_start(dims(1)), global_start(dims(2)),
      &                  global_start(dims(3)) /),
-     &         count=(/ lsize(dims(1)), lsize(dims(2)), 
+     &         count=(/ lsize(dims(1)), lsize(dims(2)),
      &                  lsize(dims(3)) /) )
             deallocate(datad_3d)
            elseif(ndims.eq.4) then
@@ -339,13 +339,13 @@ c
             status = nf90_put_var( Gncid,  ig, itmpv )
            elseif(ndims.eq.1) then
             allocate( itimes(lsize(dims(1))) )
-            if(verbose) write(*,*) '1d Allocate status: ',status, 
+            if(verbose) write(*,*) '1d Allocate status: ',status,
      &                              lsize(dims(1))
             status = nf90_get_var( ncid,   i, itimes, start = lstart )
             status = nf90_put_var( Gncid,  ig, itimes,
      &         start=(/ 1 /),
      &         count=(/ lsize(dims(1)) /) )
-            if(verbose) write(*,*) '1d put status: ',status 
+            if(verbose) write(*,*) '1d put status: ',status
             deallocate(itimes)
            elseif(ndims.eq.2) then
             allocate( datai_2d(lsize(dims(1)), lsize(dims(2))),
@@ -390,13 +390,13 @@ c
             status = nf90_put_var( Gncid,  ig, istmpv )
            elseif(ndims.eq.1) then
             allocate( istimes(lsize(dims(1))) )
-            if(verbose) write(*,*) '1d Allocate status: ',status, 
+            if(verbose) write(*,*) '1d Allocate status: ',status,
      &                              lsize(dims(1))
             status = nf90_get_var( ncid,   i, istimes, start = lstart )
             status = nf90_put_var( Gncid,  ig, istimes,
      &         start=(/ 1 /),
      &         count=(/ lsize(dims(1)) /) )
-            if(verbose) write(*,*) '1d put status: ',status 
+            if(verbose) write(*,*) '1d put status: ',status
             deallocate(istimes)
            elseif(ndims.eq.2) then
             allocate( datas_2d(lsize(dims(1)), lsize(dims(2))),
@@ -441,13 +441,13 @@ c
             status = nf90_put_var( Gncid,  ig, ibtmpv )
            elseif(ndims.eq.1) then
             allocate( itimes(lsize(dims(1))) )
-            if(verbose) write(*,*) '1d Allocate status: ',status, 
+            if(verbose) write(*,*) '1d Allocate status: ',status,
      &                              lsize(dims(1))
             status = nf90_get_var( ncid,   i, ibtimes, start = lstart )
             status = nf90_put_var( Gncid,  ig, ibtimes,
      &         start=(/ 1 /),
      &         count=(/ lsize(dims(1)) /) )
-            if(verbose) write(*,*) '1d put status: ',status 
+            if(verbose) write(*,*) '1d put status: ',status
             deallocate(ibtimes)
            elseif(ndims.eq.2) then
             allocate( datab_2d(lsize(dims(1)), lsize(dims(2))),
@@ -494,7 +494,7 @@ cc
          if(verbose) then
           write(*,*) "INPUT FILENAME               :: ", trim(fname2)
           write(*,*) 'MODEL FILE LOCAL DIMENSIONS  :: ', local_size
-          write(*,*) 'MODEL FILE GLOBAL START      :: ', global_start 
+          write(*,*) 'MODEL FILE GLOBAL START      :: ', global_start
           write(*,*) 'MODEL FILE GLOBAL END        :: ', global_end
           write(*,*) ' '
          endif
@@ -508,4 +508,4 @@ cc
       deallocate(lstart)
       status = nf90_close( Gncid )
 
-      end subroutine 
+      end subroutine

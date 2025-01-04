@@ -28,4 +28,3 @@
 %MK                  make
 %USER_INC            %NCDF_INC
 %USER_LIB            %NCDF_LIB
-

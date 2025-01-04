@@ -64,7 +64,7 @@ class TestOncJsonToDataset:
 
     def test_onc_json_to_dataset_teos_10_salinity(self):
         onc_json = json.loads(
-            '''\
+            """\
             {
               "citations": [
                 "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
@@ -114,8 +114,8 @@ class TestOncJsonToDataset:
                   "unitOfMeasure": "C"
                 }
               ]
-            }                
-            '''
+            }
+            """
         )
         ds = data_tools.onc_json_to_dataset(onc_json)
         assert ds.attrs["station"] == "SEVIP"
@@ -124,15 +124,18 @@ class TestOncJsonToDataset:
         assert ds.salinity.name == "salinity"
         expected = [teos_tools.psu_teos(d) for d in [30.9339, 30.9338]]
         numpy.testing.assert_array_equal(ds.salinity.data, expected)
-        expected = numpy.array([
-            arrow.get(t).naive for t in [
-                "2023-12-12T00:00:01.013Z",
-                "2023-12-12T00:00:02.006Z"
-            ]
-        ], dtype='datetime64[ns]')
+        expected = numpy.array(
+            [
+                arrow.get(t).naive
+                for t in ["2023-12-12T00:00:01.013Z", "2023-12-12T00:00:02.006Z"]
+            ],
+            dtype="datetime64[ns]",
+        )
         numpy.testing.assert_array_equal(ds.salinity.coords["sampleTime"], expected)
         assert ds.salinity.dims == ("sampleTime",)
-        numpy.testing.assert_array_equal(ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1]))
+        numpy.testing.assert_array_equal(
+            ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1])
+        )
         assert ds.salinity.attrs["sensorName"] == "Reference Salinity"
         assert ds.salinity.attrs["unitOfMeasure"] == "g/kg"
         assert ds.salinity.attrs["actualSamples"] == 2
@@ -140,22 +143,25 @@ class TestOncJsonToDataset:
         assert "temperature" in ds.data_vars
         assert ds.temperature.name == "temperature"
         numpy.testing.assert_array_equal(ds.temperature.data, [9.5185, 9.5185])
-        expected = numpy.array([
-            arrow.get(t).naive for t in [
-                "2023-12-12T00:00:01.013Z",
-                "2023-12-12T00:00:02.006Z"
-            ]
-        ], dtype='datetime64[ns]')
+        expected = numpy.array(
+            [
+                arrow.get(t).naive
+                for t in ["2023-12-12T00:00:01.013Z", "2023-12-12T00:00:02.006Z"]
+            ],
+            dtype="datetime64[ns]",
+        )
         numpy.testing.assert_array_equal(ds.temperature.coords["sampleTime"], expected)
         assert ds.temperature.dims == ("sampleTime",)
-        numpy.testing.assert_array_equal(ds.temperature.attrs["qaqcFlag"], numpy.array([1, 1]))
+        numpy.testing.assert_array_equal(
+            ds.temperature.attrs["qaqcFlag"], numpy.array([1, 1])
+        )
         assert ds.temperature.attrs["sensorName"] == "Temperature"
         assert ds.temperature.attrs["unitOfMeasure"] == "C"
         assert ds.temperature.attrs["actualSamples"] == 2
 
     def test_onc_json_to_dataset_psu_salinity(self):
         onc_json = json.loads(
-            '''\
+            """\
             {
               "citations": [
                 "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
@@ -189,8 +195,8 @@ class TestOncJsonToDataset:
                   "unitOfMeasure": "psu"
                 }
               ]
-            }                
-            '''
+            }
+            """
         )
         ds = data_tools.onc_json_to_dataset(onc_json, teos=False)
         assert ds.attrs["station"] == "SEVIP"
@@ -198,15 +204,18 @@ class TestOncJsonToDataset:
         assert "salinity" in ds.data_vars
         assert ds.salinity.name == "salinity"
         numpy.testing.assert_array_equal(ds.salinity.data, [30.9339, 30.9338])
-        expected = numpy.array([
-            arrow.get(t).naive for t in [
-                "2023-12-12T00:00:01.013Z",
-                "2023-12-12T00:00:02.006Z"
-            ]
-        ], dtype='datetime64[ns]')
+        expected = numpy.array(
+            [
+                arrow.get(t).naive
+                for t in ["2023-12-12T00:00:01.013Z", "2023-12-12T00:00:02.006Z"]
+            ],
+            dtype="datetime64[ns]",
+        )
         numpy.testing.assert_array_equal(ds.salinity.coords["sampleTime"], expected)
         assert ds.salinity.dims == ("sampleTime",)
-        numpy.testing.assert_array_equal(ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1]))
+        numpy.testing.assert_array_equal(
+            ds.salinity.attrs["qaqcFlag"], numpy.array([1, 1])
+        )
         assert ds.salinity.attrs["sensorName"] == "Practical Salinity"
         assert ds.salinity.attrs["unitOfMeasure"] == "psu"
         assert ds.salinity.attrs["actualSamples"] == 2

@@ -20,8 +20,10 @@ import arrow
 import glob
 import os
 
-def findnamelist(namelist, year, month, day,
-                 pathname = '/results/SalishSea/nowcast-green'):
+
+def findnamelist(
+    namelist, year, month, day, pathname="/results/SalishSea/nowcast-green"
+):
     """Find the most recent namelist from a results file.
 
     arg str namelist: name of the namelist you are looking for
@@ -36,11 +38,11 @@ def findnamelist(namelist, year, month, day,
     """
 
     myday = arrow.get(year, month, day)
-    pathname = '/results/SalishSea/nowcast-green'
-    directory = myday.format('DDMMMYY').lower()
+    pathname = "/results/SalishSea/nowcast-green"
+    directory = myday.format("DDMMMYY").lower()
     mynamelist = glob.glob(os.path.join(pathname, directory, namelist))
     while not mynamelist:
         myday = myday.shift(days=-1)
-        directory = myday.format('DDMMMYY').lower()
+        directory = myday.format("DDMMMYY").lower()
         mynamelist = glob.glob(os.path.join(pathname, directory, namelist))
     return mynamelist[0]

@@ -33,10 +33,17 @@ from salishsea_tools.teos_tools import (
 
 
 __all__ = [
-    'PSU_TEOS', 'TEOS_PSU', 'psu_teos', 'teos_psu',
-    'M_PER_S__KM_PER_HR', 'M_PER_S__KNOTS', 'mps_kph', 'mps_knots',
-    'wind_to_from', 'bearing_heading',
-    'humanize_time_of_day',
+    "PSU_TEOS",
+    "TEOS_PSU",
+    "psu_teos",
+    "teos_psu",
+    "M_PER_S__KM_PER_HR",
+    "M_PER_S__KNOTS",
+    "mps_kph",
+    "mps_knots",
+    "wind_to_from",
+    "bearing_heading",
+    "humanize_time_of_day",
 ]
 
 
@@ -126,8 +133,24 @@ def wind_to_from(wind_to):
 def bearing_heading(
     bearing,
     headings=(
-        'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S',
-        'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N'),
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+        "N",
+    ),
 ):
     """Convert a compass bearing to a heading.
 
@@ -159,17 +182,17 @@ def humanize_time_of_day(date_time):
               e.g. early Monday afternoon
     :rtype: str
     """
-    day_of_week = date_time.format('dddd')
+    day_of_week = date_time.format("dddd")
     if date_time.hour < 6:
-        part_of_day = ''
-        early_late = 'overnight'
+        part_of_day = ""
+        early_late = "overnight"
     elif date_time.hour < 12:
-        part_of_day = 'morning'
-        early_late = 'early' if date_time.hour < 9 else 'late'
+        part_of_day = "morning"
+        early_late = "early" if date_time.hour < 9 else "late"
     elif 12 <= date_time.hour < 18:
-        part_of_day = 'afternoon'
-        early_late = 'early' if date_time.hour < 15 else 'late'
+        part_of_day = "afternoon"
+        early_late = "early" if date_time.hour < 15 else "late"
     else:
-        part_of_day = 'evening'
-        early_late = 'early' if date_time.hour < 21 else 'late'
-    return ' '.join((early_late, day_of_week, part_of_day)).rstrip()
+        part_of_day = "evening"
+        early_late = "early" if date_time.hour < 21 else "late"
+    return " ".join((early_late, day_of_week, part_of_day)).rstrip()

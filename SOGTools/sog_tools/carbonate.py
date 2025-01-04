@@ -25,7 +25,7 @@ https://cdiac.ornl.gov/oceans/co2rprt.html
 import numpy as np
 
 
-def calc_carbonate(values, TP, TSi, T, S, P, params=['TA', 'TC']):
+def calc_carbonate(values, TP, TSi, T, S, P, params=["TA", "TC"]):
     """Calculate carbonate system parameters given two inputs
 
     :arg values: List of input values or arrays corresponding to params arg
@@ -69,39 +69,37 @@ def calc_carbonate(values, TP, TSi, T, S, P, params=['TA', 'TC']):
 
     # Assign inputs
     for param, val in zip(params, values):
-        if param is 'TA':
+        if param is "TA":
             TA = val * 1.0e-6
-        elif param is 'TC':
+        elif param is "TC":
             TC = val * 1.0e-6
-        elif param is 'pH':
+        elif param is "pH":
             pH = val
-        elif param is 'pCO2':
+        elif param is "pCO2":
             pCO2 = val * 1.0e-6
-        elif param is 'OmegaA':
+        elif param is "OmegaA":
             OmegaA = val
             CO3 = OmegaA * KAr / Ca
         else:
-            raise ValueError('Unknown CO2 parameter: {}'.format(param))
+            raise ValueError("Unknown CO2 parameter: {}".format(param))
 
     # Calculate pH
-    if 'TA' in params and 'TC' in params:
-        pH = CalculatepHfromTA('TC', TA, TC, TP, TSi)
-    elif 'TA' in params and 'pCO2' in params:
-        pH = CalculatepHfromTA('pCO2', TA, pCO2, TP, TSi)
-    elif 'TA' in params and 'OmegaA' in params:
-        pH = CalculatepHfromTA('CO3', TA, CO3, TP, TSi)
-    elif 'TC' in params and 'pCO2' in params:
+    if "TA" in params and "TC" in params:
+        pH = CalculatepHfromTA("TC", TA, TC, TP, TSi)
+    elif "TA" in params and "pCO2" in params:
+        pH = CalculatepHfromTA("pCO2", TA, pCO2, TP, TSi)
+    elif "TA" in params and "OmegaA" in params:
+        pH = CalculatepHfromTA("CO3", TA, CO3, TP, TSi)
+    elif "TC" in params and "pCO2" in params:
         RR = K0 * pCO2 / TC
         Discr = (K1 * RR) * (K1 * RR) + 4 * (1 - RR) * (K1 * K2 * RR)
         H = 0.5 * (K1 * RR + np.sqrt(Discr)) / (1 - RR)
         pH = np.log(H) / np.log(0.1)
-    elif 'TC' in params and 'OmegaA' in params:
-        HCO3 = K1 * CO3 / (2 * K2) * (
-            np.sqrt(4 * K2 / K1 * (TC / CO3 - 1) + 1) - 1
-        )
+    elif "TC" in params and "OmegaA" in params:
+        HCO3 = K1 * CO3 / (2 * K2) * (np.sqrt(4 * K2 / K1 * (TC / CO3 - 1) + 1) - 1)
         H = K2 * HCO3 / CO3
         pH = np.log(H) / np.log(0.1)
-    elif 'pCO2' in params and 'OmegaA' in params:
+    elif "pCO2" in params and "OmegaA" in params:
         TC = np.sqrt(K0 * K1 / K2 * pCO2 * CO3) + K0 * pCO2 + CO3
         H = K0 * K1 * pCO2 / (TC - K0 * pCO2 - CO3)
         pH = np.log(H) / np.log(0.1)
@@ -109,11 +107,11 @@ def calc_carbonate(values, TP, TSi, T, S, P, params=['TA', 'TC']):
     # Fill in remaining params
     H, Beta = CalculateHfrompH(pH)
     NCAlk = CalculateNCAlkfrompH(H, TP, TSi)
-    if 'pH' in params and 'pCO2' in params:
+    if "pH" in params and "pCO2" in params:
         TC = K0 * pCO2 * (1 + K1 / H + K1 * K2 / (H * H))
-    elif 'pH' in params and 'OmegaA' in params:
+    elif "pH" in params and "OmegaA" in params:
         TC = CO3 * (H * H / (K1 * K2) + H / K2 + 1)
-    if 'TA' in params:
+    if "TA" in params:
         CAlk = TA - NCAlk
         TC = CAlk * Beta / (K1 * (H + 2 * K2))
     else:
@@ -125,11 +123,11 @@ def calc_carbonate(values, TP, TSi, T, S, P, params=['TA', 'TC']):
 
     # Unit conversions and dict out
     Calc_values = {
-        'TA': TA * 1e6,
-        'TC': TC * 1e6,
-        'pH': pH,
-        'pCO2': pCO2 * 1e6,
-        'OmegaA': OmegaA,
+        "TA": TA * 1e6,
+        "TC": TC * 1e6,
+        "pH": pH,
+        "pCO2": pCO2 * 1e6,
+        "OmegaA": OmegaA,
     }
 
     return Calc_values
@@ -165,21 +163,19 @@ def set_constants(Sal, TempK, Pdbar):
     sqrIonS = np.sqrt(IonS)
 
     # Calculate H ion activity coefficient
-    fH = 1.2948 - 0.002036 * TempK + (
-        0.0004607 - 0.000001475 * TempK
-    ) * Sal**2
+    fH = 1.2948 - 0.002036 * TempK + (0.0004607 - 0.000001475 * TempK) * Sal**2
 
     # CALCULATE SEAWATER CONSTITUENTS USING EMPIRCAL FITS
     # Calculate total borate:
     # Uppstrom, L., Deep-Sea Research 21:161-162, 1974:
     # this is 0.000416 * Sali / 35 = 0.0000119 * Sali
     # TB = (0.000232d0 / 10.811d0) * (Sal / 1.80655d0) ! in mol/kg-SW
-    TB = 0.0004157 * Sal / 35.0    # in mol/kg-SW
+    TB = 0.0004157 * Sal / 35.0  # in mol/kg-SW
 
     # Calculate total sulfate:
     # Morris, A. W., and Riley, J. P., Deep-Sea Research 13:699-705, 1966:
     # this is .02824 * Sali / 35 = .0008067 * Sali
-    TS = (0.14 / 96.062) * (Sal / 1.80655)     # in mol/kg-SW
+    TS = (0.14 / 96.062) * (Sal / 1.80655)  # in mol/kg-SW
 
     # Calculate total fluoride: (in mol/kg-SW)
     # Riley, J. P., Deep-Sea Research 12:219-220, 1965:
@@ -195,23 +191,24 @@ def set_constants(Sal, TempK, Pdbar):
     # TYPO on p. 121: the constant e9 should be e8.
     # This is from eqs 22 and 23 on p. 123, and Table 4 on p 121:
     lnKS = (
-        -4276.1 / TempK + 141.328 - 23.093 * logTempK +
-        (-13856.0 / TempK + 324.57 - 47.986 * logTempK) * sqrIonS +
-        (35474.0 / TempK - 771.54 + 114.723 * logTempK) * IonS +
-        (-2698.0 / TempK) * sqrIonS * IonS + (1776.0 / TempK) * IonS**2
+        -4276.1 / TempK
+        + 141.328
+        - 23.093 * logTempK
+        + (-13856.0 / TempK + 324.57 - 47.986 * logTempK) * sqrIonS
+        + (35474.0 / TempK - 771.54 + 114.723 * logTempK) * IonS
+        + (-2698.0 / TempK) * sqrIonS * IonS
+        + (1776.0 / TempK) * IonS**2
     )
-    KS = (
-        np.exp(lnKS)              # this is on the free pH scale in mol/kg-H2O
-        * (1.0 - 0.001005 * Sal)  # convert to mol/kg-SW
-    )
+    KS = np.exp(lnKS) * (  # this is on the free pH scale in mol/kg-H2O
+        1.0 - 0.001005 * Sal
+    )  # convert to mol/kg-SW
 
     # Calculate KF:
     # Dickson, A. G. and Riley, J. P., Marine Chemistry 7:89-99, 1979:
     lnKF = 1590.2 / TempK - 12.641 + 1.525 * sqrIonS
-    KF = (
-        np.exp(lnKF)              # this is on the free pH scale in mol/kg-H2O
-        * (1.0 - 0.001005 * Sal)  # convert to mol/kg-SW
-    )
+    KF = np.exp(lnKF) * (  # this is on the free pH scale in mol/kg-H2O
+        1.0 - 0.001005 * Sal
+    )  # convert to mol/kg-SW
 
     # Calculate pH scale conversion factors ( NOT pressure-corrected)
     SWStoTOT = (1 + TS / KS) / (1 + TS / KS + TF / KF)
@@ -219,8 +216,10 @@ def set_constants(Sal, TempK, Pdbar):
     # Calculate K0:
     # Weiss, R. F., Marine Chemistry 2:203-215, 1974.
     lnK0 = (
-        -60.2409 + 93.4517 / TempK100 + 23.3585 * np.log(TempK100) +
-        Sal * (0.023517 - 0.023656 * TempK100 + 0.0047036 * TempK100**2)
+        -60.2409
+        + 93.4517 / TempK100
+        + 23.3585 * np.log(TempK100)
+        + Sal * (0.023517 - 0.023656 * TempK100 + 0.0047036 * TempK100**2)
     )
     K0 = np.exp(lnK0)  # this is in mol/kg-SW/atm
 
@@ -237,7 +236,7 @@ def set_constants(Sal, TempK, Pdbar):
     B1 = -530.659 * Sal**0.5 - 5.8210 * Sal
     C1 = -2.0664 * Sal**0.5
     pK1 = pK10 + A1 + B1 / TempK + C1 * np.log(TempK)
-    K1 = 10**(-pK1)
+    K1 = 10 ** (-pK1)
     # This is from page 141
     pK20 = -90.18333 + 5143.692 / TempK + 14.613358 * np.log(TempK)
     # This is from their table 3, page 140.
@@ -245,30 +244,40 @@ def set_constants(Sal, TempK, Pdbar):
     B2 = -788.289 * Sal**0.5 - 19.189 * Sal
     C2 = -3.374 * Sal**0.5
     pK2 = pK20 + A2 + B2 / TempK + C2 * np.log(TempK)
-    K2 = 10**(-pK2)
+    K2 = 10 ** (-pK2)
 
     # Calculate KW:
     # Millero, Geochemica et Cosmochemica Acta 59:661-677, 1995.
     # his check value of 1.6 umol/kg-SW should be 6.2
     lnKW = (
-        148.9802 - 13847.26 / TempK - 23.6521 * logTempK +
-        (-5.977 + 118.67 / TempK + 1.0495 * logTempK) * sqrSal -
-        0.01615 * Sal
+        148.9802
+        - 13847.26 / TempK
+        - 23.6521 * logTempK
+        + (-5.977 + 118.67 / TempK + 1.0495 * logTempK) * sqrSal
+        - 0.01615 * Sal
     )
-    KW = np.exp(lnKW)    # this is on the SWS pH scale in (mol/kg-SW)^2
+    KW = np.exp(lnKW)  # this is on the SWS pH scale in (mol/kg-SW)^2
 
     # Calculate KB:
     # Dickson, A. G., Deep-Sea Research 37:755-766, 1990:
     lnKB = (
-        (-8966.9 - 2890.53 * sqrSal - 77.942 * Sal +
-            1.728 * sqrSal * Sal - 0.0996 * Sal**2) / TempK +
-        148.0248 + 137.1942 * sqrSal + 1.62142 * Sal +
-        (-24.4344 - 25.085 * sqrSal - 0.2474 * Sal) * logTempK +
-        0.053105 * sqrSal * TempK
+        (
+            -8966.9
+            - 2890.53 * sqrSal
+            - 77.942 * Sal
+            + 1.728 * sqrSal * Sal
+            - 0.0996 * Sal**2
+        )
+        / TempK
+        + 148.0248
+        + 137.1942 * sqrSal
+        + 1.62142 * Sal
+        + (-24.4344 - 25.085 * sqrSal - 0.2474 * Sal) * logTempK
+        + 0.053105 * sqrSal * TempK
     )
     KB = (
         np.exp(lnKB)  # this is on the total pH scale in mol/kg-SW
-        / SWStoTOT    # convert to SWS pH scale
+        / SWStoTOT  # convert to SWS pH scale
     )
 
     # Calculate KP1, KP2, KP3, and KSi:
@@ -276,44 +285,49 @@ def set_constants(Sal, TempK, Pdbar):
     # KP1, KP2, KP3 are on the SWS pH scale in mol/kg-SW.
     # KSi was given on the SWS pH scale in molal units.
     lnKP1 = (
-        -4576.752 / TempK + 115.54 - 18.453 * logTempK +
-        (-106.736 / TempK + 0.69171) * sqrSal +
-        (-0.65643 / TempK - 0.01844) * Sal
+        -4576.752 / TempK
+        + 115.54
+        - 18.453 * logTempK
+        + (-106.736 / TempK + 0.69171) * sqrSal
+        + (-0.65643 / TempK - 0.01844) * Sal
     )
     KP1 = np.exp(lnKP1)
 
     lnKP2 = (
-        -8814.715 / TempK + 172.1033 - 27.927 * logTempK +
-        (-160.34 / TempK + 1.3566) * sqrSal +
-        (0.37335 / TempK - 0.05778) * Sal
+        -8814.715 / TempK
+        + 172.1033
+        - 27.927 * logTempK
+        + (-160.34 / TempK + 1.3566) * sqrSal
+        + (0.37335 / TempK - 0.05778) * Sal
     )
     KP2 = np.exp(lnKP2)
 
     lnKP3 = (
-        -3070.75 / TempK - 18.126 +
-        (17.27039 / TempK + 2.81197) * sqrSal +
-        (-44.99486 / TempK - 0.09984) * Sal
+        -3070.75 / TempK
+        - 18.126
+        + (17.27039 / TempK + 2.81197) * sqrSal
+        + (-44.99486 / TempK - 0.09984) * Sal
     )
     KP3 = np.exp(lnKP3)
 
     lnKSi = (
-        -8904.2 / TempK + 117.4 - 19.334 * logTempK +
-        (-458.79 / TempK + 3.5913) * sqrIonS +
-        (188.74 / TempK - 1.5998) * IonS +
-        (-12.1652 / TempK + 0.07871) * IonS**2
+        -8904.2 / TempK
+        + 117.4
+        - 19.334 * logTempK
+        + (-458.79 / TempK + 3.5913) * sqrIonS
+        + (188.74 / TempK - 1.5998) * IonS
+        + (-12.1652 / TempK + 0.07871) * IonS**2
     )
-    KSi = (
-        np.exp(lnKSi)             # this is on the SWS pH scale in mol/kg-H2O
-        * (1.0 - 0.001005 * Sal)  # convert to mol/kg-SW
-    )
+    KSi = np.exp(lnKSi) * (  # this is on the SWS pH scale in mol/kg-H2O
+        1.0 - 0.001005 * Sal
+    )  # convert to mol/kg-SW
 
     # Correct constants for pressure
     pressure_corrections(TempK, Pbar)
 
 
 def pressure_corrections(TempK, Pbar):
-    """Calculate pressure corrections for constants defined in set_constants
-    """
+    """Calculate pressure corrections for constants defined in set_constants"""
 
     # Declare global constants
     global R_gas, fH, K1, K2, KW, KB, KF, KS, KP1, KP2, KP3, KSi, TB, TS, TF
@@ -324,10 +338,7 @@ def pressure_corrections(TempK, Pbar):
 
     # Fugacity Factor
     Delta = 57.7 - 0.118 * TempK
-    b = (
-        -1636.75 + 12.0408 * TempK - 0.0327957 * TempK**2 +
-        3.16528 * 1.0e-5 * TempK**3
-    )
+    b = -1636.75 + 12.0408 * TempK - 0.0327957 * TempK**2 + 3.16528 * 1.0e-5 * TempK**3
     FugFac = np.exp((b + 2.0 * Delta) * 1.01325 / RT)
 
     # Pressure effects on K1 & K2:
@@ -365,7 +376,7 @@ def pressure_corrections(TempK, Pbar):
     # deltaV = -29.48 + 0.1622 * TempC + 0.295 * (Sal - 34.8) # Millero, 1992
     # deltaV = -29.48 - 0.1622 * TempC - 0.002608 * TempC**2  # Millero, 1995
     # deltaV = deltaV + 0.295 * (Sal - 34.8)                  # Millero, 1979
-    Kappa = -2.84 / 1000.0    # Millero, 1979
+    Kappa = -2.84 / 1000.0  # Millero, 1979
     # Millero, 1992 and Millero, 1995 also have this.
     # Kappa = Kappa + 0.354 * (Sal - 34.8) / 1000  # Millero, 1979
     # Kappa = (-3.0 + 0.0427 * TempC) / 1000   # Millero, 1983
@@ -417,7 +428,7 @@ def pressure_corrections(TempK, Pbar):
 
 
 def CalculatepHfromTA(param, TA, val, TP, TSi):
-    """ SUB CalculatepHfromTATC, version 04.01, 10-13-96, written by Ernie Lewis.
+    """SUB CalculatepHfromTATC, version 04.01, 10-13-96, written by Ernie Lewis.
     Inputs: TA, TC, TP, TSi
     Output: pH
     This calculates pH from TA and TC using K1 and K2 by Newton's method.
@@ -432,11 +443,11 @@ def CalculatepHfromTA(param, TA, val, TP, TSi):
     global K0, K1, K2, KW, KB
 
     # Set iteration parameters
-    pHGuess = 8.0         # this is the first guess
-    pHTol = 1.0e-4        # tolerance for iterations end
+    pHGuess = 8.0  # this is the first guess
+    pHTol = 1.0e-4  # tolerance for iterations end
     ln10 = np.log(10.0)
     # creates a vector holding the first guess for all samples
-    if hasattr(TA, 'shape'):
+    if hasattr(TA, "shape"):
         pH = np.ones(TA.shape) * pHGuess
     else:
         pH = pHGuess
@@ -447,14 +458,16 @@ def CalculatepHfromTA(param, TA, val, TP, TSi):
         H, Beta = CalculateHfrompH(pH)
         NCAlk = CalculateNCAlkfrompH(H, TP, TSi)
 
-        if param is 'TC':
+        if param is "TC":
             CAlk = val * K1 * (H + 2 * K2) / Beta
             # find Slope dTA/dpH (not exact, but keeps all important terms)
             Slope = ln10 * (
-                val * K1 * H * (H * H + K1 * K2 + 4.0 * H * K2)
-                / Beta / Beta + TB * KB * H / (KB + H) / (KB + H) + KW / H + H
+                val * K1 * H * (H * H + K1 * K2 + 4.0 * H * K2) / Beta / Beta
+                + TB * KB * H / (KB + H) / (KB + H)
+                + KW / H
+                + H
             )
-        elif param is 'pCO2':
+        elif param is "pCO2":
             HCO3 = K0 * K1 * val / H
             CO3 = K0 * K1 * K2 * val / (H * H)
             CAlk = HCO3 + 2 * CO3
@@ -462,7 +475,7 @@ def CalculatepHfromTA(param, TA, val, TP, TSi):
             Slope = ln10 * (
                 HCO3 + 4 * CO3 + TB * KB * H / (KB + H) / (KB + H) + KW / H + H
             )
-        elif param is 'CO3':
+        elif param is "CO3":
             HCO3 = H * val / K2
             CAlk = HCO3 + 2 * val
             # find Slope dTA/dpH (not exact, but keeps all important terms)
@@ -470,11 +483,11 @@ def CalculatepHfromTA(param, TA, val, TP, TSi):
                 HCO3 + 4 * CO3 + TB * KB * H / (KB + H) / (KB + H) + KW / H + H
             )
         else:
-            raise ValueError('Unknown carbon param: {}'.format(param))
+            raise ValueError("Unknown carbon param: {}".format(param))
 
         TA_calc = CAlk + NCAlk
         Residual = TA - TA_calc
-        deltapH = Residual / Slope   # this is Newton's method
+        deltapH = Residual / Slope  # this is Newton's method
         # to keep the jump from being too big
         while np.any(abs(deltapH) > 1):
             deltapH = deltapH / 2.0
@@ -501,7 +514,7 @@ def CalculateNCAlkfrompH(H, TP, TSi):
     PhosBot = H * H * H + KP1 * H * H + KP1 * KP2 * H + KP1 * KP2 * KP3
     PAlk = TP * PhosTop / PhosBot
     SiAlk = TSi * KSi / (KSi + H)
-    FREEtoTOT = (1 + TS / KS)  # pH scale conversion factor
+    FREEtoTOT = 1 + TS / KS  # pH scale conversion factor
     Hfree = H / FREEtoTOT  # for H on the total scale
     HSO4 = TS / (1 + KS / Hfree)  # since KS is on the free scale
     HF = TF / (1 + KF / Hfree)  # since KF is on the free scale
@@ -511,12 +524,11 @@ def CalculateNCAlkfrompH(H, TP, TSi):
 
 
 def CalculateHfrompH(pH):
-    """
-    """
+    """ """
 
     global K1, K2
 
-    H = 10**(-pH)
+    H = 10 ** (-pH)
     Beta = H * H + K1 * H + K1 * K2
 
     return H, Beta
@@ -567,20 +579,26 @@ def CaSolubility(S, TempK, P):
 
     # Calcite solubility:
     # Mucci, Alphonso, Amer. J. of Science 283:781-799, 1983.
-    KCa = 10.0**(
-        -171.9065 - 0.077993 * TempK + 2839.319 / TempK
+    KCa = 10.0 ** (
+        -171.9065
+        - 0.077993 * TempK
+        + 2839.319 / TempK
         + 71.595 * logTempK / np.log(10.0)
         + (-0.77712 + 0.0028426 * TempK + 178.34 / TempK) * sqrtS
-        - 0.07711 * S + 0.0041249 * sqrtS * S
+        - 0.07711 * S
+        + 0.0041249 * sqrtS * S
     )
 
     # Aragonite solubility:
     # Mucci, Alphonso, Amer. J. of Science 283:781-799, 1983.
-    KAr = 10.0**(
-        -171.945 - 0.077993 * TempK + 2903.293 / TempK
+    KAr = 10.0 ** (
+        -171.945
+        - 0.077993 * TempK
+        + 2903.293 / TempK
         + 71.595 * logTempK / np.log(10.0)
         + (-0.068393 + 0.0017276 * TempK + 88.135 / TempK) * sqrtS
-        - 0.10018 * S + 0.0059415 * sqrtS * S
+        - 0.10018 * S
+        + 0.0059415 * sqrtS * S
     )
 
     # Pressure correction for calcite:
@@ -589,9 +607,7 @@ def CaSolubility(S, TempK, P):
     # has typos (-0.5304, -0.3692, and 10^3 for Kappa factor)
     deltaV_KCa = -48.76 + 0.5304 * TempC
     Kappa_KCa = (-11.76 + 0.3692 * TempC) / 1000.0
-    KCa = KCa * np.exp(
-        (-deltaV_KCa + 0.5 * Kappa_KCa * P) * P / (R_gas * TempK)
-    )
+    KCa = KCa * np.exp((-deltaV_KCa + 0.5 * Kappa_KCa * P) * P / (R_gas * TempK))
 
     # Pressure correction for aragonite:
     # Millero, Geochemica et Cosmochemica Acta 43:1651-1661, 1979,
@@ -599,9 +615,7 @@ def CaSolubility(S, TempK, P):
     # and 10^3 for Kappa factor)
     deltaV_KAr = deltaV_KCa + 2.8
     Kappa_KAr = Kappa_KCa
-    KAr = KAr * np.exp(
-        (-deltaV_KAr + 0.5 * Kappa_KAr * P) * P / (R_gas * TempK)
-    )
+    KAr = KAr * np.exp((-deltaV_KAr + 0.5 * Kappa_KAr * P) * P / (R_gas * TempK))
 
     # Calculate Omegas:
     # H = 10.0**(-pH)
@@ -612,8 +626,8 @@ def CaSolubility(S, TempK, P):
     return Ca, KCa, KAr
 
 
-def FindpHOnAllScales(pH_in, T, S, P, scale='total'):
-    """ SUB FindpHOnAllScales, version 01.02, 01-08-97, written by Ernie Lewis.
+def FindpHOnAllScales(pH_in, T, S, P, scale="total"):
+    """SUB FindpHOnAllScales, version 01.02, 01-08-97, written by Ernie Lewis.
     Inputs: pH, scale
     Outputs: pH dict containing all scales
     """
@@ -625,28 +639,26 @@ def FindpHOnAllScales(pH_in, T, S, P, scale='total'):
     set_constants(S, TempK, P)
 
     # pH scale conversion factors
-    FREEtoTOT = (1 + TS / KS)
+    FREEtoTOT = 1 + TS / KS
     SWStoTOT = (1 + TS / KS) / (1 + TS / KS + TF / KF)
 
     # Determine input pH scale
-    if scale is 'total':
+    if scale is "total":
         factor = 0
-    elif scale is 'seawater':
+    elif scale is "seawater":
         factor = -np.log(SWStoTOT) / np.log(0.1)
-    elif scale is 'free':
+    elif scale is "free":
         factor = -np.log(FREEtoTOT) / np.log(0.1)
-    elif scale is 'NBS':
+    elif scale is "NBS":
         factor = -np.log(SWStoTOT) / np.log(0.1) + np.log(fH) / np.log(0.1)
     else:
-        raise ValueError('Unrecongnized pH scale: {}'.format(scale))
+        raise ValueError("Unrecongnized pH scale: {}".format(scale))
 
     # Calculate pH on all scales
     pH = {}
-    pH['total'] = pH_in - factor
-    pH['free'] = pH['total'] - np.log(FREEtoTOT) / np.log(0.1)
-    pH['seawater'] = pH['total'] - np.log(SWStoTOT) / np.log(0.1)
-    pH['NBS'] = (
-        pH['total'] - np.log(SWStoTOT) / np.log(0.1) + np.log(fH) / np.log(0.1)
-    )
+    pH["total"] = pH_in - factor
+    pH["free"] = pH["total"] - np.log(FREEtoTOT) / np.log(0.1)
+    pH["seawater"] = pH["total"] - np.log(SWStoTOT) / np.log(0.1)
+    pH["NBS"] = pH["total"] - np.log(SWStoTOT) / np.log(0.1) + np.log(fH) / np.log(0.1)
 
     return pH

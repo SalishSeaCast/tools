@@ -11,7 +11,7 @@ function [pred,wlev,anomaly,tim] = get_tides(csvfilename, location)
 
 % KLS November 2013
 % Feb 2014: This has been adapted to use the t_tide package. NKS
-% This fucntion will save the harmonics data and the predictions in separate files. 
+% This fucntion will save the harmonics data and the predictions in separate files.
 
 %Read in the measured water level data the location
 fid = fopen(csvfilename);
@@ -50,13 +50,13 @@ clear time newmeas meas
 %Use t_tide to determine harmonic constituents. Needs to be at least one
 %year time series (366 days)
 [tidestruc,~] = t_tide(wlev,'start time',start_date(1,1),'latitude',lat);
-    
+
 %Get predicted tide for same period
 pred = t_predic(tim,tidestruc,'latitude',lat);
 
 %%% Determine latitude somehow from file
 
-%Add mean to the predicted water levels. 
+%Add mean to the predicted water levels.
 pred = pred +nanmean(wlev);
 
 %Calculate sea level anomaly

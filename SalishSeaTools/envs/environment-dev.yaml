@@ -46,6 +46,10 @@ dependencies:
   - tqdm
   - xarray
 
+  # For coding style and repo QA
+  - black
+  - pre-commit
+
   # For unit tests
   - coverage
   - pytest-cov

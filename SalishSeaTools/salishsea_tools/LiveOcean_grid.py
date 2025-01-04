@@ -23,41 +23,56 @@ def get_basic_info(fn, only_G=False, only_S=False, only_T=False):
 
     """
 
-    ds = nc.Dataset(fn, 'r')
+    ds = nc.Dataset(fn, "r")
 
     def make_G(ds):
         # get grid and bathymetry info
-        g_varlist = ['h', 'lon_rho', 'lat_rho', 'lon_u', 'lat_u', 'lon_v',
-                     'lat_v', 'mask_rho', 'mask_u', 'mask_v', 'pm', 'pn', ]
+        g_varlist = [
+            "h",
+            "lon_rho",
+            "lat_rho",
+            "lon_u",
+            "lat_u",
+            "lon_v",
+            "lat_v",
+            "mask_rho",
+            "mask_u",
+            "mask_v",
+            "pm",
+            "pn",
+        ]
         G = dict()
         for vv in g_varlist:
             G[vv] = ds.variables[vv][:]
-        G['DX'] = 1/G['pm']
-        G['DY'] = 1/G['pn']
-        G['M'], G['L'] = np.shape(G['lon_rho'])  # M = rows, L = columns
+        G["DX"] = 1 / G["pm"]
+        G["DY"] = 1 / G["pn"]
+        G["M"], G["L"] = np.shape(G["lon_rho"])  # M = rows, L = columns
         # make the masks boolean (True = water, False = land, opposite of masked arrays!)
-        G['mask_rho'] = G['mask_rho'] == 1
-        G['mask_u'] = G['mask_u'] == 1
-        G['mask_v'] = G['mask_v'] == 1
+        G["mask_rho"] = G["mask_rho"] == 1
+        G["mask_u"] = G["mask_u"] == 1
+        G["mask_v"] = G["mask_v"] == 1
         return G
+
     def make_S(ds):
         # get vertical sigma-coordinate info (vectors are bottom to top)
-        s_varlist = ['s_rho', 'hc', 'Cs_r', 'Vtransform']
+        s_varlist = ["s_rho", "hc", "Cs_r", "Vtransform"]
         S = dict()
         for vv in s_varlist:
             S[vv] = ds.variables[vv][:]
-        S['N'] = len(S['s_rho'])  # number of vertical levels
+        S["N"] = len(S["s_rho"])  # number of vertical levels
         return S
+
     def make_T(ds):
         # get time info
-        t_varlist = ['ocean_time']
+        t_varlist = ["ocean_time"]
         T = dict()
         for vv in t_varlist:
             T[vv] = ds.variables[vv][:]
-        T_units = ds.variables['ocean_time'].units
-        tt = nc.num2date(T['ocean_time'][:], T_units)
-        T['time'] = tt
+        T_units = ds.variables["ocean_time"].units
+        tt = nc.num2date(T["ocean_time"][:], T_units)
+        T["time"] = tt
         return T
+
     # return results
     if only_G:
         return make_G(ds)
@@ -87,14 +102,15 @@ def get_z(h, zeta, S):
     """
 
     # input error checking
-    if ( (not isinstance(h, np.ndarray))
-        or (not isinstance(zeta, (np.ndarray, np.ma.core.MaskedArray))) ):
-        print('WARNING from get_z(): Inputs must be numpy arrays')
+    if (not isinstance(h, np.ndarray)) or (
+        not isinstance(zeta, (np.ndarray, np.ma.core.MaskedArray))
+    ):
+        print("WARNING from get_z(): Inputs must be numpy arrays")
     if not isinstance(S, dict):
-        print('WARNING from get_z(): S must be a dict')
+        print("WARNING from get_z(): S must be a dict")
 
     # number of vertical levels
-    N = S['N']
+    N = S["N"]
 
     # remove singleton dimensions
     h = h.squeeze()
@@ -104,29 +120,29 @@ def get_z(h, zeta, S):
     zeta = np.atleast_2d(zeta)
     # check that the dimensions are the same
     if h.shape != zeta.shape:
-        print('WARNING from get_z(): h and zeta must be the same shape')
+        print("WARNING from get_z(): h and zeta must be the same shape")
     M, L = h.shape
 
     # rho
     # create some useful arrays
-    csr = S['Cs_r']
+    csr = S["Cs_r"]
     csrr = csr.reshape(N, 1, 1).copy()
     Cs_r = np.tile(csrr, [1, M, L])
     H_r = np.tile(h.reshape(1, M, L).copy(), [N, 1, 1])
     Zeta_r = np.tile(zeta.reshape(1, M, L).copy(), [N, 1, 1])
-    if S['hc'] == 0:  # if hc = 0 the transform is simpler (and faster)
-        z_rho = H_r*Cs_r + Zeta_r + Zeta_r*Cs_r
-    elif S['hc'] != 0:  # need to calculate a few more useful arrays
-        sr = S['s_rho']
+    if S["hc"] == 0:  # if hc = 0 the transform is simpler (and faster)
+        z_rho = H_r * Cs_r + Zeta_r + Zeta_r * Cs_r
+    elif S["hc"] != 0:  # need to calculate a few more useful arrays
+        sr = S["s_rho"]
         srr = sr.reshape(N, 1, 1).copy()
         S_rho = np.tile(srr, [1, M, L])
-        Hc_r = np.tile(S['hc'], [N, M, L])
-        if S['Vtransform'] == 1:
-            zr0 = (S_rho - Cs_r) * Hc_r + Cs_r*H_r
-            z_rho = zr0 + Zeta_r * (1 + zr0/H_r)
-        elif S['Vtransform'] == 2:
-            zr0 = (S_rho*Hc_r + Cs_r*H_r) / (Hc_r + H_r)
-            z_rho = Zeta_r + (Zeta_r + H_r)*zr0
+        Hc_r = np.tile(S["hc"], [N, M, L])
+        if S["Vtransform"] == 1:
+            zr0 = (S_rho - Cs_r) * Hc_r + Cs_r * H_r
+            z_rho = zr0 + Zeta_r * (1 + zr0 / H_r)
+        elif S["Vtransform"] == 2:
+            zr0 = (S_rho * Hc_r + Cs_r * H_r) / (Hc_r + H_r)
+            z_rho = Zeta_r + (Zeta_r + H_r) * zr0
     z_rho = z_rho.squeeze()
 
     return z_rho

@@ -40,7 +40,7 @@ import warnings
 from salishsea_tools import hg_commands as hg
 
 
-def get_hindcast_prefix(date, res='h', version='201905'):
+def get_hindcast_prefix(date, res="h", version="201905"):
     """Construct hindcast results prefix given the date, resolution and version
     e.g., /results/SalishSea/nowcast-green.201905/ddmmmyy/SalishSea_1h_YYYYMMDD_YYYYMMDD
 
@@ -58,14 +58,19 @@ def get_hindcast_prefix(date, res='h', version='201905'):
     """
 
     # Make NEMO hindcast path
-    path, datestr = f'SalishSea/nowcast-green.{version}', date.strftime('%d%b%y').lower()
-    for root in ['/results', '/results2']:
+    path, datestr = (
+        f"SalishSea/nowcast-green.{version}",
+        date.strftime("%d%b%y").lower(),
+    )
+    for root in ["/results", "/results2"]:
         testpath = os.path.join(root, path, datestr)
         if os.path.exists(testpath):
             path = testpath
             break
     else:
-        raise ValueError(f"No hindcast {version} record found for the specified date {date.strftime('%Y-%b-%d')}")
+        raise ValueError(
+            f"No hindcast {version} record found for the specified date {date.strftime('%Y-%b-%d')}"
+        )
     prefix = os.path.join(path, f"SalishSea_1{res}_{date.strftime('%Y%m%d_%Y%m%d')}")
 
     return prefix
@@ -83,14 +88,16 @@ def get_GEM_path(date):
     """
 
     # Make GEM path
-    path, datestr = '/results/forcing/atmospheric/GEM2.5', date.strftime('y%Ym%md%d')
-    for config, prefix in zip(['operational', 'gemlam'], ['ops', 'gemlam']):
-        testpath = os.path.join(path, config, f'{prefix}_{datestr}.nc')
+    path, datestr = "/results/forcing/atmospheric/GEM2.5", date.strftime("y%Ym%md%d")
+    for config, prefix in zip(["operational", "gemlam"], ["ops", "gemlam"]):
+        testpath = os.path.join(path, config, f"{prefix}_{datestr}.nc")
         if os.path.exists(testpath):
             path = testpath
             break
     else:
-        raise ValueError(f"No GEM2.5 record found for the specified date {date.strftime('%Y-%b-%d')}")
+        raise ValueError(
+            f"No GEM2.5 record found for the specified date {date.strftime('%Y-%b-%d')}"
+        )
 
     return path
 
@@ -107,11 +114,13 @@ def get_WW3_path(date):
     """
 
     # Make WW3 path
-    path = '/opp/wwatch3/nowcast'
-    datestr = [date.strftime(fmt) for fmt in ('%d%b%y', '%Y%m%d_%Y%m%d')]
-    path = os.path.join(path, datestr[0].lower(), f'SoG_ww3_fields_{datestr[1]}.nc')
+    path = "/opp/wwatch3/nowcast"
+    datestr = [date.strftime(fmt) for fmt in ("%d%b%y", "%Y%m%d_%Y%m%d")]
+    path = os.path.join(path, datestr[0].lower(), f"SoG_ww3_fields_{datestr[1]}.nc")
     if not os.path.exists(path):
-        raise ValueError(f"No WW3 record found for the specified date {date.strftime('%Y-%b-%d')}")
+        raise ValueError(
+            f"No WW3 record found for the specified date {date.strftime('%Y-%b-%d')}"
+        )
 
     return path
 
@@ -145,8 +154,8 @@ def dataset_from_path(path, *args, **kwargs):
     try:
         return nc.Dataset(str(path), *args, **kwargs)
     except RuntimeError as e:
-        if str(e) == 'No such file or directory':
-            raise IOError('No such file or directory')
+        if str(e) == "No such file or directory":
+            raise IOError("No such file or directory")
         else:
             raise
 
@@ -157,9 +166,9 @@ def show_dataset_attrs(dataset):
     :arg dataset: netcdf dataset object
     :type dataset: :py:class:`netCDF4.Dataset`
     """
-    print('file format: {}'.format(dataset.file_format))
+    print("file format: {}".format(dataset.file_format))
     for attr in dataset.ncattrs():
-        print('{}: {}'.format(attr, dataset.getncattr(attr)))
+        print("{}: {}".format(attr, dataset.getncattr(attr)))
 
 
 def show_dimensions(dataset):
@@ -201,7 +210,7 @@ def show_variable_attrs(dataset, *vars):
             print(var)
 
 
-def time_origin(dataset, time_var='time_counter'):
+def time_origin(dataset, time_var="time_counter"):
     """Return the time_var.time_origin value.
 
     :arg dataset: netcdf dataset object
@@ -218,30 +227,34 @@ def time_origin(dataset, time_var='time_counter'):
         time_counter = dataset.variables[time_var]
     except KeyError:
         raise KeyError(
-            'dataset does not have {time_var} variable'.format(
-                time_var=time_var))
+            "dataset does not have {time_var} variable".format(time_var=time_var)
+        )
     try:
         # netCDF4 dataset
         time_orig = time_counter.time_origin.title()
     except AttributeError:
         try:
             # xarray dataset
-            time_orig = time_counter.attrs['time_origin'].title()
+            time_orig = time_counter.attrs["time_origin"].title()
         except KeyError:
             raise AttributeError(
-                'NetCDF: '
-                '{time_var} variable does not have '
-                'time_origin attribute'.format(time_var=time_var))
+                "NetCDF: "
+                "{time_var} variable does not have "
+                "time_origin attribute".format(time_var=time_var)
+            )
     value = arrow.get(
         time_orig,
-        ['YYYY-MMM-DD HH:mm:ss',
-         'DD-MMM-YYYY HH:mm:ss',
-         'DD-MMM-YYYY HH:mm',
-         'YYYY-MM-DD HH:mm:ss'])
+        [
+            "YYYY-MMM-DD HH:mm:ss",
+            "DD-MMM-YYYY HH:mm:ss",
+            "DD-MMM-YYYY HH:mm",
+            "YYYY-MM-DD HH:mm:ss",
+        ],
+    )
     return value
 
 
-def timestamp(dataset, tindex, time_var='time_counter'):
+def timestamp(dataset, tindex, time_var="time_counter"):
     """Return the time stamp of the tindex time_counter value(s) in dataset.
 
     The time stamp is calculated by adding the time_counter[tindex] value
@@ -270,15 +283,14 @@ def timestamp(dataset, tindex, time_var='time_counter'):
         try:
             results.append(time_orig + timedelta(seconds=time_counter[i].item()))
         except IndexError:
-            raise IndexError(
-                'time_counter variable has no tindex={}'.format(tindex))
+            raise IndexError("time_counter variable has no tindex={}".format(tindex))
     if len(results) > 1:
         return results
     else:
         return results[0]
 
 
-def get_datetimes(dataset, time_var='time_counter'):
+def get_datetimes(dataset, time_var="time_counter"):
     """Return the datetime array for a dataset
 
     This is a wrapper around nc_tools.timestamp that automatically
@@ -296,9 +308,11 @@ def get_datetimes(dataset, time_var='time_counter'):
     """
 
     # Get arrow objects
-    time_stamps = timestamp(dataset,
-                    np.arange(dataset.variables['time_counter'].shape[0]),
-                    time_var=time_var)
+    time_stamps = timestamp(
+        dataset,
+        np.arange(dataset.variables["time_counter"].shape[0]),
+        time_var=time_var,
+    )
 
     # Get datetime.datetime objects
     datetimes = np.array([time_stamp.datetime for time_stamp in time_stamps])
@@ -317,13 +331,13 @@ def xarraytime_to_datetime(xarraytime):
     :rtype: :py:class:`numpy.ndarray` of :py:class:`datetime.datetime`
     """
 
-    datetime_obj = xarraytime.values.astype('datetime64[s]').astype(datetime)
+    datetime_obj = xarraytime.values.astype("datetime64[s]").astype(datetime)
 
     return datetime_obj
 
 
 def ssh_timeseries_at_point(
-    grid_T, j, i, datetimes=False, time_var='time_counter', ssh_var='sossheig'
+    grid_T, j, i, datetimes=False, time_var="time_counter", ssh_var="sossheig"
 ):
     """Return the sea surface height and time counter values
     at a single grid point from a NEMO tracer results dataset.
@@ -358,7 +372,7 @@ def ssh_timeseries_at_point(
     time = timestamp(grid_T, range(len(ssh)), time_var=time_var)
     if datetimes:
         time = np.array([a.datetime for a in time])
-    ssh_ts = namedtuple('ssh_ts', 'ssh, time')
+    ssh_ts = namedtuple("ssh_ts", "ssh, time")
     return ssh_ts(ssh, np.array(time))
 
 
@@ -391,12 +405,12 @@ def uv_wind_timeseries_at_point(grid_weather, j, i, datetimes=False):
               values.
     :rtype: :py:class:`collections.namedtuple`
     """
-    u_wind = grid_weather.variables['u_wind'][:, j, i]
-    v_wind = grid_weather.variables['v_wind'][:, j, i]
+    u_wind = grid_weather.variables["u_wind"][:, j, i]
+    v_wind = grid_weather.variables["v_wind"][:, j, i]
     time = timestamp(grid_weather, range(len(u_wind)))
     if datetimes:
         time = np.array([a.datetime for a in time])
-    wind_ts = namedtuple('wind_ts', 'u, v, time')
+    wind_ts = namedtuple("wind_ts", "u, v, time")
     return wind_ts(u_wind, v_wind, np.array(time))
 
 
@@ -405,7 +419,7 @@ def init_dataset_attrs(
     title,
     notebook_name,
     nc_filepath,
-    comment='',
+    comment="",
     quiet=False,
 ):
     """Initialize the required global attributes of the netCDF dataset.
@@ -446,22 +460,33 @@ def init_dataset_attrs(
     :type quiet: Boolean
     """
     reqd_attrs = (
-        ('Conventions', 'CF-1.6'),
-        ('title', title),
-        ('institution', ('Dept of Earth, Ocean & Atmospheric Sciences, '
-                         'University of British Columbia')),
-        ('source', _notebook_hg_url(notebook_name)),
-        ('references', _nc_file_hg_url(nc_filepath)),
-        ('history', (
-            '[{:%Y-%m-%d %H:%M:%S}] Created netCDF4 zlib=True dataset.'
-            .format(datetime.now()))),
-        ('comment', comment),
+        ("Conventions", "CF-1.6"),
+        ("title", title),
+        (
+            "institution",
+            (
+                "Dept of Earth, Ocean & Atmospheric Sciences, "
+                "University of British Columbia"
+            ),
+        ),
+        ("source", _notebook_hg_url(notebook_name)),
+        ("references", _nc_file_hg_url(nc_filepath)),
+        (
+            "history",
+            (
+                "[{:%Y-%m-%d %H:%M:%S}] Created netCDF4 zlib=True dataset.".format(
+                    datetime.now()
+                )
+            ),
+        ),
+        ("comment", comment),
     )
     for name, value in reqd_attrs:
         if name in dataset.ncattrs():
             if not quiet:
-                print('Existing attribute value found, not overwriting: {}'
-                      .format(name))
+                print(
+                    "Existing attribute value found, not overwriting: {}".format(name)
+                )
         else:
             dataset.setncattr(name, value)
     if not quiet:
@@ -487,19 +512,25 @@ def _notebook_hg_url(notebook_name):
     :rtype: str
     """
     if not notebook_name:
-        return 'REQUIRED'
+        return "REQUIRED"
     default_url = hg.default_url()
     try:
-        bitbucket, repo_path = default_url.partition('bitbucket.org')[1:]
+        bitbucket, repo_path = default_url.partition("bitbucket.org")[1:]
     except AttributeError:
-        return 'REQUIRED'
+        return "REQUIRED"
     repo = os.path.split(repo_path)[-1]
     local_path = os.getcwd().partition(repo)[-1]
-    if not notebook_name.endswith('.ipynb'):
-        notebook_name += '.ipynb'
+    if not notebook_name.endswith(".ipynb"):
+        notebook_name += ".ipynb"
     url = os.path.join(
-        'https://', bitbucket, repo_path[1:], 'src', 'tip',
-        local_path[1:], notebook_name)
+        "https://",
+        bitbucket,
+        repo_path[1:],
+        "src",
+        "tip",
+        local_path[1:],
+        notebook_name,
+    )
     return url
 
 
@@ -517,19 +548,18 @@ def _nc_file_hg_url(nc_filepath):
     :returns: The Bitbucket URL for the nc_filepath netCDF file
     :rtype: str
     """
-    rel_path = ''.join(nc_filepath.rpartition('../')[:2])
+    rel_path = "".join(nc_filepath.rpartition("../")[:2])
     try:
         repo_path = nc_filepath.split(rel_path)[1]
     except ValueError:
-        return 'REQUIRED'
-    repo, filepath = repo_path.split('/', 1)
+        return "REQUIRED"
+    repo, filepath = repo_path.split("/", 1)
     default_url = hg.default_url(os.path.join(rel_path, repo))
     try:
-        bitbucket, repo_path = default_url.partition('bitbucket.org')[1:]
+        bitbucket, repo_path = default_url.partition("bitbucket.org")[1:]
     except AttributeError:
-        return 'REQUIRED'
-    url = os.path.join(
-        'https://', bitbucket, repo_path[1:], 'src', 'tip', filepath)
+        return "REQUIRED"
+    url = os.path.join("https://", bitbucket, repo_path[1:], "src", "tip", filepath)
     return url
 
 
@@ -541,31 +571,43 @@ def check_dataset_attrs(dataset):
     :type dataset: :py:class:`netCDF4.Dataset`
     """
     reqd_dataset_attrs = (
-        'Conventions', 'title', 'institution', 'source', 'references',
-        'history', 'comment')
-    reqd_variable_attrs = ('units', 'long_name')
+        "Conventions",
+        "title",
+        "institution",
+        "source",
+        "references",
+        "history",
+        "comment",
+    )
+    reqd_variable_attrs = ("units", "long_name")
     for attr in reqd_dataset_attrs:
         if attr not in dataset.ncattrs():
-            print('Missing required dataset attribute: {}'.format(attr))
+            print("Missing required dataset attribute: {}".format(attr))
             continue
-        if attr != 'comment':
+        if attr != "comment":
             value = dataset.getncattr(attr)
-            if value in ('', 'REQUIRED'):
-                print('Missing value for dataset attribute: {}'.format(attr))
+            if value in ("", "REQUIRED"):
+                print("Missing value for dataset attribute: {}".format(attr))
     for var_name, var in dataset.variables.items():
         for attr in reqd_variable_attrs:
             if attr not in var.ncattrs():
-                print('Missing required variable attribute for {}: {}'
-                      .format(var_name, attr))
+                print(
+                    "Missing required variable attribute for {}: {}".format(
+                        var_name, attr
+                    )
+                )
                 continue
             value = var.getncattr(attr)
             if not value:
-                print('Missing value for variable attribute for {}: {}'
-                      .format(var_name, attr))
+                print(
+                    "Missing value for variable attribute for {}: {}".format(
+                        var_name, attr
+                    )
+                )
 
 
 def generate_pressure_file(filename, p_file, t_file, alt_file, day):
-    """ Generates a file with CGRF pressure corrected to sea level.
+    """Generates a file with CGRF pressure corrected to sea level.
 
     :arg filename: full path name where the corrected pressure should be saved
     :type filename: string
@@ -584,14 +626,14 @@ def generate_pressure_file(filename, p_file, t_file, alt_file, day):
     """
     # load data
     f = nc.Dataset(p_file)
-    press = f.variables['atmpres']
+    press = f.variables["atmpres"]
     f = nc.Dataset(t_file)
-    temp = f.variables['tair']
-    time = f.variables['time_counter']
-    lon = f.variables['nav_lon']
-    lat = f.variables['nav_lat']
+    temp = f.variables["tair"]
+    time = f.variables["time_counter"]
+    lon = f.variables["nav_lon"]
+    lat = f.variables["nav_lat"]
     f = nc.Dataset(alt_file)
-    alt = f.variables['alt']
+    alt = f.variables["alt"]
 
     # correct pressure
     press_corr = np.zeros(press.shape)
@@ -599,28 +641,30 @@ def generate_pressure_file(filename, p_file, t_file, alt_file, day):
         press_corr[k, :, :] = _slp(alt, press[k, :, :], temp[k, :, :])
 
     # Create netcdf
-    slp_file = nc.Dataset(filename, 'w', zlib=True)
-    description = 'corrected sea level pressure'
+    slp_file = nc.Dataset(filename, "w", zlib=True)
+    description = "corrected sea level pressure"
     # dataset attributes
     init_dataset_attrs(
         slp_file,
         title=(
-            'CGRF {} forcing dataset for {}'
-            .format(description, day.format('YYYY-MM-DD'))),
-        notebook_name='',
-        nc_filepath='',
+            "CGRF {} forcing dataset for {}".format(
+                description, day.format("YYYY-MM-DD")
+            )
+        ),
+        notebook_name="",
+        nc_filepath="",
         comment=(
-            'Processed and adjusted from '
-            'goapp.ocean.dal.ca::canadian_GDPS_reforecasts_v1 files.'),
+            "Processed and adjusted from "
+            "goapp.ocean.dal.ca::canadian_GDPS_reforecasts_v1 files."
+        ),
         quiet=True,
     )
     # dimensions
-    slp_file.createDimension('time_counter', 0)
-    slp_file.createDimension('y', press_corr.shape[1])
-    slp_file.createDimension('x', press_corr.shape[2])
+    slp_file.createDimension("time_counter", 0)
+    slp_file.createDimension("y", press_corr.shape[1])
+    slp_file.createDimension("x", press_corr.shape[2])
     # time
-    time_counter = slp_file.createVariable(
-        'time_counter', 'double', ('time_counter',))
+    time_counter = slp_file.createVariable("time_counter", "double", ("time_counter",))
     time_counter.calendar = time.calendar
     time_counter.long_name = time.long_name
     time_counter.title = time.title
@@ -628,14 +672,14 @@ def generate_pressure_file(filename, p_file, t_file, alt_file, day):
     time_counter[:] = time[:]
     time_counter.valid_range = time.valid_range
     # lat/lon variables
-    nav_lat = slp_file.createVariable('nav_lat', 'float32', ('y', 'x'))
+    nav_lat = slp_file.createVariable("nav_lat", "float32", ("y", "x"))
     nav_lat.long_name = lat.long_name
     nav_lat.units = lat.units
     nav_lat.valid_max = lat.valid_max
     nav_lat.valid_min = lat.valid_min
     nav_lat.nav_model = lat.nav_model
     nav_lat[:] = lat
-    nav_lon = slp_file.createVariable('nav_lon', 'float32', ('y', 'x'))
+    nav_lon = slp_file.createVariable("nav_lon", "float32", ("y", "x"))
     nav_lon.long_name = lon.long_name
     nav_lon.units = lon.units
     nav_lon.valid_max = lon.valid_max
@@ -643,9 +687,8 @@ def generate_pressure_file(filename, p_file, t_file, alt_file, day):
     nav_lon.nav_model = lon.nav_model
     nav_lon[:] = lon
     # Pressure
-    atmpres = slp_file.createVariable(
-        'atmpres', 'float32', ('time_counter', 'y', 'x'))
-    atmpres.long_name = 'Sea Level Pressure'
+    atmpres = slp_file.createVariable("atmpres", "float32", ("time_counter", "y", "x"))
+    atmpres.long_name = "Sea Level Pressure"
     atmpres.units = press.units
     atmpres.valid_min = press.valid_min
     atmpres.valid_max = press.valid_max
@@ -657,7 +700,7 @@ def generate_pressure_file(filename, p_file, t_file, alt_file, day):
 
 
 def generate_pressure_file_ops(filename, p_file, t_file, alt_file, day):
-    """ Generates a file with CGRF pressure corrected to sea level.
+    """Generates a file with CGRF pressure corrected to sea level.
 
     :arg filename: full path name where the corrected pressure should be saved
     :type filename: string
@@ -676,16 +719,16 @@ def generate_pressure_file_ops(filename, p_file, t_file, alt_file, day):
     """
     # load data
     f = nc.Dataset(p_file)
-    press = f.variables['atmpres']
+    press = f.variables["atmpres"]
     f = nc.Dataset(t_file)
-    temp = f.variables['tair']
-    time = f.variables['time_counter']
-    lon = f.variables['nav_lon']
-    lat = f.variables['nav_lat']
+    temp = f.variables["tair"]
+    time = f.variables["time_counter"]
+    lon = f.variables["nav_lon"]
+    lat = f.variables["nav_lat"]
     f = nc.Dataset(alt_file)
-    alt = f.variables['HGT_surface']
-    lat_a = f.variables['latitude']
-    lon_a = f.variables['longitude']
+    alt = f.variables["HGT_surface"]
+    lat_a = f.variables["latitude"]
+    lon_a = f.variables["longitude"]
 
     alt, lon_a, lat_a = _truncate_height(alt, lon_a, lat_a, lon, lat)
 
@@ -695,44 +738,42 @@ def generate_pressure_file_ops(filename, p_file, t_file, alt_file, day):
         press_corr[k, :, :] = _slp(alt, press[k, :, :], temp[k, :, :])
 
     # Create netcdf
-    slp_file = nc.Dataset(filename, 'w', zlib=True)
-    description = 'corrected sea level pressure'
+    slp_file = nc.Dataset(filename, "w", zlib=True)
+    description = "corrected sea level pressure"
     # dataset attributes
     init_dataset_attrs(
         slp_file,
         title=(
-            'GRIB2 {} forcing dataset for {}'
-            .format(description, day.format('YYYY-MM-DD'))),
-        notebook_name='',
-        nc_filepath='',
-        comment=(
-            'Processed and adjusted from '
-            'GEM 2.5km operational model'),
+            "GRIB2 {} forcing dataset for {}".format(
+                description, day.format("YYYY-MM-DD")
+            )
+        ),
+        notebook_name="",
+        nc_filepath="",
+        comment=("Processed and adjusted from " "GEM 2.5km operational model"),
         quiet=True,
     )
     # dimensions
-    slp_file.createDimension('time_counter', 0)
-    slp_file.createDimension('y', press_corr.shape[1])
-    slp_file.createDimension('x', press_corr.shape[2])
+    slp_file.createDimension("time_counter", 0)
+    slp_file.createDimension("y", press_corr.shape[1])
+    slp_file.createDimension("x", press_corr.shape[2])
     # time
-    time_counter = slp_file.createVariable(
-        'time_counter', 'double', ('time_counter',))
+    time_counter = slp_file.createVariable("time_counter", "double", ("time_counter",))
     time_counter.long_name = time.long_name
     time_counter.units = time.units
     time_counter[:] = time[:]
     # lat/lon variables
-    nav_lat = slp_file.createVariable('nav_lat', 'float32', ('y', 'x'))
+    nav_lat = slp_file.createVariable("nav_lat", "float32", ("y", "x"))
     nav_lat.long_name = lat.long_name
     nav_lat.units = lat.units
     nav_lat[:] = lat
-    nav_lon = slp_file.createVariable('nav_lon', 'float32', ('y', 'x'))
+    nav_lon = slp_file.createVariable("nav_lon", "float32", ("y", "x"))
     nav_lon.long_name = lon.long_name
     nav_lon.units = lon.units
     nav_lon[:] = lon
     # Pressure
-    atmpres = slp_file.createVariable(
-        'atmpres', 'float32', ('time_counter', 'y', 'x'))
-    atmpres.long_name = 'Sea Level Pressure'
+    atmpres = slp_file.createVariable("atmpres", "float32", ("time_counter", "y", "x"))
+    atmpres.long_name = "Sea Level Pressure"
     atmpres.units = press.units
     atmpres[:] = press_corr[:]
 
@@ -745,32 +786,40 @@ def _slp(Z, P, T):
     gam = 0.0098  # lapse rate(deg/m)
     p0 = 101000  # average sea surface heigh in Pa
 
-    ps = P * (gam * (Z / T) + 1)**(g / gam / R)
+    ps = P * (gam * (Z / T) + 1) ** (g / gam / R)
     return ps
 
 
 def _truncate_height(alt1, lon1, lat1, lon2, lat2):
-    """ Truncates the height file over our smaller domain.
+    """Truncates the height file over our smaller domain.
     alt1, lon1, lat1, are the height, longitude and latitude of the larger domain.
     lon2, lat2 are the longitude and latitude of the smaller domain.
-    returns h,lons,lats, the height, longiutde and latitude over the smaller domain. """
+    returns h,lons,lats, the height, longiutde and latitude over the smaller domain."""
 
     # bottom left (i,j)
-    i = np.where(np.logical_and(np.abs(lon1 - lon2[0, 0]) < 10**(-5),
-                                np.abs(lat1 - lat2[0, 0]) < 10**(-5)))
+    i = np.where(
+        np.logical_and(
+            np.abs(lon1 - lon2[0, 0]) < 10 ** (-5),
+            np.abs(lat1 - lat2[0, 0]) < 10 ** (-5),
+        )
+    )
     i_st = i[1]
     j_st = i[0]
 
     # top right
-    i = np.where(np.logical_and(np.abs(lon1 - lon2[-1, -1]) < 10**(-5),
-                                np.abs(lat1 - lat2[-1, -1]) < 10**(-5)))
+    i = np.where(
+        np.logical_and(
+            np.abs(lon1 - lon2[-1, -1]) < 10 ** (-5),
+            np.abs(lat1 - lat2[-1, -1]) < 10 ** (-5),
+        )
+    )
 
     i_ed = i[1]
     j_ed = i[0]
 
-    h_small = alt1[0, j_st:j_ed + 1, i_st:i_ed + 1]
-    lat_small = lat1[j_st:j_ed + 1, i_st:i_ed + 1]
-    lon_small = lon1[j_st:j_ed + 1, i_st:i_ed + 1]
+    h_small = alt1[0, j_st : j_ed + 1, i_st : i_ed + 1]
+    lat_small = lat1[j_st : j_ed + 1, i_st : i_ed + 1]
+    lon_small = lon1[j_st : j_ed + 1, i_st : i_ed + 1]
     return h_small, lon_small, lat_small
 
 
@@ -797,7 +846,7 @@ def combine_subdomain(filenames, outfilename):
     shapes = _define_shapes(filenames)
 
     # Initialize
-    new = nc.Dataset(outfilename, 'w')
+    new = nc.Dataset(outfilename, "w")
     _initialize_dimensions(new, nc.Dataset(filenames[0, 0]))
     newvars = _initialize_variables(new, nc.Dataset(filenames[0, 0]))
 
@@ -836,14 +885,14 @@ def _define_shapes(filenames):
         for i in np.arange(filenames.shape[1]):
             name = filenames[j, i]
             f = nc.Dataset(name)
-            x = f.dimensions['x'].__len__()
-            y = f.dimensions['y'].__len__()
+            x = f.dimensions["x"].__len__()
+            y = f.dimensions["y"].__len__()
             shapes[name] = {}
-            shapes[name]['iss'] = iss
-            shapes[name]['iee'] = iss+x
-            shapes[name]['jss'] = jss
-            shapes[name]['jee'] = jss+y
-            iss = iss+x
+            shapes[name]["iss"] = iss
+            shapes[name]["iee"] = iss + x
+            shapes[name]["jss"] = jss
+            shapes[name]["jee"] = jss + y
+            iss = iss + x
         jss = jss + y
     return shapes
 
@@ -862,7 +911,7 @@ def _initialize_dimensions(newfile, oldfile):
     """
     for dimname in oldfile.dimensions:
         dim = oldfile.dimensions[dimname]
-        if dimname == 'x' or dimname == 'y':
+        if dimname == "x" or dimname == "y":
             newdim = newfile.createDimension(dimname)
         else:
             newdim = newfile.createDimension(dimname, size=dim.__len__())
@@ -911,11 +960,11 @@ def _concatentate_variables(filenames, shapes, variables):
             newvar = variables[varname]
             f = nc.Dataset(name)
             oldvar = f.variables[varname]
-            x1 = shapes[name]['iss']
-            x2 = shapes[name]['iee']
-            y1 = shapes[name]['jss']
-            y2 = shapes[name]['jee']
-            if 'x' in newvar.dimensions:
+            x1 = shapes[name]["iss"]
+            x2 = shapes[name]["iee"]
+            y1 = shapes[name]["jss"]
+            y2 = shapes[name]["jee"]
+            if "x" in newvar.dimensions:
                 newvar[..., y1:y2, x1:x2] = oldvar[..., :, :]
 
 
@@ -988,9 +1037,9 @@ class scDataset(object):
 
         # Open the first dataset and set a few class variables
         d0 = self._dsmgr[0]
-#        self.description = d0.description
+        #        self.description = d0.description
         self.file_format = d0.file_format
-        self.filepath    = files
+        self.filepath = files
 
         # Find the time dimension name
         for dim in d0.dimensions:
@@ -1012,7 +1061,9 @@ class scDataset(object):
         for vname in vars0:
             if vars0[vname].dimensions[0] == timedimname:
                 # We concatenate this variable
-                self.variables[vname] = self.scVariable(vars0[vname], vname, self._dsmgr, fi, li)
+                self.variables[vname] = self.scVariable(
+                    vars0[vname], vname, self._dsmgr, fi, li
+                )
             else:
                 # Passthrough this variable to the first file
                 self.variables[vname] = vars0[vname]
@@ -1033,10 +1084,11 @@ class scDataset(object):
         """
         Manages datasets by opening/closing them on demand
         """
+
         def __init__(self, files):
-            self._files   = files
+            self._files = files
             self._MAXOPEN = getrlimit(RLIMIT_NOFILE)[0] // 5
-            self._dslist  = [(-1, None)] * self._MAXOPEN
+            self._dslist = [(-1, None)] * self._MAXOPEN
 
         def __getitem__(self, di):
             """
@@ -1053,7 +1105,7 @@ class scDataset(object):
                     # Repurpose slot si for the requested dataset
                     ds.close()
                 # Now open the requested dataset and store it in slot si
-                ds = nc.Dataset(self._files[di], 'r')
+                ds = nc.Dataset(self._files[di], "r")
                 self._dslist[si] = (di, ds)
             return ds
 
@@ -1069,17 +1121,18 @@ class scDataset(object):
          - We aim to have correct indexing, and set a few class variables such as
            shape and dimensions correctly. Attribute handling, etc is not implemented.
         """
+
         def __init__(self, v0, vname, datasets, fi, li):
             self.ds = datasets
             self._fi = fi
             self._li = li
 
             # Set a few class variables
-            self.name       = vname
+            self.name = vname
             self.dimensions = v0.dimensions
-            self.dtype      = v0.dtype
-            self.ndim       = v0.ndim
-            self.shape      = (len(self._fi), ) + v0.shape[1:]
+            self.dtype = v0.dtype
+            self.ndim = v0.ndim
+            self.shape = (len(self._fi),) + v0.shape[1:]
 
         def __getitem__(self, initems):
             """
@@ -1087,23 +1140,23 @@ class scDataset(object):
             """
             # Make the input iterable
             if not isinstance(initems, tuple):
-                initems = initems,
+                initems = (initems,)
 
             # Convert any ellipsis to slice
-            items = [slice(None,None,None)]*self.ndim
+            items = [slice(None, None, None)] * self.ndim
             for i, item in enumerate(initems):
                 if item is not Ellipsis:
                     items[i] = item
                 else:
                     for j, item in enumerate(reversed(initems)):
                         if item is not Ellipsis:
-                            items[self.ndim-j-1] = item
+                            items[self.ndim - j - 1] = item
                         else:
                             break
                     break
 
             # Find the time indices
-            ti = items[0]      # global time indices to extract, may be int or slice
+            ti = items[0]  # global time indices to extract, may be int or slice
             fi = self._fi[ti]  # index of each file (dataset) to draw from
             li = self._li[ti]  # local time index for each dataset
 
@@ -1116,30 +1169,42 @@ class scDataset(object):
                 if self.ndim == 3:
                     out = self.ds[fi].variables[self.name][li, items[1], items[2]]
                 if self.ndim == 4:
-                    out = self.ds[fi].variables[self.name][li, items[1], items[2], items[3]]
+                    out = self.ds[fi].variables[self.name][
+                        li, items[1], items[2], items[3]
+                    ]
                 return out
 
             # If we need to concatenate, then we need to determine the output
             # array size. This approach is an ugly hack but it works.
             sizo = [1] * self.ndim  # assume one in each dimension
-            rdim = []               # list of dimensions to remove
+            rdim = []  # list of dimensions to remove
             for ii, item in enumerate(items):
                 if type(item) is int or type(item) is np.int64:
                     rdim += [ii]
-                else:                             # update output size at this dim if not an integer index
-                    tmp = [None] * self.shape[ii] # build a dummy array
-                    sizo[ii] = len(tmp[item])     # index the dummy array, record length
-            out = np.zeros(sizo, self.dtype)      # allocate output array with matching data type
-            out = np.squeeze(out, axis=tuple(rdim))  # remove unwanted singleton dimensions
+                else:  # update output size at this dim if not an integer index
+                    tmp = [None] * self.shape[ii]  # build a dummy array
+                    sizo[ii] = len(tmp[item])  # index the dummy array, record length
+            out = np.zeros(
+                sizo, self.dtype
+            )  # allocate output array with matching data type
+            out = np.squeeze(
+                out, axis=tuple(rdim)
+            )  # remove unwanted singleton dimensions
 
             # Now we read each time index sequentially and fill the output array
             for ii in range(len(fi)):
                 if self.ndim == 1:
                     out[ii] = self.ds[fi[ii]].variables[self.name][li[ii]]
                 if self.ndim == 2:
-                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1]]
+                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][
+                        li[ii], items[1]
+                    ]
                 if self.ndim == 3:
-                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1], items[2]]
+                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][
+                        li[ii], items[1], items[2]
+                    ]
                 if self.ndim == 4:
-                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][li[ii], items[1], items[2], items[3]]
+                    out[ii, ...] = self.ds[fi[ii]].variables[self.name][
+                        li[ii], items[1], items[2], items[3]
+                    ]
             return out

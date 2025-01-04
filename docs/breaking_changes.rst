@@ -52,4 +52,3 @@ are incompatible with earlier versions:
   releases.
 
   .. _CalVer: https://calver.org/
-

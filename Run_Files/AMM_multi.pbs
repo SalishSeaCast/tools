@@ -2,7 +2,7 @@
 
 #PBS -l procs=32
 #PBS -l pmem=500mb
-#PBS -l walltime=00:15:00 
+#PBS -l walltime=00:15:00
 
 module load compiler/intel/12.1
 module load library/intelmpi/4.0.3.008

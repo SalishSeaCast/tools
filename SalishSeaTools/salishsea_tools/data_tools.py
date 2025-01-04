@@ -379,9 +379,7 @@ def onc_json_to_dataset(onc_json, teos=True):
                 "actualSamples": sensor["actualSamples"],
             },
         )
-    dataset_attrs = {
-        "station": onc_json["parameters"]["locationCode"]
-    }
+    dataset_attrs = {"station": onc_json["parameters"]["locationCode"]}
     return xarray.Dataset(data_vars, attrs=dataset_attrs)
 
 
@@ -487,11 +485,13 @@ def get_chs_tides(
 
     # IWLS API limits requests to 7 day long periods
     water_levels, datetimes = [], []
-    for (span_start, span_end) in arrow.Arrow.span_range("week", begin, end, exact=True):
-        query_params.update({
-            "from": f"{span_start.format('YYYY-MM-DDTHH:mm:ss')}Z",
-            "to": f"{span_end.format('YYYY-MM-DDTHH:mm:ss')}Z",
-        })
+    for span_start, span_end in arrow.Arrow.span_range("week", begin, end, exact=True):
+        query_params.update(
+            {
+                "from": f"{span_start.format('YYYY-MM-DDTHH:mm:ss')}Z",
+                "to": f"{span_end.format('YYYY-MM-DDTHH:mm:ss')}Z",
+            }
+        )
         response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
         water_levels.extend(event["value"] for event in response.json())
         datetimes.extend(event["eventDate"] for event in response.json())
@@ -499,7 +499,8 @@ def get_chs_tides(
     if not water_levels:
         logging.info(
             f"no {data_type} water level data available from {stn_id} during "
-            f"{begin.format('YYYY-MM-DD HH:mm:ss')}Z to {end.format('YYYY-MM-DD HH:mm:ss')}Z")
+            f"{begin.format('YYYY-MM-DD HH:mm:ss')}Z to {end.format('YYYY-MM-DD HH:mm:ss')}Z"
+        )
         return
     time_series = pd.Series(
         data=water_levels,
@@ -508,7 +509,7 @@ def get_chs_tides(
             f"{stn_number} water levels"
             if int(stn_number) == stn
             else f"{stn_number} {stn} water levels"
-        )
+        ),
     )
     return time_series
 
@@ -556,9 +557,7 @@ def get_chs_tide_stn_id(
     endpoint = f"{api_server}/api/{api_version}/stations"
     stn_code = resolve_chs_tide_stn(stn)
     if stn_code is None:
-        logging.warning(
-            f"can't resolve a valid CHS station code for {stn}"
-        )
+        logging.warning(f"can't resolve a valid CHS station code for {stn}")
         return
     query_params = {"code": stn_code}
     response = _do_chs_iwls_api_request(endpoint, query_params, retry_args)
@@ -585,6 +584,7 @@ def _do_chs_iwls_api_request(endpoint, query_params, retry_args):
     :return: API response
     :rtype: :py:class:`requests.Response`
     """
+
     @retry(**retry_args)
     def do_api_request(endpoint, quer_params):
         return requests.get(endpoint, query_params)
@@ -614,7 +614,9 @@ def resolve_chs_tide_stn(stn):
             )
             return
         except TypeError:
-            logging.warning(f"invalid station number for {stn} station: {PLACES[stn]['stn number']}")
+            logging.warning(
+                f"invalid station number for {stn} station: {PLACES[stn]['stn number']}"
+            )
             return
 
 
