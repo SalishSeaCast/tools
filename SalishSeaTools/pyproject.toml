@@ -58,7 +58,7 @@ dependencies = [
 
 [project.urls]
 "Documentation" = "https://salishsea-meopar-tools.readthedocs.org/en/latest/SalishSeaTools/"
-"Changelog" = "https://github.com/43ravens/NEMO_Nowcast/releases"
+"Changelog" = "https://github.com/SalishSeaCast/tools/releases"
 "Issue Tracker" = "https://github.com/SalishSeaCast/tools/issues"
 "Source Code" = "https://github.com/SalishSeaCast/tools/tree/main/SalishSeaTools"
 
