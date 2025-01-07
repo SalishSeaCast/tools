@@ -63,5 +63,12 @@ dependencies = [
 "Source Code" = "https://github.com/SalishSeaCast/tools/tree/main/SalishSeaTools"
 
 
+[tool.coverage.run]
+branch = true
+source = ["salishsea_tools", "tests"]
+
+[tool.coverage.report]
+show_missing = true
+
 [tool.setuptools.packages.find]
 where = ["."]
