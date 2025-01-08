@@ -17,8 +17,8 @@
 
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "SalishSeaTools"
@@ -27,8 +27,7 @@ version = "24.1.dev0"
 description = "Tools for working with the SalishSeaCast NEMO model configurations and results"
 readme = "README.rst"
 requires-python = ">=3.11"
-license = {text = "Apache-2.0"}
-#license-files = { paths = ["LICENSE"] }
+license-files = { paths = ["../LICENSE"] }
 authors = [
     {name = "Doug Latornell", email = "dlatornell@eoas.ubc.ca"},
     {name = "The SalishSeaCast Project Contributors"}
@@ -70,5 +69,5 @@ source = ["salishsea_tools", "tests"]
 [tool.coverage.report]
 show_missing = true
 
-[tool.setuptools.packages.find]
-where = ["."]
+[tool.hatch.build.targets.wheel]
+include = ["salishsea_tools"]
