@@ -1,20 +1,20 @@
-.. Salish Sea MEOPAR tools documentation master file
+.. SalishSeaCast tools documentation master file
 
 .. _SalishSeaToolsDocs:
 
 *************************************
-Salish Sea MEOPAR Tools Documentation
+SalishSeaCast Tools Documentation
 *************************************
 
-This is the documentation for the Salish Sea MEOPAR project tools collection.
-The docs describe a collection of tools for working with the Salish Sea MEOPAR NEMO model,
+This is the documentation for the SalishSeaCast project tools collection.
+The docs describe a collection of tools for working with the SalishSeaCast NEMO model,
 its results,
 and associated data.
 There is a companion collection of :ref:`project documentation <SalishSeaDocs>`.
 
 The :file:`tools` repo contains several Python packages:
 
-* :py:obj:`SalishSeaToolsPackage` - a :ref:`collection of Python modules <SalishSeaToolsPackage>` that facilitate code reuse across the Salish Sea MEOPAR project
+* :py:obj:`SalishSeaToolsPackage` - a :ref:`collection of Python modules <SalishSeaToolsPackage>` that facilitate code reuse across the SalishSeaCast project
 
 * :py:obj:`SOGTools` - :ref:`Python functions <SOGTools>` for working with the output of the SOG 1-D model
 

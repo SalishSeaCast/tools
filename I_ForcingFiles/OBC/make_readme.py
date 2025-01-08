@@ -1,7 +1,7 @@
 """Salish Sea NEMO Jupyter Notebook collection README generator
 
 
-Copyright 2013– present The Salish Sea MEOPAR Contributors
+Copyright 2013– present by the SalishSeaCast Contributors
 and The University of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,7 +63,7 @@ license = """
 ##License
 
 These notebooks and files are copyright 2013-{this_year}
-by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast/docs/blob/master/CONTRIBUTORS.rst)
+by the [SalishSeaCast Project Contributors](https://github.com/SalishSeaCast/docs/blob/master/CONTRIBUTORS.rst)
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.

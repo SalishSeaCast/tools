@@ -75,7 +75,7 @@ Descriptions below the links are from the first cell of the notebooks
 ##License
 
 These notebooks and files are copyright 2013 – present
-by the [Salish Sea MEOPAR Project Contributors](https://github.com/SalishSeaCast/docs/blob/master/CONTRIBUTORS.rst)
+by the [SalishSeaCast Project Contributors](https://github.com/SalishSeaCast/docs/blob/master/CONTRIBUTORS.rst)
 and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.

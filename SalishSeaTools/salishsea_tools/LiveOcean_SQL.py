@@ -1623,7 +1623,7 @@ def _create_sub_file(date, time_unit, var_arrays, var_meta, NEMO_BC, filename):
     ds.attrs = {
         "acknowledgements": "Live Ocean https://faculty.washington.edu/pmacc/LO/LiveOcean.html",
         "creator_email": "nsoontie@eos.ubc.ca",
-        "creator_name": "Salish Sea MEOPAR Project Contributors",
+        "creator_name": "SalishSeaCast Project Contributors",
         "creator_url": "https://salishsea-meopar-docs.readthedocs.org/",
         "institution": "UBC EOAS",
         "institution_fullname": (

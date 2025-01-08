@@ -1,4 +1,4 @@
-.. Copyright 2013 – present The Salish Sea MEOPAR contributors
+.. Copyright 2013 – present by the SalishSeaCast contributors
 .. and The University of British Columbia
 ..
 .. Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,8 @@
 :kbd:`SalishSeaTools` Package Installation and Use
 **************************************************
 
-:kbd:`SalishSeaTools` is a Python 3 package that provides a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
+:kbd:`SalishSeaTools` is a Python 3 package that provides a collection of Python modules
+that facilitate code reuse for the SalishSeaCast project.
 
 These instructions assume that:
 

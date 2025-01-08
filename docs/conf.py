@@ -84,10 +84,10 @@ templates_path = ["_templates"]
 master_doc = "index"
 
 # General information about the project.
-project = "Salish Sea MEOPAR Tools"
+project = "SalishSeaCast Tools"
 copyright = (
     "2013– present, "
-    "Salish Sea MEOPAR Project Contributors "
+    "SalishSeaCast Project Contributors "
     "and The University of British Columbia"
 )
 
@@ -151,8 +151,8 @@ latex_documents = [
     (
         "index",
         "SalishSea-MEOPAR-toolsdoc.tex",
-        "Salish Sea MEOPAR Tools Documentation",
-        "Salish Sea MEOPAR Project Contributors",
+        "SalishSeaCast Tools Documentation",
+        "SalishSeaCast Project Contributors",
         "manual",
     )
 ]
