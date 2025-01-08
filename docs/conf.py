@@ -12,7 +12,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import datetime
 import os
 import sys
 
@@ -87,9 +86,9 @@ master_doc = "index"
 # General information about the project.
 project = "Salish Sea MEOPAR Tools"
 copyright = (
-    "2013-{:%Y}, "
+    "2013– present, "
     "Salish Sea MEOPAR Project Contributors "
-    "and The University of British Columbia".format(datetime.date.today())
+    "and The University of British Columbia"
 )
 
 # For autoclass

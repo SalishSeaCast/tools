@@ -1,7 +1,7 @@
 """Salish Sea NEMO Jupyter Notebook collection README generator
 
 
-Copyright 2013-2021 The Salish Sea MEOPAR Contributors
+Copyright 2013 – present The Salish Sea MEOPAR Contributors
 and The University of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
