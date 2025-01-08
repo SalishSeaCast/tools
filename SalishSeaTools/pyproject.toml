@@ -22,8 +22,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "SalishSeaTools"
-#dynamic = [ "version" ]
-version = "24.1.dev0"
+dynamic = ["version"]
 description = "Tools for working with the SalishSeaCast NEMO model configurations and results"
 readme = "README.rst"
 requires-python = ">=3.11"
@@ -71,3 +70,6 @@ show_missing = true
 
 [tool.hatch.build.targets.wheel]
 include = ["salishsea_tools"]
+
+[tool.hatch.version]
+path = "salishsea_tools/__about__.py"
