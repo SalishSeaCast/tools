@@ -1,5 +1,3 @@
-# coding=utf-8
-
 # Copyright 2013 – present by the SalishSeaCast contributors
 # and The University of British Columbia
 
