@@ -34,4 +34,4 @@ Contents:
 
    installation
    api
-   development
+   pkg_development
