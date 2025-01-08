@@ -15,7 +15,7 @@
 
 """Unit tests for nc_tools.
 """
-from __future__ import division
+
 
 import datetime
 from pathlib import Path

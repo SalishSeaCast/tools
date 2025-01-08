@@ -15,7 +15,7 @@
 
 """Unit tests for the unit_conversions module.
 """
-from __future__ import division
+
 
 import arrow
 import numpy as np

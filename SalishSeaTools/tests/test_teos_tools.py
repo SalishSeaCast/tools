@@ -15,7 +15,7 @@
 
 """Unit tests for the teos_tools module.
 """
-from __future__ import division
+
 
 import numpy as np
 import pytest

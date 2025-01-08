@@ -16,7 +16,7 @@
 """A collection of tools for comparing atmospheric forcing with
 observations from the Salish Sea Model.
 """
-from __future__ import division
+
 
 import datetime
 import netCDF4 as NC

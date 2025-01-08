@@ -16,7 +16,7 @@
 """A collection of Python functions to do routine tasks associated with
 plotting and visualization.
 """
-from __future__ import division
+
 
 import netCDF4 as nc
 import numpy as np

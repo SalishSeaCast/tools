@@ -17,7 +17,7 @@
 
 """Salish Sea NEMO model unit conversion functions and constants.
 """
-from __future__ import division
+
 
 import numpy as np
 

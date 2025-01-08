@@ -15,7 +15,7 @@
 
 """Unit tests for the tidetools module.
 """
-from __future__ import division
+
 
 import textwrap
 import numpy as np

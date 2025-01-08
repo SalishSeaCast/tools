@@ -16,7 +16,7 @@
 """Functions for working with wind model results and wind observations
 data.
 """
-from __future__ import division
+
 
 from collections import namedtuple
 from pathlib import Path

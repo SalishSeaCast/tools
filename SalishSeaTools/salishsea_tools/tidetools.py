@@ -16,7 +16,7 @@
 """A collection of tools for dealing with tidal results from the
 Salish Sea NEMO model
 """
-from __future__ import division
+
 
 import cmath
 import collections

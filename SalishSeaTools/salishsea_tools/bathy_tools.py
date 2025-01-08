@@ -16,10 +16,7 @@
 """A library of Python functions for viewing and manipulating
 netCDF bathymetry files.
 """
-from __future__ import (
-    division,
-    print_function,
-)
+
 
 from matplotlib.colors import BoundaryNorm
 import matplotlib.pyplot as plt

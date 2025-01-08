@@ -24,7 +24,7 @@ Included are functions for:
 * combining per-processor sub-domain output files fron NEMO into a single
   netCDF file
 """
-from __future__ import division
+
 
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta

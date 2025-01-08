@@ -20,7 +20,6 @@
 
 # Call like this: python correct_pressure.py pressure_file temperature_file save_directory
 
-from __future__ import division
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np

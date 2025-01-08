@@ -15,7 +15,7 @@
 
 """Unit tests for the viz_tools module.
 """
-from __future__ import division
+
 
 from unittest.mock import (
     MagicMock,

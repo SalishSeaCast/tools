@@ -15,7 +15,7 @@
 
 """A collection of tools for storm surge results from the Salish Sea Model.
 """
-from __future__ import division
+
 
 import csv
 import datetime
