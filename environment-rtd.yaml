@@ -12,7 +12,7 @@ dependencies:
   - jupyter
   - matplotlib
   - pip
-  - python=3.12
+  - python=3.13
 
   # Sphinx and extensions we use
   - nbsphinx==0.9.5
