@@ -1,4 +1,4 @@
-# Copyright 2013-2021 The Salish Sea MEOPAR contributors
+# Copyright 2013 – present by the SalishSeaCast contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_feeds worker.
 """
-from __future__ import division
+
 
 import os
 from unittest.mock import patch

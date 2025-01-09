@@ -1,4 +1,4 @@
-# Copyright 2013-2021 The Salish Sea MEOPAR Contributors
+# Copyright 2013 – present by the SalishSeaCast Contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
 
 """Unit tests for the teos_tools module.
 """
-from __future__ import division
+
 
 import numpy as np
 import pytest

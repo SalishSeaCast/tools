@@ -1,4 +1,4 @@
-# Copyright 2013-2021 The Salish Sea NEMO Project and
+# Copyright 2013 – present The Salish Sea NEMO Project and
 # The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -382,7 +382,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     ds_attrs = {
         "acknowledgements": "Live Ocean https://faculty.washington.edu/pmacc/LO/LiveOcean.html",
         "creator_email": "sallen@eoas.ubc.ca",
-        "creator_name": "Salish Sea MEOPAR Project Contributors",
+        "creator_name": "SalishSeaCast Project Contributors",
         "creator_url": "https://salishsea-meopar-docs.readthedocs.org/",
         "institution": "UBC EOAS",
         "institution_fullname": (

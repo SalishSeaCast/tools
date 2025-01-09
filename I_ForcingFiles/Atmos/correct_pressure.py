@@ -1,4 +1,4 @@
-# Copyright 2013-2021 The Salish Sea MEOPAR contributors
+# Copyright 2013 – present by the SalishSeaCast contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,6 @@
 
 # Call like this: python correct_pressure.py pressure_file temperature_file save_directory
 
-from __future__ import division
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np

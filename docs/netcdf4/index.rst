@@ -4,7 +4,7 @@
 netCDF4 Files Creation and Conventions
 **************************************
 
-The Salish Sea MEOPAR project uses netCDF4_ files as input for the NEMO model and for other purposes,
+The SalishSeaCast project uses netCDF4_ files as input for the NEMO model and for other purposes,
 where appropriate.
 This section documents the recommended way of creating netCDF4 files with compression of variables,
 limitation of variables to appropriate precision,
@@ -173,7 +173,7 @@ The `NetCDF Climate and Forecast (CF) Metadata Conventions, Version 1.6, 5 Decem
   (relative to earth-based coordinates)
   and time.
 
-Datasets created by the Salish Sea MEOPAR project shall conform to `CF-1.6`_.
+Datasets created by the SalishSeaCast project shall conform to `CF-1.6`_.
 NEMO results nominally conform to an ealier version,
 `CF-1.1`_.
 
@@ -342,7 +342,7 @@ As Applicable
   The direction of positive
   (i.e., the direction in which the coordinate values are increasing)
   for a vertical coordinate.
-  For Salish Sea MEOPAR files this is applicable to depths and a value of :kbd:`down` is used,
+  For SalishSeaCast files this is applicable to depths and a value of :kbd:`down` is used,
   indicating that the depth of the surface is 0 and depth values increase downward.
 
   Example:

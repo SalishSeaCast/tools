@@ -37,7 +37,7 @@ Descriptions below the links are from the first cell of the notebooks
     combined into a file with the name pattern required by NEMO.
     Since new files need to be created the opportunity is taken to reduce storage requirements
     by creating them as netCDF4 files with variable-level compression enabled.
-    Metadata that conforms to [CF-1.6 and Salish Sea MEOPAR project conventions][netCDF4 conventions] is included
+    Metadata that conforms to [CF-1.6 and SalishSeaCast project conventions][netCDF4 conventions] is included
     in the new files.
 
     [netCDF4 conventions]: https://salishsea-meopar-docs.readthedocs.org/en/latest/code-notes/salishsea-nemo/nemo-forcing/netcdf4.html#netcdf4-file-conventions

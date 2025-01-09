@@ -1,4 +1,4 @@
-# Copyright 2013-2021 The Salish Sea MEOPAR contributors
+# Copyright 2013 – present by the SalishSeaCast contributors
 # and The University of British Columbia
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@ Included are functions for:
 * combining per-processor sub-domain output files fron NEMO into a single
   netCDF file
 """
-from __future__ import division
+
 
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta

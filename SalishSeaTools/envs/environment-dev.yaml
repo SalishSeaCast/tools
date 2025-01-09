@@ -19,7 +19,7 @@ channels:
   - nodefaults
 
 dependencies:
-  - arrow>=1.0.0
+  - arrow
   - bottleneck
   - cliff
   - cmocean
@@ -46,8 +46,9 @@ dependencies:
   - tqdm
   - xarray
 
-  # For coding style and repo QA
+# For coding style, repo QA, and package management
   - black
+  - hatch
   - pre-commit
 
   # For unit tests

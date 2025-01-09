@@ -2,15 +2,18 @@
 Salish Sea Tools Package
 ************************
 
-The Salish Sea Tools package is a collection of Python modules that facilitate code reuse for the Salish Sea MEOPAR project.
+The Salish Sea Tools package is a collection of Python modules that facilitate code reuse
+for the SalishSeaCast project.
 
-Documentation for the package is in the ``docs/`` directory and is rendered at https://salishsea-meopar-tools.readthedocs.io/en/latest/SalishSeaTools/index.html.
+Documentation for the package is in the ``docs/`` directory and is rendered at
+https://salishsea-meopar-tools.readthedocs.io/en/latest/SalishSeaTools/index.html.
 
 
 License
 =======
 
-The Salish Sea Tools package and documentation are copyright 2013-2021 by the Salish Sea MEOPAR Project Contributors and The University of British Columbia.
+The Salish Sea Tools package and documentation are copyright 2013 – present
+by the SalishSeaCast Project Contributors and The University of British Columbia.
 
 They are licensed under the Apache License, Version 2.0.
 https://www.apache.org/licenses/LICENSE-2.0
