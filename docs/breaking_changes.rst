@@ -22,6 +22,18 @@
 Changes That Break Backward Compatibility
 *****************************************
 
+.. _BreakingChangesVersion25.1:
+
+Version 25.1 (unreleased)
+=========================
+
+The following changes that were introduced in version 25.1 of the ``tools`` repository
+are incompatible with earlier versions:
+
+* The minimum supported version of Python is 3.11.
+  Development of the :py:obj:`SalishSeaTools` package is done using Python 3.13.
+
+
 .. _BreakingChangesVersion24.1:
 
 Version 24.1 (2025-01-09)
