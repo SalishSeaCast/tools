@@ -24,7 +24,7 @@ Changes That Break Backward Compatibility
 
 .. _BreakingChangesVersion24.1:
 
-Version 24.1 (unreleased)
+Version 24.1 (2025-01-09)
 =========================
 
 The following changes that were introduced in version 24.1 of the ``tools`` repository

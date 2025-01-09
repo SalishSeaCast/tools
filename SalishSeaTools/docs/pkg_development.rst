@@ -257,7 +257,11 @@ The release process steps are:
 #. Use :command:`hatch version release` to bump the version from ``.devn`` to the next release
    version identifier
 
-#. Commit the version bump
+#. Confirm that :file:`tools/docs/breaking_changes.rst` includes any relevant notes for the
+   version being released
+
+#. Commit the version bump and breaking changes log update
+
 
 #. Create an annotated tag for the release with :guilabel:`Git -> New Tag...` in PyCharm
    or :command:`git tag -e -a vyy.n`
