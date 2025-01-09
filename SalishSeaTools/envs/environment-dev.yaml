@@ -36,7 +36,7 @@ dependencies:
   - openpyxl
   - pandas
   - pip
-  - python=3.12
+  - python=3.13
   - pytz
   - python-dateutil
   - pyyaml

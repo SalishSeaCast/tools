@@ -16,26 +16,25 @@
 
 .. _SalishSeaToolsPackageDevelopment:
 
-*****************************************
-:kbd:`SalishSeaTools` Package Development
-*****************************************
+********************************************
+:py:obj:`SalishSeaTools` Package Development
+********************************************
 
 .. _SalishSeaToolsPythonVersions:
 
 Python Versions
 ===============
 
-The :kbd:`SalishSeaTools` package is developed and tested using `Python`_ 3.9.
-The package uses some Python language features that are not available in versions prior to 3.6,
-in particular:
+.. image:: https://img.shields.io/python/required-version-toml?tomlFilePath=https://raw.githubusercontent.com/SalishSeaCast/SalishSeaCmd/main/pyproject.toml&logo=Python&logoColor=gold&label=Python
+    :target: https://docs.python.org/3
+    :alt: Python Version from PEP 621 TOML
 
-* `formatted string literals`_
-  (aka *f-strings*)
-* the `file system path protocol`_
+The :py:obj:`SalishSeaTools` package is developed using `Python`_ 3.13.
+The minimum supported Python version is 3.11.
+The :ref:`SalishSeaToolsContinuousIntegration` workflow on GitHub ensures that the package
+is tested for all versions of Python>=3.11.
 
 .. _Python: https://www.python.org/
-.. _formatted string literals: https://docs.python.org/3/reference/lexical_analysis.html#f-strings
-.. _file system path protocol: https://docs.python.org/3/whatsnew/3.6.html#whatsnew36-pep519
 
 
 .. _SalishSeaToolsGettingTheCode:
