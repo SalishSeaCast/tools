@@ -9,8 +9,6 @@ channels:
 
 dependencies:
   - ipython
-  - jupyter
-  - matplotlib
   - pip
   - python=3.13
 

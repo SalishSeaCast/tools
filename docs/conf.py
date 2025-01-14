@@ -11,7 +11,6 @@ import sys
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath("../SalishSeaNowcast"))
 sys.path.insert(0, os.path.abspath("../SalishSeaTools"))
 
 
@@ -45,29 +44,17 @@ todo_include_todos = True
 autodoc_mock_imports = [
     "angles",
     "arrow",
-    "driftwood",
-    "driftwood.formatters",
     "f90nml",
     "gsw",
+    "matplotlib",
     "netCDF4",
     "nowcast",
-    "nowcast.figures",
+    "numpy",
     "pandas",
-    "paramiko",
     "retrying",
     "scipy",
-    "scipy.interpolate",
-    "scipy.io",
-    "scipy.optimize",
-    "scipy.sparse",
     "tqdm",
     "xarray",
-    "yaml",
-    "zmq",
-    "zmq.eventloop",
-    "zmq.eventloop.ioloop",
-    "zmq.eventloop.zmqstream",
-    "zmq.utils",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -79,7 +66,7 @@ master_doc = "index"
 # General information about the project.
 project = "SalishSeaCast Tools"
 copyright = (
-    "2013– present, "
+    "2013 – present, "
     "SalishSeaCast Project Contributors "
     "and The University of British Columbia"
 )
