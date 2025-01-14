@@ -21,7 +21,6 @@ channels:
 dependencies:
   - arrow
   - bottleneck
-  - cliff
   - cmocean
   - f90nml
   - gsw
