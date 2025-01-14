@@ -17,9 +17,7 @@ dependencies:
   - f90nml
   - gsw
   - h5netcdf
-  - ipdb
   - ipython
-  - jupyterlab
   - lxml
   - matplotlib
   - netCDF4
