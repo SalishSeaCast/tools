@@ -479,20 +479,6 @@ def get_SSH_forcing(boundary, date):
     return ssh_forc, time_ssh
 
 
-def dateParserMeasured2(s):
-    """
-    converts string in %d-%b-%Y %H:%M:%S format Pacific time to a
-    datetime object UTC time.
-    """
-    PST = tz.tzoffset("PST", -28800)
-    # convert the string to a datetime object
-    unaware = datetime.datetime.strptime(s, "%d-%b-%Y %H:%M:%S ")
-    # add in the local time zone (Canada/Pacific)
-    aware = unaware.replace(tzinfo=PST)
-    # convert to UTC
-    return aware.astimezone(tz.tzutc())
-
-
 def dateParserMeasured(s):
     """
     converts string in %Y/%m/%d %H:%M format Pacific time to a
@@ -531,6 +517,10 @@ def load_tidal_predictions(filename):
     ttide = ttide.rename(
         columns={col_name: col_name.strip() for col_name in ttide.columns}
     )
+    # Convert timestamps from Pacific Standard Time to UTC
+    ttide["time"] = pd.DatetimeIndex(
+        ttide["time"], tz=tz.tzoffset("PST", -8 * 60 * 60)
+    ).tz_convert("UTC")
     return ttide, msl
 
 

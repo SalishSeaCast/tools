@@ -18,6 +18,7 @@
 import os
 from unittest.mock import Mock
 
+from dateutil import tz
 import pandas
 import pytest
 
@@ -83,7 +84,7 @@ class TestLoadTidalPredictions:
             "time": pandas.to_datetime(
                 ["2006-12-30 00:05:00", "2006-12-30 00:15:00", "2006-12-30 00:25:00"]
             )
-            .tz_localize("Canada/Pacific")
+            .tz_localize(tz.tzoffset("PST", -8 * 60 * 60))
             .tz_convert("UTC"),
             "pred_8": [0.078625, 0.162499, 0.242253],
             "pred_all": [-0.049689, 0.038772, 0.123667],
