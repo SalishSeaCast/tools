@@ -1,4 +1,5 @@
 name: Assign Issue/PR
+
 on:
   issues:
     types:
@@ -8,6 +9,7 @@ on:
     types:
       - reopened
       - opened
+
 jobs:
   auto_assign:
     permissions:
