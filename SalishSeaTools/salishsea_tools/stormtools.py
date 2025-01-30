@@ -523,7 +523,9 @@ def load_tidal_predictions(filename):
         mycsv = list(csv.reader(f))
         msl = float(mycsv[1][1])
     ttide = pd.read_csv(
-        filename, skiprows=3, parse_dates=[0], date_parser=dateParserMeasured2
+        filename,
+        skiprows=3,
+        parse_dates=[0],
     )
     # Strip leading/trailing spaces from column names
     ttide = ttide.rename(

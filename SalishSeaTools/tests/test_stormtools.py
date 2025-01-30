@@ -72,27 +72,6 @@ class TestLoadTidalPredictions:
         filename.write_text(content)
         return filename
 
-    @staticmethod
-    @pytest.fixture
-    def tmp_csv_file_bad_date_format(tmp_path):
-        """Create a temporary CSV file for testing."""
-        desc_line = (
-            "Harmonics from,/home/sallen/MEOPAR/tidal_constituents/tide_data/07786const.wlev,"
-            "Time zone,PST,''"
-        )
-        msl_line = "Mean (m),3.090000,Z0 constituent,''"
-        lat_line = "Latitude,'',''"
-        test_data = (
-            "time , pred_8 , pred_all , pred_noshallow \n"
-            "2006-12-30 00:05:00 , 0.078625, -0.049689, -0.075132\n"
-            "2006-12-30 00:15:00 , 0.162499, 0.038772, 0.011968\n"
-            "2006-12-30 00:25:00 , 0.242253, 0.123667, 0.095479\n"
-        )
-        filename = tmp_path / "test_tidal_predictions.csv"
-        content = f"{desc_line}\n{msl_line}\n{lat_line}\n{test_data}"
-        filename.write_text(content)
-        return filename
-
     def test_load_tidal_predictions_returns_dataframe_and_msl(self, tmp_csv_file):
         ttide, msl = stormtools.load_tidal_predictions(os.fspath(tmp_csv_file))
 
@@ -123,7 +102,3 @@ class TestLoadTidalPredictions:
 
         with pytest.raises(IndexError):
             stormtools.load_tidal_predictions(os.fspath(invalid_file))
-
-    def test_load_tidal_predictions_bad_date_format(self, tmp_csv_file_bad_date_format):
-        with pytest.raises(ValueError):
-            stormtools.load_tidal_predictions(os.fspath(tmp_csv_file_bad_date_format))
