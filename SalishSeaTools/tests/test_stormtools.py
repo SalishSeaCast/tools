@@ -108,7 +108,7 @@ class TestLoadTidalPredictions:
             .tz_convert("UTC"),
             "pred_8": [0.078625, 0.162499, 0.242253],
             "pred_all": [-0.049689, 0.038772, 0.123667],
-            " pred_noshallow ": [-0.075132, 0.011968, 0.095479],
+            "pred_noshallow": [-0.075132, 0.011968, 0.095479],
         }
         expected_df = pandas.DataFrame(expected_data)
         pandas.testing.assert_frame_equal(ttide.reset_index(drop=True), expected_df)

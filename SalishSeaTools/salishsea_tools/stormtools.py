@@ -518,18 +518,16 @@ def load_tidal_predictions(filename):
                      the mean component from the harmonic analysis.
     :rtype: :py:class:`pandas.DataFrame`
     """
+    # Read mean sea level from the top of tidal predictions file
     with open(filename) as f:
         mycsv = list(csv.reader(f))
         msl = float(mycsv[1][1])
     ttide = pd.read_csv(
         filename, skiprows=3, parse_dates=[0], date_parser=dateParserMeasured2
     )
+    # Strip leading/trailing spaces from column names
     ttide = ttide.rename(
-        columns={
-            "time ": "time",
-            " pred_8 ": "pred_8",
-            " pred_all ": "pred_all",
-        }
+        columns={col_name: col_name.strip() for col_name in ttide.columns}
     )
     return ttide, msl
 
