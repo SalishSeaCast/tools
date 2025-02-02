@@ -15,6 +15,4 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      uses: UBC-MOAD/gha-workflows/.github/workflows/auto-milestone-issue-pr.yaml@main
+    uses: UBC-MOAD/gha-workflows/.github/workflows/auto-milestone-issue-pr.yaml@main
