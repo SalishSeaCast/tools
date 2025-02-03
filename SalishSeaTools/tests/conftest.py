@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pytest fixtures for the salishsea_tools package.
-"""
+"""Pytest fixtures for the salishsea_tools package."""
 import os
 
 import netCDF4 as nc

@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A collection of tools for storm surge results from the Salish Sea Model.
-"""
+"""A collection of tools for storm surge results from the Salish Sea Model."""
 
 
 import csv

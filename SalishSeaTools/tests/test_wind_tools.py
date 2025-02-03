@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for Salish Sea NEMO nowcast make_feeds worker.
-"""
+"""Unit tests for Salish Sea NEMO nowcast make_feeds worker."""
 
 
 import os

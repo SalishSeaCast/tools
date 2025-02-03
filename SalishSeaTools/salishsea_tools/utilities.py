@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A library of basic utility Python functions
-"""
+"""A library of basic utility Python functions"""
 
 import arrow
 import glob

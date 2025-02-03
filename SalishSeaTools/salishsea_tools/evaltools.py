@@ -14,8 +14,7 @@
 # limitations under the License.
 # may requires python version 3.5 or higher for recursive glob
 
-"""Flexible functions for model evalution tasks
-"""
+"""Flexible functions for model evalution tasks"""
 
 import datetime as dt
 import numpy as np

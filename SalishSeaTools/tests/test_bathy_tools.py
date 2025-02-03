@@ -14,8 +14,7 @@
 # limitations under the License.
 
 
-"""Unit tests for bathy_tools.
-"""
+"""Unit tests for bathy_tools."""
 
 
 import os

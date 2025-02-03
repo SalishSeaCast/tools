@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Functions for calculating time-dependent scale factors and depth.
+"""Functions for calculating time-dependent scale factors and depth.
 
 Functions developed/tested in this notebook:
 https://nbviewer.org/github/SalishSeaCast/analysis-nancy/blob/master/notebooks/energy_flux/Time-dependent%20depth%20and%20scale%20factors%20-%20development.ipynb

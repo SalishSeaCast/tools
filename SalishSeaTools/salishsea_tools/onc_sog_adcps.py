@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Ocean Networks Canada Strait of Georgia ADCPs Metadata.
-"""
+"""Ocean Networks Canada Strait of Georgia ADCPs Metadata."""
 from collections import namedtuple
 
 import arrow
