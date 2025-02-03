@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Functions for working with geographical data and model results.
-"""
+"""Functions for working with geographical data and model results."""
 import numpy as np
 import f90nml
 import os

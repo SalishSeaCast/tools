@@ -1,5 +1,4 @@
-"""Unit tests for hg_commands module.
-"""
+"""Unit tests for hg_commands module."""
 
 """
 Copyright 2013 – present by the SalishSeaCast contributors

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Routines for loading SOG model output files into Pandas data structures
-"""
+"""Routines for loading SOG model output files into Pandas data structures"""
 
 from datetime import datetime, timedelta
 from dateutil.parser import parse

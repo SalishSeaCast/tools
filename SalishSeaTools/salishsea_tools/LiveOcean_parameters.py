@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set of parameters to calculate Si from Live Ocean NO3 and to correct NO3 values
-"""
+"""Set of parameters to calculate Si from Live Ocean NO3 and to correct NO3 values"""
 
 
 def set_parameters(parameter_set):

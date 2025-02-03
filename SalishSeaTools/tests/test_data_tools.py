@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Uni tests for salishsea_tools.data_tools module.
-"""
+"""Uni tests for salishsea_tools.data_tools module."""
 import json
 import json as stdlib_json
 import logging
