@@ -75,7 +75,7 @@ PLACES = {
     },
     "Halfmoon Bay": {
         "lon lat": (-123.912, 49.511),
-        "stn number": 7830,
+        "stn number": None,
         "NEMO grid ji": (549, 254),
         "wind grid ji": (158, 136),
         "ww3 grid ji": (331, 297),
@@ -147,7 +147,7 @@ PLACES = {
     },
     "Squamish": {
         "lon lat": (-123.155, 49.694),
-        "stn number": 7811,
+        "stn number": None,
         "NEMO grid ji": (532, 389),
         "wind grid ji": (162, 160),
         "ww3 grid ji": (370, 404),
