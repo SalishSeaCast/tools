@@ -147,7 +147,7 @@ PLACES = {
     },
     "Squamish": {
         "lon lat": (-123.155, 49.694),
-        "stn number": 7811,
+        "stn number": None,
         "NEMO grid ji": (532, 389),
         "wind grid ji": (162, 160),
         "ww3 grid ji": (370, 404),
