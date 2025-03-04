@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """A collections of functions for working with river flow forcing data
-for the Salish Sea NEMO model.
+for the SalishSeaCast NEMO model.
 """
 import netCDF4 as NC
 import numpy as np
@@ -25,16 +25,19 @@ def put_watershed_into_runoff(rivertype, area, flux, runoff, run_depth, run_temp
 
     :arg str rivertype: 'constant' or 'monthly' flows
 
-    :arg array area: horizontal area of each grid cell in domain
-                     e1t*e2t
+    :arg area: horizontal area of each grid cell in domain e1t*e2t
+    :type area: :py:class:`numpy.ndarray`
 
     :arg float flux: amount of flow into watershed
 
-    :arg array runoff: runoff array we are filling
+    :arg runoff: runoff array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
-    :arg array run_depth: depth array we are filling
+    :arg run_depth: depth array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
-    :arg array run_temp: temperature array we are filling
+    :arg run_temp: temperature array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
     :arg dict pd: property dictionary for the watershed
 
@@ -92,7 +95,6 @@ def get_watershed_prop_dict(watershedname, Fraser_River="short"):
     raise DeprecationWarning(
         "get_watershed_prop_dict() depreciated, use the river_** dictionary files"
     )
-    return
 
 
 def get_bathy_cell_size(
@@ -121,7 +123,6 @@ def init_runoff_array(
     raise DeprecationWarning(
         "init_runoff_array() deprecated, use runoff = np.zeros_like(area); run_depth = np.ones_like(runoff)"
     )
-    return
 
 
 def init_runoff_array_monthly(
@@ -133,7 +134,6 @@ def init_runoff_array_monthly(
     raise DeprecationWarning(
         "init_runoff_array() deprecated, use runoff = np.zeros((12, area.shape[0], area.shape[1])); run_depth = np.ones_like(runoff)"
     )
-    return
 
 
 def fill_runoff_array(
@@ -236,7 +236,6 @@ def get_watershed_prop_dict_long_fraser(watershedname):
     raise DeprecationWarning(
         "get_watershed_prop_dict_long_fraser() depreciated, use the river_** dictionary files"
     )
-    return
 
 
 def get_watershed_prop_dict_allArms_fraser(watershedname):
@@ -244,7 +243,6 @@ def get_watershed_prop_dict_allArms_fraser(watershedname):
     raise DeprecationWarning(
         "get_watershed_prop_dict_allArms_fraser() depreciated, all Arms bathy superceded by 201702"
     )
-    return
 
 
 def init_runoff3_array(
@@ -254,7 +252,6 @@ def init_runoff3_array(
     raise DeprecationWarning(
         "init_runoff3_array() depreciated, just use init_runoff_array"
     )
-    return
 
 
 def put_watershed_into_runoff3(
@@ -269,7 +266,6 @@ def put_watershed_into_runoff3(
     raise DeprecationWarning(
         "put_watershed_into_runoff3() depreciated, just use put_watershed_into_runoff"
     )
-    return
 
 
 def init_runoff3_array_monthly(
@@ -279,7 +275,6 @@ def init_runoff3_array_monthly(
     raise DeprecationWarning(
         "init_runoff3_array_monthly() depreciated, just use init_runoff_array_monthly"
     )
-    return
 
 
 def init_runoff5_array_monthly(
@@ -289,7 +284,6 @@ def init_runoff5_array_monthly(
     raise DeprecationWarning(
         "init_runoff5_array_monthly() depreciated, just use init_runoff_array_monthly"
     )
-    return
 
 
 def init_runoff5_array(
@@ -299,4 +293,3 @@ def init_runoff5_array(
     raise DeprecationWarning(
         "init_runoff5_array() depreciated, just use init_runoff_array"
     )
-    return
