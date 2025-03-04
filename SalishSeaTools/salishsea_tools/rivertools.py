@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """A collections of functions for working with river flow forcing data
-for the Salish Sea NEMO model.
+for the SalishSeaCast NEMO model.
 """
 import netCDF4 as NC
 import numpy as np
@@ -25,16 +25,19 @@ def put_watershed_into_runoff(rivertype, area, flux, runoff, run_depth, run_temp
 
     :arg str rivertype: 'constant' or 'monthly' flows
 
-    :arg array area: horizontal area of each grid cell in domain
-                     e1t*e2t
+    :arg area: horizontal area of each grid cell in domain e1t*e2t
+    :type area: :py:class:`numpy.ndarray`
 
     :arg float flux: amount of flow into watershed
 
-    :arg array runoff: runoff array we are filling
+    :arg runoff: runoff array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
-    :arg array run_depth: depth array we are filling
+    :arg run_depth: depth array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
-    :arg array run_temp: temperature array we are filling
+    :arg run_temp: temperature array we are filling
+    :type area: :py:class:`numpy.ndarray`
 
     :arg dict pd: property dictionary for the watershed
 
