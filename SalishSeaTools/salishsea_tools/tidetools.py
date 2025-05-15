@@ -44,7 +44,7 @@ from salishsea_tools import (
 # Tide correction for amplitude and phase set to September 10th 2014 by nowcast
 # Values for there and other constituents can be found in:
 # /data/dlatorne/MEOPAR/SalishSea/nowcast/08jul15/ocean.output
-# The freq parameter it the frequency of the tidal consituent in degrees/hour.
+# The freq parameter it the frequency of the tidal constituent in degrees/hour.
 CorrTides = {
     "reftime": datetime.datetime(2014, 9, 10, tzinfo=tz.tzutc()),
     "K1": {"freq": 15.041069000, "ft": 0.891751, "uvt": 262.636797},
@@ -1513,8 +1513,7 @@ def ap2ep(Au, PHIu, Av, PHIv):
 
 
 def convert_to_hours(time_model, reftime="None"):
-    """Interpolates the datetime values into an array of hours from a
-        determined starting point
+    """Interpolates the datetime values into an array of hours from a determined starting point.
 
     :arg time_model: array of model output time as datetime objects
     :type time_model: array with datetimes
@@ -1566,19 +1565,41 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
 
 
 def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
-    """Function for the fit, assuming only 4 constituents of importance are:
-        M2, K2, S1 and O1.
+    """Computes the sum of a mean value and multiple cosine terms, each corresponding to
+    a specific tidal constituent, assuming that only 4 constituents are of importance:
+      M2, K2, S1, and O1.
 
-    :arg x: Independent variable, time.
-    :type x:
+    The function is used to model a tidal signal based
+    on amplitudes and phase offsets for the M2, K1, S2, and O1 tidal components.
 
-    :arg \*amp: Tidal amplitude of the a constituent
-    :type \*amp: float
+    Each cosine term is calculated using its respective amplitude, phase, and specific
+    frequency as defined in the `CorrTides` dictionary.
+    The mean value is added to the result of the summed cosine terms.
 
-    :arg \*pha: Phase lag of a constituent
-    :type \*pha: float
+    :param x: Time variable for the tidal computation (independent variable).
+    :type x: :py:class:'numpy.ndarray'
 
-    :returns: function for fitting 4 frequencies
+    :param float M2amp: Amplitude of the M2 tidal constituent.
+
+    :param float M2pha: Phase offset of the M2 tidal constituent in degrees.
+
+    :param float K1amp: Amplitude of the K1 tidal constituent.
+
+    :param float K1pha: Phase offset of the K1 tidal constituent in degrees.
+
+    :param float S2amp: Amplitude of the S2 tidal constituent.
+
+    :param float S2pha: Phase offset of the S2 tidal constituent in degrees.
+
+    :param float O1amp: Amplitude of the O1 tidal constituent.
+
+    :param float O1pha: Phase offset of the O1 tidal constituent in degrees.
+
+    :param float mean: Mean value to be added to the tidal signal.
+
+
+    :return: The computed tidal signal as the sum of constituent terms and the mean.
+    :rtype: float
     """
     return (
         mean
@@ -1605,19 +1626,48 @@ def sextuple(
     P1pha,
     mean,
 ):
-    """Function for the fit, assuming 6 constituents of importance are:
-    M2, K2, S1, O1, N2 and P1.
+    """Compute a composite tidal signal, assuming that 6 constituents are of importance:
+         M2, K2, S1, O1, N2, and P1.
 
-    :arg x: Independent variable, time.
-    :type x:
+    This function calculates a superimposed tidal signal composed of multiple
+    constituents, including M2, K1, S2, O1, N2, and P1.
+    The signal is computed as a sum of sinusoidal functions,
+    each weighted by its respective amplitude and shifted by its phase.
+    A constant mean value is also added to the resulting signal.
+    The constituent frequencies are retrieved from the ``CorrTides`` dictionary.
 
-    :arg \*amp: Tidal amplitude of the a constituent
-    :type \*amp: float
+    :param x: Time variable for the tidal computation (independent variable).
+    :type x: :py:class:'numpy.ndarray'
 
-    :arg \*pha: Phase lag of a constituent
-    :type \*pha: float
+    :param float M2amp: Amplitude of the M2 tidal constituent.
 
-    :returns: function for fitting 6 frequencies
+    :param float M2pha: Phase of the M2 tidal constituent, in degrees.
+
+    :param float K1amp: Amplitude of the K1 tidal constituent.
+
+    :param float K1pha: Phase of the K1 tidal constituent, in degrees.
+
+    :param float S2amp: Amplitude of the S2 tidal constituent.
+
+    :param float S2pha: Phase of the S2 tidal constituent, in degrees.
+
+    :param float O1amp: Amplitude of the O1 tidal constituent.
+
+    :param float O1pha: Phase of the O1 tidal constituent, in degrees.
+
+    :param float N2amp: Amplitude of the N2 tidal constituent.
+
+    :param float N2pha: Phase of the N2 tidal constituent, in degrees.
+
+    :param float P1amp: Amplitude of the P1 tidal constituent.
+
+    :param float P1pha: Phase of the P1 tidal constituent, in degrees.
+
+    :param float mean: Mean value or offset added to the composite tidal signal.
+
+    :return: A superimposed tidal signal computed as a function of the input
+             parameters and constituent frequencies.
+    :rtype: float
     """
     return (
         mean
@@ -1650,19 +1700,52 @@ def octuple(
     Q1pha,
     mean,
 ):
-    """Function for the fit, for all the constituents: M2, K2, S1, O1, N2, P1,
-    K2 and Q1.
+    """Calculates a tidal signal using provided amplitude and phase values for all 8 tidal
+    constituents.
 
-    :arg x: Independent variable, time.
-    :type x:
+    The function combines the contributions of eight tidal constituents (M2, K1, S2,
+    O1, N2, P1, K2, Q1) using their respective amplitudes and phases scaled by the input variable x.
+    A mean value is also added to the calculated tidal signal.
 
-    :arg \*amp: Tidal amplitude of the a constituent
-    :type \*amp: float
+    :param x: Time variable for the tidal computation (independent variable).
+    :type x: :py:class:'numpy.ndarray'
 
-    :arg \*pha: Phase lag of a constituent
-    :type \*pha: float
+    :param float M2amp: The amplitude of the M2 tidal constituent.
 
-    :returns: function for fitting 8 frequencies
+    :param float M2pha: The phase angle of the M2 tidal constituent, in degrees.
+
+    :param float K1amp: The amplitude of the K1 tidal constituent.
+
+    :param float K1pha: The phase angle of the K1 tidal constituent, in degrees.
+
+    :param float S2amp: The amplitude of the S2 tidal constituent.
+
+    :param float S2pha: The phase angle of the S2 tidal constituent, in degrees.
+
+    :param float O1amp: The amplitude of the O1 tidal constituent.
+
+    :param float O1pha: The phase angle of the O1 tidal constituent, in degrees.
+
+    :param float N2amp: The amplitude of the N2 tidal constituent.
+
+    :param float N2pha: The phase angle of the N2 tidal constituent, in degrees.
+
+    :param float P1amp: The amplitude of the P1 tidal constituent.
+
+    :param float P1pha: The phase angle of the P1 tidal constituent, in degrees.
+
+    :param float K2amp: The amplitude of the K2 tidal constituent.
+
+    :param float K2pha: The phase angle of the K2 tidal constituent, in degrees.
+
+    :param float Q1amp: The amplitude of the Q1 tidal constituent.
+
+    :param float Q1pha: The phase angle of the Q1 tidal constituent, in degrees.
+
+    :param float mean: The mean value added to the tidal signal.
+
+    :return: The combined tidal signal value.
+    :rtype: float
     """
     return (
         mean
