@@ -165,7 +165,7 @@ SalishSeaTools==25.1.dev0
 scipy==1.15.0
 SecretStorage==3.3.3
 Send2Trash==1.8.3
-setuptools==75.6.0
+setuptools==78.1.1
 shellingham==1.5.4
 shiboken6==6.8.1
 six==1.17.0
