@@ -190,7 +190,7 @@ toml==0.10.2
 tomli==2.2.1
 tomli_w==1.1.0
 tomlkit==0.13.2
-tornado==6.4.2
+tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3
 trove-classifiers==2025.1.7.14
