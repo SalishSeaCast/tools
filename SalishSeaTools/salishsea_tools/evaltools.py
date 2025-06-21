@@ -17,6 +17,8 @@
 """Flexible functions for model evalution tasks"""
 
 import datetime as dt
+
+import arrow
 import numpy as np
 import netCDF4 as nc
 import pandas as pd
@@ -3030,11 +3032,32 @@ def printstats(datadf, obsvar, modvar):
 
 
 def datetimeToYD(idt):
-    if type(idt) == dt.datetime:
-        yd = (idt - dt.datetime(idt.year - 1, 12, 31)).days
-    else:  # assume array or pandas, or acts like it
-        yd = [(ii - dt.datetime(ii.year - 1, 12, 31)).days for ii in idt]
-    return yd
+    """
+    Converts a datetime or an array-like object of datetimes into the day of year representation.
+
+    The function takes a single datetime object or an iterable (like a pandas Series, a list,
+    or a NumPy array) containing datetime objects and converts them into the corresponding
+    day of the year (1 through 365 or 366 depending on the year). If a single datetime
+    is provided, an integer is returned. For an iterable, a list of integers is returned.
+
+    :arg idt: A datetime object or iterable containing datetime objects.
+    :type idt: Union[datetime.datetime, Iterable[datetime.datetime]]
+
+    :return: If a single datetime is provided, returns an integer representing the day of the year.
+             For an iterable of datetimes, returns a list of integers with each representing the day
+             of the year for the respective datetime.
+    :rtype: Union[int, List[int]]
+    """
+
+    def _datetimeToYD(_idt):
+        return int(arrow.get(_idt).format("DDD"))
+
+    return (
+        _datetimeToYD(idt)
+        if isinstance(idt, dt.datetime)
+        # assume array or pandas, or acts like it
+        else [_datetimeToYD(ii) for ii in idt]
+    )
 
 
 def getChlNRatio(
