@@ -16,11 +16,11 @@
 
 .. _SalishSeaToolsAPI:
 
-**********************
-``SalishSeaTools`` API
-**********************
+****************************
+:py:obj:`SalishSeaTools` API
+****************************
 
-This section documents the ``SalishSeaTools`` API (Application Programming Interface).
+This section documents the :py:obj:`SalishSeaTools` API (Application Programming Interface).
 These API docs provide function signatures and docstrings derived directly from the code modules.
 
 
@@ -59,6 +59,7 @@ These API docs provide function signatures and docstrings derived directly from 
 .. automodule:: salishsea_tools.diagnosis_tools
     :members:
 
+
 .. _salishsea_tools.ellipse_tools:
 
 :py:mod:`ellipse_tools` Module
@@ -66,6 +67,17 @@ These API docs provide function signatures and docstrings derived directly from 
 
 .. automodule:: salishsea_tools.ellipse
     :members:
+
+
+.. _salishsea_tools.evaltools:
+
+:py:mod:`~salishsea_tools.evaltools` Module
+===========================================
+
+:py:obj:`datetime` Conversion Functions
+---------------------------------------
+
+.. autofunction:: salishsea_tools.evaltools.datetimeToYD
 
 
 .. _salishsea_tools.formatting_tools:

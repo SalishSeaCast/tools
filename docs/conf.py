@@ -45,6 +45,7 @@ todo_include_todos = True
 autodoc_mock_imports = [
     "angles",
     "arrow",
+    "cmocean",
     "f90nml",
     "gsw",
     "matplotlib",
