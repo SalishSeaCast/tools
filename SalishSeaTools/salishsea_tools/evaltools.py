@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# may requires python version 3.5 or higher for recursive glob
 
-"""Flexible functions for model evalution tasks"""
+"""Flexible functions for model evaluation tasks"""
 
 import datetime as dt
 import glob
