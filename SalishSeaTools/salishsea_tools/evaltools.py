@@ -17,25 +17,25 @@
 """Flexible functions for model evalution tasks"""
 
 import datetime as dt
+import glob
+import os
+import pickle
+import re
+import warnings
 
 import arrow
-import numpy as np
-import netCDF4 as nc
-import pandas as pd
-import glob
-from salishsea_tools import geo_tools, places
-import gsw
-import os
-import pytz
-import pickle
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import cmocean as cmo
-import warnings
-import re
 import f90nml
-import sys
+import gsw
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import netCDF4 as nc
+import numpy as np
+import pandas as pd
+import pytz
 import xarray as xr
+
+from salishsea_tools import geo_tools, places
 
 # Check which Excel reader engine is available, if any, and set variable excelEngine
 try:
