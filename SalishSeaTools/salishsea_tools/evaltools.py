@@ -3055,8 +3055,9 @@ def datetimeToYD(idt):
     return (
         _datetimeToYD(idt)
         if isinstance(idt, dt.datetime)
-        # assume array or pandas, or acts like it
-        else [_datetimeToYD(ii) for ii in idt]
+        else [
+            _datetimeToYD(ii) for ii in idt
+        ]  # iterable like numpy array, pandas series, or list
     )
 
 

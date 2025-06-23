@@ -1567,7 +1567,7 @@ def double(x, M2amp, M2pha, K1amp, K1pha, mean):
 def quadruple(x, M2amp, M2pha, K1amp, K1pha, S2amp, S2pha, O1amp, O1pha, mean):
     """Computes the sum of a mean value and multiple cosine terms, each corresponding to
     a specific tidal constituent, assuming that only 4 constituents are of importance:
-      M2, K2, S1, and O1.
+    M2, K2, S1, and O1.
 
     The function is used to model a tidal signal based
     on amplitudes and phase offsets for the M2, K1, S2, and O1 tidal components.
