@@ -12,30 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# may requires python version 3.5 or higher for recursive glob
 
-"""Flexible functions for model evalution tasks"""
+"""Flexible functions for model evaluation tasks"""
 
 import datetime as dt
+import glob
+import os
+import pickle
+import re
+import warnings
 
 import arrow
-import numpy as np
-import netCDF4 as nc
-import pandas as pd
-import glob
-from salishsea_tools import geo_tools, places
-import gsw
-import os
-import pytz
-import pickle
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import cmocean as cmo
-import warnings
-import re
 import f90nml
-import sys
+import gsw
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import netCDF4 as nc
+import numpy as np
+import pandas as pd
+import pytz
 import xarray as xr
+
+from salishsea_tools import geo_tools, places
 
 # Check which Excel reader engine is available, if any, and set variable excelEngine
 try:
@@ -3055,8 +3054,9 @@ def datetimeToYD(idt):
     return (
         _datetimeToYD(idt)
         if isinstance(idt, dt.datetime)
-        # assume array or pandas, or acts like it
-        else [_datetimeToYD(ii) for ii in idt]
+        else [
+            _datetimeToYD(ii) for ii in idt
+        ]  # iterable like numpy array, pandas series, or list
     )
 
 
