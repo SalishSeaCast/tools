@@ -30,7 +30,6 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
-import openpyxl
 import pandas as pd
 import pytz
 import xarray as xr
