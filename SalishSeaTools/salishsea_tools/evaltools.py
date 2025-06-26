@@ -977,9 +977,9 @@ def index_model_files_flex(
     t_n = list()
     for ifl in paths:
         if nam_fmt == "nowcast":
-            dates = re.findall("\d{8}", re.search("\d{8}_\d{8}", ifl)[0])
+            dates = re.findall(r"\d{8}", re.search(r"\d{8}_\d{8}", ifl)[0])
         elif nam_fmt == "long":
-            dates = re.findall("\d{8}", re.search("\d{8}-\d{8}", ifl)[0])
+            dates = re.findall(r"\d{8}", re.search(r"\d{8}-\d{8}", ifl)[0])
         else:
             raise Exception("option not implemented: nam_fmt=", nam_fmt)
         t_0.append(dt.datetime.strptime(dates[0], "%Y%m%d"))
@@ -2663,7 +2663,7 @@ def varvarPlot(
                 if len(labels) > 0:
                     ll = labels[ii]
                 else:
-                    ll = "{} {} $\leq$ {} $<$ {} {}".format(
+                    ll = "{} {} $\\leq$ {} $<$ {} {}".format(
                         sepvals[ii - 1], sepunits, lname, sepvals[ii], sepunits
                     ).strip()
                 (p0,) = ax.plot(obs0[iii], mod0[iii], ".", color=cols[ii], label=ll)
@@ -2675,7 +2675,7 @@ def varvarPlot(
             if len(labels) > 0:
                 ll = labels[ii + 1]
             else:
-                ll = "{} $\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
+                ll = "{} $\\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
             (p0,) = ax.plot(obs0[iii], mod0[iii], ".", color=cols[ii + 1], label=ll)
             ps.append(p0)
     return ps
@@ -2821,7 +2821,7 @@ def tsertser_graph(
                 if len(labels) > 0:
                     ll = labels[ii]
                 else:
-                    ll = "{} {} $\leq$ {} $<$ {} {}".format(
+                    ll = "{} {} $\\leq$ {} $<$ {} {}".format(
                         sepvals[ii - 1], sepunits, lname, sepvals[ii], sepunits
                     ).strip()
                 (p0,) = ax.plot(
@@ -2839,7 +2839,7 @@ def tsertser_graph(
             if len(labels) > 0:
                 ll = labels[ii + 1]
             else:
-                ll = "{} $\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
+                ll = "{} $\\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
             (p0,) = ax.plot(
                 time0[iii], obs0[iii], ".", color=ocols[ii + 1], label=f"Observed {ll}"
             )
