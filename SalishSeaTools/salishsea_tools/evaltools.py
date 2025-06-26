@@ -30,27 +30,12 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 import numpy as np
+import openpyxl
 import pandas as pd
 import pytz
 import xarray as xr
 
 from salishsea_tools import geo_tools, places
-
-# Check which Excel reader engine is available, if any, and set variable excelEngine
-try:
-    import openpyxl
-
-    excelEngine = "openpyxl"
-except ImportError as iE:
-    try:
-        import xlrd
-
-        excelEngine = "xlrd"
-    except ImportError as iE:
-        excelEngine = None
-        warnings.warn(
-            "Neither Python Excel module ('openpyxl','xlrd') found", UserWarning
-        )
 
 
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
@@ -1417,7 +1402,6 @@ def loadPSF(datelims=(), loadChl=True, loadCTD=False):
             "/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx",
             sheet_name="2015 N+P+Si",
             dtype={"date (dd/mm/yyyy)": str},
-            engine=excelEngine,
         )
         f2015 = f2015.drop(
             f2015.loc[(f2015["lon"] < -360) | (f2015["lon"] > 360)].index
@@ -1561,7 +1545,6 @@ def loadPSF(datelims=(), loadChl=True, loadCTD=False):
             sheet_name="2016 N+P",
             dtype={"NO3+NO": str, "PO4": str},
             na_values=("nan", "NaN", "30..09"),
-            engine=excelEngine,
         )
         f2016N = f2016N.drop(f2016N.keys()[11:], axis=1)
         f2016N["NO23"] = [_lt0convert(ii) for ii in f2016N["NO3+NO"]]
@@ -1618,7 +1601,6 @@ def loadPSF(datelims=(), loadChl=True, loadCTD=False):
         f2016Si = pd.read_excel(
             "/ocean/eolson/MEOPAR/obs/PSFCitSci/All_Yrs_Nutrients_2018-01-31_EOEdit.xlsx",
             sheet_name="2016 SiO2",
-            engine=excelEngine,
         )
         f2016Si = f2016Si.drop(f2016Si.keys()[9:], axis=1)
         f2016Si = f2016Si.dropna(
@@ -1763,7 +1745,6 @@ def loadPSF(datelims=(), loadChl=True, loadCTD=False):
                 "PO4": str,
                 "Si": str,
             },
-            engine=excelEngine,
         )
         f2017["NO23"] = [_lt0convert(ii) for ii in f2017["NO3+NO"]]
         f2017["PO4_2"] = [_lt0convert(ii) for ii in f2017["PO4"]]
@@ -1815,7 +1796,6 @@ def loadPSF(datelims=(), loadChl=True, loadCTD=False):
                 skiprows=15,
                 usecols=[1, 3, 4, 5, 7, 9, 11],
                 names=["Date", "Station", "Time", "Z0", "Chl", "Qflag", "Phaeo"],
-                engine=excelEngine,
             )
             Chl2017.dropna(
                 subset=["Station", "Date", "Time", "Z0"], how="any", inplace=True
@@ -2080,7 +2060,6 @@ def loadHakai(datelims=(), loadCTD=False):
     f0 = pd.read_excel(
         "/ocean/eolson/MEOPAR/obs/Hakai/Dosser20180911/2018-09-11_144804_HakaiData_nutrients.xlsx",
         sheet_name="Hakai Data",
-        engine=excelEngine,
     )
     f0.drop(
         [
