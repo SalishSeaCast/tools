@@ -977,9 +977,9 @@ def index_model_files_flex(
     t_n = list()
     for ifl in paths:
         if nam_fmt == "nowcast":
-            dates = re.findall("\d{8}", re.search("\d{8}_\d{8}", ifl)[0])
+            dates = re.findall(r"\d{8}", re.search(r"\d{8}_\d{8}", ifl)[0])
         elif nam_fmt == "long":
-            dates = re.findall("\d{8}", re.search("\d{8}-\d{8}", ifl)[0])
+            dates = re.findall(r"\d{8}", re.search(r"\d{8}-\d{8}", ifl)[0])
         else:
             raise Exception("option not implemented: nam_fmt=", nam_fmt)
         t_0.append(dt.datetime.strptime(dates[0], "%Y%m%d"))
