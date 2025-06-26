@@ -24,6 +24,7 @@ import warnings
 
 import arrow
 import cmocean as cmo
+import erddapy
 import f90nml
 import gsw
 import matplotlib.dates as mdates
@@ -2339,9 +2340,6 @@ def load_ferry_ERDDAP(datelims, variables=None):
     :rtype: :py:class:`pandas.dataframe`
     """
 
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
-
     server = "https://salishsea.eos.ubc.ca/erddap"
 
     protocol = "tabledap"
@@ -2371,7 +2369,7 @@ def load_ferry_ERDDAP(datelims, variables=None):
         "on_crossing_mask=": 1,
     }
 
-    obs = ERDDAP(server=server, protocol=protocol)
+    obs = erddapy.ERDDAP(server=server, protocol=protocol)
     obs.dataset_id = dataset_id
     obs.variables = variables
     obs.constraints = constraints
@@ -2414,9 +2412,6 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     :rtype: :py:class:`pandas.dataframe`
     """
 
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
-
     server = "https://salishsea.eos.ubc.ca/erddap"
 
     protocol = "tabledap"
@@ -2451,7 +2446,7 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     for inode, (dataset_id, node) in enumerate(zip(dataset_ids, nodes)):
         print(node, start_date, end_date)
 
-        obs = ERDDAP(server=server, protocol=protocol)
+        obs = erddapy.ERDDAP(server=server, protocol=protocol)
         obs.dataset_id = dataset_id
         obs.variables = variables
         obs.constraints = constraints
