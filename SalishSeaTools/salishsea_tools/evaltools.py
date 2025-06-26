@@ -2663,7 +2663,7 @@ def varvarPlot(
                 if len(labels) > 0:
                     ll = labels[ii]
                 else:
-                    ll = "{} {} $\leq$ {} $<$ {} {}".format(
+                    ll = "{} {} $\\leq$ {} $<$ {} {}".format(
                         sepvals[ii - 1], sepunits, lname, sepvals[ii], sepunits
                     ).strip()
                 (p0,) = ax.plot(obs0[iii], mod0[iii], ".", color=cols[ii], label=ll)
@@ -2675,7 +2675,7 @@ def varvarPlot(
             if len(labels) > 0:
                 ll = labels[ii + 1]
             else:
-                ll = "{} $\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
+                ll = "{} $\\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
             (p0,) = ax.plot(obs0[iii], mod0[iii], ".", color=cols[ii + 1], label=ll)
             ps.append(p0)
     return ps
@@ -2821,7 +2821,7 @@ def tsertser_graph(
                 if len(labels) > 0:
                     ll = labels[ii]
                 else:
-                    ll = "{} {} $\leq$ {} $<$ {} {}".format(
+                    ll = "{} {} $\\leq$ {} $<$ {} {}".format(
                         sepvals[ii - 1], sepunits, lname, sepvals[ii], sepunits
                     ).strip()
                 (p0,) = ax.plot(
@@ -2839,7 +2839,7 @@ def tsertser_graph(
             if len(labels) > 0:
                 ll = labels[ii + 1]
             else:
-                ll = "{} $\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
+                ll = "{} $\\geq$ {} {}".format(lname, sepvals[ii], sepunits).strip()
             (p0,) = ax.plot(
                 time0[iii], obs0[iii], ".", color=ocols[ii + 1], label=f"Observed {ll}"
             )
