@@ -33,6 +33,11 @@ are incompatible with earlier versions:
 * The minimum supported version of Python is 3.11.
   Development of the :py:obj:`SalishSeaTools` package is done using Python 3.13.
 
+* The `erddapy`_ package is now a required dependency to use the :py:mod:`evaltools` module.
+  The recommended way to add :py:obj:`erddapy` to your activated ``salishsea-tools`` environment
+  is with the command :command:`conda env update -f SalishSeaTools/envs/environment-dev.yaml`
+
+  .. _erddapy: https://ioos.github.io/erddapy/
 
 .. _BreakingChangesVersion24.1:
 
