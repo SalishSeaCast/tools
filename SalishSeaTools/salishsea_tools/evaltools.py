@@ -24,6 +24,7 @@ import warnings
 
 import arrow
 import cmocean as cmo
+import erddapy
 import f90nml
 import gsw
 import matplotlib.dates as mdates
@@ -2325,41 +2326,46 @@ def loadHakai(datelims=(), loadCTD=False):
     return fdata2
 
 
-def load_ferry_ERDDAP(datelims, variables=None):
-    """load ferry data from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
-    conservative temperature, oxygen to uMol and rename grid i and grid j columns
+def load_ferry_ERDDAP(datelims):
+    """
+    Load ferry data from the ERDDAP server based on specified date limits.
 
-    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    This function retrieves environmental data (e.g., temperature, salinity, oxygen)
+    from the ERDDAP server for ferry observations within the given date range,
+    processes it, and returns a formatted pandas DataFrame. Processing includes computing
+    conservative temperature from the observed potential temperature and reference salinity,
+    conversion of oxygen concentration from ml/l to µM. The data is further
+    processed to localize timezone, rename some columns to conform with those expected by the
+    :py:func:`~salishsea_tools.evaltools.matchData` function.
+
+    :param datelims: A tuple containing two datetime or Arrow objects specifying the
+                     start and end dates for the data retrieval. The date range is inclusive.
     :type datelims: tuple
 
-    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
-    :type variables: list
+    :return: A pandas DataFrame containing the retrieved and processed environmental
+             data. The DataFrame is structured according to the expected format for
+             the :py:func:`~salishsea_tools.evaltools.matchData` function.
+    :rtype: :py:obj:`pandas.DataFrame`
 
-    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
-    :rtype: :py:class:`pandas.dataframe`
+    :raises ValueError: If no data is found for the specified date range.
     """
-
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
-
     server = "https://salishsea.eos.ubc.ca/erddap"
 
     protocol = "tabledap"
     dataset_id = "ubcONCTWDP1mV18-01"
 
-    if variables == None:
-        variables = [
-            "latitude",
-            "longitude",
-            "chlorophyll",
-            "temperature",
-            "salinity",
-            "turbidity",
-            "o2_concentration_corrected",
-            "time",
-            "nemo_grid_j",
-            "nemo_grid_i",
-        ]
+    variables = [
+        "latitude",
+        "longitude",
+        "chlorophyll",
+        "temperature",
+        "salinity",
+        "turbidity",
+        "o2_concentration_corrected",
+        "time",
+        "nemo_grid_j",
+        "nemo_grid_i",
+    ]
 
     start_date = datelims[0].strftime("%Y-%m-%dT00:00:00Z")
     end_date = datelims[1].strftime("%Y-%m-%dT00:00:00Z")
@@ -2371,7 +2377,7 @@ def load_ferry_ERDDAP(datelims, variables=None):
         "on_crossing_mask=": 1,
     }
 
-    obs = ERDDAP(server=server, protocol=protocol)
+    obs = erddapy.ERDDAP(server=server, protocol=protocol)
     obs.dataset_id = dataset_id
     obs.variables = variables
     obs.constraints = constraints
@@ -2380,6 +2386,9 @@ def load_ferry_ERDDAP(datelims, variables=None):
         index_col="time (UTC)",
         parse_dates=True,
     ).dropna()
+
+    if obs_pd.empty:
+        raise ValueError("No data found for the specified date range")
 
     obs_pd["oxygen (uM)"] = 44.661 * obs_pd["o2_concentration_corrected (ml/l)"]
     obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(
@@ -2413,9 +2422,6 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     :returns: variable values from ERDDAP for time period requested: as pandas dataframe
     :rtype: :py:class:`pandas.dataframe`
     """
-
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
 
     server = "https://salishsea.eos.ubc.ca/erddap"
 
@@ -2451,7 +2457,7 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     for inode, (dataset_id, node) in enumerate(zip(dataset_ids, nodes)):
         print(node, start_date, end_date)
 
-        obs = ERDDAP(server=server, protocol=protocol)
+        obs = erddapy.ERDDAP(server=server, protocol=protocol)
         obs.dataset_id = dataset_id
         obs.variables = variables
         obs.constraints = constraints

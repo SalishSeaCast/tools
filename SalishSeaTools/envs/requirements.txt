@@ -44,6 +44,7 @@ defusedxml==0.7.1
 distlib==0.3.9
 docutils==0.21.2
 editables==0.5
+erddapy==2.2.4
 et_xmlfile==2.0.0
 exceptiongroup==1.3.0
 executing==2.2.0
@@ -55,7 +56,7 @@ fqdn==1.5.1
 gsw==3.6.19
 h11==0.16.0
 h2==4.2.0
-h5netcdf==1.6.1
+h5netcdf==1.6.2
 h5py==3.14.0
 hatch==1.14.1
 hatchling==1.27.0
@@ -150,7 +151,7 @@ PyYAML==6.0.2
 pyzmq==27.0.0
 referencing==0.36.2
 requests==2.32.4
-retrying==1.3.4
+retrying==1.4.0
 rfc3339_validator==0.1.4
 rfc3986-validator==0.1.1
 rich==14.0.0
