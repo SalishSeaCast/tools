@@ -2367,6 +2367,9 @@ def load_ferry_ERDDAP(datelims):
         parse_dates=True,
     ).dropna()
 
+    if obs_pd.empty:
+        raise ValueError('No data found for the specified date range')
+
     obs_pd["oxygen (uM)"] = 44.661 * obs_pd["o2_concentration_corrected (ml/l)"]
     obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(
         obs_pd["salinity (g/kg)"], obs_pd["temperature (degrees_Celcius)"]
