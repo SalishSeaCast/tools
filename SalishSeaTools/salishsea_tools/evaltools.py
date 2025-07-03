@@ -2328,7 +2328,27 @@ def loadHakai(datelims=(), loadCTD=False):
 
 def load_ferry_ERDDAP(datelims):
     """
+    Load ferry data from the ERDDAP server based on specified date limits.
 
+    This function retrieves environmental data (e.g., temperature, salinity, oxygen)
+    from the ERDDAP server for ferry observations within the given date range,
+    processes it, and returns a formatted pandas DataFrame. Processing includes computing
+    conservative temperature from the observed potential temperature and reference salinity,
+    conversion of oxygen concentration from ml/l to µM. The data is further
+    processed to localize timezone, rename some columns to conform with those expected by the
+    :py:func:`~salishsea_tools.evaltools.matchData` function.
+
+    :param datelims: A tuple containing two datetime or Arrow objects specifying the
+                     start and end dates for the data retrieval. The date range is inclusive.
+    :type datelims: tuple
+
+    :return: A pandas DataFrame containing the retrieved and processed environmental
+             data. The DataFrame is structured according to the expected format for
+             the :py:func:`~salishsea_tools.evaltools.matchData` function.
+    :rtype: :py:obj:`pandas.DataFrame`
+
+    :raises ValueError: If no data is found for the specified date range.
+    """
     server = "https://salishsea.eos.ubc.ca/erddap"
 
     protocol = "tabledap"
@@ -2368,7 +2388,7 @@ def load_ferry_ERDDAP(datelims):
     ).dropna()
 
     if obs_pd.empty:
-        raise ValueError('No data found for the specified date range')
+        raise ValueError("No data found for the specified date range")
 
     obs_pd["oxygen (uM)"] = 44.661 * obs_pd["o2_concentration_corrected (ml/l)"]
     obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(

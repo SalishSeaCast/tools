@@ -74,6 +74,12 @@ These API docs provide function signatures and docstrings derived directly from 
 :py:mod:`~salishsea_tools.evaltools` Module
 ===========================================
 
+Observation Loader Functions
+----------------------------
+
+.. autofunction:: salishsea_tools.evaltools.load_ferry_ERDDAP
+
+
 :py:obj:`datetime` Conversion Functions
 ---------------------------------------
 
