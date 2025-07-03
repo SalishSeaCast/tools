@@ -46,6 +46,7 @@ autodoc_mock_imports = [
     "angles",
     "arrow",
     "cmocean",
+    "erddapy",
     "f90nml",
     "gsw",
     "matplotlib",
