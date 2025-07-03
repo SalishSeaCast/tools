@@ -2326,18 +2326,7 @@ def loadHakai(datelims=(), loadCTD=False):
     return fdata2
 
 
-def load_ferry_ERDDAP(datelims, variables=None):
-    """load ferry data from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
-    conservative temperature, oxygen to uMol and rename grid i and grid j columns
-
-    :arg datelims: start date and end date; as a 2-tuple of datetimes
-    :type datelims: tuple
-
-    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
-    :type variables: list
-
-    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
-    :rtype: :py:class:`pandas.dataframe`
+def load_ferry_ERDDAP(datelims):
     """
 
     server = "https://salishsea.eos.ubc.ca/erddap"
@@ -2345,19 +2334,18 @@ def load_ferry_ERDDAP(datelims, variables=None):
     protocol = "tabledap"
     dataset_id = "ubcONCTWDP1mV18-01"
 
-    if variables == None:
-        variables = [
-            "latitude",
-            "longitude",
-            "chlorophyll",
-            "temperature",
-            "salinity",
-            "turbidity",
-            "o2_concentration_corrected",
-            "time",
-            "nemo_grid_j",
-            "nemo_grid_i",
-        ]
+    variables = [
+        "latitude",
+        "longitude",
+        "chlorophyll",
+        "temperature",
+        "salinity",
+        "turbidity",
+        "o2_concentration_corrected",
+        "time",
+        "nemo_grid_j",
+        "nemo_grid_i",
+    ]
 
     start_date = datelims[0].strftime("%Y-%m-%dT00:00:00Z")
     end_date = datelims[1].strftime("%Y-%m-%dT00:00:00Z")

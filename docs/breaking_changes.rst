@@ -39,6 +39,10 @@ are incompatible with earlier versions:
 
   .. _erddapy: https://ioos.github.io/erddapy/
 
+* The ``variables`` argument has been dropped from the :py:func:`evaltools.load_ferry_ERDDAP`
+  function because custom variables selection was not fully implemented.
+
+
 .. _BreakingChangesVersion24.1:
 
 Version 24.1 (2025-01-09)
