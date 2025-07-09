@@ -27,6 +27,7 @@ import cmocean as cmo
 import erddapy
 import f90nml
 import gsw
+import httpx
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import netCDF4 as nc
@@ -2463,17 +2464,10 @@ def load_ONC_node_ERDDAP(datelims):
                 index_col="time (UTC)",
                 parse_dates=True,
             ).dropna()
-        except Exception as error:
+        except httpx.HTTPError as error:
             print(error)
             print("Assuming no data")
-            columns = [
-                "dtUTC",
-                "conservative temperature (oC)",
-                "salinity (g/kg)",
-                "latitude (degrees_north)",
-                "longitude (degrees_east)",
-            ]
-            obs_pd = pd.DataFrame(columns=columns)
+            continue
         else:
             obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(
                 obs_pd["salinity (g/kg)"], obs_pd["temperature (degrees_Celcius)"]
@@ -2493,7 +2487,19 @@ def load_ONC_node_ERDDAP(datelims):
 
         obs_tot.append(obs_pd)
 
-    obs_concat = pd.concat(obs_tot)
+    try:
+        obs_concat = pd.concat(obs_tot)
+    except ValueError:
+        # Assume that obs_tot is empty, so create an empty DataFrame to return
+        columns = [
+            "dtUTC",
+            "conservative temperature (oC)",
+            "salinity (g/kg)",
+            "latitude (degrees_north)",
+            "longitude (degrees_east)",
+            "depth (m)",
+        ]
+        obs_concat = pd.DataFrame(columns=columns)
     obs_concat.to_csv("checkitout.csv")
 
     return obs_concat
