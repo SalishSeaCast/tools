@@ -16,6 +16,7 @@
 """Unit tests for evaltools module data loader functions."""
 
 import arrow
+import httpx
 import pandas
 import pytest
 
@@ -143,3 +144,132 @@ class TestLoadFerryERDDAP:
         datelims = tuple()
         with pytest.raises(IndexError):
             evaltools.load_ferry_ERDDAP(datelims)
+
+
+class TestLoadONCNodeERDDAP:
+    """Unit tests for the evaltools.load_ONC_node_ERDDAP() function."""
+
+    @pytest.fixture
+    def mock_erddapy(self, monkeypatch):
+        class MockERDDAP:
+            def __init__(self, server, protocol):
+                pass
+
+            def to_pandas(self, *args, **kwargs):
+                mock_data = pandas.DataFrame(
+                    {
+                        "time (UTC)": pandas.date_range(
+                            "2025-07-01", periods=3, freq="D"
+                        ),
+                        "salinity (g/kg)": [30.1, 30.2, 30.3],
+                        "temperature (degrees_Celcius)": [8.5, 8.6, 8.7],
+                        "depth (m)": [294.0, 294.0, 294.0],
+                        "longitude (degrees_east)": [
+                            -123.425825,
+                            -123.425825,
+                            -123.425825,
+                        ],
+                        "latitude (degrees_north)": [
+                            49.040066666,
+                            49.040066666,
+                            49.040066666,
+                        ],
+                    }
+                )
+                mock_data.set_index(["time (UTC)"], inplace=True)
+                return mock_data
+
+        monkeypatch.setattr(evaltools.erddapy, "ERDDAP", MockERDDAP)
+
+    def test_load_onc_node_erddap_default_variables(self, mock_erddapy):
+        """Test loading data with default parameters."""
+        datelims = (arrow.get("2025-07-01"), arrow.get("2025-07-02"))
+        result = evaltools.load_ONC_node_ERDDAP(datelims)
+
+        assert not result.empty
+        assert "dtUTC" in result.columns
+        assert "Lat" in result.columns
+        assert "Lon" in result.columns
+        assert "salinity (g/kg)" in result.columns
+        assert "conservative temperature (oC)" in result.columns
+        assert "j" in result.columns
+        assert "i" in result.columns
+
+    def test_load_onc_node_erddap_empty_date_range(self, monkeypatch):
+        """Test loading data for a date range with no available data."""
+
+        class MockERDDAP:
+            def __init__(self, server, protocol):
+                pass
+
+            def to_pandas(self, *args, **kwargs):
+                raise httpx.HTTPError(
+                    "Error {\n"
+                    "    code=404;\n"
+                    '    message="Not Found: Your query produced no matching results. '
+                    "(time>=2025-07-07T00:00:00Z is outside of the variable's actual_range: "
+                    '2014-09-01T00:00:00Z to 2017-11-03T18:45:00Z)";\n'
+                    "}\n"
+                )
+
+        monkeypatch.setattr(evaltools.erddapy, "ERDDAP", MockERDDAP)
+
+        datelims = (arrow.get("2025-07-01"), arrow.get("2025-07-02"))
+        result = evaltools.load_ONC_node_ERDDAP(datelims)
+
+        assert result.empty
+
+    def test_load_onc_node_erddap_invalid_date_lims(self, mock_erddapy):
+        """Test loading data with invalid date limits."""
+        datelims = tuple()
+        with pytest.raises(IndexError):
+            evaltools.load_ONC_node_ERDDAP(datelims)
+
+    def test_load_onc_node_erddap_data_processing(self, mock_erddapy):
+        """Test that the data is processed correctly after loading."""
+        datelims = (arrow.get("2025-07-01"), arrow.get("2025-07-02"))
+
+        result = evaltools.load_ONC_node_ERDDAP(datelims)
+
+        # Verify data types and values
+        assert isinstance(result, pandas.DataFrame)
+        node_series = pandas.Series(
+            ["2025-07-01", "2025-07-02", "2025-07-03"],
+            dtype="datetime64[ns]",
+            name="dtUTC",
+        )
+        # The results DataFrame is a concatenation of DataFrames from 4 nodes
+        pandas.testing.assert_series_equal(
+            result["dtUTC"],
+            pandas.concat([node_series] * 4),
+        )
+        pandas.testing.assert_series_equal(
+            result["Lat"],
+            pandas.concat([pandas.Series([49.040066666] * 3, name="Lat")] * 4),
+        )
+        pandas.testing.assert_series_equal(
+            result["Lon"],
+            pandas.concat([pandas.Series([-123.425825] * 3, name="Lon")] * 4),
+        )
+        pandas.testing.assert_series_equal(
+            result["salinity (g/kg)"],
+            pandas.concat(
+                [pandas.Series([30.1, 30.2, 30.3], name="salinity (g/kg)")] * 4
+            ),
+        )
+        pandas.testing.assert_series_equal(
+            result["conservative temperature (oC)"],
+            pandas.concat(
+                [
+                    pandas.Series(
+                        [8.5718, 8.67087, 8.769897],
+                        name="conservative temperature (oC)",
+                    )
+                ]
+                * 4
+            ),
+        )
+        pandas.testing.assert_series_equal(
+            result["depth (m)"],
+            pandas.concat([pandas.Series([294.0] * 3, name="depth (m)")] * 4),
+        )
