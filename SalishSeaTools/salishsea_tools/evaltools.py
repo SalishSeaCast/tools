@@ -2411,14 +2411,22 @@ def load_ferry_ERDDAP(datelims):
 
 
 def load_ONC_node_ERDDAP(datelims):
-    """load ONC data from the nodes from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
-    conservative temperature. Pull out grid i, grid j and depth from places
+    """
+    Load data from ONC (Ocean Networks Canada) nodes via the ERDDAP server within a defined date range.
 
-    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    This function fetches and processes oceanographic data from the 4 ONC nodes in the Salish Sea
+    using their respective datasets available on the ERDDAP server. It applies constraints for the
+    date range specified, handles errors in HTTP requests, processes the obtained data to adjust
+    certain attributes, and concatenates the results into a single pandas DataFrame. If no data is
+    available for the specified period, an empty DataFrame is returned.
+
+    :param datelims: Tuple of two datetime or Arrow objects objects `(start_date, end_date)`
+                     specifying the date range for querying data.
     :type datelims: tuple
 
-    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
-    :rtype: :py:class:`pandas.dataframe`
+    :return: A pandas DataFrame containing the processed data for the specified nodes and
+             variables within the requested date range.
+    :rtype: :py:class:`pandas.DataFrame`
     """
 
     server = "https://salishsea.eos.ubc.ca/erddap"

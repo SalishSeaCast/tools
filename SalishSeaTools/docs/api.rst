@@ -79,6 +79,8 @@ Observation Loader Functions
 
 .. autofunction:: salishsea_tools.evaltools.load_ferry_ERDDAP
 
+.. autofunction:: salishsea_tools.evaltools.load_ONC_node_ERDDAP
+
 
 :py:obj:`datetime` Conversion Functions
 ---------------------------------------
