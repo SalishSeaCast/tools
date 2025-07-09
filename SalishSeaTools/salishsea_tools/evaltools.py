@@ -24,8 +24,10 @@ import warnings
 
 import arrow
 import cmocean as cmo
+import erddapy
 import f90nml
 import gsw
+import httpx
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import netCDF4 as nc
@@ -2325,41 +2327,46 @@ def loadHakai(datelims=(), loadCTD=False):
     return fdata2
 
 
-def load_ferry_ERDDAP(datelims, variables=None):
-    """load ferry data from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
-    conservative temperature, oxygen to uMol and rename grid i and grid j columns
+def load_ferry_ERDDAP(datelims):
+    """
+    Load ferry data from the ERDDAP server based on specified date limits.
 
-    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    This function retrieves environmental data (e.g., temperature, salinity, oxygen)
+    from the ERDDAP server for ferry observations within the given date range,
+    processes it, and returns a formatted pandas DataFrame. Processing includes computing
+    conservative temperature from the observed potential temperature and reference salinity,
+    conversion of oxygen concentration from ml/l to µM. The data is further
+    processed to localize timezone, rename some columns to conform with those expected by the
+    :py:func:`~salishsea_tools.evaltools.matchData` function.
+
+    :param datelims: A tuple containing two datetime or Arrow objects specifying the
+                     start and end dates for the data retrieval. The date range is inclusive.
     :type datelims: tuple
 
-    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
-    :type variables: list
+    :return: A pandas DataFrame containing the retrieved and processed environmental
+             data. The DataFrame is structured according to the expected format for
+             the :py:func:`~salishsea_tools.evaltools.matchData` function.
+    :rtype: :py:obj:`pandas.DataFrame`
 
-    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
-    :rtype: :py:class:`pandas.dataframe`
+    :raises ValueError: If no data is found for the specified date range.
     """
-
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
-
     server = "https://salishsea.eos.ubc.ca/erddap"
 
     protocol = "tabledap"
     dataset_id = "ubcONCTWDP1mV18-01"
 
-    if variables == None:
-        variables = [
-            "latitude",
-            "longitude",
-            "chlorophyll",
-            "temperature",
-            "salinity",
-            "turbidity",
-            "o2_concentration_corrected",
-            "time",
-            "nemo_grid_j",
-            "nemo_grid_i",
-        ]
+    variables = [
+        "latitude",
+        "longitude",
+        "chlorophyll",
+        "temperature",
+        "salinity",
+        "turbidity",
+        "o2_concentration_corrected",
+        "time",
+        "nemo_grid_j",
+        "nemo_grid_i",
+    ]
 
     start_date = datelims[0].strftime("%Y-%m-%dT00:00:00Z")
     end_date = datelims[1].strftime("%Y-%m-%dT00:00:00Z")
@@ -2371,7 +2378,7 @@ def load_ferry_ERDDAP(datelims, variables=None):
         "on_crossing_mask=": 1,
     }
 
-    obs = ERDDAP(server=server, protocol=protocol)
+    obs = erddapy.ERDDAP(server=server, protocol=protocol)
     obs.dataset_id = dataset_id
     obs.variables = variables
     obs.constraints = constraints
@@ -2380,6 +2387,9 @@ def load_ferry_ERDDAP(datelims, variables=None):
         index_col="time (UTC)",
         parse_dates=True,
     ).dropna()
+
+    if obs_pd.empty:
+        raise ValueError("No data found for the specified date range")
 
     obs_pd["oxygen (uM)"] = 44.661 * obs_pd["o2_concentration_corrected (ml/l)"]
     obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(
@@ -2400,22 +2410,24 @@ def load_ferry_ERDDAP(datelims, variables=None):
     return obs_pd
 
 
-def load_ONC_node_ERDDAP(datelims, variables=None):
-    """load ONC data from the nodes from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
-    conservative temperature. Pull out grid i, grid j and depth from places
+def load_ONC_node_ERDDAP(datelims):
+    """
+    Load data from ONC (Ocean Networks Canada) nodes via the ERDDAP server within a defined date range.
 
-    :arg datelims: start date and end date; as a 2-tuple of datetimes
+    This function fetches and processes oceanographic data from the 4 ONC nodes in the Salish Sea
+    using their respective datasets available on the ERDDAP server. It applies constraints for the
+    date range specified, handles errors in HTTP requests, processes the obtained data to adjust
+    certain attributes, and concatenates the results into a single pandas DataFrame. If no data is
+    available for the specified period, an empty DataFrame is returned.
+
+    :param datelims: Tuple of two datetime or Arrow objects objects `(start_date, end_date)`
+                     specifying the date range for querying data.
     :type datelims: tuple
 
-    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
-    :type variables: list
-
-    :returns: variable values from ERDDAP for time period requested: as pandas dataframe
-    :rtype: :py:class:`pandas.dataframe`
+    :return: A pandas DataFrame containing the processed data for the specified nodes and
+             variables within the requested date range.
+    :rtype: :py:class:`pandas.DataFrame`
     """
-
-    # load erddapy here so your can use the tools on computers without web access (sockeye)
-    from erddapy import ERDDAP
 
     server = "https://salishsea.eos.ubc.ca/erddap"
 
@@ -2426,17 +2438,16 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
         "ubcONCLSBBLCTD15mV1",
         "ubcONCUSDDLCTD15mV1",
     ]
-    nodes = ["Central node", "Delta BBL node", "Delta DDL node", "East node"]
+    nodes = ["Central node", "East node", "Delta BBL node", "Delta DDL node"]
 
-    if variables == None:
-        variables = [
-            "latitude",
-            "longitude",
-            "temperature",
-            "salinity",
-            "time",
-            "depth",
-        ]
+    variables = [
+        "latitude",
+        "longitude",
+        "temperature",
+        "salinity",
+        "time",
+        "depth",
+    ]
 
     start_date = datelims[0].strftime("%Y-%m-%dT00:00:00Z")
     end_date = datelims[1].strftime("%Y-%m-%dT00:00:00Z")
@@ -2451,7 +2462,7 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     for inode, (dataset_id, node) in enumerate(zip(dataset_ids, nodes)):
         print(node, start_date, end_date)
 
-        obs = ERDDAP(server=server, protocol=protocol)
+        obs = erddapy.ERDDAP(server=server, protocol=protocol)
         obs.dataset_id = dataset_id
         obs.variables = variables
         obs.constraints = constraints
@@ -2461,17 +2472,10 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
                 index_col="time (UTC)",
                 parse_dates=True,
             ).dropna()
-        except Exception as error:
+        except httpx.HTTPError as error:
             print(error)
             print("Assuming no data")
-            columns = [
-                "dtUTC",
-                "conservative temperature (oC)",
-                "salinity (g/kg)",
-                "latitude (degrees_north)",
-                "longitude (degrees_east)",
-            ]
-            obs_pd = pd.DataFrame(columns=columns)
+            continue
         else:
             obs_pd["conservative temperature (oC)"] = gsw.CT_from_pt(
                 obs_pd["salinity (g/kg)"], obs_pd["temperature (degrees_Celcius)"]
@@ -2491,7 +2495,19 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
 
         obs_tot.append(obs_pd)
 
-    obs_concat = pd.concat(obs_tot)
+    try:
+        obs_concat = pd.concat(obs_tot)
+    except ValueError:
+        # Assume that obs_tot is empty, so create an empty DataFrame to return
+        columns = [
+            "dtUTC",
+            "conservative temperature (oC)",
+            "salinity (g/kg)",
+            "latitude (degrees_north)",
+            "longitude (degrees_east)",
+            "depth (m)",
+        ]
+        obs_concat = pd.DataFrame(columns=columns)
     obs_concat.to_csv("checkitout.csv")
 
     return obs_concat

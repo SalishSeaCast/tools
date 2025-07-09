@@ -14,9 +14,11 @@ dependencies:
   - arrow
   - bottleneck
   - cmocean
+  - erddapy
   - f90nml
   - gsw
   - h5netcdf
+  - httpx
   - ipython
   - lxml
   - matplotlib

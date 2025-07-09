@@ -22,9 +22,11 @@ dependencies:
   - arrow
   - bottleneck
   - cmocean
+  - erddapy
   - f90nml
   - gsw
   - h5netcdf
+  - httpx
   - ipdb
   - ipython
   - jupyterlab
