@@ -2409,15 +2409,12 @@ def load_ferry_ERDDAP(datelims):
     return obs_pd
 
 
-def load_ONC_node_ERDDAP(datelims, variables=None):
+def load_ONC_node_ERDDAP(datelims):
     """load ONC data from the nodes from ERDDAP, return a pandas dataframe.  Do conversion on temperature to
     conservative temperature. Pull out grid i, grid j and depth from places
 
     :arg datelims: start date and end date; as a 2-tuple of datetimes
     :type datelims: tuple
-
-    :arg variables: variables to pull from the ferry, see base list below; as a list of strings
-    :type variables: list
 
     :returns: variable values from ERDDAP for time period requested: as pandas dataframe
     :rtype: :py:class:`pandas.dataframe`
@@ -2434,15 +2431,14 @@ def load_ONC_node_ERDDAP(datelims, variables=None):
     ]
     nodes = ["Central node", "Delta BBL node", "Delta DDL node", "East node"]
 
-    if variables == None:
-        variables = [
-            "latitude",
-            "longitude",
-            "temperature",
-            "salinity",
-            "time",
-            "depth",
-        ]
+    variables = [
+        "latitude",
+        "longitude",
+        "temperature",
+        "salinity",
+        "time",
+        "depth",
+    ]
 
     start_date = datelims[0].strftime("%Y-%m-%dT00:00:00Z")
     end_date = datelims[1].strftime("%Y-%m-%dT00:00:00Z")
