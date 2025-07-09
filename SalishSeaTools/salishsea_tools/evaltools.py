@@ -2430,7 +2430,7 @@ def load_ONC_node_ERDDAP(datelims):
         "ubcONCLSBBLCTD15mV1",
         "ubcONCUSDDLCTD15mV1",
     ]
-    nodes = ["Central node", "Delta BBL node", "Delta DDL node", "East node"]
+    nodes = ["Central node", "East node", "Delta BBL node", "Delta DDL node"]
 
     variables = [
         "latitude",
