@@ -18,6 +18,7 @@ dependencies:
   - f90nml
   - gsw
   - h5netcdf
+  - httpx
   - ipython
   - lxml
   - matplotlib

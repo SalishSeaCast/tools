@@ -49,6 +49,7 @@ autodoc_mock_imports = [
     "erddapy",
     "f90nml",
     "gsw",
+    "httpx",
     "matplotlib",
     "netCDF4",
     "nowcast",

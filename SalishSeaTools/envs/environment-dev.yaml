@@ -26,6 +26,7 @@ dependencies:
   - f90nml
   - gsw
   - h5netcdf
+  - httpx
   - ipdb
   - ipython
   - jupyterlab
