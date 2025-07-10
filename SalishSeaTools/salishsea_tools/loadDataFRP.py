@@ -97,8 +97,8 @@ class dataPair:
 
 def fmtVarName(strx):
     """transform string into one that meets python naming conventions"""
-    vName = re.sub("[^a-zA-Z0-9_\-\s/]", "", strx.strip())
-    vName = re.sub("[\s/]", "_", vName)
+    vName = re.sub(r"[^a-zA-Z0-9_\-\s/]", "", strx.strip())
+    vName = re.sub(r"[\s/]", "_", vName)
     vName = re.sub("-", "_", vName)
     if re.match("[0-9]", vName):
         vName = "_" + vName
@@ -183,18 +183,18 @@ def readcnv(fpath):
     alphnumlist = list(string.ascii_letters) + list(string.digits)
     # define regexes for reading headers:
     reSta = re.compile(
-        "(?<=\*\*\sStation:)\s?([0-9])+\s?"
+        r"(?<=\*\*\sStation:)\s?([0-9])+\s?"
     )  # assumes numeric station identifiers
-    reLat = re.compile("(?<=\*\*\sLatitude\s=)\s?([\-0-9\.]+)\s([\-\.0-9]+)\s?([NS])")
-    reLon = re.compile("(?<=\*\*\sLongitude\s=)\s?([\-0-9\.]+)\s([\-\.0-9]+)\s?([EW])")
+    reLat = re.compile(r"(?<=\*\*\sLatitude\s=)\s?([\-0-9\.]+)\s([\-\.0-9]+)\s?([NS])")
+    reLon = re.compile(r"(?<=\*\*\sLongitude\s=)\s?([\-0-9\.]+)\s([\-\.0-9]+)\s?([EW])")
     # start_time = May 08 2002 09:39:10
-    reST = re.compile("(?<=\#\sstart_time\s=).*")
+    reST = re.compile(r"(?<=\#\sstart_time\s=).*")
     # reTZ=re.compile('(?<=\*\*\s...\s\(Time\)\s=).*')
     # reCr=re.compile('(?<=\*\*\sCruise:).*')
-    reNam = re.compile("(?<=\#\sname\s)([0-9]+)\s=\s(.*)\:\s?(.*)\s?")
+    reNam = re.compile(r"(?<=\#\sname\s)([0-9]+)\s=\s(.*)\:\s?(.*)\s?")
 
     # define regex for finding searching:
-    spStart = re.compile("^\s*[0-9]")  # starts with space characters followed by digit
+    spStart = re.compile(r"^\s*[0-9]")  # starts with space characters followed by digit
 
     headers = list()
     # lineno=0
