@@ -59,14 +59,14 @@ def load_NEMO_timeseries(
         data = np.concatenate([data, data_trim], axis=0)
 
     # Reshape to grid
-    if shape is "grid":
+    if shape == "grid":
 
         # Correct for depth dimension name
-        if dim.find("depth") is not -1:
+        if dim.find("depth") != -1:
             dim1, dim2, dimslice = "gridY", "gridX", "z"
-        elif dim.find("y") is not -1:
+        elif dim.find("y") != -1:
             dim1, dim2, dimslice = "gridZ", "gridX", "y"
-        elif dim.find("x") is not -1:
+        elif dim.find("x") != -1:
             dim1, dim2, dimslice = "gridZ", "gridY", "x"
 
         # Reshape data to grid
@@ -141,7 +141,7 @@ def reshape_coords(mask_in, dim_in, index=0, spacing=1):
     """
 
     # Correct for depth dimension name
-    if dim_in.find("depth") is not -1:
+    if dim_in.find("depth") != -1:
         dim = "deptht"
     else:
         dim = dim_in
