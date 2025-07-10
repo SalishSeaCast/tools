@@ -35,9 +35,9 @@ intersphinx_mapping = {
     "docs": ("https://salishsea-meopar-docs.readthedocs.io/en/latest/", None),
     "salishseacmd": ("https://salishseacmd.readthedocs.io/en/latest/", None),
     "salishseanowcast": ("https://salishsea-nowcast.readthedocs.io/en/latest/", None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 
 todo_include_todos = True
