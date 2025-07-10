@@ -1,13 +1,15 @@
-import numpy as np
-import pandas as pd
-from scipy import signal as ssig
-from scipy import stats as spst
 import os
 import re
 import string
-from salishsea_tools import geo_tools
-import netCDF4 as nc
+
 import gsw
+import netCDF4 as nc
+import numpy as np
+import pandas as pd
+from scipy import signal as ssig
+
+from salishsea_tools import geo_tools
+
 
 # list CTD cnv files associated with cast numbers
 cnvlist19 = {
