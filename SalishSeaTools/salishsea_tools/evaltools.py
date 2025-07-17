@@ -288,11 +288,7 @@ def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
         if pre_indexed:
             reqd_cols = ["dtUTC", "i", "j", "k"]
     if not set(reqd_cols) <= set(df.columns):
-        raise KeyError(
-            "{} missing from data".format(
-                [el for el in set(reqd_cols) - set(df.columns)], "%s"
-            )
-        )
+        raise KeyError(f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data")
     return reqd_cols
 
 
