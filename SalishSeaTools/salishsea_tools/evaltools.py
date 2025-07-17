@@ -131,25 +131,7 @@ def matchData(
     lonvar = {"tmask": "nav_lon", "umask": "glamu", "vmask": "glamv", "fmask": "glamf"}
     latvar = {"tmask": "nav_lat", "umask": "gphiu", "vmask": "gphiv", "fmask": "gphif"}
 
-    # check that required columns are in dataframe:
-    if method == "ferry" or sdim == 2:
-        reqsubset = ["dtUTC", "Lat", "Lon"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j"]
-    elif method == "vertNet":
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
-    else:
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "k"]
-    if not set(reqsubset) <= set(data.keys()):
-        raise Exception(
-            "{} missing from data".format(
-                [el for el in set(reqsubset) - set(data.keys())], "%s"
-            )
-        )
+    reqsubset = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
     fkeysVar = list(filemap.keys())  # list of model variables to return
     # don't load more files than necessary:
@@ -269,6 +251,49 @@ def matchData(
         return
     data.reset_index(drop=True, inplace=True)
     return data
+
+
+def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
+    """
+    Determines the required columns in a provided data frame based on the specified
+    method, spatial dimension, and whether the data is pre-indexed. Ensures that the
+    data frame contains the necessary columns and raises an exception if any required
+    columns are missing.
+
+    :arg :py:obj:`pandas.DataFrame` df: The input data frame to be checked.
+
+    :arg str match_method: The data to model matching method.
+
+    :arg int n_spatial_dims: The number of spatial dimensions in the data frame (2, or 3).
+
+    :arg bool pre_indexed: A boolean indicating whether the data frame is pre-indexed
+                           (i.e. contains columns "i", "j", and "k" if sdim == 3).
+
+    :return: The list of required columns based on the method, spatial dimension,
+             and pre-indexing status.
+    :rtype: list
+
+    :raises KeyError: If any required columns are missing from the data frame.
+    """
+    if match_method == "ferry" or n_spatial_dims == 2:
+        reqd_cols = ["dtUTC", "Lat", "Lon"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j"]
+    elif match_method == "vertNet":
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
+    else:
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "k"]
+    if not set(reqd_cols) <= set(df.columns):
+        raise KeyError(
+            "{} missing from data".format(
+                [el for el in set(reqd_cols) - set(df.columns)], "%s"
+            )
+        )
+    return reqd_cols
 
 
 def _gridHoriz(
