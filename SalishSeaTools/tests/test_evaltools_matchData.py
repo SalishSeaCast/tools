@@ -26,54 +26,53 @@ class TestReqdColsInDataFrame:
 
     def test_ferry_method_with_correct_columns(self):
         df = pandas.DataFrame({"dtUTC": [], "Lat": [], "Lon": []})
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="ferry", n_spatial_dims=2,
-                                                    pre_indexed=False)
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="ferry", n_spatial_dims=2, pre_indexed=False
+        )
         assert result == ["dtUTC", "Lat", "Lon"]
 
     def test_ferry_method_pre_indexed_with_correct_columns(self):
         df = pandas.DataFrame({"dtUTC": [], "i": [], "j": []})
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="ferry", n_spatial_dims=2,
-                                                    pre_indexed=True)
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="ferry", n_spatial_dims=2, pre_indexed=True
+        )
         assert result == ["dtUTC", "i", "j"]
 
     def test_vertNet_method_with_correct_columns(self):
-        df = pandas.DataFrame({
-            "dtUTC": [],
-            "Lat": [],
-            "Lon": [],
-            "Z_upper": [],
-            "Z_lower": []
-        })
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="vertNet", n_spatial_dims=3,
-                                                    pre_indexed=False)
+        df = pandas.DataFrame(
+            {"dtUTC": [], "Lat": [], "Lon": [], "Z_upper": [], "Z_lower": []}
+        )
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="vertNet", n_spatial_dims=3, pre_indexed=False
+        )
         assert result == ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
 
     def test_vertNet_method_pre_indexed_with_correct_columns(self):
-        df = pandas.DataFrame({
-            "dtUTC": [],
-            "i": [],
-            "j": [],
-            "Z_upper": [],
-            "Z_lower": []
-        })
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="vertNet", n_spatial_dims=3,
-                                                    pre_indexed=True)
+        df = pandas.DataFrame(
+            {"dtUTC": [], "i": [], "j": [], "Z_upper": [], "Z_lower": []}
+        )
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="vertNet", n_spatial_dims=3, pre_indexed=True
+        )
         assert result == ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
 
     def test_other_method_with_correct_columns(self):
         df = pandas.DataFrame({"dtUTC": [], "Lat": [], "Lon": [], "Z": []})
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="other", n_spatial_dims=3,
-                                                    pre_indexed=False)
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="other", n_spatial_dims=3, pre_indexed=False
+        )
         assert result == ["dtUTC", "Lat", "Lon", "Z"]
 
     def test_other_method_pre_indexed_with_correct_columns(self):
         df = pandas.DataFrame({"dtUTC": [], "i": [], "j": [], "k": []})
-        result = evaltools._reqd_cols_in_data_frame(df, match_method="other", n_spatial_dims=3,
-                                                    pre_indexed=True)
+        result = evaltools._reqd_cols_in_data_frame(
+            df, match_method="other", n_spatial_dims=3, pre_indexed=True
+        )
         assert result == ["dtUTC", "i", "j", "k"]
 
     def test_missing_required_columns_raises_exception(self):
         df = pandas.DataFrame({"dtUTC": [], "Lat": []})  # Missing 'Lon'
         with pytest.raises(KeyError, match=r".*missing from data.*"):
-            evaltools._reqd_cols_in_data_frame(df, match_method="ferry", n_spatial_dims=2,
-                                               pre_indexed=False)
+            evaltools._reqd_cols_in_data_frame(
+                df, match_method="ferry", n_spatial_dims=2, pre_indexed=False
+            )
