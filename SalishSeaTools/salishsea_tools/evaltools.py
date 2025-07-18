@@ -133,20 +133,7 @@ def matchData(
 
     reqsubset = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
-    fkeysVar = list(filemap.keys())  # list of model variables to return
-    # don't load more files than necessary:
-    ftypes = list(fdict.keys())
-    for ikey in ftypes:
-        if ikey not in set(filemap.values()):
-            fdict.pop(ikey)
-    if len(set(filemap.values()) - set(fdict.keys())) > 0:
-        print(
-            "Error: file(s) missing from fdict:",
-            set(filemap.values()) - set(fdict.keys()),
-        )
-    ftypes = list(
-        fdict.keys()
-    )  # list of filetypes to containing the desired model variables
+    ftypes = _calc_file_types(fdict, filemap)
     # create inverted version of filemap dict mapping file types to the variables they contain
     filemap_r = dict()
     for ift in ftypes:
@@ -290,6 +277,32 @@ def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
     if not set(reqd_cols) <= set(df.columns):
         raise KeyError(f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data")
     return reqd_cols
+
+
+def _calc_file_types(model_file_hours_res, model_var_file_types):
+    """
+    Calculate the minimum list of file types required for matching the specified model variables.
+
+    This function processes the given `model_file_hours_res` dictionary and
+    removes any file types that do not match those indicated in the `model_var_file_types`.
+    If there are missing file types in `model_file_hours_res` that are necessary based on
+    `model_var_file_types`, an error message will be printed.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :return: A list containing only the necessary file types that hold the
+             desired model variables.
+    :rtype: list
+    """
+    for file_type in list(model_file_hours_res):
+        if file_type not in set(model_var_file_types.values()):
+            model_file_hours_res.pop(file_type)
+    if missing_file_types := set(model_var_file_types.values()) - set(model_file_hours_res):
+        print(f"Error: file(s) missing from fdict: {missing_file_types}")
+    ftypes = list(model_file_hours_res)
+    return ftypes
 
 
 def _gridHoriz(
