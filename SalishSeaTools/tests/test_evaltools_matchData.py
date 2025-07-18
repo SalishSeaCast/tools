@@ -82,29 +82,29 @@ class TestCalcFileTypes:
     """Unit tests for the _calc_file_types() function."""
 
     def test_valid_file_types(self):
-        model_file_hours_res = {'grid_T': 1, 'biol_T': 24, 'chem_T': 1}
-        model_var_file_types = {'vosaline': 'grid_T', 'nitrate': 'biol_T'}
-        expected = ['grid_T', 'biol_T']
+        model_file_hours_res = {"grid_T": 1, "biol_T": 24, "chem_T": 1}
+        model_var_file_types = {"vosaline": "grid_T", "nitrate": "biol_T"}
+        expected = ["grid_T", "biol_T"]
         result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
         assert result == expected
 
     def test_unused_file_types_removed(self):
-        model_file_hours_res = {'grid_T': 1, 'biol_T': 24, 'chem_T': 1}
-        model_var_file_types = {'vosaline': 'grid_T'}
-        expected = ['grid_T']
+        model_file_hours_res = {"grid_T": 1, "biol_T": 24, "chem_T": 1}
+        model_var_file_types = {"vosaline": "grid_T"}
+        expected = ["grid_T"]
         result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
         assert result == expected
 
     def test_missing_file_types_error(self):
-        model_file_hours_res = {'grid_T': 1}
-        model_var_file_types = {'vosaline': 'grid_T', 'nitrate': 'biol_T'}
-        expected = ['grid_T']
+        model_file_hours_res = {"grid_T": 1}
+        model_var_file_types = {"vosaline": "grid_T", "nitrate": "biol_T"}
+        expected = ["grid_T"]
         result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
         assert result == expected
 
     def test_no_matching_file_types(self):
-        model_file_hours_res = {'biol_T': 1, 'chem_T': 1}
-        model_var_file_types = {'vosaline': 'grid_T'}
+        model_file_hours_res = {"biol_T": 1, "chem_T": 1}
+        model_var_file_types = {"vosaline": "grid_T"}
         expected = []
         result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
         assert result == expected

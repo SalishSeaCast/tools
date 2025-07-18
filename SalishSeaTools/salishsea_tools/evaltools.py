@@ -275,7 +275,9 @@ def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
         if pre_indexed:
             reqd_cols = ["dtUTC", "i", "j", "k"]
     if not set(reqd_cols) <= set(df.columns):
-        raise KeyError(f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data")
+        raise KeyError(
+            f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data"
+        )
     return reqd_cols
 
 
@@ -299,7 +301,9 @@ def _calc_file_types(model_file_hours_res, model_var_file_types):
     for file_type in list(model_file_hours_res):
         if file_type not in set(model_var_file_types.values()):
             model_file_hours_res.pop(file_type)
-    if missing_file_types := set(model_var_file_types.values()) - set(model_file_hours_res):
+    if missing_file_types := set(model_var_file_types.values()) - set(
+        model_file_hours_res
+    ):
         print(f"Error: file(s) missing from fdict: {missing_file_types}")
     ftypes = list(model_file_hours_res)
     return ftypes
