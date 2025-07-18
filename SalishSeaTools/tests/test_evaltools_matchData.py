@@ -85,26 +85,94 @@ class TestCalcFileTypes:
         model_file_hours_res = {"grid_T": 1, "biol_T": 24, "chem_T": 1}
         model_var_file_types = {"vosaline": "grid_T", "nitrate": "biol_T"}
         expected = ["grid_T", "biol_T"]
-        result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
-        assert result == expected
+        file_types = evaltools._calc_file_types(
+            model_file_hours_res, model_var_file_types
+        )
+        assert file_types == expected
 
     def test_unused_file_types_removed(self):
         model_file_hours_res = {"grid_T": 1, "biol_T": 24, "chem_T": 1}
         model_var_file_types = {"vosaline": "grid_T"}
         expected = ["grid_T"]
-        result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
-        assert result == expected
+        file_types = evaltools._calc_file_types(
+            model_file_hours_res, model_var_file_types
+        )
+        assert file_types == expected
 
     def test_missing_file_types_error(self):
         model_file_hours_res = {"grid_T": 1}
         model_var_file_types = {"vosaline": "grid_T", "nitrate": "biol_T"}
         expected = ["grid_T"]
-        result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
-        assert result == expected
+        file_types = evaltools._calc_file_types(
+            model_file_hours_res, model_var_file_types
+        )
+        assert file_types == expected
 
     def test_no_matching_file_types(self):
         model_file_hours_res = {"biol_T": 1, "chem_T": 1}
         model_var_file_types = {"vosaline": "grid_T"}
         expected = []
-        result = evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
-        assert result == expected
+        file_types = evaltools._calc_file_types(
+            model_file_hours_res, model_var_file_types
+        )
+        assert file_types == expected
+
+
+class TestInvertFilemap:
+    """Unit tests for the evaltools._invert_filemap() function."""
+
+    def test_empty_input(self):
+        """Test with empty dictionaries and lists."""
+        model_var_file_types = {}
+        file_types = []
+        expected = {}
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r
+
+    def test_single_mapping(self):
+        """Test with a single variable and a single file type."""
+        model_var_file_types = {"votemper": "grid_T"}
+        file_types = ["grid_T"]
+        expected = {"grid_T": ["votemper"]}
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r
+
+    def test_multiple_variables_one_type(self):
+        """Test multiple variables associated with the same file type."""
+        model_var_file_types = {"votemper": "grid_T", "vosaline": "grid_T"}
+        file_types = ["grid_T"]
+        expected = {"grid_T": ["votemper", "vosaline"]}
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r
+
+    def test_multiple_types(self):
+        """Test multiple file types with variables split across them."""
+        model_var_file_types = {
+            "votemper": "grid_T",
+            "vosaline": "grid_T",
+            "nitrate": "biol_T",
+        }
+        file_types = ["grid_T", "biol_T"]
+        expected = {"grid_T": ["votemper", "vosaline"], "biol_T": ["nitrate"]}
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r
+
+    def test_unused_file_type(self):
+        """Test for a file type that is included in the list but not used."""
+        model_var_file_types = {"votemper": "grid_T"}
+        file_types = ["grid_T", "biol_T"]
+        expected = {"grid_T": ["votemper"], "biol_T": []}
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r
+
+    def test_no_match_file_types(self):
+        """Test for file types with no variables in the mapping."""
+        model_var_file_types = {"votemper": "grid_T", "total_alkalinity": "chem_T"}
+        file_types = ["grid_T", "biol_T", "chem_T"]
+        expected = {
+            "grid_T": ["votemper"],
+            "biol_T": [],
+            "chem_T": ["total_alkalinity"],
+        }
+        filemap_r = evaltools._invert_filemap(model_var_file_types, file_types)
+        assert expected == filemap_r

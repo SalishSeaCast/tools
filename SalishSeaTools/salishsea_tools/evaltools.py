@@ -15,6 +15,7 @@
 
 """Flexible functions for model evaluation tasks"""
 
+from collections import defaultdict
 import datetime as dt
 import glob
 import os
@@ -133,13 +134,10 @@ def matchData(
 
     reqsubset = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
+    # Calculate the minimal list of file types to load (so we don't load extras)
+    # and build a mapping of file types to model variables (inverse of filemap)
     ftypes = _calc_file_types(fdict, filemap)
-    # create inverted version of filemap dict mapping file types to the variables they contain
-    filemap_r = dict()
-    for ift in ftypes:
-        filemap_r[ift] = list()
-    for ikey in filemap:
-        filemap_r[filemap[ikey]].append(ikey)
+    filemap_r = _invert_filemap(filemap, ftypes)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
     if mod_start is None:
@@ -305,8 +303,31 @@ def _calc_file_types(model_file_hours_res, model_var_file_types):
         model_file_hours_res
     ):
         print(f"Error: file(s) missing from fdict: {missing_file_types}")
-    ftypes = list(model_file_hours_res)
-    return ftypes
+    file_types = list(model_file_hours_res)
+    return file_types
+
+
+def _invert_filemap(model_var_file_types, file_types):
+    """
+    Creates an inverted version of the given filemap dictionary, mapping file
+    types to the variables they contain.
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :arg list file_types: List of the necessary file types that hold the desired model variables.
+
+    :return: An inverted dictionary where keys are the file types and values
+             are lists of file variable names associated with those types.
+    :rtype: dict
+    """
+    filemap_r = defaultdict(list)
+    for file_type in file_types:
+        # Initialize empty lists for all required file types
+        filemap_r[file_type] = []
+    for var, file_type in model_var_file_types.items():
+        # Group variables by their file types
+        filemap_r[file_type].append(var)
+    return dict(filemap_r)
 
 
 def _gridHoriz(
