@@ -15,6 +15,7 @@
 
 """Flexible functions for model evaluation tasks"""
 
+from collections import defaultdict
 import datetime as dt
 import glob
 import os
@@ -131,46 +132,12 @@ def matchData(
     lonvar = {"tmask": "nav_lon", "umask": "glamu", "vmask": "glamv", "fmask": "glamf"}
     latvar = {"tmask": "nav_lat", "umask": "gphiu", "vmask": "gphiv", "fmask": "gphif"}
 
-    # check that required columns are in dataframe:
-    if method == "ferry" or sdim == 2:
-        reqsubset = ["dtUTC", "Lat", "Lon"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j"]
-    elif method == "vertNet":
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
-    else:
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "k"]
-    if not set(reqsubset) <= set(data.keys()):
-        raise Exception(
-            "{} missing from data".format(
-                [el for el in set(reqsubset) - set(data.keys())], "%s"
-            )
-        )
+    reqsubset = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
-    fkeysVar = list(filemap.keys())  # list of model variables to return
-    # don't load more files than necessary:
-    ftypes = list(fdict.keys())
-    for ikey in ftypes:
-        if ikey not in set(filemap.values()):
-            fdict.pop(ikey)
-    if len(set(filemap.values()) - set(fdict.keys())) > 0:
-        print(
-            "Error: file(s) missing from fdict:",
-            set(filemap.values()) - set(fdict.keys()),
-        )
-    ftypes = list(
-        fdict.keys()
-    )  # list of filetypes to containing the desired model variables
-    # create inverted version of filemap dict mapping file types to the variables they contain
-    filemap_r = dict()
-    for ift in ftypes:
-        filemap_r[ift] = list()
-    for ikey in filemap:
-        filemap_r[filemap[ikey]].append(ikey)
+    # Calculate the minimal list of file types to load (so we don't load extras)
+    # and build a mapping of file types to model variables (inverse of filemap)
+    ftypes = _calc_file_types(fdict, filemap)
+    filemap_r = _invert_filemap(filemap, ftypes)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
     if mod_start is None:
@@ -269,6 +236,98 @@ def matchData(
         return
     data.reset_index(drop=True, inplace=True)
     return data
+
+
+def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
+    """
+    Determines the required columns in a provided data frame based on the specified
+    method, spatial dimension, and whether the data is pre-indexed. Ensures that the
+    data frame contains the necessary columns and raises an exception if any required
+    columns are missing.
+
+    :arg :py:obj:`pandas.DataFrame` df: The input data frame to be checked.
+
+    :arg str match_method: The data to model matching method.
+
+    :arg int n_spatial_dims: The number of spatial dimensions in the data frame (2, or 3).
+
+    :arg bool pre_indexed: A boolean indicating whether the data frame is pre-indexed
+                           (i.e. contains columns "i", "j", and "k" if sdim == 3).
+
+    :return: The list of required columns based on the method, spatial dimension,
+             and pre-indexing status.
+    :rtype: list
+
+    :raises KeyError: If any required columns are missing from the data frame.
+    """
+    if match_method == "ferry" or n_spatial_dims == 2:
+        reqd_cols = ["dtUTC", "Lat", "Lon"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j"]
+    elif match_method == "vertNet":
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
+    else:
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "k"]
+    if not set(reqd_cols) <= set(df.columns):
+        raise KeyError(
+            f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data"
+        )
+    return reqd_cols
+
+
+def _calc_file_types(model_file_hours_res, model_var_file_types):
+    """
+    Calculate the minimum list of file types required for matching the specified model variables.
+
+    This function processes the given `model_file_hours_res` dictionary and
+    removes any file types that do not match those indicated in the `model_var_file_types`.
+    If there are missing file types in `model_file_hours_res` that are necessary based on
+    `model_var_file_types`, an error message will be printed.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :return: A list containing only the necessary file types that hold the
+             desired model variables.
+    :rtype: list
+    """
+    for file_type in list(model_file_hours_res):
+        if file_type not in set(model_var_file_types.values()):
+            model_file_hours_res.pop(file_type)
+    if missing_file_types := set(model_var_file_types.values()) - set(
+        model_file_hours_res
+    ):
+        print(f"Error: file(s) missing from fdict: {missing_file_types}")
+    file_types = list(model_file_hours_res)
+    return file_types
+
+
+def _invert_filemap(model_var_file_types, file_types):
+    """
+    Creates an inverted version of the given filemap dictionary, mapping file
+    types to the variables they contain.
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :arg list file_types: List of the necessary file types that hold the desired model variables.
+
+    :return: An inverted dictionary where keys are the file types and values
+             are lists of file variable names associated with those types.
+    :rtype: dict
+    """
+    filemap_r = defaultdict(list)
+    for file_type in file_types:
+        # Initialize empty lists for all required file types
+        filemap_r[file_type] = []
+    for var, file_type in model_var_file_types.items():
+        # Group variables by their file types
+        filemap_r[file_type].append(var)
+    return dict(filemap_r)
 
 
 def _gridHoriz(
