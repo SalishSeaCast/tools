@@ -295,14 +295,21 @@ def _calc_file_types(model_file_hours_res, model_var_file_types):
     :return: A list containing only the necessary file types that hold the
              desired model variables.
     :rtype: list
+
+    :raises KeyError: If any required file types are missing from the mapping of
+                      model file types to time resolution in hours.
     """
+    # Iterate over the list of keys instead of dict because the dict is updated in the loop
     for file_type in list(model_file_hours_res):
         if file_type not in set(model_var_file_types.values()):
             model_file_hours_res.pop(file_type)
-    if missing_file_types := set(model_var_file_types.values()) - set(
-        model_file_hours_res
+    if missing_file_types := (
+        set(model_var_file_types.values()) - set(model_file_hours_res)
     ):
-        print(f"Error: file(s) missing from fdict: {missing_file_types}")
+        raise KeyError(
+            f"Error: file type(s) missing from fdict mapping of "
+            f"model file types to time resolution in hours: {missing_file_types}"
+        )
     file_types = list(model_file_hours_res)
     return file_types
 

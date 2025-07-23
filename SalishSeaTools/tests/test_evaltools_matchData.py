@@ -102,20 +102,19 @@ class TestCalcFileTypes:
     def test_missing_file_types_error(self):
         model_file_hours_res = {"grid_T": 1}
         model_var_file_types = {"vosaline": "grid_T", "nitrate": "biol_T"}
-        expected = ["grid_T"]
-        file_types = evaltools._calc_file_types(
-            model_file_hours_res, model_var_file_types
-        )
-        assert file_types == expected
+        with pytest.raises(
+            KeyError, match=r"^\"Error: file type\(s\) missing .*: {\'biol_T\'}"
+        ):
+            evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
 
     def test_no_matching_file_types(self):
         model_file_hours_res = {"biol_T": 1, "chem_T": 1}
         model_var_file_types = {"vosaline": "grid_T"}
         expected = []
-        file_types = evaltools._calc_file_types(
-            model_file_hours_res, model_var_file_types
-        )
-        assert file_types == expected
+        with pytest.raises(
+            KeyError, match=r"^\"Error: file type\(s\) missing .*: {\'grid_T\'}"
+        ):
+            evaltools._calc_file_types(model_file_hours_res, model_var_file_types)
 
 
 class TestInvertFilemap:
