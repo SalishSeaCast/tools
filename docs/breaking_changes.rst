@@ -47,6 +47,14 @@ are incompatible with earlier versions:
   the :py:func:`evaltools.matchData` function.
   A :py:exc:`ValueError` is now raised if ``maskName="ops"``.
 
+* ``mesh_mask_path`` is now a required argument for the :py:func:`evaltools.matchData`
+  function.
+  The ``mesh_mask_path`` argument was previously called ``meshPath``.
+  Requiring a mesh mask path ensures that the user can specify the correct mesh mask for
+  the model version that they are matching data to instead of possibly using an incorrect
+  mesh mask by default..
+
+
 
 .. _BreakingChangesVersion24.1:
 

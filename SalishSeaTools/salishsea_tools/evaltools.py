@@ -45,13 +45,13 @@ def matchData(
     data,
     filemap,
     fdict,
+    mesh_mask_path,
     mod_start=None,
     mod_end=None,
     mod_nam_fmt="nowcast",
     mod_basedir="/results/SalishSea/nowcast-green/",
     mod_flen=1,
     method="bin",
-    meshPath=None,
     maskName="tmask",
     wrapSearch=False,
     fastSearch=False,
@@ -78,6 +78,8 @@ def matchData(
 
     :arg dict fdict: dictionary mapping filetypes to their time resolution in hours
 
+    :arg str mesh_mask_path: Path to the mesh mask file.
+
     :arg mod_start: first date of time range to match
     :type :py:class:`datetime.datetime`
 
@@ -101,10 +103,6 @@ def matchData(
         'vertNet' - match observations to mean over a vertical range defined by
                     Z_upper and Z_lower; first try will include entire cell containing end points
                     and use e3t_0 rather than time-varying e3t
-
-    :arg str meshPath: path to mesh file; defaults to None, in which case set to:
-            '/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc' if maskName is 'ops'
-            '/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc' else (SalishSeaCast)
 
     :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
                        for ops vars use 'ops'
@@ -156,10 +154,7 @@ def matchData(
         raise ValueError(
             "Data matching for atmospheric fields is not yet supported: maskName='ops'"
         )
-    if meshPath == None:
-        # set default mesh file for SalishSeaCast data
-        meshPath = "/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc"
-    with xr.open_dataset(meshPath) as fmesh:
+    with xr.open_dataset(mesh_mask_path) as fmesh:
         omask = fmesh[maskName].to_numpy()
         if not preIndexed:
             # Lons/lats are required to calculate model grid j/i indices when the data frame
