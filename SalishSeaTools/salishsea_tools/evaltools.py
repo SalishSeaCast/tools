@@ -168,16 +168,18 @@ def matchData(
         # set default mesh file for SalishSeaCast data
         if meshPath == None:
             meshPath = "/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc"
-        # load lat lon and ocean mask
-        with nc.Dataset(meshPath) as fmesh:
-            omask = np.copy(fmesh.variables[maskName])
-            navlon = np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:, :]))
-            navlat = np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:, :]))
+        with xr.open_dataset(meshPath) as fmesh:
+            omask = fmesh[maskName].to_numpy()
+            if not preIndexed:
+                # Lons/lats are required to calculate model grid j/i indices when the data frame
+                # is not pre-indexed
+                navlon = fmesh[lonvar[maskName]].to_numpy()
+                navlat = fmesh[latvar[maskName]].to_numpy()
             if method == "vertNet":
-                e3t0 = np.squeeze(np.copy(fmesh.variables["e3t_0"][0, :, :, :]))
+                e3t0 = np.squeeze(fmesh.e3t_0)
                 if maskName != "tmask":
                     print(
-                        "Warning: Using tmask thickness for variable on different grid"
+                        f"Warning: Using tmask thickness for variable on different grid: {maskName}"
                     )
         nemops = "NEMO"
 
