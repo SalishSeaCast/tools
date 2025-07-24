@@ -132,7 +132,7 @@ def matchData(
     lonvar = {"tmask": "nav_lon", "umask": "glamu", "vmask": "glamv", "fmask": "glamf"}
     latvar = {"tmask": "nav_lat", "umask": "gphiu", "vmask": "gphiv", "fmask": "gphif"}
 
-    reqsubset = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
+    reqd_cols = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of filemap)
@@ -149,7 +149,7 @@ def matchData(
     # adjustments to data dataframe to avoid unnecessary calculations
     data = data.loc[(data.dtUTC >= mod_start) & (data.dtUTC < mod_end)].copy(deep=True)
     data = data.dropna(
-        how="any", subset=reqsubset
+        how="any", subset=reqd_cols
     )  # .dropna(how='all',subset=[*varmap.keys()])
 
     if maskName == "ops":
@@ -195,7 +195,7 @@ def matchData(
             quiet=quiet,
             nemops=nemops,
         )
-    sort_by = [ix for ix in ["dtUTC", "Z", "k", "j", "i"] if ix in reqsubset]
+    sort_by = [ix for ix in ["dtUTC", "Z", "k", "j", "i"] if ix in reqd_cols]
     data = data.sort_values(by=sort_by)
     data.reset_index(drop=True, inplace=True)
 
