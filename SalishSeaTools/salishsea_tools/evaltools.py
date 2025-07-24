@@ -153,35 +153,25 @@ def matchData(
     )  # .dropna(how='all',subset=[*varmap.keys()])
 
     if maskName == "ops":
-        # set default mesh file for ops data (atmos forcing)
-        if meshPath == None:
-            meshPath = (
-                "/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc"
-            )
-        # load lat, lon, and mask (all ones for ops - no land in sky)
-        with nc.Dataset(meshPath) as fmesh:
-            navlon = np.squeeze(np.copy(fmesh.variables["nav_lon"][:, :] - 360))
-            navlat = np.squeeze(np.copy(fmesh.variables["nav_lat"][:, :]))
-        omask = np.expand_dims(np.ones(np.shape(navlon)), axis=(0, 1))
-        nemops = "GEM2.5"
-    else:
+        raise ValueError(
+            "Data matching for atmospheric fields is not yet supported: maskName='ops'"
+        )
+    if meshPath == None:
         # set default mesh file for SalishSeaCast data
-        if meshPath == None:
-            meshPath = "/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc"
-        with xr.open_dataset(meshPath) as fmesh:
-            omask = fmesh[maskName].to_numpy()
-            if not preIndexed:
-                # Lons/lats are required to calculate model grid j/i indices when the data frame
-                # is not pre-indexed
-                navlon = fmesh[lonvar[maskName]].to_numpy()
-                navlat = fmesh[latvar[maskName]].to_numpy()
-            if method == "vertNet":
-                e3t0 = np.squeeze(fmesh.e3t_0)
-                if maskName != "tmask":
-                    print(
-                        f"Warning: Using tmask thickness for variable on different grid: {maskName}"
-                    )
-        nemops = "NEMO"
+        meshPath = "/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc"
+    with xr.open_dataset(meshPath) as fmesh:
+        omask = fmesh[maskName].to_numpy()
+        if not preIndexed:
+            # Lons/lats are required to calculate model grid j/i indices when the data frame
+            # is not pre-indexed
+            navlon = fmesh[lonvar[maskName]].to_numpy()
+            navlat = fmesh[latvar[maskName]].to_numpy()
+        if method == "vertNet":
+            e3t0 = np.squeeze(fmesh.e3t_0)
+            if maskName != "tmask":
+                print(
+                    f"Warning: Using tmask thickness for variable on different grid: {maskName}"
+                )
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
     if not preIndexed:
@@ -195,7 +185,7 @@ def matchData(
             wrapTol,
             fastSearch,
             quiet=quiet,
-            nemops=nemops,
+            nemops="NEMO",
         )
     sort_by = [ix for ix in ["dtUTC", "Z", "k", "j", "i"] if ix in reqd_cols]
     data = data.sort_values(by=sort_by)

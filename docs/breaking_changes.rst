@@ -43,6 +43,10 @@ are incompatible with earlier versions:
   and  :py:func:`evaltools.load_ONC_node_ERDDAP` functions because custom variables
   selection was not fully implemented.
 
+* Support for atmospheric forcing data matching has been removed from
+  the :py:func:`evaltools.matchData` function.
+  A :py:exc:`ValueError` is now raised if ``maskName="ops"``.
+
 
 .. _BreakingChangesVersion24.1:
 
