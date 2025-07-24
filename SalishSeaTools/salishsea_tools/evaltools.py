@@ -195,13 +195,8 @@ def matchData(
             quiet=quiet,
             nemops=nemops,
         )
-        data = data.sort_values(
-            by=[ix for ix in ["dtUTC", "Z", "j", "i"] if ix in reqsubset]
-        )  # preserve list order
-    else:
-        data = data.sort_values(
-            by=[ix for ix in ["dtUTC", "k", "j", "i"] if ix in reqsubset]
-        )  # preserve list order
+    sort_by = [ix for ix in ["dtUTC", "Z", "k", "j", "i"] if ix in reqsubset]
+    data = data.sort_values(by=sort_by)
     data.reset_index(drop=True, inplace=True)
 
     # set up columns to accept model values; prepend 'mod' to distinguish from obs names
