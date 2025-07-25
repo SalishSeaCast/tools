@@ -57,6 +57,9 @@ are incompatible with earlier versions:
 * The ``sdim``  argument of the :py:func:`evaltools.matchData` function has been changed to
   ``n_spatial_dims`` to make its meaning more evident.
 
+* The ``preIndexed``  argument of the :py:func:`evaltools.matchData` function has been
+  changed to ``pre_indexed`` to make it consistent with Python variable naming style.
+
 
 .. _BreakingChangesVersion24.1:
 

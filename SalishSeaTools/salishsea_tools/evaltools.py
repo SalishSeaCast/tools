@@ -60,7 +60,7 @@ def matchData(
     fid=None,
     n_spatial_dims=3,
     quiet=False,
-    preIndexed=False,
+    pre_indexed=False,
 ):
     """Given a discrete sample dataset, find match model output
 
@@ -123,8 +123,9 @@ def matchData(
 
     :arg boolean quiet: if True, suppress non-critical warnings
 
-    :arg boolean preIndexed: set True if horizontal  grid indices already in input dataframe; for
-               speed; not implemented with all options
+    :arg boolean pre_indexed: Set to ``True`` if the horizontal grid indices are already in the
+                              input dataframe. This is a  speed-up option that is not implemented
+                              for all the matching methods.
 
     """
     # define dictionaries of mesh lat and lon variables to use with different grids:
@@ -141,7 +142,7 @@ def matchData(
         "fmask": "gphif",
     }
 
-    reqd_cols = _reqd_cols_in_data_frame(data, method, n_spatial_dims, preIndexed)
+    reqd_cols = _reqd_cols_in_data_frame(data, method, n_spatial_dims, pre_indexed)
 
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of filemap)
@@ -167,7 +168,7 @@ def matchData(
         )
     with xr.open_dataset(mesh_mask_path) as fmesh:
         omask = fmesh[maskName].to_numpy()
-        if not preIndexed:
+        if not pre_indexed:
             # Lons/lats are required to calculate model grid j/i indices when the data frame
             # is not pre-indexed
             navlon = fmesh[lon_vars[maskName]].to_numpy()
@@ -180,7 +181,7 @@ def matchData(
                 )
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
-    if not preIndexed:
+    if not pre_indexed:
         # find location of each obs on model grid and add to data as additional columns 'i' and 'j'
         data = _gridHoriz(
             data,
@@ -218,7 +219,7 @@ def matchData(
             omask,
             maskName,
             n_spatial_dims,
-            preIndexed=preIndexed,
+            pre_indexed=pre_indexed,
         )
     elif method == "ferry":
         print("data is matched to shallowest model level")
@@ -518,7 +519,7 @@ def _binmatch(
     gridmask,
     maskName="tmask",
     n_spatial_dims=3,
-    preIndexed=False,
+    pre_indexed=False,
 ):
     """basic vertical matching of model output to data
     returns model value from model grid cell that would contain the observation point with
@@ -530,7 +531,7 @@ def _binmatch(
         lendat = len(data)
     else:
         pprint = False
-    if not preIndexed:
+    if not pre_indexed:
         data["k"] = -1 * np.ones((len(data))).astype(int)
     for ind, row in data.iterrows():
         if pprint == True and ind % 5000 == 0:
@@ -594,7 +595,7 @@ def _binmatch(
                     raise
             # find depth index if vars are 3d
             if n_spatial_dims == 3:
-                if preIndexed:
+                if pre_indexed:
                     ik = row["k"]
                     # assign values for each var assoc with ift
                     if (not np.isnan(ik)) and (
