@@ -142,8 +142,8 @@ def matchData(
 
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of model_var_file_types)
-    ftypes = _calc_file_types(model_file_hours_res, model_var_file_types)
-    filemap_r = _invert_filemap(model_var_file_types, ftypes)
+    file_types = _calc_file_types(model_file_hours_res, model_var_file_types)
+    filemap_r = _invert_filemap(model_var_file_types, file_types)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
     if mod_start is None:
@@ -190,25 +190,25 @@ def matchData(
             quiet=quiet,
             nemops="NEMO",
         )
-    sort_by = [ix for ix in ["dtUTC", "Z", "k", "j", "i"] if ix in reqd_cols]
+    sort_by = [col for col in ["dtUTC", "Z", "k", "j", "i"] if col in reqd_cols]
     data = data.sort_values(by=sort_by)
     data.reset_index(drop=True, inplace=True)
 
     # set up columns to accept model values; prepend 'mod' to distinguish from obs names
-    for ivar in model_var_file_types.keys():
-        data["mod_" + ivar] = np.full(len(data), np.nan)
+    for var in model_var_file_types:
+        data[f"mod_{var}"] = np.full(len(data), np.nan)
 
-    # create dictionary of dataframes of filename, start time, and end time for each file type
+    # create dictionary of dataframes containing filename, start time, and end time for each file type
     flist = dict()
-    for ift in ftypes:
-        flist[ift] = index_model_files(
+    for file_type in file_types:
+        flist[file_type] = index_model_files(
             mod_start,
             mod_end,
             mod_basedir,
             mod_nam_fmt,
             mod_flen,
-            ift,
-            model_file_hours_res[ift],
+            file_type,
+            model_file_hours_res[file_type],
         )
 
     # call a function to carry out vertical matching based on specified method
@@ -216,7 +216,7 @@ def matchData(
         data = _binmatch(
             data,
             flist,
-            ftypes,
+            file_types,
             filemap_r,
             omask,
             maskName,
@@ -225,12 +225,14 @@ def matchData(
         )
     elif method == "ferry":
         print("data is matched to shallowest model level")
-        data = _ferrymatch(data, flist, ftypes, filemap_r, omask, model_file_hours_res)
+        data = _ferrymatch(
+            data, flist, file_types, filemap_r, omask, model_file_hours_res
+        )
     elif method == "vvlZ":
         data = _interpvvlZ(
             data,
             flist,
-            ftypes,
+            file_types,
             model_var_file_types,
             filemap_r,
             omask,
@@ -241,7 +243,7 @@ def matchData(
         data = _vvlBin(
             data,
             flist,
-            ftypes,
+            file_types,
             model_var_file_types,
             filemap_r,
             omask,
@@ -249,7 +251,7 @@ def matchData(
             e3tvar,
         )
     elif method == "vertNet":
-        data = _vertNetmatch(data, flist, ftypes, filemap_r, omask, e3t0, maskName)
+        data = _vertNetmatch(data, flist, file_types, filemap_r, omask, e3t0, maskName)
     else:
         print("option " + method + " not written yet")
         return
