@@ -58,7 +58,7 @@ def matchData(
     wrapTol=1,
     e3tvar="e3t",
     fid=None,
-    sdim=3,
+    n_spatial_dims=3,
     quiet=False,
     preIndexed=False,
 ):
@@ -71,7 +71,7 @@ def matchData(
         'dtUTC': column with UTC date and time
         'Lat': decimal latitude
         'Lon': decimal longitude
-        'Z': depth, positive     NOT  required if method='ferry' or sdim=2
+        'Z': depth, positive; NOT required if method='ferry' or n_spatial_dims=2
     :type :py:class:`pandas.DataFrame`
 
     :arg dict filemap: dictionary mapping names of model variables to filetypes containing them
@@ -117,8 +117,9 @@ def matchData(
     :arg Dataset fid: optionally include name of a single dataset when looping is not necessary and all matches come from
         a single file
 
-    :arg int sdim: optionally enter number of spatial dimensions (must be the same for all variables per call);
-        defaults to 3; use to match to 2d fields like ssh
+    :arg int n_spatial_dims: Optional. The number of spatial dimensions
+                             (must be the same for all variables per call).
+                             Defaults to 3. Use 2 to match to 2d fields like sea surface height.
 
     :arg boolean quiet: if True, suppress non-critical warnings
 
@@ -140,7 +141,7 @@ def matchData(
         "fmask": "gphif",
     }
 
-    reqd_cols = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
+    reqd_cols = _reqd_cols_in_data_frame(data, method, n_spatial_dims, preIndexed)
 
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of filemap)
@@ -210,7 +211,14 @@ def matchData(
     # call a function to carry out vertical matching based on specified method
     if method == "bin":
         data = _binmatch(
-            data, flist, ftypes, filemap_r, omask, maskName, sdim, preIndexed=preIndexed
+            data,
+            flist,
+            ftypes,
+            filemap_r,
+            omask,
+            maskName,
+            n_spatial_dims,
+            preIndexed=preIndexed,
         )
     elif method == "ferry":
         print("data is matched to shallowest model level")
@@ -244,7 +252,7 @@ def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
     :arg int n_spatial_dims: The number of spatial dimensions in the data frame (2, or 3).
 
     :arg bool pre_indexed: A boolean indicating whether the data frame is pre-indexed
-                           (i.e. contains columns "i", "j", and "k" if sdim == 3).
+                           (i.e. contains columns "i", "j", and "k" if n_spatial_dims == 3).
 
     :return: The list of required columns based on the method, spatial dimension,
              and pre-indexing status.
@@ -503,7 +511,14 @@ def _vertNetmatch(data, flist, ftypes, filemap_r, gridmask, e3t0, maskName="tmas
 
 
 def _binmatch(
-    data, flist, ftypes, filemap_r, gridmask, maskName="tmask", sdim=3, preIndexed=False
+    data,
+    flist,
+    ftypes,
+    filemap_r,
+    gridmask,
+    maskName="tmask",
+    n_spatial_dims=3,
+    preIndexed=False,
 ):
     """basic vertical matching of model output to data
     returns model value from model grid cell that would contain the observation point with
@@ -578,7 +593,7 @@ def _binmatch(
                     print(tlist[-1, 1])
                     raise
             # find depth index if vars are 3d
-            if sdim == 3:
+            if n_spatial_dims == 3:
                 if preIndexed:
                     ik = row["k"]
                     # assign values for each var assoc with ift
@@ -616,7 +631,7 @@ def _binmatch(
                             data.loc[ind, ["mod_" + ivar]] = fid[ift].variables[ivar][
                                 ih, ik, row["j"], row["i"]
                             ]
-            elif sdim == 2:
+            elif n_spatial_dims == 2:
                 # assign values for each var assoc with ift
                 if gridmask[0, 0, row["j"], row["i"]] == 1:
                     for ivar in filemap_r[ift]:
@@ -624,7 +639,7 @@ def _binmatch(
                             ih, row["j"], row["i"]
                         ]
             else:
-                raise ("invalid sdim")
+                raise ValueError(f"Invalid value: {n_spatial_dims=}")
     return data
 
 

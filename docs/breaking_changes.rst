@@ -54,6 +54,8 @@ are incompatible with earlier versions:
   the model version that they are matching data to instead of possibly using an incorrect
   mesh mask by default..
 
+* The ``sdim``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``n_spatial_dims`` to make its meaning more evident.
 
 
 .. _BreakingChangesVersion24.1:
