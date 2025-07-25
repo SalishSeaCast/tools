@@ -60,6 +60,9 @@ are incompatible with earlier versions:
 * The ``preIndexed``  argument of the :py:func:`evaltools.matchData` function has been
   changed to ``pre_indexed`` to make it consistent with Python variable naming style.
 
+* The ``fdict``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``model_file_hours_res`` to make its meaning more evident.
+
 
 .. _BreakingChangesVersion24.1:
 

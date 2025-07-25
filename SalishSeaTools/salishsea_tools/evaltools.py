@@ -44,7 +44,7 @@ from salishsea_tools import geo_tools, places
 def matchData(
     data,
     filemap,
-    fdict,
+    model_file_hours_res,
     mesh_mask_path,
     mod_start=None,
     mod_end=None,
@@ -76,7 +76,7 @@ def matchData(
 
     :arg dict filemap: dictionary mapping names of model variables to filetypes containing them
 
-    :arg dict fdict: dictionary mapping filetypes to their time resolution in hours
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
 
     :arg str mesh_mask_path: Path to the mesh mask file.
 
@@ -146,7 +146,7 @@ def matchData(
 
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of filemap)
-    ftypes = _calc_file_types(fdict, filemap)
+    ftypes = _calc_file_types(model_file_hours_res, filemap)
     filemap_r = _invert_filemap(filemap, ftypes)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
@@ -206,7 +206,13 @@ def matchData(
     flist = dict()
     for ift in ftypes:
         flist[ift] = index_model_files(
-            mod_start, mod_end, mod_basedir, mod_nam_fmt, mod_flen, ift, fdict[ift]
+            mod_start,
+            mod_end,
+            mod_basedir,
+            mod_nam_fmt,
+            mod_flen,
+            ift,
+            model_file_hours_res[ift],
         )
 
     # call a function to carry out vertical matching based on specified method
@@ -223,13 +229,15 @@ def matchData(
         )
     elif method == "ferry":
         print("data is matched to shallowest model level")
-        data = _ferrymatch(data, flist, ftypes, filemap_r, omask, fdict)
+        data = _ferrymatch(data, flist, ftypes, filemap_r, omask, model_file_hours_res)
     elif method == "vvlZ":
         data = _interpvvlZ(
-            data, flist, ftypes, filemap, filemap_r, omask, fdict, e3tvar
+            data, flist, ftypes, filemap, filemap_r, omask, model_file_hours_res, e3tvar
         )
     elif method == "vvlBin":
-        data = _vvlBin(data, flist, ftypes, filemap, filemap_r, omask, fdict, e3tvar)
+        data = _vvlBin(
+            data, flist, ftypes, filemap, filemap_r, omask, model_file_hours_res, e3tvar
+        )
     elif method == "vertNet":
         data = _vertNetmatch(data, flist, ftypes, filemap_r, omask, e3t0, maskName)
     else:
@@ -308,7 +316,7 @@ def _calc_file_types(model_file_hours_res, model_var_file_types):
         set(model_var_file_types.values()) - set(model_file_hours_res)
     ):
         raise KeyError(
-            f"Error: file type(s) missing from fdict mapping of "
+            f"Error: file type(s) missing from model_file_hours_res mapping of "
             f"model file types to time resolution in hours: {missing_file_types}"
         )
     file_types = list(model_file_hours_res)
@@ -644,20 +652,22 @@ def _binmatch(
     return data
 
 
-def _vvlBin(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
+def _vvlBin(
+    data, flist, ftypes, filemap, filemap_r, tmask, model_file_hours_res, e3tvar
+):
     """vertical matching of model output to data by bin method but considering vvl change in
     grid thickness with tides
     """
     data["k"] = -1 * np.ones((len(data))).astype(int)
     ifte3t = filemap[e3tvar]
-    pere3t = fdict[ifte3t]
-    pers = np.unique([i for i in fdict.values()])
-    # reverse fdict
+    pere3t = model_file_hours_res[ifte3t]
+    pers = np.unique([i for i in model_file_hours_res.values()])
+    # reverse model_file_hours_res
     fdict_r = dict()
     for iii in pers:
         fdict_r[iii] = list()
-    for ikey in fdict:
-        fdict_r[fdict[ikey]].append(ikey)
+    for ikey in model_file_hours_res:
+        fdict_r[model_file_hours_res[ikey]].append(ikey)
     # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
     # also, we are only dealing with data saved at same interval as e3t
     test = fdict_r.copy()
@@ -710,19 +720,21 @@ def _vvlBin(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
     return data
 
 
-def _interpvvlZ(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
+def _interpvvlZ(
+    data, flist, ftypes, filemap, filemap_r, tmask, model_file_hours_res, e3tvar
+):
     """vertical interpolation of model output to observation depths considering vvl change in
     grid thickness with tides
     """
     ifte3t = filemap.pop(e3tvar)
-    pere3t = fdict.pop(ifte3t)
-    pers = np.unique([i for i in fdict.values()])
-    # reverse fdict
+    pere3t = model_file_hours_res.pop(ifte3t)
+    pers = np.unique([i for i in model_file_hours_res.values()])
+    # reverse model_file_hours_res
     fdict_r = dict()
     for iii in pers:
         fdict_r[iii] = list()
-    for ikey in fdict:
-        fdict_r[fdict[ikey]].append(ikey)
+    for ikey in model_file_hours_res:
+        fdict_r[model_file_hours_res[ikey]].append(ikey)
     # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
     # also, we are only dealing with data saved at same interval as e3t
     test = fdict_r.copy()
@@ -769,7 +781,7 @@ def _interpvvlZ(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
     return data
 
 
-def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, fdict):
+def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, model_file_hours_res):
     """matching of model output to top grid cells (for ferry underway measurements)"""
     # loop through data, openening and closing model files as needed and storing model data
     # extract average of upper 3 model levels (approx 3 m)
@@ -788,7 +800,9 @@ def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, fdict):
             flist[ift].loc[aa, ["t_0"]].values[0] for aa in data["indf_" + ift].values
         ]
         data["ih_" + ift] = [
-            int(np.floor((aa - bb).total_seconds() / (fdict[ift] * 3600)))
+            int(
+                np.floor((aa - bb).total_seconds() / (model_file_hours_res[ift] * 3600))
+            )
             for aa, bb in zip(data["dtUTC"], t2)
         ]
         print("done index " + ift, dt.datetime.now())
