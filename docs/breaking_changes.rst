@@ -63,6 +63,9 @@ are incompatible with earlier versions:
 * The ``fdict``  argument of the :py:func:`evaltools.matchData` function has been changed to
   ``model_file_hours_res`` to make its meaning more evident.
 
+* The ``filemap``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``model_var_file_types`` to make its meaning more evident.
+
 
 .. _BreakingChangesVersion24.1:
 

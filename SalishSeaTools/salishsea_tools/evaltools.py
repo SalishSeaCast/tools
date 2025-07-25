@@ -43,7 +43,7 @@ from salishsea_tools import geo_tools, places
 # :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
     data,
-    filemap,
+    model_var_file_types,
     model_file_hours_res,
     mesh_mask_path,
     mod_start=None,
@@ -74,7 +74,7 @@ def matchData(
         'Z': depth, positive; NOT required if method='ferry' or n_spatial_dims=2
     :type :py:class:`pandas.DataFrame`
 
-    :arg dict filemap: dictionary mapping names of model variables to filetypes containing them
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
 
     :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
 
@@ -145,9 +145,9 @@ def matchData(
     reqd_cols = _reqd_cols_in_data_frame(data, method, n_spatial_dims, pre_indexed)
 
     # Calculate the minimal list of file types to load (so we don't load extras)
-    # and build a mapping of file types to model variables (inverse of filemap)
-    ftypes = _calc_file_types(model_file_hours_res, filemap)
-    filemap_r = _invert_filemap(filemap, ftypes)
+    # and build a mapping of file types to model variables (inverse of model_var_file_types)
+    ftypes = _calc_file_types(model_file_hours_res, model_var_file_types)
+    filemap_r = _invert_filemap(model_var_file_types, ftypes)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
     if mod_start is None:
@@ -199,7 +199,7 @@ def matchData(
     data.reset_index(drop=True, inplace=True)
 
     # set up columns to accept model values; prepend 'mod' to distinguish from obs names
-    for ivar in filemap.keys():
+    for ivar in model_var_file_types.keys():
         data["mod_" + ivar] = np.full(len(data), np.nan)
 
     # create dictionary of dataframes of filename, start time, and end time for each file type
@@ -232,11 +232,25 @@ def matchData(
         data = _ferrymatch(data, flist, ftypes, filemap_r, omask, model_file_hours_res)
     elif method == "vvlZ":
         data = _interpvvlZ(
-            data, flist, ftypes, filemap, filemap_r, omask, model_file_hours_res, e3tvar
+            data,
+            flist,
+            ftypes,
+            model_var_file_types,
+            filemap_r,
+            omask,
+            model_file_hours_res,
+            e3tvar,
         )
     elif method == "vvlBin":
         data = _vvlBin(
-            data, flist, ftypes, filemap, filemap_r, omask, model_file_hours_res, e3tvar
+            data,
+            flist,
+            ftypes,
+            model_var_file_types,
+            filemap_r,
+            omask,
+            model_file_hours_res,
+            e3tvar,
         )
     elif method == "vertNet":
         data = _vertNetmatch(data, flist, ftypes, filemap_r, omask, e3t0, maskName)
@@ -653,13 +667,20 @@ def _binmatch(
 
 
 def _vvlBin(
-    data, flist, ftypes, filemap, filemap_r, tmask, model_file_hours_res, e3tvar
+    data,
+    flist,
+    ftypes,
+    model_var_file_types,
+    filemap_r,
+    tmask,
+    model_file_hours_res,
+    e3tvar,
 ):
     """vertical matching of model output to data by bin method but considering vvl change in
     grid thickness with tides
     """
     data["k"] = -1 * np.ones((len(data))).astype(int)
-    ifte3t = filemap[e3tvar]
+    ifte3t = model_var_file_types[e3tvar]
     pere3t = model_file_hours_res[ifte3t]
     pers = np.unique([i for i in model_file_hours_res.values()])
     # reverse model_file_hours_res
@@ -721,12 +742,19 @@ def _vvlBin(
 
 
 def _interpvvlZ(
-    data, flist, ftypes, filemap, filemap_r, tmask, model_file_hours_res, e3tvar
+    data,
+    flist,
+    ftypes,
+    model_var_file_types,
+    filemap_r,
+    tmask,
+    model_file_hours_res,
+    e3tvar,
 ):
     """vertical interpolation of model output to observation depths considering vvl change in
     grid thickness with tides
     """
-    ifte3t = filemap.pop(e3tvar)
+    ifte3t = model_var_file_types.pop(e3tvar)
     pere3t = model_file_hours_res.pop(ifte3t)
     pers = np.unique([i for i in model_file_hours_res.values()])
     # reverse model_file_hours_res
