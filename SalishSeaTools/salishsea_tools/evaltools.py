@@ -57,7 +57,6 @@ def matchData(
     fastSearch=False,
     wrapTol=1,
     e3tvar="e3t",
-    fid=None,
     n_spatial_dims=3,
     quiet=False,
     pre_indexed=False,
@@ -113,9 +112,6 @@ def matchData(
     :arg int wrapTol: assumed search radius from previous grid point if wrapSearch=True
 
     :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
-
-    :arg Dataset fid: optionally include name of a single dataset when looping is not necessary and all matches come from
-        a single file
 
     :arg int n_spatial_dims: Optional. The number of spatial dimensions
                              (must be the same for all variables per call).
