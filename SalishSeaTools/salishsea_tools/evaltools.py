@@ -127,8 +127,18 @@ def matchData(
 
     """
     # define dictionaries of mesh lat and lon variables to use with different grids:
-    lonvar = {"tmask": "nav_lon", "umask": "glamu", "vmask": "glamv", "fmask": "glamf"}
-    latvar = {"tmask": "nav_lat", "umask": "gphiu", "vmask": "gphiv", "fmask": "gphif"}
+    lon_vars = {
+        "tmask": "nav_lon",
+        "umask": "glamu",
+        "vmask": "glamv",
+        "fmask": "glamf",
+    }
+    lat_vars = {
+        "tmask": "nav_lat",
+        "umask": "gphiu",
+        "vmask": "gphiv",
+        "fmask": "gphif",
+    }
 
     reqd_cols = _reqd_cols_in_data_frame(data, method, sdim, preIndexed)
 
@@ -159,8 +169,8 @@ def matchData(
         if not preIndexed:
             # Lons/lats are required to calculate model grid j/i indices when the data frame
             # is not pre-indexed
-            navlon = fmesh[lonvar[maskName]].to_numpy()
-            navlat = fmesh[latvar[maskName]].to_numpy()
+            navlon = fmesh[lon_vars[maskName]].to_numpy()
+            navlat = fmesh[lat_vars[maskName]].to_numpy()
         if method == "vertNet":
             e3t0 = np.squeeze(fmesh.e3t_0)
             if maskName != "tmask":
@@ -890,7 +900,8 @@ def index_model_files(start, end, basedir, nam_fmt, flen, ftype=None, tres=1):
         "None",
         None,
     ):
-        print("ftype={}, are you sure? (if yes, add to list)".format(ftype))
+        raise ValueError("ftype={}, are you sure? (if yes, add to list)".format(ftype))
+        # print("ftype={}, are you sure? (if yes, add to list)".format(ftype))
     if tres == 24:
         ftres = "1d"
     else:
