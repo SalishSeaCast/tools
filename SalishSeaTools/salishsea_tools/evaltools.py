@@ -40,7 +40,6 @@ import xarray as xr
 from salishsea_tools import geo_tools, places
 
 
-# :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
     data,
     model_var_file_types,
@@ -54,77 +53,102 @@ def matchData(
     method="bin",
     maskName="tmask",
     wrapSearch=False,
-    fastSearch=False,
     wrapTol=1,
+    fastSearch=False,
     e3tvar="e3t",
     n_spatial_dims=3,
     quiet=False,
     pre_indexed=False,
 ):
-    """Given a discrete sample dataset, find match model output
+    """
+    Matches provided data to a model dataset using grid and time alignment based on
+    the specified parameters. This function supports different methods for matching,
+    including binning, interpolation, and vertical level matching.
 
-    note: only one grid mask is loaded so all model variables must be on same grid; defaults to tmask;
-        call multiple times for different grids (eg U,W)
+    The input data is filtered and adjusted based on valid temporal bounds and grid
+    coordinates. Depending on the method selected, the function calculates
+    corresponding model variables for each observational data point. It also handles
+    the creation of indices and other necessary preprocessing steps for alignment.
 
-    :arg data: pandas dataframe containing data to compare to. Must include the following:
-        'dtUTC': column with UTC date and time
-        'Lat': decimal latitude
-        'Lon': decimal longitude
-        'Z': depth, positive; NOT required if method='ferry' or n_spatial_dims=2
-    :type :py:class:`pandas.DataFrame`
+    :arg data: A pandas DataFrame containing observational data to find matching model values for.
+               Must include these columns:
+
+               * ``dtUTC``: UTC date and time
+               * ``Lat``: decimal latitude
+               * ``Lon``: decimal longitude
+               * ``Z``: depth, positive; NOT required if method='ferry' or n_spatial_dims=2
+    :type data: :py:class:`pandas.DataFrame`
 
     :arg dict model_var_file_types: Mapping of model variable to model file types.
 
     :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
 
-    :arg str mesh_mask_path: Path to the mesh mask file.
+    :arg str mesh_mask_path: Path to the NEMO model mesh mask file, which contains grid
+                             and masking information.
 
-    :arg mod_start: first date of time range to match
-    :type :py:class:`datetime.datetime`
+    :arg mod_start: First date of time range to match. If not specified, it defaults to the earliest
+                    date found in the input DataFrame.
+    :type mod_start: :py:class:`datetime.datetime`
 
-    :arg mod_end: end of date range to match (not included)
-    :type :py:class:`datetime.datetime`
+    :arg mod_end: Date at the end of the time range to match; not included in the matched time range.
+                  If not specified, it defaults to the latest date found in the input DataFrame.
+    :type mod_end: :py:class:`datetime.datetime`
 
-    :arg str mod_nam_fmt: naming format for model files. options are 'nowcast' or 'long'
-        'nowcast' example: 05may15/SalishSea_1h_20150505_20150505_ptrc_T.nc
-        'long' example: SalishSea_1h_20150206_20150804_ptrc_T_20150427-20150506.nc
-                    'long' will recursively search subdirectories (to match Vicky's storage style)
+    :arg str mod_nam_fmt: Model file name format selector (default is "nowcast").
+                          Examples (see the code in
+                          :py:func:`~salishsea_tools.evaltools.index_model_files` for more):
 
-    :arg str mod_basedir: path to search for model files; defaults to nowcast-green
+                          * "nowcast" matches files like: ``05may15/SalishSea_1h_20150505_20150505_ptrc_T.nc``
+                          * "long" matches files like: ``SalishSea_1h_20150206_20150804_ptrc_T_20150427-20150506.nc``
+                            by recursively searching subdirectories (to match Vicky's storage style)
 
-    :arg int mod_flen: length of model files in days; defaults to 1, which is how nowcast data is stored
+    :arg str mod_basedir: Base directory path to search for model files.
+                          Defaults to "nowcast-green".
 
-    :arg str method: method to use for matching. options are:
-        'bin'- return model value from grid/time interval containing observation
-        'vvlBin' - same as 'bin' but consider tidal change in vertical grid
-        'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
-        'ferry' - match observations to top model layer
-        'vertNet' - match observations to mean over a vertical range defined by
-                    Z_upper and Z_lower; first try will include entire cell containing end points
-                    and use e3t_0 rather than time-varying e3t
+    :arg int mod_flen: Length of individual model files expressed in days.
+                       Defaults to 1, which is how nowcast data is stored.
 
-    :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
-                       for ops vars use 'ops'
+    :arg str method: Matching method to use; supported options include:
 
-    :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes
-                             nearness of subsequent values
+                     * "bin"
+                     * "ferry"
+                     * "vvlZ"
+                     * "vvlBin"
+                     * "vertNet"
 
-    :arg int wrapTol: assumed search radius from previous grid point if wrapSearch=True
+                     Defaults to "bin".
 
-    :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
+    :arg str maskName: Name of the mask variable within the mesh mask file (e.g., "tmask").
+
+    :arg bool wrapSearch: If True, use wrapper on
+                          :py:func:`salishsea_tools.geo_tools.find_closest_model_point` that assumes
+                          nearness of subsequent values
+
+    :arg int wrapTol: Search radius (in grid cells) from previous grid point if ``wrapSearch`` is enabled.
+
+    :arg bool fastSearch: If True, use high-resolution lon/lat to grid index mapping to speed up matching.
+
+    :arg e3tvar: Name of the t-grid thicknesses variable; only for vvl* methods (which only works on t-grid).
+                 Defaults is "e3t".
 
     :arg int n_spatial_dims: Optional. The number of spatial dimensions
                              (must be the same for all variables per call).
                              Defaults to 3. Use 2 to match to 2d fields like sea surface height.
 
-    :arg boolean quiet: if True, suppress non-critical warnings
+    :arg bool quiet: If True suppress non-critical warnings. Default is False.
 
-    :arg boolean pre_indexed: Set to ``True`` if the horizontal grid indices are already in the
-                              input dataframe. This is a  speed-up option that is not implemented
-                              for all the matching methods.
+    :arg bool pre_indexed: Set to ``True`` if the horizontal grid indices are already in the
+                           input dataframe. This is a speed-up option that is not implemented
+                           for all the matching methods.
+                           Default is False.
 
+    :return: A pandas DataFrame with the input observational data, now including columns
+             containing corresponding model variable values. The additional columns are prefixed
+             with ``mod_`` followed by the variable name.
+    :rtype: :py:class:`pandas.DataFrame`
     """
-    # define dictionaries of mesh lat and lon variables to use with different grids:
+
+    # Mesh lat and lon variables to use with different grids:
     lon_vars = {
         "tmask": "nav_lon",
         "umask": "glamu",
