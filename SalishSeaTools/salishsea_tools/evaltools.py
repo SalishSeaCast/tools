@@ -143,7 +143,7 @@ def matchData(
     # Calculate the minimal list of file types to load (so we don't load extras)
     # and build a mapping of file types to model variables (inverse of model_var_file_types)
     file_types = _calc_file_types(model_file_hours_res, model_var_file_types)
-    filemap_r = _invert_filemap(model_var_file_types, file_types)
+    file_type_model_vars = _calc_file_type_model_vars(model_var_file_types, file_types)
 
     # if mod_start and mod_end not provided, use min and max of data datetimes
     if mod_start is None:
@@ -217,7 +217,7 @@ def matchData(
             data,
             flist,
             file_types,
-            filemap_r,
+            file_type_model_vars,
             omask,
             maskName,
             n_spatial_dims,
@@ -226,7 +226,7 @@ def matchData(
     elif method == "ferry":
         print("data is matched to shallowest model level")
         data = _ferrymatch(
-            data, flist, file_types, filemap_r, omask, model_file_hours_res
+            data, flist, file_types, file_type_model_vars, omask, model_file_hours_res
         )
     elif method == "vvlZ":
         data = _interpvvlZ(
@@ -234,7 +234,7 @@ def matchData(
             flist,
             file_types,
             model_var_file_types,
-            filemap_r,
+            file_type_model_vars,
             omask,
             model_file_hours_res,
             e3tvar,
@@ -245,13 +245,15 @@ def matchData(
             flist,
             file_types,
             model_var_file_types,
-            filemap_r,
+            file_type_model_vars,
             omask,
             model_file_hours_res,
             e3tvar,
         )
     elif method == "vertNet":
-        data = _vertNetmatch(data, flist, file_types, filemap_r, omask, e3t0, maskName)
+        data = _vertNetmatch(
+            data, flist, file_types, file_type_model_vars, omask, e3t0, maskName
+        )
     else:
         print("option " + method + " not written yet")
         return
@@ -335,9 +337,9 @@ def _calc_file_types(model_file_hours_res, model_var_file_types):
     return file_types
 
 
-def _invert_filemap(model_var_file_types, file_types):
+def _calc_file_type_model_vars(model_var_file_types, file_types):
     """
-    Creates an inverted version of the given filemap dictionary, mapping file
+    Creates an inverted version of the given model_var_file_types dictionary, mapping file
     types to the variables they contain.
 
     :arg dict model_var_file_types: Mapping of model variable to model file types.
@@ -348,14 +350,14 @@ def _invert_filemap(model_var_file_types, file_types):
              are lists of file variable names associated with those types.
     :rtype: dict
     """
-    filemap_r = defaultdict(list)
+    file_type_model_vars = defaultdict(list)
     for file_type in file_types:
         # Initialize empty lists for all required file types
-        filemap_r[file_type] = []
+        file_type_model_vars[file_type] = []
     for var, file_type in model_var_file_types.items():
         # Group variables by their file types
-        filemap_r[file_type].append(var)
-    return dict(filemap_r)
+        file_type_model_vars[file_type].append(var)
+    return dict(file_type_model_vars)
 
 
 def _gridHoriz(
