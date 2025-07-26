@@ -222,10 +222,9 @@ def matchData(
     for var in model_var_file_types:
         data[f"mod_{var}"] = np.full(len(data), np.nan)
 
-    # create dictionary of dataframes containing filename, start time, and end time for each file type
-    flist = dict()
-    for file_type in file_types:
-        flist[file_type] = index_model_files(
+    # Create a dictionary of dataframes containing filename, start time, and end time for each file type
+    file_lists = {
+        file_type: index_model_files(
             mod_start,
             mod_end,
             mod_basedir,
@@ -234,12 +233,14 @@ def matchData(
             file_type,
             model_file_hours_res[file_type],
         )
+        for file_type in file_types
+    }
 
     # call a function to carry out vertical matching based on specified method
     if method == "bin":
         data = _binmatch(
             data,
-            flist,
+            file_lists,
             file_types,
             file_type_model_vars,
             omask,
@@ -250,12 +251,17 @@ def matchData(
     elif method == "ferry":
         print("data is matched to shallowest model level")
         data = _ferrymatch(
-            data, flist, file_types, file_type_model_vars, omask, model_file_hours_res
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            omask,
+            model_file_hours_res,
         )
     elif method == "vvlZ":
         data = _interpvvlZ(
             data,
-            flist,
+            file_lists,
             file_types,
             model_var_file_types,
             file_type_model_vars,
@@ -266,7 +272,7 @@ def matchData(
     elif method == "vvlBin":
         data = _vvlBin(
             data,
-            flist,
+            file_lists,
             file_types,
             model_var_file_types,
             file_type_model_vars,
@@ -276,7 +282,7 @@ def matchData(
         )
     elif method == "vertNet":
         data = _vertNetmatch(
-            data, flist, file_types, file_type_model_vars, omask, e3t0, maskName
+            data, file_lists, file_types, file_type_model_vars, omask, e3t0, maskName
         )
     else:
         print("option " + method + " not written yet")
