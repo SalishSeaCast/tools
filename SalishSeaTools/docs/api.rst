@@ -82,6 +82,12 @@ Observation Loader Functions
 .. autofunction:: salishsea_tools.evaltools.load_ONC_node_ERDDAP
 
 
+Model/Observations Matching Function
+------------------------------------
+
+.. autofunction:: salishsea_tools.evaltools.matchData
+
+
 :py:obj:`datetime` Conversion Functions
 ---------------------------------------
 
