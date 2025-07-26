@@ -15,6 +15,8 @@
 
 """Unit tests for evaltools module matchData() function and its supporting functions."""
 
+from datetime import datetime
+
 import pandas
 import pytest
 
@@ -187,3 +189,43 @@ class TestFileTypeModelVars:
             model_var_file_types, file_types
         )
         assert expected == file_type_model_vars
+
+
+class TestMatchData:
+    """Unit tests for the matchData() function."""
+
+    def test_input_data_with_missing_columns(self):
+        data = pandas.DataFrame({"Lat": [48.5], "Lon": [-123.5], "Z": [5]})
+        model_var_file_types = {"votemper": "grid_T"}
+        model_file_hours_res = {"grid_T": 1}
+        mesh_mask_path = "path/to/mesh_mask.nc"
+
+        with pytest.raises(KeyError, match=r"\['dtUTC'] missing from data"):
+            evaltools.matchData(
+                data, model_var_file_types, model_file_hours_res, mesh_mask_path
+            )
+
+    def test_invalid_mask_name(self):
+        data = pandas.DataFrame(
+            {
+                "dtUTC": [datetime(2025, 1, 1, 12)],
+                "Lat": [48.5],
+                "Lon": [-123.5],
+                "Z": [5],
+            }
+        )
+        model_var_file_types = {"salinity": "grid_T"}
+        model_file_hours_res = {"grid_T": 1}
+        mesh_mask_path = "path/to/mesh_mask.nc"
+
+        with pytest.raises(
+            ValueError,
+            match="Data matching for atmospheric fields is not yet supported: maskName='ops'",
+        ):
+            evaltools.matchData(
+                data,
+                model_var_file_types,
+                model_file_hours_res,
+                mesh_mask_path,
+                maskName="ops",
+            )
