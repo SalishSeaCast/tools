@@ -169,13 +169,12 @@ def matchData(
     file_types = _calc_file_types(model_file_hours_res, model_var_file_types)
     file_type_model_vars = _calc_file_type_model_vars(model_var_file_types, file_types)
 
-    # if mod_start and mod_end not provided, use min and max of data datetimes
-    if mod_start is None:
-        mod_start = np.min(data["dtUTC"])
-        print(mod_start)
-    if mod_end is None:
-        mod_end = np.max(data["dtUTC"])
-        print(mod_end)
+    # If mod_start and mod_end not provided, use min and max of data datetimes
+    mod_start = mod_start or data["dtUTC"].min()
+    print(f"{mod_start=:%Y-%m-%d %H:%M:%S}")
+    mod_end = mod_end or data["dtUTC"].max()
+    print(f"{mod_end=:%Y-%m-%d %H:%M:%S}")
+
     # adjustments to data dataframe to avoid unnecessary calculations
     data = data.loc[(data.dtUTC >= mod_start) & (data.dtUTC < mod_end)].copy(deep=True)
     data = data.dropna(
