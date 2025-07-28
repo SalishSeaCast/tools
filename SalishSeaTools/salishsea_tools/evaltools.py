@@ -45,13 +45,13 @@ def matchData(
     model_var_file_types,
     model_file_hours_res,
     mesh_mask_path,
+    mask_name="tmask",
     mod_start=None,
     mod_end=None,
     mod_nam_fmt="nowcast",
     mod_basedir="/results/SalishSea/nowcast-green/",
     mod_flen=1,
     method="bin",
-    maskName="tmask",
     wrapSearch=False,
     wrapTol=1,
     fastSearch=False,
@@ -86,6 +86,8 @@ def matchData(
     :arg str mesh_mask_path: Path to the NEMO model mesh mask file, which contains grid
                              and masking information.
 
+    :arg str mask_name: Name of the mask variable within the mesh mask file (e.g., "tmask").
+
     :arg mod_start: First date of time range to match. If not specified, it defaults to the earliest
                     date found in the input DataFrame.
     :type mod_start: :py:class:`datetime.datetime`
@@ -117,8 +119,6 @@ def matchData(
                      * "vertNet"
 
                      Defaults to "bin".
-
-    :arg str maskName: Name of the mask variable within the mesh mask file (e.g., "tmask").
 
     :arg bool wrapSearch: If True, use wrapper on
                           :py:func:`salishsea_tools.geo_tools.find_closest_model_point` that assumes
@@ -181,32 +181,22 @@ def matchData(
         how="any", subset=reqd_cols
     )  # .dropna(how='all',subset=[*varmap.keys()])
 
-    if maskName == "ops":
+    if mask_name == "ops":
         raise ValueError(
             "Data matching for atmospheric fields is not yet supported: maskName='ops'"
         )
-    with xr.open_dataset(mesh_mask_path) as fmesh:
-        omask = fmesh[maskName].to_numpy()
-        if not pre_indexed:
-            # Lons/lats are required to calculate model grid j/i indices when the data frame
-            # is not pre-indexed
-            navlon = fmesh[lon_vars[maskName]].to_numpy()
-            navlat = fmesh[lat_vars[maskName]].to_numpy()
-        if method == "vertNet":
-            e3t0 = np.squeeze(fmesh.e3t_0)
-            if maskName != "tmask":
-                print(
-                    f"Warning: Using tmask thickness for variable on different grid: {maskName}"
-                )
+    mesh_data = _load_mesh_mask(
+        mesh_mask_path, mask_name, method, pre_indexed, lon_vars, lat_vars
+    )
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
     if not pre_indexed:
         # find location of each obs on model grid and add to data as additional columns 'i' and 'j'
         data = _gridHoriz(
             data,
-            omask,
-            navlon,
-            navlat,
+            mesh_data["mask"],
+            mesh_data["lons"],
+            mesh_data["lats"],
             wrapSearch,
             wrapTol,
             fastSearch,
@@ -242,8 +232,8 @@ def matchData(
             file_lists,
             file_types,
             file_type_model_vars,
-            omask,
-            maskName,
+            mesh_data["mask"],
+            mask_name,
             n_spatial_dims,
             pre_indexed=pre_indexed,
         )
@@ -254,7 +244,7 @@ def matchData(
             file_lists,
             file_types,
             file_type_model_vars,
-            omask,
+            mesh_data["mask"],
             model_file_hours_res,
         )
     elif method == "vvlZ":
@@ -264,7 +254,7 @@ def matchData(
             file_types,
             model_var_file_types,
             file_type_model_vars,
-            omask,
+            mesh_data["mask"],
             model_file_hours_res,
             e3tvar,
         )
@@ -275,13 +265,19 @@ def matchData(
             file_types,
             model_var_file_types,
             file_type_model_vars,
-            omask,
+            mesh_data["mask"],
             model_file_hours_res,
             e3tvar,
         )
     elif method == "vertNet":
         data = _vertNetmatch(
-            data, file_lists, file_types, file_type_model_vars, omask, e3t0, maskName
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            mesh_data["e3t0"],
+            mask_name,
         )
     else:
         print("option " + method + " not written yet")
@@ -387,6 +383,49 @@ def _calc_file_type_model_vars(model_var_file_types, file_types):
         # Group variables by their file types
         file_type_model_vars[file_type].append(var)
     return dict(file_type_model_vars)
+
+
+def _load_mesh_mask(mesh_mask_path, mask_name, method, pre_indexed, lon_vars, lat_vars):
+    """
+    Loads and processes mesh mask data from a provided file path using the specified
+    method and options. This function allows reading and extracting specific mesh
+    mask information, including optional longitude and latitude coordinates if the
+    observation data to be matched are not pre-indexed.
+
+    :arg str mesh_mask_path: Path to the mesh mask dataset.
+
+    :arg str mask_name: The name of the mask variable to extract from the dataset.
+
+    :arg str method: Observation data matching method to be used.
+
+    :arg bool pre_indexed: Indicates whether the observation data fram is pre-indexed with model
+                           j/i index values.
+
+    :arg dict lon_vars: Dictionary mapping mask names to their respective longitude variable names.
+
+    :arg dict lat_vars: Dictionary mapping mask names to their respective latitude variable names.
+
+    :return: A dictionary containing the extracted mesh mask data, including the mask
+             itself and optionally the longitude, latitude, and thickness data if applicable.
+    :rtype: dict
+    """
+    with xr.open_dataset(mesh_mask_path) as fmesh:
+        mesh_data = {"mask": fmesh[mask_name].to_numpy()}
+
+        if not pre_indexed:
+            # Lons/lats are required to calculate model grid j/i indices when the data frame
+            # is not pre-indexed
+            mesh_data["lons"] = fmesh[lon_vars[mask_name]].to_numpy()
+            mesh_data["lats"] = fmesh[lat_vars[mask_name]].to_numpy()
+
+        if method == "vertNet":
+            mesh_data["e3t0"] = np.squeeze(fmesh.e3t_0)
+            if mask_name != "tmask":
+                print(
+                    f"Warning: Using tmask thickness for variable on different grid: {mask_name}"
+                )
+
+    return mesh_data
 
 
 def _gridHoriz(

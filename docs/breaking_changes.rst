@@ -66,6 +66,9 @@ are incompatible with earlier versions:
 * The ``filemap``  argument of the :py:func:`evaltools.matchData` function has been changed to
   ``model_var_file_types`` to make its meaning more evident.
 
+* The ``maskName``  argument of the :py:func:`evaltools.matchData` function has been
+  changed to ``mask_name`` to make it consistent with Python variable naming style.
+
 
 .. _BreakingChangesVersion24.1:
 

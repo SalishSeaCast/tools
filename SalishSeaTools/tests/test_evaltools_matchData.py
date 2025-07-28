@@ -14,11 +14,13 @@
 # limitations under the License.
 
 """Unit tests for evaltools module matchData() function and its supporting functions."""
-
+import os
 from datetime import datetime
 
+import numpy
 import pandas
 import pytest
+import xarray
 
 from salishsea_tools import evaltools
 
@@ -191,6 +193,70 @@ class TestFileTypeModelVars:
         assert expected == file_type_model_vars
 
 
+class TestLoadMeshMask:
+    """Unit tests for the _load_mesh_mask() function."""
+
+    @pytest.fixture
+    def temp_mesh_mask_file(self, tmp_path):
+        """Create a temporary NetCDF file with example mesh mask data."""
+        mesh_mask_path = tmp_path / "mesh_mask.nc"
+        data = xarray.Dataset(
+            {
+                "tmask": (("y", "x"), numpy.array([[1, 0], [1, 1]])),
+                "lons": (("y", "x"), numpy.array([[123.0, 124.0], [125.0, 126.0]])),
+                "lats": (("y", "x"), numpy.array([[47.0, 48.0], [49.0, 50.0]])),
+                "e3t_0": (("z", "y", "x"), numpy.random.rand(1, 2, 2)),
+            }
+        )
+        data.to_netcdf(mesh_mask_path)
+        return os.fspath(mesh_mask_path)
+
+    def test_load_tmask_with_pre_indexed(self, temp_mesh_mask_file):
+        """Test loading the tmask variable when pre_indexed is True."""
+        result = evaltools._load_mesh_mask(
+            mesh_mask_path=temp_mesh_mask_file,
+            mask_name="tmask",
+            method="any",
+            pre_indexed=True,
+            lon_vars={"tmask": "lons"},
+            lat_vars={"tmask": "lats"},
+        )
+        expected_tmask = numpy.array([[1, 0], [1, 1]])
+        numpy.testing.assert_array_equal(result["mask"], expected_tmask)
+        assert "lons" not in result
+        assert "lats" not in result
+
+    def test_load_tmask_without_pre_indexed(self, temp_mesh_mask_file):
+        """Test loading the tmask variable when pre_indexed is False."""
+        result = evaltools._load_mesh_mask(
+            mesh_mask_path=temp_mesh_mask_file,
+            mask_name="tmask",
+            method="any",
+            pre_indexed=False,
+            lon_vars={"tmask": "lons"},
+            lat_vars={"tmask": "lats"},
+        )
+        expected_tmask = numpy.array([[1, 0], [1, 1]])
+        expected_lons = numpy.array([[123.0, 124.0], [125.0, 126.0]])
+        expected_lats = numpy.array([[47.0, 48.0], [49.0, 50.0]])
+        numpy.testing.assert_array_equal(result["mask"], expected_tmask)
+        numpy.testing.assert_array_equal(result["lons"], expected_lons)
+        numpy.testing.assert_array_equal(result["lats"], expected_lats)
+
+    def test_load_for_vertnet_method(self, temp_mesh_mask_file):
+        """Test loading with the vertNet method including thickness data."""
+        result = evaltools._load_mesh_mask(
+            mesh_mask_path=temp_mesh_mask_file,
+            mask_name="tmask",
+            method="vertNet",
+            pre_indexed=False,
+            lon_vars={"tmask": "lons"},
+            lat_vars={"tmask": "lats"},
+        )
+        assert "e3t0" in result
+        assert result["e3t0"].shape == (2, 2)  # Squeezed along the z-axis
+
+
 class TestMatchData:
     """Unit tests for the matchData() function."""
 
@@ -227,5 +293,5 @@ class TestMatchData:
                 model_var_file_types,
                 model_file_hours_res,
                 mesh_mask_path,
-                maskName="ops",
+                mask_name="ops",
             )
