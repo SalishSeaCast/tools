@@ -54,7 +54,7 @@ def matchData(
     method="bin",
     wrapSearch=False,
     wrapTol=1,
-    fastSearch=False,
+    fast_search_index_path="",
     e3tvar="e3t",
     n_spatial_dims=3,
     quiet=False,
@@ -124,11 +124,19 @@ def matchData(
                           :py:func:`salishsea_tools.geo_tools.find_closest_model_point` that assumes
                           nearness of subsequent values
 
-    :arg int wrapTol: Search radius (in grid cells) from previous grid point if ``wrapSearch`` is enabled.
+    :arg int wrapTol: Search radius (in grid cells) from the previous grid point if ``wrapSearch``
+                      is enabled.
 
-    :arg bool fastSearch: If True, use high-resolution lon/lat to grid index mapping to speed up matching.
+    :arg str fast_search_index_path: Path and file name of a high-resolution lon/lat to grid index mapping
+                                     to use to speed up matching; e.g.
+                                     ``"~/MEOPAR/grid/grid_from_lat_lon_mask999.nc"``.
+                                     If no index mapping is provided,
+                                     :py:func:`salishsea_tools.geo_tools.find_closest_model_point` is
+                                     used to calculate the model grid indices for the observation data
+                                     lons/lats.
 
-    :arg e3tvar: Name of the t-grid thicknesses variable; only for vvl* methods (which only works on t-grid).
+    :arg e3tvar: Name of the t-grid thicknesses variable; only for vvl* methods
+                 (which only works on t-grid).
                  Defaults is "e3t".
 
     :arg int n_spatial_dims: Optional. The number of spatial dimensions
@@ -138,7 +146,7 @@ def matchData(
     :arg bool quiet: If True suppress non-critical warnings. Default is False.
 
     :arg bool pre_indexed: Set to ``True`` if the model grid indices are already in the
-                           input dataframe. This is a speed-up option that is not implemented
+                           input dataframe. This speed-up option is not implemented
                            for all the matching methods.
                            Default is False.
 
@@ -199,7 +207,7 @@ def matchData(
             mesh_data["lats"],
             wrapSearch,
             wrapTol,
-            fastSearch,
+            fast_search_index_path,
             quiet=quiet,
             nemops="NEMO",
         )
@@ -393,7 +401,7 @@ def _gridHoriz(
     navlat,
     wrapSearch,
     wrapTol,
-    fastSearch=False,
+    fast_search_index_path="",
     resetIndex=False,
     quiet=False,
     nemops="NEMO",
@@ -403,10 +411,20 @@ def _gridHoriz(
     NOTE: points that are matched are dropped from the dataFrame; with quiet=False, the unmatched
     lats and lons are printed
     """
-    lmask = -1 * (
-        omask[0, 0, :, :] - 1
-    )  # NEMO masks have ocean = 1, but the functions called below require land = 1
-    if wrapSearch:
+    # NEMO masks have ocean = 1, but the functions called below require land = 1
+    lmask = -1 * (omask[0, 0, :, :] - 1)
+
+    if fast_search_index_path:
+        jjii = xr.open_dataset(fast_search_index_path)
+        print(data["Lat"])
+        mylats = xr.DataArray(data["Lat"])
+        mylons = xr.DataArray(data["Lon"])
+        jj = jjii.jj.sel(lats=mylats, lons=mylons, method="nearest").to_numpy()
+        ii = jjii.ii.sel(lats=mylats, lons=mylons, method="nearest").to_numpy()
+        print(jj.shape, jj)
+        data["j"] = [-1 if mm == -999 else mm for mm in jj]
+        data["i"] = [-1 if mm == -999 else mm for mm in ii]
+    elif wrapSearch:
         # this speeds up the matching process for ferry data where there is a high likelihood each point
         #  is close to the point before it
         jj, ii = geo_tools.closestPointArray(
@@ -419,16 +437,6 @@ def _gridHoriz(
         )
         data["j"] = [-1 if np.isnan(mm) else int(mm) for mm in jj]
         data["i"] = [-1 if np.isnan(mm) else int(mm) for mm in ii]
-    elif fastSearch:
-        jjii = xr.open_dataset("~/MEOPAR/grid/grid_from_lat_lon_mask999.nc")
-        print(data["Lat"])
-        mylats = xr.DataArray(data["Lat"])
-        mylons = xr.DataArray(data["Lon"])
-        jj = jjii.jj.sel(lats=mylats, lons=mylons, method="nearest").values
-        ii = jjii.ii.sel(lats=mylats, lons=mylons, method="nearest").values
-        print(jj.shape, jj)
-        data["j"] = [-1 if mm == -999 else mm for mm in jj]
-        data["i"] = [-1 if mm == -999 else mm for mm in ii]
     else:
         data["j"] = -1 * np.ones((len(data))).astype(int)
         data["i"] = -1 * np.ones((len(data))).astype(int)
