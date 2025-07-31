@@ -257,6 +257,41 @@ class TestLoadMeshMask:
         assert result["e3t0"].shape == (2, 2)  # Squeezed along the z-axis
 
 
+class TestMatchModelToData:
+    """Unit tests for the _match_model_to_data() function."""
+
+    def test_invalid_method(self):
+        data = pandas.DataFrame({"example_column": [1, 2, 3]})
+        file_lists = {}
+        file_types = []
+        file_type_model_vars = {}
+        mesh_data = {"mask": numpy.array([1])}
+        mask_name = "tmask"
+        e3tvar = "dummy_e3tvar"
+        model_var_file_types = {}
+        model_file_hours_res = {}
+        n_spatial_dims = 3
+        pre_indexed = False
+
+        with pytest.raises(
+            ValueError, match="invalid_method matching has not been implemented"
+        ):
+            evaltools._match_model_to_data(
+                "invalid_method",
+                data,
+                file_lists,
+                file_types,
+                file_type_model_vars,
+                mesh_data,
+                mask_name,
+                e3tvar,
+                model_var_file_types,
+                model_file_hours_res,
+                n_spatial_dims,
+                pre_indexed,
+            )
+
+
 class TestMatchData:
     """Unit tests for the matchData() function."""
 

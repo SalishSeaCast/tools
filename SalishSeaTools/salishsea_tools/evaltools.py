@@ -137,7 +137,7 @@ def matchData(
 
     :arg bool quiet: If True suppress non-critical warnings. Default is False.
 
-    :arg bool pre_indexed: Set to ``True`` if the horizontal grid indices are already in the
+    :arg bool pre_indexed: Set to ``True`` if the model grid indices are already in the
                            input dataframe. This is a speed-up option that is not implemented
                            for all the matching methods.
                            Default is False.
@@ -207,7 +207,7 @@ def matchData(
     data = data.sort_values(by=sort_by)
     data.reset_index(drop=True, inplace=True)
 
-    # set up columns to accept model values; prepend 'mod' to distinguish from obs names
+    # Set up columns to accept model values; prepend 'mod' to distinguish from obs names
     for var in model_var_file_types:
         data[f"mod_{var}"] = np.full(len(data), np.nan)
 
@@ -225,63 +225,21 @@ def matchData(
         for file_type in file_types
     }
 
-    # call a function to carry out vertical matching based on specified method
-    if method == "bin":
-        data = _binmatch(
-            data,
-            file_lists,
-            file_types,
-            file_type_model_vars,
-            mesh_data["mask"],
-            mask_name,
-            n_spatial_dims,
-            pre_indexed=pre_indexed,
-        )
-    elif method == "ferry":
-        print("data is matched to shallowest model level")
-        data = _ferrymatch(
-            data,
-            file_lists,
-            file_types,
-            file_type_model_vars,
-            mesh_data["mask"],
-            model_file_hours_res,
-        )
-    elif method == "vvlZ":
-        data = _interpvvlZ(
-            data,
-            file_lists,
-            file_types,
-            model_var_file_types,
-            file_type_model_vars,
-            mesh_data["mask"],
-            model_file_hours_res,
-            e3tvar,
-        )
-    elif method == "vvlBin":
-        data = _vvlBin(
-            data,
-            file_lists,
-            file_types,
-            model_var_file_types,
-            file_type_model_vars,
-            mesh_data["mask"],
-            model_file_hours_res,
-            e3tvar,
-        )
-    elif method == "vertNet":
-        data = _vertNetmatch(
-            data,
-            file_lists,
-            file_types,
-            file_type_model_vars,
-            mesh_data["mask"],
-            mesh_data["e3t0"],
-            mask_name,
-        )
-    else:
-        print("option " + method + " not written yet")
-        return
+    # Call a function to match model field values to the observation data using the specified method
+    data = _match_model_to_data(
+        method,
+        data,
+        file_lists,
+        file_types,
+        file_type_model_vars,
+        mesh_data,
+        mask_name,
+        e3tvar,
+        model_var_file_types,
+        model_file_hours_res,
+        n_spatial_dims,
+        pre_indexed=pre_indexed,
+    )
     data.reset_index(drop=True, inplace=True)
     return data
 
@@ -367,7 +325,7 @@ def _calc_file_type_model_vars(model_var_file_types, file_types):
     Creates an inverted version of the given model_var_file_types dictionary, mapping file
     types to the variables they contain.
 
-    :arg dict model_var_file_types: Mapping of model variable to model file types.
+    :arg dict model_var_file_types: Mapping of model variable names to model file types.
 
     :arg list file_types: List of the necessary file types that hold the desired model variables.
 
@@ -491,6 +449,109 @@ def _gridHoriz(
     if resetIndex == True:
         data.reset_index(drop=True, inplace=True)
     return data
+
+
+def _match_model_to_data(
+    method,
+    data,
+    file_lists,
+    file_types,
+    file_type_model_vars,
+    mesh_data,
+    mask_name,
+    e3tvar,
+    model_var_file_types,
+    model_file_hours_res,
+    n_spatial_dims,
+    pre_indexed=False,
+):
+    """
+    Match model field values to the provided observational data using the specified method.
+
+    :arg str method: Specifies the matching methodology to use. Example values include
+        'bin', 'ferry', 'vvlZ', 'vvlBin', and 'vertNet'.
+
+    :arg data: The observational data to find matching model values for.
+    :type data: :py:class:`pandas.DataFrame`
+
+    :arg dict file_lists: Dictionary of dataframes containing filename, start time, and end time
+                          for each file type
+
+    :arg list file_types: List containing the file types that hold the desired model variables.
+
+    :arg dict file_type_model_vars: Dictionary where keys are the file types and values
+                                    are lists of file variable names associated with those types.
+
+    :arg dict mesh_data: Dictionary containing mesh mask arrays.
+
+    :arg str mask_name: Name of the mask used in the matching operation.
+
+    :arg str e3tvar: Vertical grid pacing variable name.
+
+    :arg dict model_var_file_types: Mapping of model variable names to model file types.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg int n_spatial_dims: Number of spatial dimensions.
+
+    :arg bool pre_indexed: Set to ``True`` if the model grid indices are already in the input dataframe.
+                          Defaults to False.
+
+    :return: The provided dataframe with model field values that match the observational data.
+    :rtype: :py:class:`pandas.DataFrame`
+    """
+    match_method_funcs = {
+        "bin": lambda: _binmatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            mask_name,
+            n_spatial_dims,
+            pre_indexed=pre_indexed,
+        ),
+        "ferry": lambda: _ferrymatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+        ),
+        "vvlZ": lambda: _interpvvlZ(
+            data,
+            file_lists,
+            file_types,
+            model_var_file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+            e3tvar,
+        ),
+        "vvlBin": lambda: _vvlBin(
+            data,
+            file_lists,
+            file_types,
+            model_var_file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+            e3tvar,
+        ),
+        "vertNet": lambda: _vertNetmatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            mesh_data["e3t0"],
+            mask_name,
+        ),
+    }
+    if method not in match_method_funcs:
+        raise ValueError(f"{method} matching has not been implemented yet")
+    return match_method_funcs[method]()
 
 
 def _vertNetmatch(data, flist, ftypes, filemap_r, gridmask, e3t0, maskName="tmask"):
@@ -882,6 +943,7 @@ def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, model_file_hours_res):
     # loop through data, openening and closing model files as needed and storing model data
     # extract average of upper 3 model levels (approx 3 m)
     # set file name and hour
+    print("data is matched to shallowest model level")
     if len(data) > 5000:
         pprint = True
         lendat = len(data)
