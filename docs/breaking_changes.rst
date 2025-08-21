@@ -43,6 +43,43 @@ are incompatible with earlier versions:
   and  :py:func:`evaltools.load_ONC_node_ERDDAP` functions because custom variables
   selection was not fully implemented.
 
+* Support for atmospheric forcing data matching has been removed from
+  the :py:func:`evaltools.matchData` function.
+  A :py:exc:`ValueError` is now raised if ``maskName="ops"``.
+
+* ``mesh_mask_path`` is now a required argument for the :py:func:`evaltools.matchData`
+  function.
+  The ``mesh_mask_path`` argument was previously called ``meshPath``.
+  Requiring a mesh mask path ensures that the user can specify the correct mesh mask for
+  the model version that they are matching data to instead of possibly using an incorrect
+  mesh mask by default.
+
+* The ``sdim``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``n_spatial_dims`` to make its meaning more evident.
+
+* The ``preIndexed``  argument of the :py:func:`evaltools.matchData` function has been
+  changed to ``pre_indexed`` to make it consistent with Python variable naming style.
+
+* The ``fdict``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``model_file_hours_res`` to make its meaning more evident.
+
+* The ``filemap``  argument of the :py:func:`evaltools.matchData` function has been changed to
+  ``model_var_file_types`` to make its meaning more evident.
+
+* The ``maskName``  argument of the :py:func:`evaltools.matchData` function has been
+  changed to ``mask_name`` to make it consistent with Python variable naming style.
+
+* The ``fastSearch``  argument of the :py:func:`evaltools.matchData` function has been
+  changed to ``fast_search_index_path``.
+  Its value has changed from a boolean to at string containing the path and file name of a
+  high-resolution lon/lat to grid index mapping to use to speed up matching;
+  e.g. ``"~/MEOPAR/grid/grid_from_lat_lon_mask999.nc"``.
+  This ensures that the user can specify the correct index mapping for the model version
+  that they are matching data to.
+  If no index mapping is provided,
+  :py:func:`salishsea_tools.geo_tools.find_closest_model_point` is used to calculate the
+  model grid indices for the observation data lons/lats.
+
 
 .. _BreakingChangesVersion24.1:
 

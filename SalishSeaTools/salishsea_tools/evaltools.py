@@ -15,6 +15,7 @@
 
 """Flexible functions for model evaluation tasks"""
 
+from collections import defaultdict
 import datetime as dt
 import glob
 import os
@@ -39,236 +40,358 @@ import xarray as xr
 from salishsea_tools import geo_tools, places
 
 
-# :arg dict varmap: dictionary mapping names of data columns to variable names, string to string, model:data
 def matchData(
     data,
-    filemap,
-    fdict,
+    model_var_file_types,
+    model_file_hours_res,
+    mesh_mask_path,
+    mask_name="tmask",
     mod_start=None,
     mod_end=None,
     mod_nam_fmt="nowcast",
     mod_basedir="/results/SalishSea/nowcast-green/",
     mod_flen=1,
     method="bin",
-    meshPath=None,
-    maskName="tmask",
     wrapSearch=False,
-    fastSearch=False,
     wrapTol=1,
+    fast_search_index_path="",
     e3tvar="e3t",
-    fid=None,
-    sdim=3,
+    n_spatial_dims=3,
     quiet=False,
-    preIndexed=False,
+    pre_indexed=False,
 ):
-    """Given a discrete sample dataset, find match model output
-
-    note: only one grid mask is loaded so all model variables must be on same grid; defaults to tmask;
-        call multiple times for different grids (eg U,W)
-
-    :arg data: pandas dataframe containing data to compare to. Must include the following:
-        'dtUTC': column with UTC date and time
-        'Lat': decimal latitude
-        'Lon': decimal longitude
-        'Z': depth, positive     NOT  required if method='ferry' or sdim=2
-    :type :py:class:`pandas.DataFrame`
-
-    :arg dict filemap: dictionary mapping names of model variables to filetypes containing them
-
-    :arg dict fdict: dictionary mapping filetypes to their time resolution in hours
-
-    :arg mod_start: first date of time range to match
-    :type :py:class:`datetime.datetime`
-
-    :arg mod_end: end of date range to match (not included)
-    :type :py:class:`datetime.datetime`
-
-    :arg str mod_nam_fmt: naming format for model files. options are 'nowcast' or 'long'
-        'nowcast' example: 05may15/SalishSea_1h_20150505_20150505_ptrc_T.nc
-        'long' example: SalishSea_1h_20150206_20150804_ptrc_T_20150427-20150506.nc
-                    'long' will recursively search subdirectories (to match Vicky's storage style)
-
-    :arg str mod_basedir: path to search for model files; defaults to nowcast-green
-
-    :arg int mod_flen: length of model files in days; defaults to 1, which is how nowcast data is stored
-
-    :arg str method: method to use for matching. options are:
-        'bin'- return model value from grid/time interval containing observation
-        'vvlBin' - same as 'bin' but consider tidal change in vertical grid
-        'vvlZ' - consider tidal change in vertical grid and interpolate in the vertical
-        'ferry' - match observations to top model layer
-        'vertNet' - match observations to mean over a vertical range defined by
-                    Z_upper and Z_lower; first try will include entire cell containing end points
-                    and use e3t_0 rather than time-varying e3t
-
-    :arg str meshPath: path to mesh file; defaults to None, in which case set to:
-            '/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc' if maskName is 'ops'
-            '/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc' else (SalishSeaCast)
-
-    :arg str maskName: variable name for mask in mesh file (check code for consistency if not tmask)
-                       for ops vars use 'ops'
-
-    :arg boolean wrapSearch: if True, use wrapper on find_closest_model_point that assumes
-                             nearness of subsequent values
-
-    :arg int wrapTol: assumed search radius from previous grid point if wrapSearch=True
-
-    :arg str e3tvar: name of tgrid thicknesses variable; only for method=interpZe3t, which only works on t grid
-
-    :arg Dataset fid: optionally include name of a single dataset when looping is not necessary and all matches come from
-        a single file
-
-    :arg int sdim: optionally enter number of spatial dimensions (must be the same for all variables per call);
-        defaults to 3; use to match to 2d fields like ssh
-
-    :arg boolean quiet: if True, suppress non-critical warnings
-
-    :arg boolean preIndexed: set True if horizontal  grid indices already in input dataframe; for
-               speed; not implemented with all options
-
     """
-    # define dictionaries of mesh lat and lon variables to use with different grids:
-    lonvar = {"tmask": "nav_lon", "umask": "glamu", "vmask": "glamv", "fmask": "glamf"}
-    latvar = {"tmask": "nav_lat", "umask": "gphiu", "vmask": "gphiv", "fmask": "gphif"}
+    Matches provided data to a model dataset using grid and time alignment based on
+    the specified parameters. This function supports different methods for matching,
+    including binning, interpolation, and vertical level matching.
 
-    # check that required columns are in dataframe:
-    if method == "ferry" or sdim == 2:
-        reqsubset = ["dtUTC", "Lat", "Lon"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j"]
-    elif method == "vertNet":
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
-    else:
-        reqsubset = ["dtUTC", "Lat", "Lon", "Z"]
-        if preIndexed:
-            reqsubset = ["dtUTC", "i", "j", "k"]
-    if not set(reqsubset) <= set(data.keys()):
-        raise Exception(
-            "{} missing from data".format(
-                [el for el in set(reqsubset) - set(data.keys())], "%s"
-            )
-        )
+    The input data is filtered and adjusted based on valid temporal bounds and grid
+    coordinates. Depending on the method selected, the function calculates
+    corresponding model variables for each observational data point. It also handles
+    the creation of indices and other necessary preprocessing steps for alignment.
 
-    fkeysVar = list(filemap.keys())  # list of model variables to return
-    # don't load more files than necessary:
-    ftypes = list(fdict.keys())
-    for ikey in ftypes:
-        if ikey not in set(filemap.values()):
-            fdict.pop(ikey)
-    if len(set(filemap.values()) - set(fdict.keys())) > 0:
-        print(
-            "Error: file(s) missing from fdict:",
-            set(filemap.values()) - set(fdict.keys()),
-        )
-    ftypes = list(
-        fdict.keys()
-    )  # list of filetypes to containing the desired model variables
-    # create inverted version of filemap dict mapping file types to the variables they contain
-    filemap_r = dict()
-    for ift in ftypes:
-        filemap_r[ift] = list()
-    for ikey in filemap:
-        filemap_r[filemap[ikey]].append(ikey)
+    :arg data: A pandas DataFrame containing observational data to find matching model values for.
+               Must include these columns:
 
-    # if mod_start and mod_end not provided, use min and max of data datetimes
-    if mod_start is None:
-        mod_start = np.min(data["dtUTC"])
-        print(mod_start)
-    if mod_end is None:
-        mod_end = np.max(data["dtUTC"])
-        print(mod_end)
+               * ``dtUTC``: UTC date and time
+               * ``Lat``: decimal latitude
+               * ``Lon``: decimal longitude
+               * ``Z``: depth, positive; NOT required if method='ferry' or n_spatial_dims=2
+    :type data: :py:class:`pandas.DataFrame`
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg str mesh_mask_path: Path to the NEMO model mesh mask file, which contains grid
+                             and masking information.
+
+    :arg str mask_name: Name of the mask variable within the mesh mask file (e.g., "tmask").
+
+    :arg mod_start: First date of time range to match. If not specified, it defaults to the earliest
+                    date found in the input DataFrame.
+    :type mod_start: :py:class:`datetime.datetime`
+
+    :arg mod_end: Date at the end of the time range to match; not included in the matched time range.
+                  If not specified, it defaults to the latest date found in the input DataFrame.
+    :type mod_end: :py:class:`datetime.datetime`
+
+    :arg str mod_nam_fmt: Model file name format selector (default is "nowcast").
+                          Examples (see the code in
+                          :py:func:`~salishsea_tools.evaltools.index_model_files` for more):
+
+                          * "nowcast" matches files like: ``05may15/SalishSea_1h_20150505_20150505_ptrc_T.nc``
+                          * "long" matches files like: ``SalishSea_1h_20150206_20150804_ptrc_T_20150427-20150506.nc``
+                            by recursively searching subdirectories (to match Vicky's storage style)
+
+    :arg str mod_basedir: Base directory path to search for model files.
+                          Defaults to "nowcast-green".
+
+    :arg int mod_flen: Length of individual model files expressed in days.
+                       Defaults to 1, which is how nowcast data is stored.
+
+    :arg str method: Matching method to use; supported options include:
+
+                     * "bin"
+                     * "ferry"
+                     * "vvlZ"
+                     * "vvlBin"
+                     * "vertNet"
+
+                     Defaults to "bin".
+
+    :arg bool wrapSearch: If True, use wrapper on
+                          :py:func:`salishsea_tools.geo_tools.find_closest_model_point` that assumes
+                          nearness of subsequent values
+
+    :arg int wrapTol: Search radius (in grid cells) from the previous grid point if ``wrapSearch``
+                      is enabled.
+
+    :arg str fast_search_index_path: Path and file name of a high-resolution lon/lat to grid index mapping
+                                     to use to speed up matching; e.g.
+                                     ``"~/MEOPAR/grid/grid_from_lat_lon_mask999.nc"``.
+                                     If no index mapping is provided,
+                                     :py:func:`salishsea_tools.geo_tools.find_closest_model_point` is
+                                     used to calculate the model grid indices for the observation data
+                                     lons/lats.
+
+    :arg e3tvar: Name of the t-grid thicknesses variable; only for vvl* methods
+                 (which only works on t-grid).
+                 Defaults is "e3t".
+
+    :arg int n_spatial_dims: Optional. The number of spatial dimensions
+                             (must be the same for all variables per call).
+                             Defaults to 3. Use 2 to match to 2d fields like sea surface height.
+
+    :arg bool quiet: If True suppress non-critical warnings. Default is False.
+
+    :arg bool pre_indexed: Set to ``True`` if the model grid indices are already in the
+                           input dataframe. This speed-up option is not implemented
+                           for all the matching methods.
+                           Default is False.
+
+    :return: A pandas DataFrame with the input observational data, now including columns
+             containing corresponding model variable values. The additional columns are prefixed
+             with ``mod_`` followed by the variable name.
+    :rtype: :py:class:`pandas.DataFrame`
+    """
+
+    # Mesh lat and lon variables to use with different grids:
+    lon_vars = {
+        "tmask": "nav_lon",
+        "umask": "glamu",
+        "vmask": "glamv",
+        "fmask": "glamf",
+    }
+    lat_vars = {
+        "tmask": "nav_lat",
+        "umask": "gphiu",
+        "vmask": "gphiv",
+        "fmask": "gphif",
+    }
+
+    reqd_cols = _reqd_cols_in_data_frame(data, method, n_spatial_dims, pre_indexed)
+
+    # Calculate the minimal list of file types to load (so we don't load extras)
+    # and build a mapping of file types to model variables (inverse of model_var_file_types)
+    file_types = _calc_file_types(model_file_hours_res, model_var_file_types)
+    file_type_model_vars = _calc_file_type_model_vars(model_var_file_types, file_types)
+
+    # If mod_start and mod_end not provided, use min and max of data datetimes
+    mod_start = mod_start or data["dtUTC"].min()
+    print(f"{mod_start=:%Y-%m-%d %H:%M:%S}")
+    mod_end = mod_end or data["dtUTC"].max()
+    print(f"{mod_end=:%Y-%m-%d %H:%M:%S}")
+
     # adjustments to data dataframe to avoid unnecessary calculations
     data = data.loc[(data.dtUTC >= mod_start) & (data.dtUTC < mod_end)].copy(deep=True)
     data = data.dropna(
-        how="any", subset=reqsubset
+        how="any", subset=reqd_cols
     )  # .dropna(how='all',subset=[*varmap.keys()])
 
-    if maskName == "ops":
-        # set default mesh file for ops data (atmos forcing)
-        if meshPath == None:
-            meshPath = (
-                "/results/forcing/atmospheric/GEM2.5/operational/ops_y2015m01d01.nc"
-            )
-        # load lat, lon, and mask (all ones for ops - no land in sky)
-        with nc.Dataset(meshPath) as fmesh:
-            navlon = np.squeeze(np.copy(fmesh.variables["nav_lon"][:, :] - 360))
-            navlat = np.squeeze(np.copy(fmesh.variables["nav_lat"][:, :]))
-        omask = np.expand_dims(np.ones(np.shape(navlon)), axis=(0, 1))
-        nemops = "GEM2.5"
-    else:
-        # set default mesh file for SalishSeaCast data
-        if meshPath == None:
-            meshPath = "/ocean/eolson/MEOPAR/NEMO-forcing/grid/mesh_mask201702_noLPE.nc"
-        # load lat lon and ocean mask
-        with nc.Dataset(meshPath) as fmesh:
-            omask = np.copy(fmesh.variables[maskName])
-            navlon = np.squeeze(np.copy(fmesh.variables[lonvar[maskName]][:, :]))
-            navlat = np.squeeze(np.copy(fmesh.variables[latvar[maskName]][:, :]))
-            if method == "vertNet":
-                e3t0 = np.squeeze(np.copy(fmesh.variables["e3t_0"][0, :, :, :]))
-                if maskName != "tmask":
-                    print(
-                        "Warning: Using tmask thickness for variable on different grid"
-                    )
-        nemops = "NEMO"
+    if mask_name == "ops":
+        raise ValueError(
+            "Data matching for atmospheric fields is not yet supported: maskName='ops'"
+        )
+    mesh_data = _load_mesh_mask(
+        mesh_mask_path, mask_name, method, pre_indexed, lon_vars, lat_vars
+    )
 
     # handle horizontal gridding as necessary; make sure data is in order of ascending time
-    if not preIndexed:
+    if not pre_indexed:
         # find location of each obs on model grid and add to data as additional columns 'i' and 'j'
         data = _gridHoriz(
             data,
-            omask,
-            navlon,
-            navlat,
+            mesh_data["mask"],
+            mesh_data["lons"],
+            mesh_data["lats"],
             wrapSearch,
             wrapTol,
-            fastSearch,
+            fast_search_index_path,
             quiet=quiet,
-            nemops=nemops,
+            nemops="NEMO",
         )
-        data = data.sort_values(
-            by=[ix for ix in ["dtUTC", "Z", "j", "i"] if ix in reqsubset]
-        )  # preserve list order
-    else:
-        data = data.sort_values(
-            by=[ix for ix in ["dtUTC", "k", "j", "i"] if ix in reqsubset]
-        )  # preserve list order
+    sort_by = [col for col in ["dtUTC", "Z", "k", "j", "i"] if col in reqd_cols]
+    data = data.sort_values(by=sort_by)
     data.reset_index(drop=True, inplace=True)
 
-    # set up columns to accept model values; prepend 'mod' to distinguish from obs names
-    for ivar in filemap.keys():
-        data["mod_" + ivar] = np.full(len(data), np.nan)
+    # Set up columns to accept model values; prepend 'mod' to distinguish from obs names
+    for var in model_var_file_types:
+        data[f"mod_{var}"] = np.full(len(data), np.nan)
 
-    # create dictionary of dataframes of filename, start time, and end time for each file type
-    flist = dict()
-    for ift in ftypes:
-        flist[ift] = index_model_files(
-            mod_start, mod_end, mod_basedir, mod_nam_fmt, mod_flen, ift, fdict[ift]
+    # Create a dictionary of dataframes containing filename, start time, and end time for each file type
+    file_lists = {
+        file_type: index_model_files(
+            mod_start,
+            mod_end,
+            mod_basedir,
+            mod_nam_fmt,
+            mod_flen,
+            file_type,
+            model_file_hours_res[file_type],
         )
+        for file_type in file_types
+    }
 
-    # call a function to carry out vertical matching based on specified method
-    if method == "bin":
-        data = _binmatch(
-            data, flist, ftypes, filemap_r, omask, maskName, sdim, preIndexed=preIndexed
-        )
-    elif method == "ferry":
-        print("data is matched to shallowest model level")
-        data = _ferrymatch(data, flist, ftypes, filemap_r, omask, fdict)
-    elif method == "vvlZ":
-        data = _interpvvlZ(
-            data, flist, ftypes, filemap, filemap_r, omask, fdict, e3tvar
-        )
-    elif method == "vvlBin":
-        data = _vvlBin(data, flist, ftypes, filemap, filemap_r, omask, fdict, e3tvar)
-    elif method == "vertNet":
-        data = _vertNetmatch(data, flist, ftypes, filemap_r, omask, e3t0, maskName)
-    else:
-        print("option " + method + " not written yet")
-        return
+    # Call a function to match model field values to the observation data using the specified method
+    data = _match_model_to_data(
+        method,
+        data,
+        file_lists,
+        file_types,
+        file_type_model_vars,
+        mesh_data,
+        mask_name,
+        e3tvar,
+        model_var_file_types,
+        model_file_hours_res,
+        n_spatial_dims,
+        pre_indexed=pre_indexed,
+    )
     data.reset_index(drop=True, inplace=True)
     return data
+
+
+def _reqd_cols_in_data_frame(df, match_method, n_spatial_dims, pre_indexed):
+    """
+    Determines the required columns in a provided data frame based on the specified
+    method, spatial dimension, and whether the data is pre-indexed. Ensures that the
+    data frame contains the necessary columns and raises an exception if any required
+    columns are missing.
+
+    :arg :py:obj:`pandas.DataFrame` df: The input data frame to be checked.
+
+    :arg str match_method: The data to model matching method.
+
+    :arg int n_spatial_dims: The number of spatial dimensions in the data frame (2, or 3).
+
+    :arg bool pre_indexed: A boolean indicating whether the data frame is pre-indexed
+                           (i.e. contains columns "i", "j", and "k" if n_spatial_dims == 3).
+
+    :return: The list of required columns based on the method, spatial dimension,
+             and pre-indexing status.
+    :rtype: list
+
+    :raises KeyError: If any required columns are missing from the data frame.
+    """
+    if match_method == "ferry" or n_spatial_dims == 2:
+        reqd_cols = ["dtUTC", "Lat", "Lon"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j"]
+    elif match_method == "vertNet":
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z_upper", "Z_lower"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "Z_upper", "Z_lower"]
+    else:
+        reqd_cols = ["dtUTC", "Lat", "Lon", "Z"]
+        if pre_indexed:
+            reqd_cols = ["dtUTC", "i", "j", "k"]
+    if not set(reqd_cols) <= set(df.columns):
+        raise KeyError(
+            f"{[el for el in set(reqd_cols) - set(df.columns)]} missing from data"
+        )
+    return reqd_cols
+
+
+def _calc_file_types(model_file_hours_res, model_var_file_types):
+    """
+    Calculate the minimum list of file types required for matching the specified model variables.
+
+    This function processes the given `model_file_hours_res` dictionary and
+    removes any file types that do not match those indicated in the `model_var_file_types`.
+    If there are missing file types in `model_file_hours_res` that are necessary based on
+    `model_var_file_types`, an error message will be printed.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg dict model_var_file_types: Mapping of model variable to model file types.
+
+    :return: A list containing only the necessary file types that hold the
+             desired model variables.
+    :rtype: list
+
+    :raises KeyError: If any required file types are missing from the mapping of
+                      model file types to time resolution in hours.
+    """
+    # Iterate over the list of keys instead of dict because the dict is updated in the loop
+    for file_type in list(model_file_hours_res):
+        if file_type not in set(model_var_file_types.values()):
+            model_file_hours_res.pop(file_type)
+    if missing_file_types := (
+        set(model_var_file_types.values()) - set(model_file_hours_res)
+    ):
+        raise KeyError(
+            f"Error: file type(s) missing from model_file_hours_res mapping of "
+            f"model file types to time resolution in hours: {missing_file_types}"
+        )
+    file_types = list(model_file_hours_res)
+    return file_types
+
+
+def _calc_file_type_model_vars(model_var_file_types, file_types):
+    """
+    Creates an inverted version of the given model_var_file_types dictionary, mapping file
+    types to the variables they contain.
+
+    :arg dict model_var_file_types: Mapping of model variable names to model file types.
+
+    :arg list file_types: List of the necessary file types that hold the desired model variables.
+
+    :return: An inverted dictionary where keys are the file types and values
+             are lists of file variable names associated with those types.
+    :rtype: dict
+    """
+    file_type_model_vars = defaultdict(list)
+    for file_type in file_types:
+        # Initialize empty lists for all required file types
+        file_type_model_vars[file_type] = []
+    for var, file_type in model_var_file_types.items():
+        # Group variables by their file types
+        file_type_model_vars[file_type].append(var)
+    return dict(file_type_model_vars)
+
+
+def _load_mesh_mask(mesh_mask_path, mask_name, method, pre_indexed, lon_vars, lat_vars):
+    """
+    Loads and processes mesh mask data from a provided file path using the specified
+    method and options. This function allows reading and extracting specific mesh
+    mask information, including optional longitude and latitude coordinates if the
+    observation data to be matched are not pre-indexed.
+
+    :arg str mesh_mask_path: Path to the mesh mask dataset.
+
+    :arg str mask_name: The name of the mask variable to extract from the dataset.
+
+    :arg str method: Observation data matching method to be used.
+
+    :arg bool pre_indexed: Indicates whether the observation data fram is pre-indexed with model
+                           j/i index values.
+
+    :arg dict lon_vars: Dictionary mapping mask names to their respective longitude variable names.
+
+    :arg dict lat_vars: Dictionary mapping mask names to their respective latitude variable names.
+
+    :return: A dictionary containing the extracted mesh mask data, including the mask
+             itself and optionally the longitude, latitude, and thickness data if applicable.
+    :rtype: dict
+    """
+    with xr.open_dataset(mesh_mask_path) as fmesh:
+        mesh_data = {"mask": fmesh[mask_name].to_numpy()}
+
+        if not pre_indexed:
+            # Lons/lats are required to calculate model grid j/i indices when the data frame
+            # is not pre-indexed
+            mesh_data["lons"] = fmesh[lon_vars[mask_name]].to_numpy()
+            mesh_data["lats"] = fmesh[lat_vars[mask_name]].to_numpy()
+
+        if method == "vertNet":
+            mesh_data["e3t0"] = np.squeeze(fmesh.e3t_0)
+            if mask_name != "tmask":
+                print(
+                    f"Warning: Using tmask thickness for variable on different grid: {mask_name}"
+                )
+
+    return mesh_data
 
 
 def _gridHoriz(
@@ -278,7 +401,7 @@ def _gridHoriz(
     navlat,
     wrapSearch,
     wrapTol,
-    fastSearch=False,
+    fast_search_index_path="",
     resetIndex=False,
     quiet=False,
     nemops="NEMO",
@@ -288,10 +411,20 @@ def _gridHoriz(
     NOTE: points that are matched are dropped from the dataFrame; with quiet=False, the unmatched
     lats and lons are printed
     """
-    lmask = -1 * (
-        omask[0, 0, :, :] - 1
-    )  # NEMO masks have ocean = 1, but the functions called below require land = 1
-    if wrapSearch:
+    # NEMO masks have ocean = 1, but the functions called below require land = 1
+    lmask = -1 * (omask[0, 0, :, :] - 1)
+
+    if fast_search_index_path:
+        jjii = xr.open_dataset(fast_search_index_path)
+        print(data["Lat"])
+        mylats = xr.DataArray(data["Lat"])
+        mylons = xr.DataArray(data["Lon"])
+        jj = jjii.jj.sel(lats=mylats, lons=mylons, method="nearest").to_numpy()
+        ii = jjii.ii.sel(lats=mylats, lons=mylons, method="nearest").to_numpy()
+        print(jj.shape, jj)
+        data["j"] = [-1 if mm == -999 else mm for mm in jj]
+        data["i"] = [-1 if mm == -999 else mm for mm in ii]
+    elif wrapSearch:
         # this speeds up the matching process for ferry data where there is a high likelihood each point
         #  is close to the point before it
         jj, ii = geo_tools.closestPointArray(
@@ -304,16 +437,6 @@ def _gridHoriz(
         )
         data["j"] = [-1 if np.isnan(mm) else int(mm) for mm in jj]
         data["i"] = [-1 if np.isnan(mm) else int(mm) for mm in ii]
-    elif fastSearch:
-        jjii = xr.open_dataset("~/MEOPAR/grid/grid_from_lat_lon_mask999.nc")
-        print(data["Lat"])
-        mylats = xr.DataArray(data["Lat"])
-        mylons = xr.DataArray(data["Lon"])
-        jj = jjii.jj.sel(lats=mylats, lons=mylons, method="nearest").values
-        ii = jjii.ii.sel(lats=mylats, lons=mylons, method="nearest").values
-        print(jj.shape, jj)
-        data["j"] = [-1 if mm == -999 else mm for mm in jj]
-        data["i"] = [-1 if mm == -999 else mm for mm in ii]
     else:
         data["j"] = -1 * np.ones((len(data))).astype(int)
         data["i"] = -1 * np.ones((len(data))).astype(int)
@@ -334,6 +457,109 @@ def _gridHoriz(
     if resetIndex == True:
         data.reset_index(drop=True, inplace=True)
     return data
+
+
+def _match_model_to_data(
+    method,
+    data,
+    file_lists,
+    file_types,
+    file_type_model_vars,
+    mesh_data,
+    mask_name,
+    e3tvar,
+    model_var_file_types,
+    model_file_hours_res,
+    n_spatial_dims,
+    pre_indexed=False,
+):
+    """
+    Match model field values to the provided observational data using the specified method.
+
+    :arg str method: Specifies the matching methodology to use. Example values include
+        'bin', 'ferry', 'vvlZ', 'vvlBin', and 'vertNet'.
+
+    :arg data: The observational data to find matching model values for.
+    :type data: :py:class:`pandas.DataFrame`
+
+    :arg dict file_lists: Dictionary of dataframes containing filename, start time, and end time
+                          for each file type
+
+    :arg list file_types: List containing the file types that hold the desired model variables.
+
+    :arg dict file_type_model_vars: Dictionary where keys are the file types and values
+                                    are lists of file variable names associated with those types.
+
+    :arg dict mesh_data: Dictionary containing mesh mask arrays.
+
+    :arg str mask_name: Name of the mask used in the matching operation.
+
+    :arg str e3tvar: Vertical grid pacing variable name.
+
+    :arg dict model_var_file_types: Mapping of model variable names to model file types.
+
+    :arg dict model_file_hours_res: Mapping of model file types to time resolution in hours.
+
+    :arg int n_spatial_dims: Number of spatial dimensions.
+
+    :arg bool pre_indexed: Set to ``True`` if the model grid indices are already in the input dataframe.
+                          Defaults to False.
+
+    :return: The provided dataframe with model field values that match the observational data.
+    :rtype: :py:class:`pandas.DataFrame`
+    """
+    match_method_funcs = {
+        "bin": lambda: _binmatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            mask_name,
+            n_spatial_dims,
+            pre_indexed=pre_indexed,
+        ),
+        "ferry": lambda: _ferrymatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+        ),
+        "vvlZ": lambda: _interpvvlZ(
+            data,
+            file_lists,
+            file_types,
+            model_var_file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+            e3tvar,
+        ),
+        "vvlBin": lambda: _vvlBin(
+            data,
+            file_lists,
+            file_types,
+            model_var_file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_file_hours_res,
+            e3tvar,
+        ),
+        "vertNet": lambda: _vertNetmatch(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            mesh_data["e3t0"],
+            mask_name,
+        ),
+    }
+    if method not in match_method_funcs:
+        raise ValueError(f"{method} matching has not been implemented yet")
+    return match_method_funcs[method]()
 
 
 def _vertNetmatch(data, flist, ftypes, filemap_r, gridmask, e3t0, maskName="tmask"):
@@ -445,7 +671,14 @@ def _vertNetmatch(data, flist, ftypes, filemap_r, gridmask, e3t0, maskName="tmas
 
 
 def _binmatch(
-    data, flist, ftypes, filemap_r, gridmask, maskName="tmask", sdim=3, preIndexed=False
+    data,
+    flist,
+    ftypes,
+    filemap_r,
+    gridmask,
+    maskName="tmask",
+    n_spatial_dims=3,
+    pre_indexed=False,
 ):
     """basic vertical matching of model output to data
     returns model value from model grid cell that would contain the observation point with
@@ -457,7 +690,7 @@ def _binmatch(
         lendat = len(data)
     else:
         pprint = False
-    if not preIndexed:
+    if not pre_indexed:
         data["k"] = -1 * np.ones((len(data))).astype(int)
     for ind, row in data.iterrows():
         if pprint == True and ind % 5000 == 0:
@@ -520,8 +753,8 @@ def _binmatch(
                     print(tlist[-1, 1])
                     raise
             # find depth index if vars are 3d
-            if sdim == 3:
-                if preIndexed:
+            if n_spatial_dims == 3:
+                if pre_indexed:
                     ik = row["k"]
                     # assign values for each var assoc with ift
                     if (not np.isnan(ik)) and (
@@ -558,7 +791,7 @@ def _binmatch(
                             data.loc[ind, ["mod_" + ivar]] = fid[ift].variables[ivar][
                                 ih, ik, row["j"], row["i"]
                             ]
-            elif sdim == 2:
+            elif n_spatial_dims == 2:
                 # assign values for each var assoc with ift
                 if gridmask[0, 0, row["j"], row["i"]] == 1:
                     for ivar in filemap_r[ift]:
@@ -566,24 +799,33 @@ def _binmatch(
                             ih, row["j"], row["i"]
                         ]
             else:
-                raise ("invalid sdim")
+                raise ValueError(f"Invalid value: {n_spatial_dims=}")
     return data
 
 
-def _vvlBin(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
+def _vvlBin(
+    data,
+    flist,
+    ftypes,
+    model_var_file_types,
+    filemap_r,
+    tmask,
+    model_file_hours_res,
+    e3tvar,
+):
     """vertical matching of model output to data by bin method but considering vvl change in
     grid thickness with tides
     """
     data["k"] = -1 * np.ones((len(data))).astype(int)
-    ifte3t = filemap[e3tvar]
-    pere3t = fdict[ifte3t]
-    pers = np.unique([i for i in fdict.values()])
-    # reverse fdict
+    ifte3t = model_var_file_types[e3tvar]
+    pere3t = model_file_hours_res[ifte3t]
+    pers = np.unique([i for i in model_file_hours_res.values()])
+    # reverse model_file_hours_res
     fdict_r = dict()
     for iii in pers:
         fdict_r[iii] = list()
-    for ikey in fdict:
-        fdict_r[fdict[ikey]].append(ikey)
+    for ikey in model_file_hours_res:
+        fdict_r[model_file_hours_res[ikey]].append(ikey)
     # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
     # also, we are only dealing with data saved at same interval as e3t
     test = fdict_r.copy()
@@ -636,19 +878,28 @@ def _vvlBin(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
     return data
 
 
-def _interpvvlZ(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
+def _interpvvlZ(
+    data,
+    flist,
+    ftypes,
+    model_var_file_types,
+    filemap_r,
+    tmask,
+    model_file_hours_res,
+    e3tvar,
+):
     """vertical interpolation of model output to observation depths considering vvl change in
     grid thickness with tides
     """
-    ifte3t = filemap.pop(e3tvar)
-    pere3t = fdict.pop(ifte3t)
-    pers = np.unique([i for i in fdict.values()])
-    # reverse fdict
+    ifte3t = model_var_file_types.pop(e3tvar)
+    pere3t = model_file_hours_res.pop(ifte3t)
+    pers = np.unique([i for i in model_file_hours_res.values()])
+    # reverse model_file_hours_res
     fdict_r = dict()
     for iii in pers:
         fdict_r[iii] = list()
-    for ikey in fdict:
-        fdict_r[fdict[ikey]].append(ikey)
+    for ikey in model_file_hours_res:
+        fdict_r[model_file_hours_res[ikey]].append(ikey)
     # so far we have only allowed for 1 file duration for all input files, so all indices equivalent
     # also, we are only dealing with data saved at same interval as e3t
     test = fdict_r.copy()
@@ -695,11 +946,12 @@ def _interpvvlZ(data, flist, ftypes, filemap, filemap_r, tmask, fdict, e3tvar):
     return data
 
 
-def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, fdict):
+def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, model_file_hours_res):
     """matching of model output to top grid cells (for ferry underway measurements)"""
     # loop through data, openening and closing model files as needed and storing model data
     # extract average of upper 3 model levels (approx 3 m)
     # set file name and hour
+    print("data is matched to shallowest model level")
     if len(data) > 5000:
         pprint = True
         lendat = len(data)
@@ -714,7 +966,9 @@ def _ferrymatch(data, flist, ftypes, filemap_r, gridmask, fdict):
             flist[ift].loc[aa, ["t_0"]].values[0] for aa in data["indf_" + ift].values
         ]
         data["ih_" + ift] = [
-            int(np.floor((aa - bb).total_seconds() / (fdict[ift] * 3600)))
+            int(
+                np.floor((aa - bb).total_seconds() / (model_file_hours_res[ift] * 3600))
+            )
             for aa, bb in zip(data["dtUTC"], t2)
         ]
         print("done index " + ift, dt.datetime.now())
@@ -842,7 +1096,7 @@ def index_model_files(start, end, basedir, nam_fmt, flen, ftype=None, tres=1):
         "None",
         None,
     ):
-        print("ftype={}, are you sure? (if yes, add to list)".format(ftype))
+        raise ValueError(f"ftype={ftype}, are you sure? (if yes, add to list)")
     if tres == 24:
         ftres = "1d"
     else:
