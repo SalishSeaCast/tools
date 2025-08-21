@@ -1096,8 +1096,7 @@ def index_model_files(start, end, basedir, nam_fmt, flen, ftype=None, tres=1):
         "None",
         None,
     ):
-        raise ValueError("ftype={}, are you sure? (if yes, add to list)".format(ftype))
-        # print("ftype={}, are you sure? (if yes, add to list)".format(ftype))
+        raise ValueError(f"ftype={ftype}, are you sure? (if yes, add to list)")
     if tres == 24:
         ftres = "1d"
     else:
