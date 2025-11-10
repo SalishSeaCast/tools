@@ -1445,21 +1445,17 @@ def loadDFO(
     ObsTBL = Base.classes.ObsTBL
     CalcsTBL = Base.classes.CalcsTBL
     session = create_session(bind=engine, autocommit=False, autoflush=True)
+
     SA = case(
-        [(CalcsTBL.Salinity_Bottle_SA != None, CalcsTBL.Salinity_Bottle_SA)],
+        (CalcsTBL.Salinity_Bottle_SA != None, CalcsTBL.Salinity_Bottle_SA),
         else_=case(
-            [(CalcsTBL.Salinity_T0_C0_SA != None, CalcsTBL.Salinity_T0_C0_SA)],
+            (CalcsTBL.Salinity_T0_C0_SA != None, CalcsTBL.Salinity_T0_C0_SA),
             else_=case(
-                [(CalcsTBL.Salinity_T1_C1_SA != None, CalcsTBL.Salinity_T1_C1_SA)],
+                (CalcsTBL.Salinity_T1_C1_SA != None, CalcsTBL.Salinity_T1_C1_SA),
                 else_=case(
-                    [(CalcsTBL.Salinity_SA != None, CalcsTBL.Salinity_SA)],
+                    (CalcsTBL.Salinity_SA != None, CalcsTBL.Salinity_SA),
                     else_=case(
-                        [
-                            (
-                                CalcsTBL.Salinity__Unknown_SA != None,
-                                CalcsTBL.Salinity__Unknown_SA,
-                            )
-                        ],
+                        (CalcsTBL.Salinity__Unknown_SA != None, CalcsTBL.Salinity__Unknown_SA),
                         else_=CalcsTBL.Salinity__Pre1978_SA,
                     ),
                 ),
@@ -1467,47 +1463,32 @@ def loadDFO(
         ),
     )
     Tem = case(
-        [(ObsTBL.Temperature != None, ObsTBL.Temperature)],
+        (ObsTBL.Temperature != None, ObsTBL.Temperature),
         else_=case(
-            [(ObsTBL.Temperature_Primary != None, ObsTBL.Temperature_Primary)],
+            (ObsTBL.Temperature_Primary != None, ObsTBL.Temperature_Primary),
             else_=case(
-                [(ObsTBL.Temperature_Secondary != None, ObsTBL.Temperature_Secondary)],
+                (ObsTBL.Temperature_Secondary != None, ObsTBL.Temperature_Secondary),
                 else_=ObsTBL.Temperature_Reversing,
             ),
         ),
     )
     TemUnits = case(
-        [(ObsTBL.Temperature != None, ObsTBL.Temperature_units)],
+        (ObsTBL.Temperature != None, ObsTBL.Temperature_units),
         else_=case(
-            [(ObsTBL.Temperature_Primary != None, ObsTBL.Temperature_Primary_units)],
+            (ObsTBL.Temperature_Primary != None, ObsTBL.Temperature_Primary_units),
             else_=case(
-                [
-                    (
-                        ObsTBL.Temperature_Secondary != None,
-                        ObsTBL.Temperature_Secondary_units,
-                    )
-                ],
+                (ObsTBL.Temperature_Secondary != None, ObsTBL.Temperature_Secondary_units),
                 else_=ObsTBL.Temperature_Reversing_units,
             ),
         ),
     )
     TemFlag = ObsTBL.Quality_Flag_Temp
     CT = case(
-        [(CalcsTBL.Temperature_CT != None, CalcsTBL.Temperature_CT)],
+        (CalcsTBL.Temperature_CT != None, CalcsTBL.Temperature_CT),
         else_=case(
-            [
-                (
-                    CalcsTBL.Temperature_Primary_CT != None,
-                    CalcsTBL.Temperature_Primary_CT,
-                )
-            ],
+            (CalcsTBL.Temperature_Primary_CT != None, CalcsTBL.Temperature_Primary_CT),
             else_=case(
-                [
-                    (
-                        CalcsTBL.Temperature_Secondary_CT != None,
-                        CalcsTBL.Temperature_Secondary_CT,
-                    )
-                ],
+                (CalcsTBL.Temperature_Secondary_CT != None, CalcsTBL.Temperature_Secondary_CT),
                 else_=CalcsTBL.Temperature_Reversing_CT,
             ),
         ),
