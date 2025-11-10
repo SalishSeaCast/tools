@@ -1455,7 +1455,10 @@ def loadDFO(
                 else_=case(
                     (CalcsTBL.Salinity_SA != None, CalcsTBL.Salinity_SA),
                     else_=case(
-                        (CalcsTBL.Salinity__Unknown_SA != None, CalcsTBL.Salinity__Unknown_SA),
+                        (
+                            CalcsTBL.Salinity__Unknown_SA != None,
+                            CalcsTBL.Salinity__Unknown_SA,
+                        ),
                         else_=CalcsTBL.Salinity__Pre1978_SA,
                     ),
                 ),
@@ -1477,7 +1480,10 @@ def loadDFO(
         else_=case(
             (ObsTBL.Temperature_Primary != None, ObsTBL.Temperature_Primary_units),
             else_=case(
-                (ObsTBL.Temperature_Secondary != None, ObsTBL.Temperature_Secondary_units),
+                (
+                    ObsTBL.Temperature_Secondary != None,
+                    ObsTBL.Temperature_Secondary_units,
+                ),
                 else_=ObsTBL.Temperature_Reversing_units,
             ),
         ),
@@ -1488,7 +1494,10 @@ def loadDFO(
         else_=case(
             (CalcsTBL.Temperature_Primary_CT != None, CalcsTBL.Temperature_Primary_CT),
             else_=case(
-                (CalcsTBL.Temperature_Secondary_CT != None, CalcsTBL.Temperature_Secondary_CT),
+                (
+                    CalcsTBL.Temperature_Secondary_CT != None,
+                    CalcsTBL.Temperature_Secondary_CT,
+                ),
                 else_=CalcsTBL.Temperature_Reversing_CT,
             ),
         ),
