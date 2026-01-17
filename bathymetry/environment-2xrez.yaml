@@ -1,0 +1,26 @@
+# conda environment description file for preparation and exploration of
+# SalishSeaCast v202111 double resolution experiment in mid-2024
+#
+#    $ conda env create -f environment-2xrez.yaml
+#    $ conda activate 2xrez-202111
+
+name: 2xrez-202111
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - arrow
+  - black
+  - bottleneck
+  - cmocean
+  - h5netcdf
+  - jupyterlab
+  - matplotlib
+  - netcdf4
+  - notebook
+  - pyproj
+  - python=3.12
+  - scipy
+  - xarray
