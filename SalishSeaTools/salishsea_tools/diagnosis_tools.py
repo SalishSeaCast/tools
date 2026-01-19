@@ -20,7 +20,6 @@ import numpy.ma as ma
 import netCDF4 as nc
 from salishsea_tools import nc_tools
 
-
 __all__ = ["pcourantu", "pcourantv", "pcourantw"]
 
 

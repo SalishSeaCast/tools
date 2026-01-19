@@ -17,7 +17,6 @@
 data.
 """
 
-
 from collections import namedtuple
 from pathlib import Path
 from datetime import datetime
@@ -39,7 +38,6 @@ from salishsea_tools.unit_conversions import (
     wind_to_from,
     bearing_heading,
 )
-
 
 __all__ = [
     "calc_wind_avg_at_point",

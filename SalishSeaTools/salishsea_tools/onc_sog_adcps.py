@@ -14,10 +14,10 @@
 # limitations under the License.
 
 """Ocean Networks Canada Strait of Georgia ADCPs Metadata."""
+
 from collections import namedtuple
 
 import arrow
-
 
 adcp = namedtuple("ADCP", "device_id, sensor_id")
 adcps = {

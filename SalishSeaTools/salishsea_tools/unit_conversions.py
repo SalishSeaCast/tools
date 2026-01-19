@@ -15,7 +15,6 @@
 
 """Salish Sea NEMO model unit conversion functions and constants."""
 
-
 import numpy as np
 
 # For convenience we import the TEOS-10 salinity conversion factors
@@ -27,7 +26,6 @@ from salishsea_tools.teos_tools import (
     psu_teos,
     teos_psu,
 )
-
 
 __all__ = [
     "PSU_TEOS",

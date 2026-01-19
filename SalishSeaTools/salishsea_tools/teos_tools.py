@@ -20,9 +20,7 @@ TEOS-10 is the Thermodynamic Equation of Seawater (2010).
 See https://www.teos-10.org/.
 """
 
-
 import numpy as np
-
 
 #: Conversion factor from practical salinity units (psu)
 #: to TEOS-10 reference salinity

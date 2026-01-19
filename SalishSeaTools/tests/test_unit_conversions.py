@@ -15,7 +15,6 @@
 
 """Unit tests for the unit_conversions module."""
 
-
 import arrow
 import numpy as np
 import pytest

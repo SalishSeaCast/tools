@@ -2734,7 +2734,7 @@ def load_ONC_node_ERDDAP(datelims):
             },
             inplace=True,
         )
-        (obs_pd["j"], obs_pd["i"]) = places.PLACES[node]["NEMO grid ji"]
+        obs_pd["j"], obs_pd["i"] = places.PLACES[node]["NEMO grid ji"]
         obs_pd["k"] = places.PLACES[node]["NEMO grid k"]
 
         obs_tot.append(obs_pd)

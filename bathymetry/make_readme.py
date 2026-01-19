@@ -28,7 +28,6 @@ import json
 from pathlib import Path
 import re
 
-
 NBVIEWER = "https://nbviewer.org/github"
 GITHUB_ORG = "SalishSeaCast"
 REPO_NAME = "tools"

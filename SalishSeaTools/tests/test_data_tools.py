@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Uni tests for salishsea_tools.data_tools module."""
+
 import json
 import json as stdlib_json
 import logging
@@ -62,8 +63,7 @@ class TestOncJsonToDataset:
     """Unit tests for onc_json_to_dataset() function."""
 
     def test_onc_json_to_dataset_teos_10_salinity(self):
-        onc_json = json.loads(
-            """\
+        onc_json = json.loads("""\
             {
               "citations": [
                 "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
@@ -114,8 +114,7 @@ class TestOncJsonToDataset:
                 }
               ]
             }
-            """
-        )
+            """)
         ds = data_tools.onc_json_to_dataset(onc_json)
         assert ds.attrs["station"] == "SEVIP"
 
@@ -159,8 +158,7 @@ class TestOncJsonToDataset:
         assert ds.temperature.attrs["actualSamples"] == 2
 
     def test_onc_json_to_dataset_psu_salinity(self):
-        onc_json = json.loads(
-            """\
+        onc_json = json.loads("""\
             {
               "citations": [
                 "Ocean Networks Canada Society. 2023. Strait of Georgia East Conductivity Temperature Depth Deployed 2023-03-17. Ocean Networks Canada Society. https://doi.org/10.34943/9e6cf493-892f-4da0-9eb4-16254e7da48c."
@@ -195,8 +193,7 @@ class TestOncJsonToDataset:
                 }
               ]
             }
-            """
-        )
+            """)
         ds = data_tools.onc_json_to_dataset(onc_json, teos=False)
         assert ds.attrs["station"] == "SEVIP"
 
@@ -297,8 +294,7 @@ class TestGetCHSTideStnId:
         def mock_do_chs_iwls_api_request(endpoint, query_params, retry_args):
             class MockResponse:
                 def json(self):
-                    return stdlib_json.loads(
-                        """\
+                    return stdlib_json.loads("""\
                         [
                           {
                             "id": "5cebf1de3d0f4a073c4bb996",
@@ -311,8 +307,7 @@ class TestGetCHSTideStnId:
                             "timeSeries": []
                           }
                        ]
-                        """
-                    )
+                        """)
 
             return MockResponse()
 
@@ -402,8 +397,7 @@ class TestGetCHSTides:
             class MockResponse:
                 @staticmethod
                 def json():
-                    return stdlib_json.loads(
-                        """\
+                    return stdlib_json.loads("""\
                         [
                           {
                             "eventDate": "2021-03-18T00:00:00Z",
@@ -430,8 +424,7 @@ class TestGetCHSTides:
                             "timeSeriesId": "5cebf1de3d0f4a073c4bb993"
                           }
                         ]
-                        """
-                    )
+                        """)
 
             return MockResponse()
 
@@ -478,8 +471,7 @@ class TestGetCHSTides:
             class MockResponse:
                 @staticmethod
                 def json():
-                    return stdlib_json.loads(
-                        """\
+                    return stdlib_json.loads("""\
                         [
                           {
                             "eventDate": "2021-03-19T00:00:00Z",
@@ -512,8 +504,7 @@ class TestGetCHSTides:
                             "timeSeriesId": "5cebf1de3d0f4a073c4bb991"
                           }
                         ]
-                        """
-                    )
+                        """)
 
             return MockResponse()
 

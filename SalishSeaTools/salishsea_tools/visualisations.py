@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Functions for common model visualisations"""
+
 import datetime
 
 import matplotlib.pyplot as plt

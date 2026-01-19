@@ -17,7 +17,6 @@
 plotting and visualization.
 """
 
-
 import netCDF4 as nc
 import numpy as np
 from salishsea_tools import geo_tools

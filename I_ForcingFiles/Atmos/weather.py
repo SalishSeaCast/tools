@@ -17,7 +17,6 @@
 observations from the Salish Sea Model.
 """
 
-
 import datetime
 import netCDF4 as NC
 import numpy as np

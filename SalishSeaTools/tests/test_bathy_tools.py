@@ -16,7 +16,6 @@
 
 """Unit tests for bathy_tools."""
 
-
 import os
 import netCDF4 as nc
 import numpy as np

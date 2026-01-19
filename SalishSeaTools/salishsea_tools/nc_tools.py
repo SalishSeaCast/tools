@@ -25,7 +25,6 @@ Included are functions for:
   netCDF file
 """
 
-
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta
 from resource import getrlimit, RLIMIT_NOFILE

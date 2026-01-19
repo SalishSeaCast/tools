@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Pytest fixtures for the salishsea_tools package."""
+
 import os
 
 import netCDF4 as nc

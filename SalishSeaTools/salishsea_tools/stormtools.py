@@ -15,7 +15,6 @@
 
 """A collection of tools for storm surge results from the Salish Sea Model."""
 
-
 import csv
 import datetime
 from io import BytesIO
