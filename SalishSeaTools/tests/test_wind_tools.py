@@ -15,7 +15,6 @@
 
 """Unit tests for Salish Sea NEMO nowcast make_feeds worker."""
 
-
 import os
 from unittest.mock import patch
 

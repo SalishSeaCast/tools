@@ -19,9 +19,7 @@ This is a utility library that is used by other Python packages
 and modules developed for the SalishSeaCast project.
 """
 
-
 import subprocess
-
 
 __all__ = [
     "commit",

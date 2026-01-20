@@ -15,7 +15,6 @@
 
 """Unit tests for nc_tools."""
 
-
 import datetime
 from pathlib import Path
 from unittest.mock import patch

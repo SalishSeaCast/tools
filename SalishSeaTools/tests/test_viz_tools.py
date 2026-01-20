@@ -15,7 +15,6 @@
 
 """Unit tests for the viz_tools module."""
 
-
 from unittest.mock import (
     MagicMock,
     Mock,

@@ -17,7 +17,6 @@
 netCDF bathymetry files.
 """
 
-
 from matplotlib.colors import BoundaryNorm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator

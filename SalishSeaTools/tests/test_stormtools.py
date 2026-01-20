@@ -14,6 +14,7 @@
 # limitations under the License.
 
 """Unit tests for SalishSeaTools stormtools module."""
+
 import os
 from unittest.mock import Mock
 

@@ -15,7 +15,6 @@
 
 """Unit tests for evaltools module datetime conversion functions."""
 
-
 import datetime
 
 import numpy

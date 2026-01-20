@@ -23,7 +23,6 @@ import json
 import os
 import re
 
-
 NBVIEWER = "https://nbviewer.org/urls"
 REPO = "github.com/SalishSeaCast/tools/blob/main"
 REPO_DIR = "analysis_tools"
@@ -68,9 +67,7 @@ and The University of British Columbia.
 They are licensed under the Apache License, Version 2.0.
 https://www.apache.org/licenses/LICENSE-2.0
 Please see the LICENSE file for details of the license.
-""".format(
-        this_year=datetime.date.today().year
-    )
+""".format(this_year=datetime.date.today().year)
     with open("README.md", "wt") as f:
         f.writelines(readme)
         f.writelines(license)

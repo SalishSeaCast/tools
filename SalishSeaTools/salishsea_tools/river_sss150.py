@@ -18,6 +18,7 @@ that each river occupies in the watershed.
 
 For sss150 Grid and Bathymetry
 """
+
 prop_dict = {}
 
 # Note that sum is slightly less than 1 as three rivers in the Howe Sound watershed do not enter SSS150

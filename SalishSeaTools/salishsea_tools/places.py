@@ -31,7 +31,6 @@ informative than the default, for example:
             'salishsea_tools.places.PLACES: {}'.format(e))
 """
 
-
 #: Information about geographic places used in the analysis and
 #: presentation of Salish Sea NEMO model results.
 PLACES = {

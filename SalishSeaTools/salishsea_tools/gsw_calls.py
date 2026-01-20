@@ -9,7 +9,6 @@ import subprocess as sp
 
 import numpy as np
 
-
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 

@@ -20,6 +20,7 @@ Walks a directory tree searching .py, .rst, and .txt files for the string
 and updates it to
   Copyright *{year}
 """
+
 from __future__ import print_function
 
 import datetime

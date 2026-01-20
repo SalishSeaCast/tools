@@ -15,7 +15,6 @@
 
 """Unit tests for the teos_tools module."""
 
-
 import numpy as np
 import pytest
 

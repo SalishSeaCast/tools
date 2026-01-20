@@ -17,7 +17,6 @@
 Salish Sea NEMO model
 """
 
-
 import cmath
 import collections
 import csv

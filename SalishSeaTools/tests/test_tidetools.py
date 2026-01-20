@@ -15,7 +15,6 @@
 
 """Unit tests for the tidetools module."""
 
-
 import textwrap
 import numpy as np
 
@@ -27,9 +26,7 @@ def test_get_run_length(tmp_path):
     run_dir = tmp_path / runname
     run_dir.mkdir()
     test_namelist = run_dir / "namelist"
-    test_namelist.write_text(
-        textwrap.dedent(
-            """
+    test_namelist.write_text(textwrap.dedent("""
         !! Run timing control
         !!
         !! *Note*: The time step is set in the &namdom namelist in the namelist.domain
@@ -92,8 +89,6 @@ def test_get_run_length(tmp_path):
            rn_rdtmax   =   300.    !  maximum time step on tracers (used if nn_acc=1)
            rn_rdth     =  300.     !  depth variation of tracer time step  (used if nn_acc=1)
         &end
-        """
-        )
-    )
+        """))
     run_length = tidetools.get_run_length("test_run", test_namelist.parent.parent)
     np.testing.assert_almost_equal(run_length, 2)
