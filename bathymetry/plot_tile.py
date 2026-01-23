@@ -44,6 +44,7 @@ bathymetry in both grid index coordinates and geographical coordinates.
 :rtype: tuple
 """
 from matplotlib import pyplot as plt
+import matplotlib.cm
 
 from salishsea_tools import viz_tools
 
@@ -72,7 +73,8 @@ def plot_tile(
         ((ax_sgl, ax_dbl_base, ax_dbl), (ax_sgl_map, ax_dbl_base_map, ax_dbl_map)) = axs
 
     # use spectral colour map to provide lots of contrast between grid cells
-    cmap = "nipy_spectral"
+    cmap = matplotlib.cm.get_cmap("nipy_spectral").copy()
+    cmap.set_bad(color="burlywood")
 
     # single resolution bathymetry
     # grid index coordinates
