@@ -121,7 +121,7 @@ numpy==2.4.2
 openpyxl==3.1.5
 overrides==7.7.0
 packaging==26.0
-pandas==3.0.1
+pandas==2.3.3
 pandocfilters==1.5.0
 parso==0.8.6
 pathspec==1.0.4
