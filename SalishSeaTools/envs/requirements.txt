@@ -153,7 +153,7 @@ pytz==2025.2
 PyYAML==6.0.3
 pyzmq==27.1.0
 referencing==0.37.0
-requests==2.32.5
+requests==2.33.0
 retrying==1.4.2
 rfc3339_validator==0.1.4
 rfc3986-validator==0.1.1
