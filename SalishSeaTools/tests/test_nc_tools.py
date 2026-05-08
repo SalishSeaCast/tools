@@ -233,7 +233,7 @@ def test_time_origin_UTC_timezone(nc_dataset):
     time_counter = nc_dataset.createVariable("time_counter", float, ("time_counter",))
     time_counter.time_origin = "2002-OCT-26 00:00:00"
     time_origin = nc_tools.time_origin(nc_dataset)
-    assert time_origin.tzinfo == dateutil.tz.tzutc()
+    assert time_origin.tzinfo == datetime.timezone.utc
 
 
 def test_time_origin_missing(nc_dataset):
