@@ -527,6 +527,14 @@ def _match_model_to_data(
             mesh_data["mask"],
             model_file_hours_res,
         ),
+        "salinity": lambda: _salinity_match(
+            data,
+            file_lists,
+            file_types,
+            file_type_model_vars,
+            mesh_data["mask"],
+            model_var_file_types,
+        ),
         "vvlZ": lambda: _interpvvlZ(
             data,
             file_lists,
@@ -800,6 +808,100 @@ def _binmatch(
                         ]
             else:
                 raise ValueError(f"Invalid value: {n_spatial_dims=}")
+    return data
+
+
+def _salinity_match(data, flist, ftypes, filemap_r, omask, fdict):
+    import xarray as xr
+    import numpy as np
+    from tqdm import tqdm
+
+    matched_salinities = []
+
+    # Find which filetype contains salinity
+    salinity_var, salinity_ftype = None, None
+    for ftype in ftypes:
+        for var in filemap_r[ftype]:
+            if "sal" in var.lower():  ## was just 'sal' before
+                salinity_var = var
+                salinity_ftype = ftype
+                break
+        if salinity_var:
+            break
+    if not salinity_var:
+        raise ValueError("No salinity variable found in filemap_r.")
+
+    salinity_files = flist[salinity_ftype]
+    salinity_files.columns = ["fname", "start", "end"]
+
+    # Cache for xarray datasets
+    dataset_cache = {}
+
+    for idx, row in tqdm(data.iterrows(), total=len(data)):
+        obs_time = row["dtUTC"]
+        obs_sal = row["Sal (g kg-1)"]
+        j, i = int(row["j"]), int(row["i"])
+        k = None
+
+        # Step 1: Find matching salinity depth
+        for _, mf in salinity_files.iterrows():
+            if mf["start"] <= obs_time < mf["end"]:
+                fname = mf["fname"]
+                if fname not in dataset_cache:
+                    dataset_cache[fname] = xr.open_dataset(fname)
+                ds = dataset_cache[fname]
+
+                try:
+                    # Select time (nearest if needed), then slice j,i
+                    sel = ds[salinity_var].sel(time_counter=obs_time, method="nearest")
+                    sal_profile = sel[:, j, i].values  # depth profile
+
+                    if np.isnan(sal_profile).all():
+                        matched_salinities.append(np.nan)
+                        k = None
+                    else:
+                        sal_diff = np.abs(sal_profile - obs_sal)
+                        k = np.nanargmin(sal_diff)
+                        matched_salinities.append(sal_profile[k])
+                except Exception as e:
+                    print(f"Error reading salinity at {fname}: {e}")
+                    matched_salinities.append(np.nan)
+                    k = None
+                break
+
+        if k is None:
+            # Fill all variables with NaN
+            for ft in ftypes:
+                for var in filemap_r[ft]:
+                    data.at[idx, f"mod_{var}"] = np.nan
+            continue
+
+        # Step 2: Grab each variable at (time, k, j, i) using xarray
+        for ft in ftypes:
+            var_files = flist[ft]
+            var_files.columns = ["fname", "start", "end"]
+
+            for _, mf in var_files.iterrows():
+                if mf["start"] <= obs_time < mf["end"]:
+                    fname = mf["fname"]
+                    if fname not in dataset_cache:
+                        dataset_cache[fname] = xr.open_dataset(fname)
+                    ds = dataset_cache[fname]
+
+                    for var in filemap_r[ft]:
+                        try:
+                            sel = ds[var].sel(time_counter=obs_time, method="nearest")
+                            val = sel[k, j, i].item()
+                        except Exception:
+                            val = np.nan
+                        data.at[idx, f"mod_{var}"] = val
+                    break
+
+    # Close all xarray datasets
+    for ds in dataset_cache.values():
+        ds.close()
+
+    data["matched_salinity"] = matched_salinities
     return data
 
 
