@@ -22,7 +22,6 @@ import os
 import pickle
 import re
 import warnings
-
 import arrow
 import cmocean as cmo
 import erddapy
@@ -36,6 +35,7 @@ import numpy as np
 import pandas as pd
 import pytz
 import xarray as xr
+import cftime #Added for noleap exeption.
 
 from salishsea_tools import geo_tools, places
 
@@ -232,7 +232,7 @@ def matchData(
         )
         for file_type in file_types
     }
-
+    
     # Call a function to match model field values to the observation data using the specified method
     data = _match_model_to_data(
         method,
@@ -247,6 +247,7 @@ def matchData(
         model_file_hours_res,
         n_spatial_dims,
         pre_indexed=pre_indexed,
+        nam_fmt = mod_nam_fmt
     )
     data.reset_index(drop=True, inplace=True)
     return data
@@ -472,6 +473,7 @@ def _match_model_to_data(
     model_file_hours_res,
     n_spatial_dims,
     pre_indexed=False,
+    nam_fmt = "nowcast"
 ):
     """
     Match model field values to the provided observational data using the specified method.
@@ -1009,12 +1011,13 @@ def _getTimeInd_bin(idt, ifid, torig, hpf=None):
     """find time index for SalishSeaCast output interval including observation time"""
     if "time_centered_bounds" in ifid.variables.keys():
         tlist = ifid.variables["time_centered_bounds"][:, :]
-        # return first index where latter endpoint is larger
+        tc = ifid["time_counter"]
+        target_num = cftime.date2num(idt, units=tc.units, calendar=tc.calendar) #This way noleap runs also work
         ih = [
-            iii
-            for iii, hhh in enumerate(tlist)
-            if hhh[1] > (idt - torig).total_seconds()
-        ][0]
+            iii 
+            for iii, hhh in enumerate(tlist) 
+            if hhh[1] > target_num][0]
+    
     else:  # hacky fix because time_centered_bounds missing from post-processed daily files
         nt = len(ifid.variables["time_counter"][:])
         if "hours" in ifid.variables["time_counter"].units:
@@ -1120,6 +1123,8 @@ def index_model_files(start, end, basedir, nam_fmt, flen, ftype=None, tres=1):
         stencil = "gemlam_{3}.nc"
     elif nam_fmt == "forcing":  # use ftype as prefix
         stencil = ftype + "_{3}.nc"
+    elif nam_fmt == "SHEM":
+        stencil = "{0}/SHEM_" + ftres + "_{1}-{2}_" + ftype + ".nc"
     else:
         raise Exception("nam_fmt " + nam_fmt + " is not defined")
     # Note fix: to avoid errors if hour and second included with start and end time, strip them!
@@ -1232,7 +1237,7 @@ def index_model_files_flex(
     t_0 = list()
     t_n = list()
     for ifl in paths:
-        if nam_fmt == "nowcast":
+        if nam_fmt in ["nowcast","SHEM"]:
             dates = re.findall(r"\d{8}", re.search(r"\d{8}_\d{8}", ifl)[0])
         elif nam_fmt == "long":
             dates = re.findall(r"\d{8}", re.search(r"\d{8}-\d{8}", ifl)[0])
@@ -3310,7 +3315,7 @@ def getChlNRatio(
             "nmlfile must contain full namelist path or basedir and nam_fmt must be defined"
         )
     if basedir:
-        if nam_fmt == "nowcast":
+        if nam_fmt in ["nowcast","SHEM"]:
             nmlfile = os.path.join(basedir, idt.strftime("%d%b%y").lower(), nmlfile)
         elif nam_fmt == "long":
             nmlfile = os.path.join(basedir, nmlfile)
