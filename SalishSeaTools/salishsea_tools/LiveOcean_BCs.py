@@ -487,6 +487,7 @@ def create_LiveOcean_TS_BCs(
     meshfilename="/results/nowcast-sys/grid/mesh_mask201702.nc",
     bc_dir="/results/forcing/LiveOcean/boundary_conditions/",
     LO_dir="/results/forcing/LiveOcean/downloaded/",
+    LO_file="low_passed_UBC.nc",
     LO_to_SSC_parameters={
         "NO3": {
             "smax": 100.0,
@@ -506,6 +507,8 @@ def create_LiveOcean_TS_BCs(
     :arg str bc_dir: the directory in which to save the results.
 
     :arg str LO_dir: the directory in which Live Ocean results are stored.
+
+    :arg str LO_file: the filename of the Live Ocean results to use.
 
     :arg dict LO_to_SSC_parameters: a dictionary of parameters to convert
                                     Live Ocean values to Salish Sea Cast
@@ -556,7 +559,7 @@ def create_LiveOcean_TS_BCs(
     )
 
     # Load the Live Ocean File
-    d = load_LiveOcean(date, LO_dir)
+    d = load_LiveOcean(date, LO_dir, LO_file)
 
     # Depth interpolation
     interps = interpolate_to_NEMO_depths(
