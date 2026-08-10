@@ -408,7 +408,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     }
 
     da = {}
-    var_names = (var for var in interpl.keys() if var != "NH4")
+    var_names = (var for var in interpl if var != "NH4")
     for var in var_names:
         da[var] = xr.DataArray(
             data=interpl[var],
