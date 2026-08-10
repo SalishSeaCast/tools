@@ -69,7 +69,13 @@ def get_basic_info(fn, only_G=False, only_S=False, only_T=False):
         for vv in t_varlist:
             T[vv] = ds.variables[vv][:]
         T_units = ds.variables["ocean_time"].units
-        tt = nc.num2date(T["ocean_time"][:], T_units)
+        try:
+            # Handle production low-pass filtered files that have `ocean_time` as a dimension
+            tt = nc.num2date(T["ocean_time"][:], T_units)
+        except IndexError:
+            # Handle day-average extraction files that Kate produced in Jul-2026 in which
+            # `ocean_time` is not a dimension
+            tt = nc.num2date(T["ocean_time"], T_units)
         T["time"] = tt
         return T
 

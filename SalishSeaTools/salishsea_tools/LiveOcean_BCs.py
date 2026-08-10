@@ -77,7 +77,6 @@ def load_LiveOcean(
     sdt = datetime.datetime.strptime(date, "%Y-%m-%d")
     file = os.path.join(LO_dir, sdt.strftime("%Y%m%d"), LO_file)
 
-    T = grid.get_basic_info(file, only_T=True)  # note: grid.py is from Parker
     d = xr.open_dataset(file)
 
     return d
@@ -101,18 +100,24 @@ def interpolate_to_NEMO_depths(dataset, depBC, var_names):
     :returns: dictionary containing interpolated numpy arrays for each variable
     """
     interps = {}
+    z_rho_values = (
+        dataset.z_rho.values if dataset.z_rho.ndim == 3 else dataset.z_rho[0].values
+    )
     for var_name in var_names:
+        data_array = (
+            dataset[var_name] if dataset[var_name].ndim == 3 else dataset[var_name][0]
+        )
         var_interp = np.zeros(
             (
                 depBC.shape[0],
-                dataset[var_name][0, 0].shape[0],
-                dataset[var_name][0, 0].shape[1],
+                data_array.shape[1],
+                data_array.shape[2],
             )
         )
         for j in range(var_interp.shape[1]):
             for i in range(var_interp.shape[2]):
-                LO_depths = dataset.z_rho.values[0, :, j, i]
-                var = dataset[var_name].values[0, :, j, i]
+                LO_depths = z_rho_values[:, j, i]
+                var = data_array.values[:, j, i]
                 var_interp[:, j, i] = np.interp(-depBC, LO_depths, var, left=np.nan)
                 # NEMO depths are positive, LiveOcean are negative
         interps[var_name] = np.ma.masked_invalid(var_interp)
@@ -403,7 +408,7 @@ def prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, time):
     }
 
     da = {}
-    var_names = (var for var in interpl.keys() if var != "NH4")
+    var_names = (var for var in interpl if var != "NH4")
     for var in var_names:
         da[var] = xr.DataArray(
             data=interpl[var],
@@ -482,6 +487,7 @@ def create_LiveOcean_TS_BCs(
     meshfilename="/results/nowcast-sys/grid/mesh_mask201702.nc",
     bc_dir="/results/forcing/LiveOcean/boundary_conditions/",
     LO_dir="/results/forcing/LiveOcean/downloaded/",
+    LO_file="low_passed_UBC.nc",
     LO_to_SSC_parameters={
         "NO3": {
             "smax": 100.0,
@@ -501,6 +507,8 @@ def create_LiveOcean_TS_BCs(
     :arg str bc_dir: the directory in which to save the results.
 
     :arg str LO_dir: the directory in which Live Ocean results are stored.
+
+    :arg str LO_file: the filename of the Live Ocean results to use.
 
     :arg dict LO_to_SSC_parameters: a dictionary of parameters to convert
                                     Live Ocean values to Salish Sea Cast
@@ -551,7 +559,7 @@ def create_LiveOcean_TS_BCs(
     )
 
     # Load the Live Ocean File
-    d = load_LiveOcean(date, LO_dir)
+    d = load_LiveOcean(date, LO_dir, LO_file)
 
     # Depth interpolation
     interps = interpolate_to_NEMO_depths(
@@ -616,6 +624,8 @@ def create_LiveOcean_TS_BCs(
 
     # Prepare dataset
     ts = d.ocean_time.data
+    if ts.ndim == 0:
+        ts = np.expand_dims(ts, axis=0)
     ds = prepare_dataset(interpl, var_meta, LO_to_NEMO_var_map, depBC, ts)
 
     # Write out file
