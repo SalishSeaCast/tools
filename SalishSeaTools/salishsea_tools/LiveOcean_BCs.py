@@ -77,7 +77,6 @@ def load_LiveOcean(
     sdt = datetime.datetime.strptime(date, "%Y-%m-%d")
     file = os.path.join(LO_dir, sdt.strftime("%Y%m%d"), LO_file)
 
-    T = grid.get_basic_info(file, only_T=True)  # note: grid.py is from Parker
     d = xr.open_dataset(file)
 
     return d
