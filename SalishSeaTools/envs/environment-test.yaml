@@ -26,7 +26,7 @@ dependencies:
   - numpy
   - openpyxl
   - pandas<3.0.0
-  - pip
+  - pip>=26.2.2  # re: eMudhra intermediate CA certificates compromise
   - pytz
   - python-dateutil
   - pyyaml
