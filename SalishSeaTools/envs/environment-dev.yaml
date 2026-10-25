@@ -20,7 +20,6 @@ channels:
 
 dependencies:
   - arrow
-  - bottleneck
   - cmocean
   - erddapy
   - f90nml
