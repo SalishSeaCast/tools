@@ -36,7 +36,6 @@ dependencies = [
     # see envs/requirements.txt for package versions used during recent development
     "angles",
     "arrow",
-    "bottleneck",
     "cmocean",
     "erddapy",
     "f90nml",
